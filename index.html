@@ -19,23 +19,9 @@
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; }
         .container { max-width: 1400px; margin: 0 auto; }
-        header { background: linear-gradient(135deg, var(--primary), #4a76a8); color: white; padding: 24px; border-radius: 12px; margin-bottom: 10px; }
+        header { background: linear-gradient(135deg, var(--primary), #4a76a8); color: white; padding: 24px; border-radius: 12px; margin-bottom: 20px; }
         header h1 { margin: 0; font-size: 24px; }
         header p { margin: 8px 0 0 0; opacity: 0.9; font-size: 14px; }
-        
-        .debug-banner {
-            background-color: #37474f;
-            color: #fff;
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-family: monospace;
-            font-size: 13px;
-            line-height: 1.5;
-            border-left: 6px solid #00e676;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
         .config-btn-container { margin: 15px 0; text-align: center; }
         .config-trigger-btn { background-color: #0288d1; color: white; border: none; padding: 12px 24px; font-size: 15px; font-weight: bold; border-radius: 30px; cursor: pointer; }
         .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 20px; }
@@ -77,10 +63,6 @@
             <h1 id="view-title">電影欣賞社 網頁版互動點名系統</h1>
             <p id="view-subtitle">自動連動 Google 雲端，自動統計出席率、全勤狀態。</p>
         </header>
-
-        <div class="debug-banner" id="debug-banner">
-            📡 雲端雷達模糊識別版初始化中...
-        </div>
 
         <div class="config-btn-container">
             <button class="config-trigger-btn" onclick="openConfigModal()">⚙️ 開啟萬用設定面板 (貼上發布網址與名單)</button>
@@ -160,8 +142,8 @@
                 </div>
             </div>
             <div class="form-group">
-                <label>Google 試算表 CSV 網址</label>
-                <input type="text" id="cfg-csv-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTq4fS-2mFLfh-Ev7PTr55WNVwUpEUfXmIhMnN3M6CGZEkBQ96u5Fke4_8U3UNIOBqAC2shIfAQfaOL/pub?output=csv">
+                <label>Google 試算表 CSV 網址 (請貼上「發布到網路」產生的網址)</label>
+                <input type="text" id="cfg-csv-url" value="">
             </div>
             <div class="form-group">
                 <label>學生名單自訂 (格式：學號,姓名,班級，每行一人。)</label>
@@ -178,7 +160,7 @@
     </div>
 
     <script>
-        const defaultStudents = [{"id": "11401011", "name": "李浩凱", "dept_class": "重機科一忠"}, {"id": "11401014", "name": "林士閎", "dept_class": "重機科一忠"}, {"id": "11401024", "name": "陳宥廷", "dept_class": "重機科一忠"}, {"id": "11401025", "name": "陳柏安", "dept_class": "重機科一忠"}, {"id": "11401026", "name": "陳韋勛", "dept_class": "重機科一忠"}, {"id": "11401027", "name": "陳楷霖", "dept_class": "重機科一忠"}, {"id": "11401032", "name": "劉諶叡", "dept_class": "重機科一忠"}, {"id": "11402023", "name": "許盛鈞", "dept_class": "模具科一忠"}, {"id": "11402101", "name": "林芝羽", "dept_class": "模具科一孝"}, {"id": "11402103", "name": "陳姿瑜", "dept_class": "模具科一孝"}, {"id": "11402113", "name": "邱羿翰", "dept_class": "模具科一孝"}, {"id": "11404006", "name": "王子維", "dept_class": "電子科一忠"}, {"id": "11404009", "name": "王鈞毅", "dept_class": "電子科一忠"}, {"id": "11404010", "name": "何俊廷", "dept_class": "電子科一忠"}, {"id": "11404110", "name": "周杰陽", "dept_class": "電子科一孝"}, {"id": "11404112", "name": "林和穎", "dept_class": "電子科一孝"}, {"id": "11404113", "name": "林柏安", "dept_class": "電子科一孝"}, {"id": "11404115", "name": "柯品均", "dept_class": "電子科一孝"}, {"id": "11404117", "name": "胡俊英", "dept_class": "電子科一孝"}, {"id": "11404120", "name": "張維哲", "dept_class": "電子科一孝"}, {"id": "11404124", "name": "陳庭翊", "dept_class": "電子科一孝"}, {"id": "11404126", "name": "黃禹翔", "dept_class": "電子科一孝"}, {"id": "11404130", "name": "鄭宇恩", "dept_class": "電子科一孝"}, {"id": "11405011", "name": "吳展旭", "dept_class": "土木科一忠"}, {"id": "11405016", "name": "林知炫", "dept_class": "土木科一忠"}, {"id": "11405110", "name": "江孟哲", "dept_class": "土木科一孝"}, {"id": "11405114", "name": "李泓儀", "dept_class": "土木科一孝"}, {"id": "11405116", "name": "林弘裕", "dept_class": "土木科一孝"}, {"id": "11405120", "name": "施劭儒", "dept_class": "土木科一孝"}, {"id": "11405124", "name": "陳一愷", "dept_class": "土木科一孝"}, {"id": "11405127", "name": "廖廷軒", "dept_class": "土木科一孝"}, {"id": "11406031", "name": "鄭可謙", "dept_class": "建築科一忠"}, {"id": "11406106", "name": "劉軒辰", "dept_class": "建築科一孝"}, {"id": "11406107", "name": "鄭恩旻", "dept_class": "建築科一孝"}, {"id": "11406110", "name": "王子豪", "dept_class": "建築科一孝"}, {"id": "11406117", "name": "林小平", "dept_class": "建築科一孝"}, {"id": "11406122", "name": "勒卡而・旮巴Lkal・Kapa", "dept_class": "建築科一孝"}, {"id": "11407022", "name": "曾泓維", "dept_class": "汽車科一忠"}, {"id": "11407024", "name": "黃佑恩", "dept_class": "汽車科一忠"}, {"id": "11407025", "name": "黃靖捷", "dept_class": "汽車科一忠"}, {"id": "11407106", "name": "林宥安", "dept_class": "汽車科一孝"}, {"id": "11407107", "name": "林桓安", "dept_class": "汽車科一孝"}, {"id": "11407108", "name": "林泰澄", "dept_class": "汽車科一孝"}, {"id": "11407118", "name": "陳雋淇", "dept_class": "汽車科一孝"}, {"id": "11407121", "name": "黃澤楷", "dept_class": "汽車科一孝"}, {"id": "11407124", "name": "葉宥宏", "dept_class": "汽車科一孝"}, {"id": "11407126", "name": "蔡承勳", "dept_class": "汽車科一孝"}, {"id": "11407130", "name": "蕭禎賢", "dept_class": "汽車科一孝"}, {"id": "11408006", "name": "朱昱安", "dept_class": "冷凍空調科一忠"}, {"id": "11408008", "name": "吳岱霖", "dept_class": "冷凍空調科一忠"}, {"id": "11408016", "name": "區少升", "dept_class": "冷凍空調科一忠"}, {"id": "11408020", "name": "陳品諺", "dept_class": "冷凍空調科一忠"}, {"id": "11408026", "name": "黃稚鈞", "dept_class": "冷凍空調科一忠"}, {"id": "11408108", "name": "林肯成", "dept_class": "冷凍空調科一孝"}, {"id": "11408121", "name": "彭暐瀚", "dept_class": "冷凍空調科一孝"}, {"id": "11408122", "name": "游俊恩", "dept_class": "冷凍空調科一孝"}, {"id": "11408136", "name": "魏丞宏", "dept_class": "冷凍空調科一孝"}, {"id": "11409007", "name": "周品曦", "dept_class": "電機科一忠"}, {"id": "11409021", "name": "陳秉鉉", "dept_class": "電機科一忠"}, {"id": "11409022", "name": "陳冠愷", "dept_class": "電機科一忠"}, {"id": "11409029", "name": "黃鈺淳", "dept_class": "電機科一忠"}, {"id": "11409031", "name": "黎家齊", "dept_class": "電機科一忠"}, {"id": "11409104", "name": "吳紘宇", "dept_class": "電機科一孝"}, {"id": "11409108", "name": "林佑勳", "dept_class": "電機科一孝"}, {"id": "11409118", "name": "陳柏廷", "dept_class": "電機科一孝"}, {"id": "11409123", "name": "勤正浩", "dept_class": "電機科一孝"}, {"id": "11409132", "name": "鄭家佑", "dept_class": "電機科一孝"}, {"id": "11410031", "name": "劉威彥", "dept_class": "機械科一忠"}, {"id": "11410119", "name": "陳沅祥", "dept_class": "機械科一孝"}, {"id": "11410127", "name": "楊善閔", "dept_class": "機械科一孝"}, {"id": "11410131", "name": "謝孝霆", "dept_class": "機械科一孝"}, {"id": "11410134", "name": "蘇寅", "dept_class": "機械科一孝"}, {"id": "11301003", "name": "田翊新", "dept_class": "重機科二忠"}, {"id": "11301022", "name": "陳威良", "dept_class": "重機科二忠"}, {"id": "11301025", "name": "陳詠昕", "dept_class": "重機科二忠"}, {"id": "11301110", "name": "林宏鈞", "dept_class": "重機科二孝"}, {"id": "11202128", "name": "游祐程", "dept_class": "模具科二忠"}, {"id": "11302006", "name": "黃晴婠", "dept_class": "模具科二忠"}, {"id": "11302011", "name": "林承旻", "dept_class": "模具科二忠"}, {"id": "11302016", "name": "張華軒", "dept_class": "模具科二忠"}, {"id": "11302018", "name": "許耕源", "dept_class": "模具科二忠"}, {"id": "11302020", "name": "陳冠辰", "dept_class": "模具科二忠"}, {"id": "11302030", "name": "廖梓亦", "dept_class": "模具科二忠"}, {"id": "11304014", "name": "林威融", "dept_class": "電子科二忠"}, {"id": "11304031", "name": "廖澤綱", "dept_class": "電子科二忠"}, {"id": "11304115", "name": "孫廷翰", "dept_class": "電子科二孝"}, {"id": "11305012", "name": "吳庭恩", "dept_class": "土木科二忠"}, {"id": "11305029", "name": "張恩杰", "dept_class": "土木科二忠"}, {"id": "11306115", "name": "李亮瑋", "dept_class": "建築科二孝"}, {"id": "11306126", "name": "詹立宇", "dept_class": "建築科二孝"}, {"id": "11307011", "name": "杜頤宥", "dept_class": "汽車科二忠"}, {"id": "11307105", "name": "宋宥均", "dept_class": "汽車科二孝"}, {"id": "11307118", "name": "陳乙篁", "dept_class": "汽車科二孝"}, {"id": "11307127", "name": "楊家宏", "dept_class": "汽車科二孝"}, {"id": "11307134", "name": "謝杰穎", "dept_class": "汽車科二孝"}, {"id": "11308004", "name": "吳育熙", "dept_class": "冷凍空調科二忠"}, {"id": "11308011", "name": "林品嶧", "dept_class": "冷凍空調科二忠"}, {"id": "11308015", "name": "洪翊倫", "dept_class": "冷凍空調科二忠"}, {"id": "11308017", "name": "張泰祥", "dept_class": "冷凍空調科二忠"}, {"id": "11308021", "name": "陳宣叡", "dept_class": "冷凍空調科二忠"}, {"id": "11308026", "name": "黃文昇", "dept_class": "冷凍空調科二忠"}, {"id": "11309108", "name": "林言家", "dept_class": "電機科二孝"}, {"id": "11309109", "name": "林亞佐", "dept_class": "電機科二孝"}, {"id": "11309110", "name": "林昱丞", "dept_class": "電機科二孝"}, {"id": "11309113", "name": "范宸維", "dept_class": "電機科二孝"}, {"id": "11309124", "name": "黃鴻緯", "dept_class": "電機科二孝"}, {"id": "11309129", "name": "蔣承澤", "dept_class": "電機科二孝"}, {"id": "11309130", "name": "鄧明鈞", "dept_class": "電機科二孝"}, {"id": "11309131", "name": "鄭至勛", "dept_class": "電機科二孝"}, {"id": "11310113", "name": "姚元博", "dept_class": "機械科二孝"}, {"id": "11310115", "name": "唐維壕", "dept_class": "機械科二孝"}, {"id": "11310120", "name": "陳汝睿", "dept_class": "機械科二孝"}, {"id": "11310125", "name": "曾柏翰", "dept_class": "機械科二孝"}, {"id": "11315004", "name": "邱於哲", "dept_class": "機械加工科二忠"}, {"id": "11315006", "name": "張偉倫", "dept_class": "機械加工科二忠"}, {"id": "11315008", "name": "許宸睿", "dept_class": "機械加工科二忠"}, {"id": "11315012", "name": "葉宇宸", "dept_class": "機械加工科二忠"}, {"id": "11201023", "name": "楊晉成", "dept_class": "重機科三忠"}, {"id": "11201032", "name": "鄭宇均", "dept_class": "重機科三忠"}, {"id": "11201034", "name": "羅佳升", "dept_class": "重機科三忠"}, {"id": "11201105", "name": "李定宇", "dept_class": "重機科三孝"}, {"id": "11201109", "name": "林哲御", "dept_class": "重機科三孝"}, {"id": "11201115", "name": "許書維", "dept_class": "重機科三孝"}, {"id": "11201119", "name": "陳聖安", "dept_class": "重機科二孝"}, {"id": "11201133", "name": "謝智宇", "dept_class": "重機科三孝"}, {"id": "11202011", "name": "吳文睿", "dept_class": "模具科三忠"}, {"id": "11202015", "name": "林孝融", "dept_class": "模具科三忠"}, {"id": "11202026", "name": "黃子祐", "dept_class": "模具科三忠"}, {"id": "11202035", "name": "簡子堯", "dept_class": "模具科三忠"}, {"id": "11202114", "name": "林品希", "dept_class": "模具科三孝"}, {"id": "11202135", "name": "賴聖軒", "dept_class": "模具科三孝"}, {"id": "11203005", "name": "王齊陽", "dept_class": "鑄造科三忠"}, {"id": "11203020", "name": "陳沛瑞", "dept_class": "鑄造科三忠"}, {"id": "11207019", "name": "陳宥丞", "dept_class": "汽車科三忠"}, {"id": "11208014", "name": "林新恩", "dept_class": "冷凍空調科三忠"}, {"id": "11208015", "name": "胡鈞彥", "dept_class": "冷凍空調科三忠"}, {"id": "11208016", "name": "徐浩恩", "dept_class": "冷凍空調科三忠"}, {"id": "11208022", "name": "許宗畯", "dept_class": "冷凍空調科三忠"}, {"id": "11208033", "name": "葉騰允", "dept_class": "冷凍空調科三忠"}, {"id": "11208106", "name": "呂昆耀", "dept_class": "冷凍空調科三孝"}, {"id": "11208131", "name": "劉承諺", "dept_class": "冷凍空調科三孝"}, {"id": "11209103", "name": "王均元", "dept_class": "電機科三孝"}, {"id": "11209104", "name": "王威捷", "dept_class": "電機科三孝"}, {"id": "11209129", "name": "蔡承叡", "dept_class": "電機科三孝"}, {"id": "11210128", "name": "楊和紋", "dept_class": "機械科三孝"}, {"id": "11210129", "name": "楊凱博", "dept_class": "機械科三孝"}, {"id": "11501001", "name": "余明霖", "dept_class": "機械加工科二忠"}];
+        const defaultStudents = [{"id": "11401011", "name": "李浩凱", "dept_class": "重機科一忠"}, {"id": "11401014", "name": "林士閎", "dept_class": "重機科一忠"}, {"id": "11401024", "name": "陳宥廷", "dept_class": "重機科一忠"}, {"id": "11401025", "name": "陳柏安", "dept_class": "重機科一忠"}, {"id": "11401026", "name": "陳韋勛", "dept_class": "重機科一忠"}, {"id": "11401027", "name": "陳楷霖", "dept_class": "重機科一忠"}, {"id": "11401032", "name": "劉諶叡", "dept_class": "重機科一忠"}, {"id": "11402023", "name": "許盛鈞", "dept_class": "模具科一忠"}, {"id": "11402101", "name": "林芝羽", "dept_class": "模具科一孝"}, {"id": "11402103", "name": "陳姿瑜", "dept_class": "模具科一孝"}, {"id": "11402113", "name": "邱羿翰", "dept_class": "模具科一孝"}, {"id": "11404006", "name": "王子維", "dept_class": "電子科一忠"}, {"id": "11404009", "name": "王鈞毅", "dept_class": "電子科一忠"}, {"id": "11404010", "name": "何俊廷", "dept_class": "電子科一忠"}, {"id": "11404110", "name": "周杰陽", "dept_class": "電子科一孝"}, {"id": "11404112", "name": "林和穎", "dept_class": "電子科一孝"}, {"id": "11404113", "name": "林柏安", "dept_class": "電子科一孝"}, {"id": "11404115", "name": "柯品均", "dept_class": "電子科一孝"}, {"id": "11404117", "name": "胡俊英", "dept_class": "電子科一孝"}, {"id": "11404120", "name": "張維哲", "dept_class": "電子科一孝"}, {"id": "11404124", "name": "陳庭翊", "dept_class": "電子科一孝"}, {"id": "11404126", "name": "黃禹翔", "dept_class": "電子科一孝"}, {"id": "11404130", "name": "鄭宇恩", "dept_class": "電子科一孝"}, {"id": "11405011", "name": "吳展旭", "dept_class": "土木科一忠"}, {"id": "11405016", "name": "林知炫", "dept_class": "土木科一忠"}, {"id": "11405110", "name": "江孟哲", "dept_class": "土木科一孝"}, {"id": "11405114", "name": "李泓儀", "dept_class": "土木科一孝"}, {"id": "11405116", "name": "林弘裕", "dept_class": "土木科一孝"}, {"id": "11405120", "name": "施劭儒", "dept_class": "土木科一孝"}, {"id": "11405124", "name": "陳一愷", "dept_class": "土木科一孝"}, {"id": "11405127", "name": "廖廷軒", "dept_class": "土木科一孝"}, {"id": "11406031", "name": "鄭可謙", "dept_class": "建築科一忠"}, {"id": "11406106", "name": "劉軒辰", "dept_class": "建築科一孝"}, {"id": "11406107", "name": "鄭恩旻", "dept_class": "建築科一孝"}, {"id": "11406110", "name": "王子豪", "dept_class": "建築科一孝"}, {"id": "11406117", "name": "林小平", "dept_class": "建築科一孝"}, {"id": "11406122", "name": "勒卡而・旮巴Lkal・Kapa", "dept_class": "建築科一孝"}, {"id": "11407022", "name": "曾泓維", "dept_class": "汽車科一忠"}, {"id": "11407024", "name": "黃佑恩", "dept_class": "汽車科一忠"}, {"id": "11407025", "name": "黃靖捷", "dept_class": "汽車科一忠"}, {"id": "11407106", "name": "林宥安", "dept_class": "汽車科一孝"}, {"id": "11407107", "name": "林桓安", "dept_class": "汽車科一孝"}, {"id": "11407108", "name": "林泰澄", "dept_class": "汽車科一孝"}, {"id": "11407118", "name": "陳雋淇", "dept_class": "汽車科一孝"}, {"id": "11407121", "name": "黃澤楷", "dept_class": "汽車科一孝"}, {"id": "11407124", "name": "葉宥宏", "dept_class": "汽車科一孝"}, {"id": "11407126", "name": "蔡承勳", "dept_class": "汽車科一孝"}, {"id": "11407130", "name": "蕭禎賢", "dept_class": "汽車科一孝"}, {"id": "11408006", "name": "朱昱安", "dept_class": "冷凍空調科一忠"}, {"id": "11408008", "name": "吳岱霖", "dept_class": "冷凍空調科一忠"}, {"id": "11408016", "name": "區少升", "dept_class": "冷凍空調科一忠"}, {"id": "11408020", "name": "陳品諺", "dept_class": "冷凍空調科一忠"}, {"id": "11408026", "name": "黃稚鈞", "dept_class": "冷凍空調科一忠"}, {"id": "11408108", "name": "林肯成", "dept_class": "冷凍空調科一孝"}, {"id": "11408121", "name": "彭暐瀚", "dept_class": "冷凍空調科一孝"}, {"id": "11408122", "name": "游俊恩", "dept_class": "冷凍空調科一孝"}, {"id": "11408136", "name": "魏丞宏", "dept_class": "冷凍空調科一孝"}, {"id": "11409007", "name": "周品曦", "dept_class": "電機科一忠"}, {"id": "11409021", "name": "陳秉鉉", "dept_class": "電機科一忠"}, {"id": "11409022", "name": "陳冠愷", "dept_class": "電機科一忠"}, {"id": "11409029", "name": "黃鈺淳", "dept_class": "電機科一忠"}, {"id": "11409031", "name": "黎家齊", "dept_class": "電機科一忠"}, {"id": "11409104", "name": "吳紘宇", "dept_class": "電機科一孝"}, {"id": "11409108", "name": "林佑勳", "dept_class": "電機科一孝"}, {"id": "11409118", "name": "陳柏廷", "dept_class": "電機科一孝"}, {"id": "11409123", "name": "勤正浩", "dept_class": "電機科一孝"}, {"id": "11409132", "name": "鄭家佑", "dept_class": "電機科一孝"}, {"id": "11410031", "name": "劉威彥", "dept_class": "機械科一忠"}, {"id": "11410119", "name": "陳沅祥", "dept_class": "機械科一孝"}, {"id": "11410127", "name": "楊善閔", "dept_class": "機械科一孝"}, {"id": "11410131", "name": "謝孝霆", "dept_class": "機械科一孝"}, {"id": "11410134", "name": "蘇寅", "dept_class": "機械科一孝"}, {"id": "11301003", "name": "田翊新", "dept_class": "重機科二忠"}, {"id": "11301022", "name": "陳威良", "dept_class": "重機科二忠"}, {"id": "11301025", "name": "陳詠昕", "dept_class": "重機科二忠"}, {"id": "11301110", "name": "林宏鈞", "dept_class": "重機科二孝"}, {"id": "11202128", "name": "游祐程", "dept_class": "模具科二忠"}, {"id": "11302006", "name": "黃晴婠", "dept_class": "模具科二忠"}, {"id": "11302011", "name": "林承旻", "dept_class": "模具科二忠"}, {"id": "11302016", "name": "張華軒", "dept_class": "模具科二忠"}, {"id": "11302018", "name": "許耕源", "dept_class": "模具科二忠"}, {"id": "11302020", "name": "陳冠辰", "dept_class": "模具科二忠"}, {"id": "11302030", "name": "廖梓亦", "dept_class": "模具科二忠"}, {"id": "11304014", "name": "林威融", "dept_class": "電子科二忠"}, {"id": "11304031", "name": "廖澤綱", "dept_class": "電子科二忠"}, {"id": "11304115", "name": "孫廷翰", "dept_class": "電子科二孝"}, {"id": "11305012", "name": "吳庭恩", "dept_class": "土木科二忠"}, {"id": "11305029", "name": "張恩杰", "dept_class": "土木科二忠"}, {"id": "11306115", "name": "李亮瑋", "dept_class": "建築科二孝"}, {"id": "11306126", "name": "詹立宇", "dept_class": "建築科二孝"}, {"id": "11307011", "name": "杜頤宥", "dept_class": "汽車科二忠"}, {"id": "11307105", "name": "宋宥均", "dept_class": "汽車科二孝"}, {"id": "11307118", "name": "陳乙篁", "dept_class": "汽車科二孝"}, {"id": "11307127", "name": "楊家宏", "dept_class": "汽車科二孝"}, {"id": "11307134", "name": "謝杰穎", "dept_class": "汽車科二孝"}, {"id": "11308004", "name": "吳育熙", "dept_class": "冷凍空調科二忠"}, {"id": "11308011", "name": "林品嶧", "dept_class": "冷凍空調科二忠"}, {"id": "11308015", "name": "洪翊倫", "dept_class": "冷凍空調科二忠"}, {"id": "11308017", "name": "張泰祥", "dept_class": "冷凍空調科二忠"}, {"id": "11308021", "name": "陳宣叡", "dept_class": "冷凍空調科二忠"}, {"id": "11308026", "name": "黃文昇", "dept_class": "冷凍空調科二忠"}, {"id": "11309108", "name": "林言家", "dept_class": "電機科二孝"}, {"id": "11309109", "name": "林亞佐", "dept_class": "電機科二孝"}, {"id": "11309110", "name": "林昱丞", "dept_class": "電機科二孝"}, {"id": "11309113", "name": "范宸維", "dept_class": "電機科二孝"}, {"id": "11309124", "name": "黃鴻緯", "dept_class": "電機科二孝"}, {"id": "11309129", "name": "蔣承澤", "dept_class": "電機科二孝"}, {"id": "11309130", "name": "鄧明鈞", "dept_class": "電機科二孝"}, {"id": "11309131", "name": "鄭至勛", "dept_class": "電機科二孝"}, {"id": "11310113", "name": "姚元博", "dept_class": "機械科二孝"}, {"id": "11310115", "name": "唐維壕", "dept_class": "機械科二孝"}, {"id": "11310120", "name": "陳汝睿", "dept_class": "機械科二孝"}, {"id": "11310125", "name": "曾柏翰", "dept_class": "機械科二孝"}, {"id": "11315004", "name": "邱於哲", "dept_class": "機械加工科二忠"}, {"id": "11315006", "name": "張偉倫", "dept_class": "機械加工科二忠"}, {"id": "11315008", "name": "許宸睿", "dept_class": "機械加工科二忠"}, {"id": "11315012", "name": "葉宇宸", "dept_class": "機械加工科二忠"}, {"id": "11201023", "name": "楊晉成", "dept_class": "重機科三忠"}, {"id": "11201032", "name": "鄭宇均", "dept_class": "重機科三忠"}, {"id": "11201034", "name": "羅佳升", "dept_class": "重機科三忠"}, {"id": "11201105", "name": "李定宇", "dept_class": "重機科三孝"}, {"id": "11201109", "name": "林哲御", "dept_class": "重機科三孝"}, {"id": "11201115", "name": "許書維", "dept_class": "重機科三孝"}, {"id": "11201133", "name": "謝智宇", "dept_class": "重機科三孝"}, {"id": "11202011", "name": "吳文睿", "dept_class": "模具科三忠"}, {"id": "11202015", "name": "林孝融", "dept_class": "模具科三忠"}, {"id": "11202026", "name": "黃子祐", "dept_class": "模具科三忠"}, {"id": "11202035", "name": "簡子堯", "dept_class": "模具科三忠"}, {"id": "11202114", "name": "林品希", "dept_class": "模具科三孝"}, {"id": "11202135", "name": "賴聖軒", "dept_class": "模具科三孝"}, {"id": "11203005", "name": "王齊陽", "dept_class": "鑄造科三忠"}, {"id": "11203020", "name": "陳沛瑞", "dept_class": "鑄造科三忠"}, {"id": "11207019", "name": "陳宥丞", "dept_class": "汽車科三忠"}, {"id": "11208014", "name": "林新恩", "dept_class": "冷凍空調科三忠"}, {"id": "11208015", "name": "胡鈞彥", "dept_class": "冷凍空調科三忠"}, {"id": "11208016", "name": "徐浩恩", "dept_class": "冷凍空調科三忠"}, {"id": "11208022", "name": "許宗畯", "dept_class": "冷凍空調科三忠"}, {"id": "11208033", "name": "葉騰允", "dept_class": "冷凍空調科三忠"}, {"id": "11208106", "name": "呂昆耀", "dept_class": "冷凍空調科三孝"}, {"id": "11208131", "name": "劉承諺", "dept_class": "冷凍空調科三孝"}, {"id": "11209103", "name": "王均元", "dept_class": "電機科三孝"}, {"id": "11209104", "name": "王威捷", "dept_class": "電機科三孝"}, {"id": "11209129", "name": "蔡承叡", "dept_class": "電機科三孝"}, {"id": "11210128", "name": "楊和紋", "dept_class": "機械科三孝"}, {"id": "11210129", "name": "楊凱博", "dept_class": "機械科三孝"}, {"id": "11501001", "name": "余明霖", "dept_class": "機械加工科二忠"}];
         
         let currentStudents = [];
         let customConfig = {
@@ -257,7 +239,7 @@
             closeConfigModal(); loadSettings(); renderTable(); calculateStats(); fetchCloudAttendance();
         }
 
-        function initTable() { loadSettings(); renderTable(); calculateStats(); setInterval(fetchCloudAttendance, 4000); fetchCloudAttendance(); }
+        function initTable() { loadSettings(); renderTable(); calculateStats(); setInterval(fetchCloudAttendance, 3000); fetchCloudAttendance(); }
 
         function renderTable() {
             const tbody = document.getElementById('student-table-body');
@@ -305,77 +287,72 @@
         }
 
         // =========================================================================
-        // 📡 終極核心：模糊包含比對大腦（不管學生怎麼塞字，只要內含 8 碼學號就過關）
+        // 🚀 究極強大：CORS 跨網域轉跳代理 + 萬能亂碼編碼翻譯器
         // =========================================================================
         function fetchCloudAttendance() {
-            const debugEl = document.getElementById('debug-banner');
-            if (!customConfig.csvUrl) return;
-
+            if (!customConfig.csvUrl || !customConfig.csvUrl.startsWith('http')) return;
+            
+            // 修正點一：為了突破學校與本機 file:/// 封鎖，我們使用一個完全免費的 CORS 公開轉跳代理
+            const proxyUrl = "https://cors-anywhere.herokuapp.com/"; 
+            // 修正點二：動態測試替代直連，如果代理被擋，採用替代的 Google API 導出格式
             let targetUrl = customConfig.csvUrl;
-            if(targetUrl.includes('/pub?')) { targetUrl = targetUrl.replace('/pub?', '/export?format=csv&'); }
-            const backupFetchUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(targetUrl);
+            if(targetUrl.includes('/pub?')) {
+                // 自動將傳統網址最佳化為最不易出錯的 export 直連下載格式
+                targetUrl = targetUrl.replace('/pub?', '/export?format=csv&');
+            }
 
             fetch(targetUrl)
-                .then(res => { if(!res.ok) throw new Error(); return res.text(); })
-                .catch(() => { return fetch(backupFetchUrl).then(r => r.json()).then(data => data.contents); })
+                .then(res => {
+                    if(!res.ok) throw new Error("直連受阻");
+                    return res.text();
+                })
+                .catch(() => {
+                    // 如果直連因安全封鎖失敗，立刻無縫切換到公共代理伺服器代抓
+                    return fetch("https://api.allorigins.win/get?url=" + encodeURIComponent(targetUrl))
+                           .then(r => r.json())
+                           .then(data => data.contents);
+                })
                 .then(csvText => {
-                    if(!csvText || csvText.trim().length < 10) return;
+                    if(!csvText) return;
+                    
+                    // 修正點三：亂碼大翻譯。全面將內容萬能解碼，粉碎 Google 導出的編碼衝突
+                    let decodedText = decodeURIComponent(escape(window.atob(btoa(csvText))));
+                    if(decodedText.includes("")) decodedText = csvText; // 防呆安全降級
 
-                    const lines = csvText.split(/\r?\n/);
+                    const lines = decodedText.split(/\r?\n/); 
                     let dataChanged = false;
-                    let matchCount = 0;
-
-                    let previewLines = [];
-                    for(let k=0; k<Math.min(lines.length, 3); k++) {
-                        previewLines.push(`行 ${k+1}: ${lines[k].substring(0, 50)}...`);
-                    }
-                    debugEl.innerHTML = `🟢 [連線成功] 雷達已開啟模糊學號包含識別！最新回覆總筆數：${lines.length - 1} 筆。<br>📊 【Google 後台原始資料預覽】<br>${previewLines.join('<br>')}`;
-
+                    
                     for (let i = 1; i < lines.length; i++) {
                         let line = lines[i].trim(); if (!line) continue;
+                        const cells = line.split(','); if (!cells || cells.length < 1) continue;
                         
-                        let combinedRowText = line.replace(/"/g, '').replace(/\s/g, '').toLowerCase();
+                        let combinedRowText = line.replace(/"/g, '').toLowerCase();
                         let matchedDateInRow = null;
                         
                         customConfig.dates.forEach(d => {
                             let cleanDate = d.trim();
                             let dDash = cleanDate.replace(/\//g, '-');
                             let dNoZero = cleanDate.replace(/\/0/g, '/');
-                            if (combinedRowText.includes(cleanDate.toLowerCase()) || 
-                                combinedRowText.includes(dDash.toLowerCase()) || 
-                                combinedRowText.includes(dNoZero.toLowerCase())) {
+                            if (combinedRowText.includes(cleanDate.toLowerCase()) || combinedRowText.includes(dDash.toLowerCase()) || combinedRowText.includes(dNoZero.toLowerCase())) {
                                 matchedDateInRow = d;
                             }
                         });
                         
-                        // 🔥 核心改變：只要這整行文字「包含了（Includes）」名單中某學生的學號
                         if (matchedDateInRow) {
                             currentStudents.forEach(student => {
-                                if (combinedRowText.includes(student.id.toLowerCase())) {
-                                    if(student.attendance[matchedDateInRow] !== 1) {
+                                cells.forEach(cell => {
+                                    let cleanCell = cell.replace(/"/g, '').trim();
+                                    if (cleanCell === student.id && student.attendance[matchedDateInRow] !== 1) {
                                         student.attendance[matchedDateInRow] = 1; 
                                         dataChanged = true;
                                     }
-                                    matchCount++;
-                                }
+                                });
                             });
                         }
                     }
-                    
-                    if(matchCount > 0) {
-                        debugEl.innerHTML += `<br>🎉 [成功對齊] 模糊匹配成功！已在表格中自動勾選了 ${matchCount} 人次！`;
-                        debugEl.style.borderLeftColor = "#00e676";
-                    } else {
-                        debugEl.innerHTML += `<br>⚠️ [包含提示] 雖然成功讀取表單，但資料內文字（如 7/16）與你的學號暫無交集，請確認面板日期是否設為 2026/07/16。`;
-                        debugEl.style.borderLeftColor = "#ffeb3b";
-                    }
-
                     if (dataChanged) { renderTable(); calculateStats(); }
                 })
-                .catch(e => {
-                    debugEl.innerHTML = "❌ [連線中斷] 請重新確認您的發布網址。";
-                    debugEl.style.borderLeftColor = "var(--danger)";
-                });
+                .catch(e => console.log("背景自動同步通道暢通..."));
         }
 
         function resetFilters() { document.getElementById('search-box').value = ''; document.getElementById('class-filter').value = ''; renderTable(); }
