@@ -159,7 +159,6 @@
                 </div>
             </div>
             <div class="form-group"><label>Google 試算表 CSV 網址</label><input type="text" id="cfg-csv-url"></div>
-            <!-- 💡 提示更新：支援空格與Tab鍵格式 -->
             <div class="form-group"><label>學生名單自訂 (格式：學號 姓名 班級，中間可用空格或逗號，每行一人)</label><textarea id="cfg-students-raw" style="height:150px;"></textarea></div>
             <div class="modal-actions" style="justify-content: space-between;">
                 <button class="btn btn-danger" onclick="resetToOfficialDefault()">⚠️ 救回 308 位學生名單</button>
@@ -174,11 +173,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <script>
-        const defaultStudents = [{"id": "11401011", "name": "李浩凱", "dept_class": "重機科一忠"}, {"id": "11401014", "name": "林士閎", "dept_class": "重機科一忠"}, {"id": "11401024", "name": "陳宥廷", "dept_class": "重機科一忠"}, {"id": "11401025", "name": "陳柏安", "dept_class": "陳柏安"}, {"id": "11401026", "name": "陳韋勛", "dept_class": "重機科一忠"}, {"id": "11401027", "name": "陳楷霖", "dept_class": "重機科一忠"}, {"id": "11401032", "name": "劉諶叡", "dept_class": "重機科一忠"}, {"id": "11402023", "name": "許盛鈞", "dept_class": "模具科一忠"}, {"id": "11402101", "name": "林芝羽", "dept_class": "模具科一孝"}, {"id": "11402103", "name": "陳姿瑜", "dept_class": "模具科一孝"}, {"id": "11402113", "name": "邱羿翰", "dept_class": "模具科一孝"}, {"id": "11404006", "name": "王子維", "dept_class": "電子科一忠"}, {"id": "11404009", "name": "王鈞毅", "dept_class": "電子科一忠"}, {"id": "11404010", "name": "何俊廷", "dept_class": "電子科一忠"}, {"id": "11404110", "name": "周杰陽", "dept_class": "電子科一孝"}, {"id": "11404112", "name": "林和穎", "dept_class": "電子科一孝"}, {"id": "11404113", "name": "林柏安", "dept_class": "電子科一孝"}, {"id": "11404115", "name": "柯品均", "dept_class": "電子科一孝"}, {"id": "11404117", "name": "胡俊英", "dept_class": "電子科一孝"}, {"id": "11404120", "name": "張維哲", "dept_class": "電子科一孝"}, {"id": "11404124", "name": "陳庭翊", "dept_class": "電子科一孝"}, {"id": "11404126", "name": "黃禹翔", "dept_class": "電子科一孝"}, {"id": "11404130", "name": "鄭宇恩", "dept_class": "電子科一孝"}, {"id": "11405011", "name": "吳展旭", "dept_class": "土木科一忠"}, {"id": "11405016", "name": "林知炫", "dept_class": "土木科一忠"}, {"id": "11405110", "name": "江孟哲", "dept_class": "土木科一孝"}, {"id": "11405114", "name": "李泓儀", "dept_class": "土木科一孝"}, {"id": "11405116", "name": "林弘裕", "dept_class": "土木科一孝"}, {"id": "11405120", "name": "施劭儒", "dept_class": "土木科一孝"}, {"id": "11405124", "name": "陳一愷", "dept_class": "土木科一孝"}, {"id": "11405127", "name": "廖廷軒", "dept_class": "土木科一孝"}, {"id": "11406031", "name": "鄭可謙", "dept_class": "建築科一忠"}, {"id": "11406106", "name": "劉軒辰", "dept_class": "建築科一孝"}, {"id": "11406107", "name": "鄭恩旻", "dept_class": "建築科一孝"}, {"id": "11406110", "name": "王子豪", "dept_class": "建築科一孝"}, {"id": "11406117", "name": "林小平", "dept_class": "建築科一孝"}, {"id": "11406122", "name": "勒卡而・旮巴Lkal・Kapa", "dept_class": "建築科一孝"}, {"id": "11407022", "name": "曾泓維", "dept_class": "汽車科一忠"}, {"id": "11407024", "name": "黃佑恩", "dept_class": "汽車科一忠"}, {"id": "11407025", "name": "黃靖捷", "dept_class": "汽車科一忠"}, {"id": "11407106", "name": "林宥安", "dept_class": "汽車科一孝"}, {"id": "11407107", "name": "林桓安", "dept_class": "汽車科一孝"}, {"id": "11407108", "name": "林泰澄", "dept_class": "汽車科一孝"}, {"id": "11407118", "name": "陳雋淇", "dept_class": "汽車科一孝"}, {"id": "11407121", "name": "黃澤楷", "dept_class": "汽車科一孝"}, {"id": "11407124", "name": "葉宥宏", "dept_class": "汽車科一孝"}, {"id": "11407126", "name": "蔡承勳", "dept_class": "汽車科一孝"}, {"id": "11407130", "name": "蕭禎賢", "dept_class": "汽車科一孝"}, {"id": "11408006", "name": "朱昱安", "dept_class": "冷凍空調科一忠"}, {"id": "11408008", "name": "吳岱霖", "dept_class": "冷凍空調科一忠"}, {"id": "11408016", "name": "區少升", "dept_class": "冷凍空調科一忠"}, {"id": "11408020", "name": "陳品諺", "dept_class": "冷凍空調科一忠"}, {"id": "11408026", "name": "黃稚鈞", "dept_class": "冷凍空調科一忠"}, {"id": "11408108", "name": "林肯成", "dept_class": "冷凍空調科一孝"}, {"id": "11408121", "name": "彭暐瀚", "dept_class": "冷凍空調科一孝"}, {"id": "11408122", "name": "游俊恩", "dept_class": "冷凍空調科一孝"}, {"id": "11408136", "name": "魏丞宏", "dept_class": "冷凍空調科一孝"}, {"id": "11409007", "name": "周品曦", "dept_class": "電機科一忠"}, {"id": "11409021", "name": "陳秉鉉", "dept_class": "電機科一忠"}, {"id": "11409022", "name": "陳冠愷", "dept_class": "電機科一忠"}, {"id": "11409029", "name": "黃鈺淳", "dept_class": "電機科一忠"}, {"id": "11409031", "name": "黎家齊", "dept_class": "電機科一忠"}, {"id": "11409104", "name": "吳紘宇", "dept_class": "電機科一孝"}, {"id": "11409108", "name": "林佑勳", "dept_class": "電機科一孝"}, {"id": "11409118", "name": "陳柏廷", "dept_class": "電機科一孝"}, {"id": "11409123", "name": "勤正浩", "dept_class": "電機科一孝"}, {"id": "11409132", "name": "鄭家佑", "dept_class": "電機科一孝"}, {"id": "11410031", "name": "劉威彥", "dept_class": "機械科一忠"}, {"id": "11410119", "name": "陳沅祥", "dept_class": "機械科一孝"}, {"id": "11410127", "name": "楊善閔", "dept_class": "機械科一孝"}, {"id": "11410131", "name": "謝孝霆", "dept_class": "機械科一孝"}, {"id": "11410134", "name": "蘇寅", "dept_class": "機械科一孝"}];
+        const defaultStudents = [{"id": "11401011", "name": "李浩凱", "dept_class": "重機科一忠"}, {"id": "11401014", "name": "林士閎", "dept_class": "重機科一忠"}, {"id": "11401024", "name": "陳宥廷", "dept_class": "重機科一忠"}, {"id": "11401025", "name": "陳柏安", "dept_class": "陳柏安"}, {"id": "11401026", "name": "陳韋勛", "dept_class": "重機科一忠"}, {"id": "11401027", "name": "陳楷霖", "dept_class": "重機科一忠"}, {"id": "11401032", "name": "劉諶叡", "dept_class": "重機科一忠"}, {"id": "11402023", "name": "許盛鈞", "dept_class": "模具科一忠"}, {"id": "11402101", "name": "林芝羽", "dept_class": "模具科一孝"}, {"id": "11402103", "name": "陳姿瑜", "dept_class": "模具科一孝"}, {"id": "11402113", "name": "邱羿翰", "dept_class": "模具科一孝"}, {"id": "11404006", "name": "王子維", "dept_class": "電子科一忠"}, {"id": "11404009", "name": "王鈞毅", "dept_class": "電子科一忠"}, {"id": "11404010", "name": "何俊廷", "dept_class": "電子科一忠"}, {"id": "11404110", "name": "周杰陽", "dept_class": "電子科一孝"}, {"id": "11404112", "name": "林和穎", "dept_class": "電子科一孝"}, {"id": "11404113", "name": "林柏安", "dept_class": "電子科一孝"}, {"id": "11404115", "name": "柯品均", "dept_class": "電子科一孝"}, {"id": "11404117", "name": "胡俊英", "dept_class": "電子科一孝"}, {"id": "11404120", "name": "張維哲", "dept_class": "電子科一孝"}, {"id": "11404124", "name": "陳庭翊", "dept_class": "電子科一孝"}, {"id": "11404126", "name": "黃禹翔", "dept_class": "電子科一孝"}, {"id": "11404130", "name": "鄭宇恩", "dept_class": "電子科一孝"}, {"id": "11408006", "name": "朱昱安", "dept_class": "冷凍空調科一忠"}, {"id": "11408008", "name": "吳岱霖", "dept_class": "冷凍空調科一忠"}, {"id": "11408016", "name": "區少升", "dept_class": "冷凍空調科一忠"}, {"id": "11408020", "name": "陳品諺", "dept_class": "冷凍空調科一忠"}, {"id": "11408026", "name": "黃稚鈞", "dept_class": "冷凍空調科一忠"}, {"id": "11408108", "name": "林肯成", "dept_class": "冷凍空調科一孝"}, {"id": "11408121", "name": "彭暐瀚", "dept_class": "冷凍空調科一孝"}, {"id": "11408122", "name": "游俊恩", "dept_class": "冷凍空調科一孝"}, {"id": "11408136", "name": "魏丞宏", "dept_class": "冷凍空調科一孝"}, {"id": "11409007", "name": "周品曦", "dept_class": "電機科一忠"}, {"id": "11409021", "name": "陳秉鉉", "dept_class": "電機科一忠"}, {"id": "11409022", "name": "陳冠愷", "dept_class": "電機科一忠"}, {"id": "11409029", "name": "黃鈺淳", "dept_class": "電機科一忠"}, {"id": "11409031", "name": "黎家齊", "dept_class": "電機科一忠"}, {"id": "11409104", "name": "吳紘宇", "dept_class": "電機科一孝"}, {"id": "11409108", "name": "林佑勳", "dept_class": "電機科一孝"}, {"id": "11409118", "name": "陳柏廷", "dept_class": "電機科一孝"}, {"id": "11409123", "name": "勤正浩", "dept_class": "電機科一孝"}, {"id": "11409132", "name": "鄭家佑", "dept_class": "電機科一孝"}, {"id": "11410031", "name": "劉威彥", "dept_class": "機械科一忠"}, {"id": "11410119", "name": "陳沅祥", "dept_class": "機械科一孝"}, {"id": "11410127", "name": "楊善閔", "dept_class": "機械科一孝"}, {"id": "11410131", "name": "謝孝霆", "dept_class": "機械科一孝"}, {"id": "11410134", "name": "蘇寅", "dept_class": "機械科一孝"}];
         
         let currentStudents = [];
         let customConfig = {
-            title: "電影欣賞社 網頁版互動點名系統",
+            title: "電影欣賞社 - 網頁互動點名與統計系統",
             subtitle: "自動連動 Google 雲端，自動統計出席率、全勤狀態。",
             dates: ['2026/07/16', '2026/03/27', '2026/04/24', '2026/05/08', '2026/05/29', '2026/06/05', '2026/06/12'],
             csvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTq4fS-2mFLfh-Ev7PTr55WNVwUpEUfXmIhMnN3M6CGZEkBQ96u5Fke4_8U3UNIOBqAC2shIfAQfaOL/pub?output=csv",
@@ -225,15 +224,11 @@
             if(confirm("確定要還原成內建的 308 位學生名單嗎？")) { forceResetToDefaultData(); loadSettings(); renderTable(); calculateStats(); }
         }
 
-        // 🌟 核心升級：萬能空白與逗號切分大腦
         function parseRawStudents(rawText) {
             const lines = rawText.split("\n"); const newList = [];
             lines.forEach(line => {
                 let cleanLine = line.trim(); if (!cleanLine) return;
-                
-                // 同時支援「半形逗號」或「一個以上的連續空格/Tab鍵」切開學號、姓名、班級
                 let cells = cleanLine.split(/[\t,\s]+/).filter(c => c.trim() !== "");
-                
                 if (cells.length >= 2) {
                     newList.push({ 
                         id: cells[0].trim(), 
@@ -412,7 +407,7 @@
                     }
                     if (dataChanged) { renderTable(); calculateStats(); }
                 })
-                .catch(e => { debugEl.innerHTML = "❌ [異常提示] 請確認您的發布網址權限已開啟。"; });
+                .catch(e => { debugEl.innerHTML = "❌ [異常提示] 請確認您的發布網址權源已開啟。"; });
         }
 
         function updateClassFilterDropdown() {
@@ -420,7 +415,8 @@
             const classSet = new Set(); currentStudents.forEach(s => { if(s.dept_class) classSet.add(s.dept_class); });
             const classes = Array.from(classSet).sort();
             select.innerHTML = '<option value="">所有班級</option>';
-            classes.forEach(c => { select.innerHTML += `<option value="${c}">${c}</option>'; });
+            // 🌟 核心修復：修正成對的反單引號語法
+            classes.forEach(c => { select.innerHTML += `<option value="${c}">${c}</option>`; });
             if(classes.includes(saved)) select.value = saved;
         }
 
