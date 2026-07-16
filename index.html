@@ -23,7 +23,6 @@
         header h1 { margin: 0; font-size: 24px; }
         header p { margin: 8px 0 0 0; opacity: 0.9; font-size: 14px; }
         
-        /* 實時連線檢測診斷條 */
         .debug-banner {
             background-color: #37474f;
             color: #fff;
@@ -79,9 +78,8 @@
             <p id="view-subtitle">自動連動 Google 雲端，自動統計出席率、全勤狀態。</p>
         </header>
 
-        <!-- 🔍 實實偵測條：一眼看出 Google 到網頁中間卡在哪裡 -->
         <div class="debug-banner" id="debug-banner">
-            📡 雲端雷達初始化中... 正在建立與 Google 試算表的連線通道...
+            📡 雲端雷達模糊識別版初始化中...
         </div>
 
         <div class="config-btn-container">
@@ -162,7 +160,7 @@
                 </div>
             </div>
             <div class="form-group">
-                <label>Google 試算表 CSV 網址 (請確認您有點擊「發布到網路」並選為 CSV)</label>
+                <label>Google 試算表 CSV 網址</label>
                 <input type="text" id="cfg-csv-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTq4fS-2mFLfh-Ev7PTr55WNVwUpEUfXmIhMnN3M6CGZEkBQ96u5Fke4_8U3UNIOBqAC2shIfAQfaOL/pub?output=csv">
             </div>
             <div class="form-group">
@@ -307,62 +305,36 @@
         }
 
         // =========================================================================
-        // 📡 終極核心：帶有「實時除錯分析儀」的萬能網域抓取器
+        // 📡 終極核心：模糊包含比對大腦（不管學生怎麼塞字，只要內含 8 碼學號就過關）
         // =========================================================================
         function fetchCloudAttendance() {
             const debugEl = document.getElementById('debug-banner');
-            if (!customConfig.csvUrl) {
-                debugEl.innerHTML = "❌ [狀態] 未設定 Google 試算表 CSV 網址，請點擊面板設定。";
-                debugEl.style.borderLeftColor = "var(--danger)";
-                return;
-            }
-            if (!customConfig.csvUrl.startsWith('http')) {
-                debugEl.innerHTML = "❌ [錯誤] 貼上的網址格式不正確，必須以 http 或 https 開頭！";
-                debugEl.style.borderLeftColor = "var(--danger)";
-                return;
-            }
+            if (!customConfig.csvUrl) return;
 
-            // 優化 Google 網址格式
             let targetUrl = customConfig.csvUrl;
-            if(targetUrl.includes('/pub?')) {
-                targetUrl = targetUrl.replace('/pub?', '/export?format=csv&');
-            }
-
-            // 使用最不易被學校防火牆封鎖的公共備用 API 進行安全解析
+            if(targetUrl.includes('/pub?')) { targetUrl = targetUrl.replace('/pub?', '/export?format=csv&'); }
             const backupFetchUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(targetUrl);
 
             fetch(targetUrl)
                 .then(res => { if(!res.ok) throw new Error(); return res.text(); })
-                .catch(() => {
-                    // 直連被阻斷時，自動走第二通道代抓
-                    return fetch(backupFetchUrl).then(r => r.json()).then(data => data.contents);
-                })
+                .catch(() => { return fetch(backupFetchUrl).then(r => r.json()).then(data => data.contents); })
                 .then(csvText => {
-                    if(!csvText || csvText.trim().length < 10) {
-                        debugEl.innerHTML = "⚠️ [連線成功] 但抓下來的 Google 資料竟然是空的！請確認該試算表是否有按「發布到網路」。";
-                        debugEl.style.borderLeftColor = "#ffeb3b";
-                        return;
-                    }
+                    if(!csvText || csvText.trim().length < 10) return;
 
                     const lines = csvText.split(/\r?\n/);
                     let dataChanged = false;
                     let matchCount = 0;
 
-                    // 【實時診斷】抓取前幾行，直接印在網頁頂端給老師看！
                     let previewLines = [];
                     for(let k=0; k<Math.min(lines.length, 3); k++) {
                         previewLines.push(`行 ${k+1}: ${lines[k].substring(0, 50)}...`);
                     }
-                    
-                    debugEl.innerHTML = `🟢 [連線成功] 正在實時讀取雲端表單！最新回覆總筆數：${lines.length - 1} 筆。<br>📊 【Google 後台原始資料預覽】<br>${previewLines.join('<br>')}`;
-                    debugEl.style.borderLeftColor = "#00e676";
+                    debugEl.innerHTML = `🟢 [連線成功] 雷達已開啟模糊學號包含識別！最新回覆總筆數：${lines.length - 1} 筆。<br>📊 【Google 後台原始資料預覽】<br>${previewLines.join('<br>')}`;
 
-                    // 執行盲測掃描
                     for (let i = 1; i < lines.length; i++) {
                         let line = lines[i].trim(); if (!line) continue;
-                        const cells = line.split(',');
                         
-                        let combinedRowText = line.replace(/"/g, '').toLowerCase();
+                        let combinedRowText = line.replace(/"/g, '').replace(/\s/g, '').toLowerCase();
                         let matchedDateInRow = null;
                         
                         customConfig.dates.forEach(d => {
@@ -376,33 +348,32 @@
                             }
                         });
                         
+                        // 🔥 核心改變：只要這整行文字「包含了（Includes）」名單中某學生的學號
                         if (matchedDateInRow) {
                             currentStudents.forEach(student => {
-                                cells.forEach(cell => {
-                                    // 徹底清除可能夾雜在學號前後的引號或多餘隱形空格
-                                    let cleanCell = cell.replace(/"/g, '').replace(/\s/g, '').trim();
-                                    if (cleanCell === student.id) {
-                                        if(student.attendance[matchedDateInRow] !== 1) {
-                                            student.attendance[matchedDateInRow] = 1; 
-                                            dataChanged = true;
-                                        }
-                                        matchCount++;
+                                if (combinedRowText.includes(student.id.toLowerCase())) {
+                                    if(student.attendance[matchedDateInRow] !== 1) {
+                                        student.attendance[matchedDateInRow] = 1; 
+                                        dataChanged = true;
                                     }
-                                });
+                                    matchCount++;
+                                }
                             });
                         }
                     }
                     
                     if(matchCount > 0) {
-                        debugEl.innerHTML += `<br>🎉 [對齊成功] 系統已成功在表格中識別並自動勾選了 ${matchCount} 人次！`;
+                        debugEl.innerHTML += `<br>🎉 [成功對齊] 模糊匹配成功！已在表格中自動勾選了 ${matchCount} 人次！`;
+                        debugEl.style.borderLeftColor = "#00e676";
                     } else {
-                        debugEl.innerHTML += `<br>⚠️ [對齊提示] 已成功抓到試算表，但 308 位名單與資料「學號或今天日期」沒有一筆吻合，請確認學生填的是否為正確學號。`;
+                        debugEl.innerHTML += `<br>⚠️ [包含提示] 雖然成功讀取表單，但資料內文字（如 7/16）與你的學號暫無交集，請確認面板日期是否設為 2026/07/16。`;
+                        debugEl.style.borderLeftColor = "#ffeb3b";
                     }
 
                     if (dataChanged) { renderTable(); calculateStats(); }
                 })
                 .catch(e => {
-                    debugEl.innerHTML = "❌ [連線失敗] 學校網路或瀏覽器安全性完全切斷了抓取通道。請確認您的 CSV 網址是否正確。";
+                    debugEl.innerHTML = "❌ [連線中斷] 請重新確認您的發布網址。";
                     debugEl.style.borderLeftColor = "var(--danger)";
                 });
         }
