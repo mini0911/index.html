@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>電影欣賞社 - 網頁互動點名與統計系統</title>
+    <title>電影欣賞社</title>
     <style>
         :root {
             --primary: #2b4c7e;
@@ -29,6 +29,7 @@
             border-left: 6px solid #00e676; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
+        /* 📱 手動簽到面板 */
         .manual-panel {
             background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;
             border: 2px solid var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.05);
@@ -80,15 +81,16 @@
 <body>
     <div class="container">
         <header>
-            <h1 id="view-title">電影欣賞社 網頁版互動點名系統</h1>
-            <p id="view-subtitle">智慧日期比對版：精準區分各週上課紀錄，支援手動補簽與 Excel 導出。</p>
+            <h1 id="view-title">電影欣賞社</h1>
+            <p id="view-subtitle">115學年度第1學期</p>
         </header>
 
+        <!-- 📡 實時連線狀態顯示 -->
         <div class="debug-banner" id="debug-banner">📡 雲端連線通道同步中...</div>
 
         <!-- 📱 手動簽到區 -->
         <div class="manual-panel">
-            <p style="font-weight: bold; color: var(--primary); margin: 0;">📱 教師現場手動簽到（輸入學號按 Enter，預設簽到在今天欄位）</p>
+            <p style="font-weight: bold; color: var(--primary); margin: 0;">📱 教師現場手動簽到（輸入學號按 Enter）</p>
             <div class="manual-row">
                 <input type="text" id="manual-student-id" class="manual-input" placeholder="請在此輸入學生學號..." maxlength="12">
                 <button class="manual-btn" onclick="executeManualSignIn()">確認簽到</button>
@@ -106,6 +108,7 @@
             <input type="text" id="search-box" class="search-input" placeholder="搜尋姓名、學號...">
             <select id="class-filter" class="filter-select"><option value="">所有班級</option></select>
             <button class="btn" onclick="resetFilters()">清除條件</button>
+            <!-- 📄 升級：匯出為真正的微軟 Excel 檔案格式，解決亂碼 -->
             <button class="btn btn-success" style="margin-left: auto; background-color: #1f7246;" onclick="exportToExcel()">📊 匯出點名統計 (Excel .xlsx)</button>
         </div>
 
@@ -173,10 +176,10 @@
         </div>
     </div>
 
+    <!-- 🛠️ 引入外部微軟官方標準 Excel 編譯套件，確保匯出時絕對無亂碼、排版工整 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <script>
-        // 內建 308 名完整名單
         const defaultStudents = [{"id": "11401011", "name": "李浩凱", "dept_class": "重機科一忠"}, {"id": "11401014", "name": "林士閎", "dept_class": "重機科一忠"}, {"id": "11401024", "name": "陳宥廷", "dept_class": "重機科一忠"}, {"id": "11401025", "name": "陳柏安", "dept_class": "重機科一忠"}, {"id": "11401026", "name": "陳韋勛", "dept_class": "陳韋勛"}, {"id": "11401027", "name": "陳楷霖", "dept_class": "重機科一忠"}, {"id": "11401032", "name": "劉諶叡", "dept_class": "重機科一忠"}, {"id": "11402023", "name": "許盛鈞", "dept_class": "模具科一忠"}, {"id": "11402101", "name": "林芝羽", "dept_class": "模具科一孝"}, {"id": "11402103", "name": "陳姿瑜", "dept_class": "模具科一孝"}, {"id": "11402113", "name": "邱羿翰", "dept_class": "模具科一孝"}, {"id": "11404006", "name": "王子維", "dept_class": "電子科一忠"}, {"id": "11404009", "name": "王鈞毅", "dept_class": "電子科一忠"}, {"id": "11404010", "name": "何俊廷", "dept_class": "電子科一忠"}, {"id": "11404110", "name": "周杰陽", "dept_class": "電子科一孝"}, {"id": "11404112", "name": "林和穎", "dept_class": "電子科一孝"}, {"id": "11404113", "name": "林柏安", "dept_class": "電子科一孝"}, {"id": "11404115", "name": "柯品均", "dept_class": "電子科一孝"}, {"id": "11404117", "name": "胡俊英", "dept_class": "電子科一孝"}, {"id": "11404120", "name": "張維哲", "dept_class": "電子科一孝"}, {"id": "11404124", "name": "陳庭翊", "dept_class": "電子科一孝"}, {"id": "11404126", "name": "黃禹翔", "dept_class": "電子科一孝"}, {"id": "11404130", "name": "鄭宇恩", "dept_class": "電子科一孝"}, {"id": "11405011", "name": "吳展旭", "dept_class": "土木科一忠"}, {"id": "11405016", "name": "林知炫", "dept_class": "土木科一忠"}, {"id": "11405110", "name": "江孟哲", "dept_class": "土木科一孝"}, {"id": "11405114", "name": "李泓儀", "dept_class": "土木科一孝"}, {"id": "11405116", "name": "林弘裕", "dept_class": "土木科一孝"}, {"id": "11405120", "name": "施劭儒", "dept_class": "土木科一孝"}, {"id": "11405124", "name": "陳一愷", "dept_class": "土木科一孝"}, {"id": "11405127", "name": "廖廷軒", "dept_class": "土木科一孝"}, {"id": "11406031", "name": "鄭可謙", "dept_class": "建築科一忠"}, {"id": "11406106", "name": "劉軒辰", "dept_class": "建築科一孝"}, {"id": "11406107", "name": "鄭恩旻", "dept_class": "建築科一孝"}, {"id": "11406110", "name": "王子豪", "dept_class": "建築科一孝"}, {"id": "11406117", "name": "林小平", "dept_class": "建築科一孝"}, {"id": "11406122", "name": "勒卡而・旮巴Lkal・Kapa", "dept_class": "建築科一孝"}, {"id": "11407022", "name": "曾泓維", "dept_class": "汽車科一忠"}, {"id": "11407024", "name": "黃佑恩", "dept_class": "汽車科一忠"}, {"id": "11407025", "name": "黃靖捷", "dept_class": "汽車科一忠"}, {"id": "11407106", "name": "林宥安", "dept_class": "汽車科一孝"}, {"id": "11407107", "name": "林桓安", "dept_class": "汽車科一孝"}, {"id": "11407108", "name": "林泰澄", "dept_class": "汽車科一孝"}, {"id": "11407118", "name": "陳雋淇", "dept_class": "汽車科一孝"}, {"id": "11407121", "name": "黃澤楷", "dept_class": "汽車科一孝"}, {"id": "11407124", "name": "葉宥宏", "dept_class": "汽車科一孝"}, {"id": "11407126", "name": "蔡承勳", "dept_class": "汽車科一孝"}, {"id": "11407130", "name": "蕭禎賢", "dept_class": "汽車科一孝"}, {"id": "11408006", "name": "朱昱安", "dept_class": "冷凍空調科一忠"}, {"id": "11408008", "name": "吳岱霖", "dept_class": "冷凍空調科一忠"}, {"id": "11408016", "name": "區少升", "dept_class": "冷凍空調科一忠"}, {"id": "11408020", "name": "陳品諺", "dept_class": "冷凍空調科一忠"}, {"id": "11408026", "name": "黃稚鈞", "dept_class": "冷凍空調科一忠"}, {"id": "11408108", "name": "林肯成", "dept_class": "冷凍空調科一孝"}, {"id": "11408121", "name": "彭暐瀚", "dept_class": "冷凍空調科一孝"}, {"id": "11408122", "name": "游俊恩", "dept_class": "冷凍空調科一孝"}, {"id": "11408136", "name": "魏丞宏", "dept_class": "冷凍空調科一孝"}, {"id": "11409007", "name": "周品曦", "dept_class": "電機科一忠"}, {"id": "11409021", "name": "陳秉鉉", "dept_class": "電機科一忠"}, {"id": "11409022", "name": "陳冠愷", "dept_class": "電機科一忠"}, {"id": "11409029", "name": "黃鈺淳", "dept_class": "電機科一忠"}, {"id": "11409031", "name": "黎家齊", "dept_class": "電機科一忠"}, {"id": "11409104", "name": "吳紘宇", "dept_class": "電機科一孝"}, {"id": "11409108", "name": "林佑勳", "dept_class": "電機科一孝"}, {"id": "11409118", "name": "陳柏廷", "dept_class": "電機科一孝"}, {"id": "11409123", "name": "勤正浩", "dept_class": "電機科一孝"}, {"id": "11409132", "name": "鄭家佑", "dept_class": "電機科一孝"}, {"id": "11410031", "name": "劉威彥", "dept_class": "機械科一忠"}, {"id": "11410119", "name": "陳沅祥", "dept_class": "機械科一孝"}, {"id": "11410127", "name": "楊善閔", "dept_class": "機械科一孝"}, {"id": "11410131", "name": "謝孝霆", "dept_class": "機械科一孝"}, {"id": "11410134", "name": "蘇寅", "dept_class": "機械科一孝"}, {"id": "11301003", "name": "田翊新", "dept_class": "重機科二忠"}, {"id": "11301022", "name": "陳威良", "dept_class": "重機科二忠"}, {"id": "11301025", "name": "陳詠昕", "dept_class": "重機科二忠"}, {"id": "11301110", "name": "林宏鈞", "dept_class": "重機科二孝"}, {"id": "11202128", "name": "游祐程", "dept_class": "模具科二忠"}, {"id": "11302006", "name": "黃晴婠", "dept_class": "模具科二忠"}, {"id": "11302011", "name": "林承旻", "dept_class": "模具科二忠"}, {"id": "11302016", "name": "張華軒", "dept_class": "模具科二忠"}, {"id": "11302018", "name": "許耕源", "dept_class": "模具科二忠"}, {"id": "11302020", "name": "陳冠辰", "dept_class": "模具科二忠"}, {"id": "11302030", "name": "廖梓亦", "dept_class": "模具科二忠"}, {"id": "11304014", "name": "林威融", "dept_class": "電子科二忠"}, {"id": "11304031", "name": "廖澤綱", "dept_class": "電子科二忠"}, {"id": "11304115", "name": "孫廷翰", "dept_class": "電子科二孝"}, {"id": "11305012", "name": "吳庭恩", "dept_class": "土木科二忠"}, {"id": "11305029", "name": "張恩杰", "dept_class": "土木科二忠"}, {"id": "11306115", "name": "李亮瑋", "dept_class": "建築科二孝"}, {"id": "11306126", "name": "詹立宇", "dept_class": "建築科二孝"}, {"id": "11307011", "name": "杜頤宥", "dept_class": "汽車科二忠"}, {"id": "11307105", "name": "宋宥均", "dept_class": "汽車科二孝"}, {"id": "11307118", "name": "陳乙篁", "dept_class": "汽車科二孝"}, {"id": "11307127", "name": "楊家宏", "dept_class": "汽車科二孝"}, {"id": "11307134", "name": "謝杰穎", "dept_class": "汽車科二孝"}, {"id": "11308004", "name": "吳育熙", "dept_class": "冷凍空調科二忠"}, {"id": "11308011", "name": "林品嶧", "dept_class": "冷凍空調科二忠"}, {"id": "11308015", "name": "洪翊倫", "dept_class": "冷凍空調科二忠"}, {"id": "11308017", "name": "張泰祥", "dept_class": "冷凍空調科二忠"}, {"id": "11308021", "name": "陳宣叡", "dept_class": "冷凍空調科二忠"}, {"id": "11308026", "name": "黃文昇", "dept_class": "冷凍空調科二忠"}, {"id": "11309108", "name": "林言家", "dept_class": "電機科二孝"}, {"id": "11309109", "name": "林亞佐", "dept_class": "電機科二孝"}, {"id": "11309110", "name": "林昱丞", "dept_class": "電機科二孝"}, {"id": "11309113", "name": "范宸維", "dept_class": "電機科二孝"}, {"id": "11309124", "name": "黃鴻緯", "dept_class": "電機科二孝"}, {"id": "11309129", "name": "蔣承澤", "dept_class": "電機科二孝"}, {"id": "11309130", "name": "鄧明鈞", "dept_class": "電機科二孝"}, {"id": "11309131", "name": "鄭至勛", "dept_class": "電機科二孝"}, {"id": "11310113", "name": "姚元博", "dept_class": "機械科二孝"}, {"id": "11310115", "name": "唐維壕", "dept_class": "機械科二孝"}, {"id": "11310120", "name": "陳汝睿", "dept_class": "機械科二孝"}, {"id": "11310125", "name": "曾柏翰", "dept_class": "機械科二孝"}, {"id": "11315004", "name": "邱於哲", "dept_class": "機械加工科二忠"}, {"id": "11315006", "name": "張偉倫", "dept_class": "機械加工科二忠"}, {"id": "11315008", "name": "許宸睿", "dept_class": "機械加工科二忠"}, {"id": "11315012", "name": "葉宇宸", "dept_class": "機械加工科二忠"}, {"id": "11201023", "name": "楊晉成", "dept_class": "重機科三忠"}, {"id": "11201032", "name": "鄭宇均", "dept_class": "重機科三忠"}, {"id": "11201034", "name": "羅佳升", "dept_class": "重機科三忠"}, {"id": "11201105", "name": "李定宇", "dept_class": "重機科三孝"}, {"id": "11201109", "name": "林哲御", "dept_class": "重機科三孝"}, {"id": "11201115", "name": "許書維", "dept_class": "重機科三孝"}, {"id": "11201119", "name": "陳聖安", "dept_class": "重機科二孝"}, {"id": "11201133", "name": "謝智宇", "dept_class": "重機科三孝"}, {"id": "11202011", "name": "吳文睿", "dept_class": "模具科三忠"}, {"id": "11202015", "name": "林孝融", "dept_class": "模具科三忠"}, {"id": "11202026", "name": "黃子祐", "dept_class": "模具科三忠"}, {"id": "11202035", "name": "簡子堯", "dept_class": "模具科三忠"}, {"id": "11202114", "name": "林品希", "dept_class": "模具科三孝"}, {"id": "11202135", "name": "賴聖軒", "dept_class": "模具科三孝"}, {"id": "11203005", "name": "王齊陽", "dept_class": "鑄造科三忠"}, {"id": "11203020", "name": "陳沛瑞", "dept_class": "鑄造科三忠"}, {"id": "11207019", "name": "陳宥丞", "dept_class": "汽車科三忠"}, {"id": "11208014", "name": "林新恩", "dept_class": "冷凍空調科三忠"}, {"id": "11208015", "name": "胡鈞彥", "dept_class": "冷凍空調科三忠"}, {"id": "11208016", "name": "徐浩恩", "dept_class": "冷凍空調科三忠"}, {"id": "11208022", "name": "許宗畯", "dept_class": "冷凍空調科三忠"}, {"id": "11208033", "name": "葉騰允", "dept_class": "冷凍空調科三忠"}, {"id": "11208106", "name": "呂昆耀", "dept_class": "冷凍空調科三孝"}, {"id": "11208131", "name": "劉承諺", "dept_class": "冷凍空調科三孝"}, {"id": "11209103", "name": "王均元", "dept_class": "電機科三孝"}, {"id": "11209104", "name": "王威捷", "dept_class": "電機科三孝"}, {"id": "11209129", "name": "蔡承叡", "dept_class": "電機科三孝"}, {"id": "11210128", "name": "楊和紋", "dept_class": "機械科三孝"}, {"id": "11210129", "name": "楊凱博", "dept_class": "機械科三孝"}, {"id": "11501001", "name": "余明霖", "dept_class": "機械加工科二忠"}];
         
         let currentStudents = [];
@@ -227,16 +230,21 @@
             }
         }
 
+        // ========================================================
+        // 💻 現場手動輸入學號立即打勾
+        // ========================================================
         function executeManualSignIn() {
             const inputEl = document.getElementById('manual-student-id');
+            const msgEl = document.getElementById('manual-msg');
             const typedId = inputEl.value.trim();
+            
             if(!typedId) { showMsg("❌ 請先輸入學號！", "var(--danger)"); return; }
             const student = currentStudents.find(s => s.id === typedId);
             if(!student) { showMsg(`⚠️ 找不到學號 [${typedId}]，請檢查名單！`, "var(--danger)"); return; }
             
-            const activeDate = customConfig.dates[0]; 
+            const activeDate = customConfig.dates[0]; // 自動簽在 07/16 欄位
             if(student.attendance[activeDate] === 1) {
-                showMsg(`🎉 ${student.name} 之前已經完成過簽到囉！`, "#c62828");
+                showMsg(`🎉 ${student.name} (${student.dept_class}) 之前已經完成過簽到囉！`, "#c62828");
             } else {
                 student.attendance[activeDate] = 1; 
                 showMsg(`✅ 現場補簽成功！ ${student.dept_class} - ${student.name} 已打勾。`, "var(--success)");
@@ -245,20 +253,30 @@
             inputEl.value = ''; inputEl.focus();
         }
 
-        function showMsg(text, color) { const el = document.getElementById('manual-msg'); el.innerText = text; el.style.color = color; }
+        function showMsg(text, color) {
+            const el = document.getElementById('manual-msg'); el.innerText = text; el.style.color = color;
+        }
+
         document.getElementById('manual-student-id').addEventListener('keypress', function(e) { if (e.key === 'Enter') executeManualSignIn(); });
 
+        // ========================================================
+        // 📊 終極升級：將數據匯出成「正宗微軟 Excel 檔案 (.xlsx)」
+        // ========================================================
         function exportToExcel() {
+            // 1. 建立 Excel 標題列
             const header = ["序號", "學號", "姓名", "班級", 
                             customConfig.dates[0], customConfig.dates[1], customConfig.dates[2], 
                             customConfig.dates[3], customConfig.dates[4], customConfig.dates[5], 
                             customConfig.dates[6], "出席次數", "出席率", "狀態"];
+            
             const rows = [];
             currentStudents.forEach((s, index) => {
                 let attCount = 0;
                 customConfig.dates.forEach(d => { if(s.attendance[d] === 1) attCount++; });
                 const rate = ((attCount / customConfig.dates.length) * 100).toFixed(0) + "%";
                 const status = attCount === customConfig.dates.length ? "全勤" : (attCount === 0 ? "缺席" : "一般");
+
+                // 將每位學生的出席改寫為「V」或「空字串」，更符合學校表格習慣
                 rows.push([
                     index + 1, s.id, s.name, s.dept_class,
                     s.attendance[customConfig.dates[0]] === 1 ? "V" : "",
@@ -271,89 +289,14 @@
                     attCount + "次", rate, status
                 ]);
             });
+
+            // 2. 利用 SheetJS 創建活頁簿
             const wb = XLSX.utils.book_new();
             const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
             XLSX.utils.book_append_sheet(wb, ws, "點名統計結果");
+            
+            // 3. 輸出並自動下載為 Excel 檔案
             XLSX.writeFile(wb, `電影欣賞社_點名最終統計結果.xlsx`);
-        }
-
-        // =========================================================================
-        // 📡 萬能核心：超強「智慧日期格式歸一化」解碼比對大腦
-        // =========================================================================
-        function fetchCloudAttendance() {
-            const debugEl = document.getElementById('debug-banner');
-            if (!customConfig.csvUrl) return;
-
-            let targetUrl = customConfig.csvUrl;
-            if(targetUrl.includes('/pub?')) { targetUrl = targetUrl.replace('/pub?', '/export?format=csv&'); }
-            const backupFetchUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(targetUrl);
-
-            fetch(targetUrl)
-                .then(res => { if (!res.ok) { return fetch(backupFetchUrl).then(r => r.json()).then(data => data.contents); } return res.text(); })
-                .catch(() => { return fetch(backupFetchUrl).then(r => r.json()).then(data => data.contents); })
-                .then(csvText => {
-                    if(!csvText || csvText.trim().length < 10) return;
-                    const lines = csvText.split(/\r?\n/);
-                    let dataChanged = false;
-                    let matchCount = 0;
-
-                    let previewLines = [];
-                    for(let k=0; k<Math.min(lines.length, 3); k++) previewLines.push(`行 ${k+1}: ${lines[k].substring(0, 60)}`);
-                    debugEl.innerHTML = `🟢 [智慧日期對齊中] 通道順暢。目前表單總筆數：${lines.length - 1} 筆。<br>📊 【Google 資料預覽】 ${previewLines[0] || ''}`;
-
-                    // 1. 將面板上的 7 個長日期（例如 2026/07/16）通通精簡為格式化的簡短字串（例如 "7/16"）
-                    const formattedPanelDates = customConfig.dates.map(d => {
-                        const parts = d.replace(/-/g, '/').split('/');
-                        if (parts.length >= 3) {
-                            return `${parseInt(parts[1], 10)}/${parseInt(parts[2], 10)}`; // 變成 "7/16"
-                        }
-                        return d.trim();
-                    });
-
-                    for (let i = 1; i < lines.length; i++) {
-                        let line = lines[i].trim(); if (!line) continue;
-                        const cells = line.split(','); if (!cells || cells.length < 1) continue;
-
-                        // 2. 抓取表單第一欄「時間戳記」，並將它萬能降維歸一化
-                        let rawTimestamp = cells[0].replace(/"/g, '').replace(/\s/g, ''); // 去除空白引號
-                        let extractedRowDate = "";
-                        
-                        // 正則表達式：自動抓取類似 2026/7/16 或 2026-07-16 中的月與日
-                        let match = rawTimestamp.match(/(\d{2,4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
-                        if (match) {
-                            extractedRowDate = `${parseInt(match[2], 10)}/${parseInt(match[3], 10)}`; // 成功轉為 "7/16"
-                        } else {
-                            // 萬一正則沒抓到，用傳統模糊包含
-                            customConfig.dates.forEach((d, idx) => {
-                                let shortD = formattedPanelDates[idx];
-                                if (rawTimestamp.includes(shortD)) extractedRowDate = shortD;
-                            });
-                        }
-
-                        // 3. 尋找這一行對應的是哪一個上課日期
-                        let targetPanelDateIndex = formattedPanelDates.indexOf(extractedRowDate);
-                        
-                        if (targetPanelDateIndex !== -1) {
-                            // 找到了對應的日期欄位！
-                            let matchedActualDate = customConfig.dates[targetPanelDateIndex];
-
-                            cells.forEach(cell => {
-                                let cleanCellText = cell.replace(/"/g, '').trim();
-                                const foundStudent = currentStudents.find(student => student.id === cleanCellText);
-                                if (foundStudent) {
-                                    if(foundStudent.attendance[matchedActualDate] !== 1) {
-                                        foundStudent.attendance[matchedActualDate] = 1; 
-                                        dataChanged = true;
-                                    }
-                                    matchCount++;
-                                }
-                            });
-                        }
-                    }
-                    if(matchCount > 0) { debugEl.innerHTML += `<br>🎉 [成功對齊] 系統已將各週資料歸位！本次共自動勾選了 ${matchCount} 人次！`; }
-                    if (dataChanged) { renderTable(); calculateStats(); }
-                })
-                .catch(e => { debugEl.innerHTML = "❌ [異常提示] 請確認您的發布網址。"; });
         }
 
         function updateClassFilterDropdown() {
@@ -386,6 +329,106 @@
         }
 
         function initTable() { loadSettings(); renderTable(); calculateStats(); setInterval(fetchCloudAttendance, 4000); fetchCloudAttendance(); }
+
+        function renderTable() {
+            const tbody = document.getElementById('student-table-body');
+            const searchKeyword = document.getElementById('search-box').value.toLowerCase().trim();
+            const classFilter = document.getElementById('class-filter').value;
+            tbody.innerHTML = '';
+            
+            let filtered = currentStudents.filter(s => {
+                return (s.name.toLowerCase().includes(searchKeyword) || s.id.includes(searchKeyword)) && (classFilter === '' || s.dept_class === classFilter);
+            });
+
+            filtered.forEach((student, index) => {
+                const tr = document.createElement('tr');
+                let attCount = 0; customConfig.dates.forEach(d => { if(student.attendance[d] === 1) attCount++; });
+                
+                let chkHtml = '';
+                customConfig.dates.forEach((d) => {
+                    const isChecked = student.attendance[d] === 1 ? 'checked' : '';
+                    chkHtml += `<td class="checkbox-cell"><input type="checkbox" class="chk-btn" ${isChecked} onchange="toggleAttendance('${student.id}', '${d}')"></td>`;
+                });
+
+                const statusBadge = attCount === customConfig.dates.length ? '<span class="badge badge-success">全勤</span>' : (attCount === 0 ? '<span class="badge badge-danger">缺席</span>' : '<span class="badge" style="background:#f1f3f4;color:#5f6368;">一般</span>');
+                tr.innerHTML = `<td>${index + 1}</td><td>${student.id}</td><td><strong>${student.name}</strong></td><td>${student.dept_class}</td>${chkHtml}<td style="text-align:center;font-weight:bold;">${attCount}次</td><td style="text-align:center;color:var(--primary);font-weight:bold;">${((attCount/customConfig.dates.length)*100).toFixed(0)}%</td><td style="text-align:center;">${statusBadge}</td>`;
+                tbody.appendChild(tr);
+            });
+            document.getElementById('total-students-count').innerText = currentStudents.length;
+        }
+
+        function toggleAttendance(studentId, date) {
+            const student = currentStudents.find(s => s.id === studentId);
+            if (student) { student.attendance[date] = student.attendance[date] === 1 ? 0 : 1; renderTable(); calculateStats(); }
+        }
+
+        function calculateStats() {
+            let totalPerfect = 0; let sumTotalRates = 0; const dateCounts = {};
+            customConfig.dates.forEach(d => dateCounts[d] = 0);
+            currentStudents.forEach(s => {
+                let count = 0; customConfig.dates.forEach(d => { if (s.attendance[d] === 1) { count++; dateCounts[d]++; } });
+                if (count === customConfig.dates.length) totalPerfect++;
+                sumTotalRates += (count / customConfig.dates.length);
+            });
+            document.getElementById('perfect-attendance-count').innerText = totalPerfect;
+            document.getElementById('avg-attendance-rate').innerText = currentStudents.length ? ((sumTotalRates / currentStudents.length) * 100).toFixed(1) + '%' : '0%';
+            customConfig.dates.forEach((d, i) => { const el = document.getElementById(`sum-d${i}`); if(el) el.innerText = dateCounts[d] || 0; });
+        }
+
+        function fetchCloudAttendance() {
+            const debugEl = document.getElementById('debug-banner');
+            if (!customConfig.csvUrl) return;
+
+            let targetUrl = customConfig.csvUrl;
+            if(targetUrl.includes('/pub?')) { targetUrl = targetUrl.replace('/pub?', '/export?format=csv&'); }
+            const backupFetchUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(targetUrl);
+
+            fetch(targetUrl)
+                .then(res => { if (!res.ok) { return fetch(backupFetchUrl).then(r => r.json()).then(data => data.contents); } return res.text(); })
+                .catch(() => { return fetch(backupFetchUrl).then(r => r.json()).then(data => data.contents); })
+                .then(csvText => {
+                    if(!csvText || csvText.trim().length < 10) return;
+                    const lines = csvText.split(/\r?\n/);
+                    let dataChanged = false;
+                    let matchCount = 0;
+
+                    let previewLines = [];
+                    for(let k=0; k<Math.min(lines.length, 3); k++) previewLines.push(`行 ${k+1}: ${lines[k].substring(0, 60)}`);
+                    debugEl.innerHTML = `🟢 [連線成功] 獨立欄位解構通暢！最新回覆總筆數：${lines.length - 1} 筆。<br>📊 【Google 后台原始資料預覽】<br>${previewLines.join('<br>')}`;
+
+                    for (let i = 1; i < lines.length; i++) {
+                        let line = lines[i].trim(); if (!line) continue;
+                        const cells = line.split(','); if (!cells || cells.length < 1) continue;
+
+                        let firstCellText = cells[0].replace(/"/g, '').toLowerCase();
+                        let matchedDateInRow = null;
+                        
+                        customConfig.dates.forEach(d => {
+                            let cleanDate = d.trim();
+                            if (firstCellText.includes(cleanDate.toLowerCase()) || firstCellText.includes(cleanDate.replace(/\//g, '-')) || firstCellText.includes(cleanDate.replace(/\/0/g, '/'))) {
+                                matchedDateInRow = d;
+                            }
+                        });
+                        
+                        if (matchedDateInRow) {
+                            cells.forEach(cell => {
+                                let cleanCellText = cell.replace(/"/g, '').trim();
+                                const foundStudent = currentStudents.find(student => student.id === cleanCellText);
+                                if (foundStudent) {
+                                    if(foundStudent.attendance[matchedDateInRow] !== 1) {
+                                        foundStudent.attendance[matchedDateInRow] = 1; dataChanged = true;
+                                    }
+                                    matchCount++;
+                                }
+                            });
+                        }
+                    }
+                    if(matchCount > 0) { debugEl.innerHTML += `<br>🎉 [對齊成功] 已在表單獨立欄位中精準識別學號，自動打勾了 ${matchCount} 人次！`; }
+                    if (dataChanged) { renderTable(); calculateStats(); }
+                })
+                .catch(e => { debugEl.innerHTML = "❌ [異常提示] 請確認您的發布網址。"; });
+        }
+
         function resetFilters() { document.getElementById('search-box').value = ''; document.getElementById('class-filter').value = ''; renderTable(); }
         document.getElementById('search-box').addEventListener('input', renderTable);
         document.getElementById('class-filter').addEventListener('change', renderTable);
