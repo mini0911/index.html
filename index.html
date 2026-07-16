@@ -159,7 +159,8 @@
                 </div>
             </div>
             <div class="form-group"><label>Google 試算表 CSV 網址</label><input type="text" id="cfg-csv-url"></div>
-            <div class="form-group"><label>學生名單自訂</label><textarea id="cfg-students-raw" style="height:150px;"></textarea></div>
+            <!-- 💡 提示更新：支援空格與Tab鍵格式 -->
+            <div class="form-group"><label>學生名單自訂 (格式：學號 姓名 班級，中間可用空格或逗號，每行一人)</label><textarea id="cfg-students-raw" style="height:150px;"></textarea></div>
             <div class="modal-actions" style="justify-content: space-between;">
                 <button class="btn btn-danger" onclick="resetToOfficialDefault()">⚠️ 救回 308 位學生名單</button>
                 <div>
@@ -224,12 +225,23 @@
             if(confirm("確定要還原成內建的 308 位學生名單嗎？")) { forceResetToDefaultData(); loadSettings(); renderTable(); calculateStats(); }
         }
 
+        // 🌟 核心升級：萬能空白與逗號切分大腦
         function parseRawStudents(rawText) {
             const lines = rawText.split("\n"); const newList = [];
             lines.forEach(line => {
                 let cleanLine = line.trim(); if (!cleanLine) return;
-                let cells = cleanLine.split(/[\t,]/);
-                if (cells.length >= 2) newList.push({ id: cells[0].trim(), name: cells[1].trim(), dept_class: cells[2] ? cells[2].trim() : "未分配班級", attendance: {} });
+                
+                // 同時支援「半形逗號」或「一個以上的連續空格/Tab鍵」切開學號、姓名、班級
+                let cells = cleanLine.split(/[\t,\s]+/).filter(c => c.trim() !== "");
+                
+                if (cells.length >= 2) {
+                    newList.push({ 
+                        id: cells[0].trim(), 
+                        name: cells[1].trim(), 
+                        dept_class: cells[2] ? cells[2].trim() : "未分配班級", 
+                        attendance: {} 
+                    });
+                }
             });
             if(newList.length > 0) {
                 newList.forEach(ns => { const old = currentStudents.find(o => o.id === ns.id); ns.attendance = old ? old.attendance : {}; });
@@ -318,7 +330,6 @@
             if (student) { student.attendance[date] = student.attendance[date] === 1 ? 0 : 1; renderTable(); calculateStats(); }
         }
 
-        // 🌟 修正點：徹底移除 staticDates 名稱衝突
         function calculateStats() {
             let totalPerfect = 0; let sumTotalRates = 0; const dateCounts = {};
             customConfig.dates.forEach(d => dateCounts[d] = 0);
@@ -332,7 +343,6 @@
             customConfig.dates.forEach((d, i) => { const el = document.getElementById(`sum-d${i}`); if(el) el.innerText = dateCounts[d] || 0; });
         }
 
-        // 🌟 修正點：大腦雙向攔截，精確讀取引號格式並自動抽取 8 位數字學號
         function fetchCloudAttendance() {
             const debugEl = document.getElementById('debug-banner');
             if (!customConfig.csvUrl) return;
@@ -359,7 +369,6 @@
                     for (let i = 1; i < lines.length; i++) {
                         let line = lines[i].trim(); if (!line) continue;
                         
-                        // 處理被引號包覆的逗號錯位
                         const cells = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || line.split(',');
                         if (!cells || cells.length < 1) continue;
 
@@ -411,7 +420,7 @@
             const classSet = new Set(); currentStudents.forEach(s => { if(s.dept_class) classSet.add(s.dept_class); });
             const classes = Array.from(classSet).sort();
             select.innerHTML = '<option value="">所有班級</option>';
-            classes.forEach(c => { select.innerHTML += `<option value="${c}">${c}</option>`; });
+            classes.forEach(c => { select.innerHTML += `<option value="${c}">${c}</option>'; });
             if(classes.includes(saved)) select.value = saved;
         }
 
