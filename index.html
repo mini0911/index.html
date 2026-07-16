@@ -78,8 +78,9 @@
             <p id="view-subtitle">自動連動 Google 雲端，自動統計出席率、全勤狀態。</p>
         </header>
 
+        <!-- 📡 實時連線狀態顯示 -->
         <div class="debug-banner" id="debug-banner">
-            📡 雲端雷達模糊識別版初始化中...
+            📡 獨立欄位解碼版正在啟動中...
         </div>
 
         <div class="config-btn-container">
@@ -148,7 +149,7 @@
                 <input type="text" id="cfg-subtitle" value="自動統計出席率、全勤狀態、即時篩選與搜尋學員。">
             </div>
             <div class="form-group">
-                <label>設定 7 個上課日期 (支援 2026/07/16 格式)</label>
+                <label>設定 7 個上課日期 (第一欄建議設為 2026/07/16 方便測試今天數據)</label>
                 <div class="date-inputs-grid">
                     <input type="text" id="cfg-d0" value="2026/07/16">
                     <input type="text" id="cfg-d1" value="2026/03/27">
@@ -219,7 +220,7 @@
         }
 
         function resetToOfficialDefault() {
-            if(confirm("確定要還原成 308 位學生名單嗎？")) { forceResetToDefaultData(); loadSettings(); renderTable(); calculateStats(); }
+            if(confirm("確定要還原成內建的 308 位學生名單嗎？")) { forceResetToDefaultData(); loadSettings(); renderTable(); calculateStats(); }
         }
 
         function parseRawStudents(rawText) {
@@ -305,7 +306,7 @@
         }
 
         // =========================================================================
-        // 📡 終極核心：模糊包含比對大腦（不管學生怎麼塞字，只要內含 8 碼學號就過關）
+        // 📡 終極修復：獨立欄位精準比對大腦（完全支援學號在任意單獨格子內）
         // =========================================================================
         function fetchCloudAttendance() {
             const debugEl = document.getElementById('debug-banner');
@@ -329,31 +330,42 @@
                     for(let k=0; k<Math.min(lines.length, 3); k++) {
                         previewLines.push(`行 ${k+1}: ${lines[k].substring(0, 50)}...`);
                     }
-                    debugEl.innerHTML = `🟢 [連線成功] 雷達已開啟模糊學號包含識別！最新回覆總筆數：${lines.length - 1} 筆。<br>📊 【Google 後台原始資料預覽】<br>${previewLines.join('<br>')}`;
+                    debugEl.innerHTML = `🟢 [連線成功] 獨立欄位識別就緒！最新回覆總筆數：${lines.length - 1} 筆。<br>📊 【Google 後台原始資料預覽】<br>${previewLines.join('<br>')}`;
 
                     for (let i = 1; i < lines.length; i++) {
                         let line = lines[i].trim(); if (!line) continue;
                         
-                        let combinedRowText = line.replace(/"/g, '').replace(/\s/g, '').toLowerCase();
+                        // 正確以逗號切開每一個獨立的欄位格子，保留內部的空格與文字完整性
+                        const cells = line.split(',');
+                        if (!cells || cells.length < 1) continue;
+
+                        // 拿第一個格子（通常是時間戳記欄）來判斷日期
+                        let firstCellText = cells[0].replace(/"/g, '').toLowerCase();
                         let matchedDateInRow = null;
                         
                         customConfig.dates.forEach(d => {
                             let cleanDate = d.trim();
                             let dDash = cleanDate.replace(/\//g, '-');
                             let dNoZero = cleanDate.replace(/\/0/g, '/');
-                            if (combinedRowText.includes(cleanDate.toLowerCase()) || 
-                                combinedRowText.includes(dDash.toLowerCase()) || 
-                                combinedRowText.includes(dNoZero.toLowerCase())) {
+                            
+                            if (firstCellText.includes(cleanDate.toLowerCase()) || 
+                                firstCellText.includes(dDash.toLowerCase()) || 
+                                firstCellText.includes(dNoZero.toLowerCase())) {
                                 matchedDateInRow = d;
                             }
                         });
                         
-                        // 🔥 核心改變：只要這整行文字「包含了（Includes）」名單中某學生的學號
+                        // 🔥 精準對準：如果日期符合，我們去掃描這一行切開後的所有獨立格子
                         if (matchedDateInRow) {
-                            currentStudents.forEach(student => {
-                                if (combinedRowText.includes(student.id.toLowerCase())) {
-                                    if(student.attendance[matchedDateInRow] !== 1) {
-                                        student.attendance[matchedDateInRow] = 1; 
+                            cells.forEach(cell => {
+                                // 清除每個獨立格子外圍的引號或無意間帶入的首尾空格
+                                let cleanCellText = cell.replace(/"/g, '').trim();
+                                
+                                // 盲測 308 位同學，看看哪個人的學號「完全等於」這個獨立格子
+                                const foundStudent = currentStudents.find(student => student.id === cleanCellText);
+                                if (foundStudent) {
+                                    if(foundStudent.attendance[matchedDateInRow] !== 1) {
+                                        foundStudent.attendance[matchedDateInRow] = 1; 
                                         dataChanged = true;
                                     }
                                     matchCount++;
@@ -363,10 +375,10 @@
                     }
                     
                     if(matchCount > 0) {
-                        debugEl.innerHTML += `<br>🎉 [成功對齊] 模糊匹配成功！已在表格中自動勾選了 ${matchCount} 人次！`;
+                        debugEl.innerHTML += `<br>🎉 [成功對齊] 欄位解構成功！已精準識別學號並自動勾選了 ${matchCount} 人次！`;
                         debugEl.style.borderLeftColor = "#00e676";
                     } else {
-                        debugEl.innerHTML += `<br>⚠️ [包含提示] 雖然成功讀取表單，但資料內文字（如 7/16）與你的學號暫無交集，請確認面板日期是否設為 2026/07/16。`;
+                        debugEl.innerHTML += `<br>⚠️ [格式提示] 雖然成功讀取表單，但資料內日期（如 7/16）與你的格子暫無交集，請確認面板日期是否設為 2026/07/16。`;
                         debugEl.style.borderLeftColor = "#ffeb3b";
                     }
 
