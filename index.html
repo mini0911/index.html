@@ -236,7 +236,57 @@
             customConfig.csvUrl = document.getElementById('cfg-csv-url').value.trim();
             customConfig.rawStudentsList = document.getElementById('cfg-students-raw').value;
             localStorage.setItem('movie_club_rollcall_final_cfg', JSON.stringify(customConfig));
-            closeConfigModal(); loadSettings(); renderTable(); calculateStats(); fetchCloudAttendance();
+            closeConfigModal(); loadSettings(); renderTable(); calculateStats(); async function fetchCloudAttendance() {
+
+    if (!customConfig.csvUrl) return;
+
+    try {
+
+        let url = customConfig.csvUrl;
+
+        if (url.includes("/pub?")) {
+            url = url.replace("/pub?", "/export?format=csv&");
+        }
+
+        const res = await fetch(url);
+        const csv = await res.text();
+
+        const rows = csv.trim().split(/\r?\n/);
+
+        let changed = false;
+
+        // 略過標題
+        for (let i = 1; i < rows.length; i++) {
+
+            const cols = rows[i].split(",");
+
+            if (cols.length < 2) continue;
+
+            const date = cols[0].replace(/"/g, "").trim();
+            const studentId = cols[1].replace(/"/g, "").trim();
+
+            const student = currentStudents.find(s => s.id === studentId);
+
+            if (!student) continue;
+
+            if (!student.attendance)
+                student.attendance = {};
+
+            student.attendance[date] = 1;
+
+            changed = true;
+        }
+
+        if (changed) {
+            renderTable();
+            calculateStats();
+        }
+
+    } catch (e) {
+        console.log(e);
+    }
+
+};
         }
 
         function initTable() { loadSettings(); renderTable(); calculateStats(); setInterval(fetchCloudAttendance, 3000); fetchCloudAttendance(); }
