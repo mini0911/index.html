@@ -54,6 +54,7 @@
         .filter-select { min-width: 150px; }
         .btn { color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px; background-color: var(--primary); }
         .btn-success { background-color: var(--success); }
+        .btn-danger { background-color: var(--danger); }
         
         .table-container { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
@@ -81,15 +82,15 @@
     <div class="container">
         <header>
             <h1 id="view-title">電影欣賞社 網頁版互動點名系統</h1>
-            <p id="view-subtitle">智慧連動 Google 雲端表單時間戳記與學號，支援現場手動補簽與 Excel 導出。</p>
+            <p id="view-subtitle">自動連動 Google 雲端，自動統計出席率、全勤狀態。</p>
         </header>
 
-        <!-- 📡 實時雲端連線狀態顯示 -->
+        <!-- 📡 實時連線狀態顯示 -->
         <div class="debug-banner" id="debug-banner">📡 雲端連線通道同步中...</div>
 
         <!-- 📱 手動簽到區 -->
         <div class="manual-panel">
-            <p style="font-weight: bold; color: var(--primary); margin: 0;">📱 教師現場手動簽到（輸入學號按 Enter，預設簽到在今天欄位）</p>
+            <p style="font-weight: bold; color: var(--primary); margin: 0;">📱 教師現場手動簽到（輸入學號按 Enter）</p>
             <div class="manual-row">
                 <input type="text" id="manual-student-id" class="manual-input" placeholder="請在此輸入學生學號..." maxlength="12">
                 <button class="manual-btn" onclick="executeManualSignIn()">確認簽到</button>
@@ -107,6 +108,7 @@
             <input type="text" id="search-box" class="search-input" placeholder="搜尋姓名、學號...">
             <select id="class-filter" class="filter-select"><option value="">所有班級</option></select>
             <button class="btn" onclick="resetFilters()">清除條件</button>
+            <!-- 📄 升級：匯出為真正的微軟 Excel 檔案格式，解決亂碼 -->
             <button class="btn btn-success" style="margin-left: auto; background-color: #1f7246;" onclick="exportToExcel()">📊 匯出點名統計 (Excel .xlsx)</button>
         </div>
 
@@ -174,7 +176,7 @@
         </div>
     </div>
 
-    <!-- 🛠️ 引入外部官方標準 Excel 套件 -->
+    <!-- 🛠️ 引入外部微軟官方標準 Excel 編譯套件，確保匯出時絕對無亂碼、排版工整 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <script>
@@ -229,18 +231,20 @@
         }
 
         // ========================================================
-        // 補簽功能：教師現場輸入學號立即打勾
+        // 💻 現場手動輸入學號立即打勾
         // ========================================================
         function executeManualSignIn() {
             const inputEl = document.getElementById('manual-student-id');
+            const msgEl = document.getElementById('manual-msg');
             const typedId = inputEl.value.trim();
+            
             if(!typedId) { showMsg("❌ 請先輸入學號！", "var(--danger)"); return; }
             const student = currentStudents.find(s => s.id === typedId);
             if(!student) { showMsg(`⚠️ 找不到學號 [${typedId}]，請檢查名單！`, "var(--danger)"); return; }
             
-            const activeDate = customConfig.dates[0]; 
+            const activeDate = customConfig.dates[0]; // 自動簽在 07/16 欄位
             if(student.attendance[activeDate] === 1) {
-                showMsg(`🎉 ${student.name} 之前已經完成過簽到囉！`, "#c62828");
+                showMsg(`🎉 ${student.name} (${student.dept_class}) 之前已經完成過簽到囉！`, "#c62828");
             } else {
                 student.attendance[activeDate] = 1; 
                 showMsg(`✅ 現場補簽成功！ ${student.dept_class} - ${student.name} 已打勾。`, "var(--success)");
@@ -249,23 +253,30 @@
             inputEl.value = ''; inputEl.focus();
         }
 
-        function showMsg(text, color) { const el = document.getElementById('manual-msg'); el.innerText = text; el.style.color = color; }
+        function showMsg(text, color) {
+            const el = document.getElementById('manual-msg'); el.innerText = text; el.style.color = color;
+        }
+
         document.getElementById('manual-student-id').addEventListener('keypress', function(e) { if (e.key === 'Enter') executeManualSignIn(); });
 
         // ========================================================
-        // 匯出為標準微軟 Excel 檔案 (.xlsx)
+        // 📊 終極升級：將數據匯出成「正宗微軟 Excel 檔案 (.xlsx)」
         // ========================================================
         function exportToExcel() {
+            // 1. 建立 Excel 標題列
             const header = ["序號", "學號", "姓名", "班級", 
                             customConfig.dates[0], customConfig.dates[1], customConfig.dates[2], 
                             customConfig.dates[3], customConfig.dates[4], customConfig.dates[5], 
                             customConfig.dates[6], "出席次數", "出席率", "狀態"];
+            
             const rows = [];
             currentStudents.forEach((s, index) => {
                 let attCount = 0;
                 customConfig.dates.forEach(d => { if(s.attendance[d] === 1) attCount++; });
                 const rate = ((attCount / customConfig.dates.length) * 100).toFixed(0) + "%";
                 const status = attCount === customConfig.dates.length ? "全勤" : (attCount === 0 ? "缺席" : "一般");
+
+                // 將每位學生的出席改寫為「V」或「空字串」，更符合學校表格習慣
                 rows.push([
                     index + 1, s.id, s.name, s.dept_class,
                     s.attendance[customConfig.dates[0]] === 1 ? "V" : "",
@@ -278,87 +289,14 @@
                     attCount + "次", rate, status
                 ]);
             });
+
+            // 2. 利用 SheetJS 創建活頁簿
             const wb = XLSX.utils.book_new();
             const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
             XLSX.utils.book_append_sheet(wb, ws, "點名統計結果");
+            
+            // 3. 輸出並自動下載為 Excel 檔案
             XLSX.writeFile(wb, `電影欣賞社_點名最終統計結果.xlsx`);
-        }
-
-        // =========================================================================
-        // 📡 萬能核心：時間戳記歸一化 ＋ 獨立學號欄位解構比對大腦
-        // =========================================================================
-        function fetchCloudAttendance() {
-            const debugEl = document.getElementById('debug-banner');
-            if (!customConfig.csvUrl) return;
-
-            let targetUrl = customConfig.csvUrl;
-            if(targetUrl.includes('/pub?')) { targetUrl = targetUrl.replace('/pub?', '/export?format=csv&'); }
-            const backupFetchUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(targetUrl);
-
-            fetch(targetUrl)
-                .then(res => { if (!res.ok) { return fetch(backupFetchUrl).then(r => r.json()).then(data => data.contents); } return res.text(); })
-                .catch(() => { return fetch(backupFetchUrl).then(r => r.json()).then(data => data.contents); })
-                .then(csvText => {
-                    if(!csvText || csvText.trim().length < 10) return;
-                    const lines = csvText.split(/\r?\n/);
-                    let dataChanged = false;
-                    let matchCount = 0;
-
-                    let previewLines = [];
-                    for(let k=0; k<Math.min(lines.length, 3); k++) previewLines.push(`行 ${k+1}: ${lines[k].substring(0, 60)}`);
-                    debugEl.innerHTML = `🟢 [智慧日期對齊中] 通道順暢。目前表單總筆數：${lines.length - 1} 筆。<br>📊 【Google 資料預覽】 ${previewLines[0] || ''}`;
-
-                    // 將面板上的 7 個長日期（例如 2026/07/16）簡化為辨識格式（例如 "7/16"）
-                    const formattedPanelDates = customConfig.dates.map(d => {
-                        const parts = d.replace(/-/g, '/').split('/');
-                        if (parts.length >= 3) {
-                            return `${parseInt(parts[1], 10)}/${parseInt(parts[2], 10)}`;
-                        }
-                        return d.trim();
-                    });
-
-                    for (let i = 1; i < lines.length; i++) {
-                        let line = lines[i].trim(); if (!line) continue;
-                        const cells = line.split(','); if (!cells || cells.length < 1) continue;
-
-                        // 1. 拿第一個格子「時間戳記」，並自動提取成簡化日期
-                        let rawTimestamp = cells[0].replace(/"/g, '').replace(/\s/g, '');
-                        let extractedRowDate = "";
-                        
-                        let match = rawTimestamp.match(/(\d{2,4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
-                        if (match) {
-                            extractedRowDate = `${parseInt(match[2], 10)}/${parseInt(match[3], 10)}`;
-                        } else {
-                            customConfig.dates.forEach((d, idx) => {
-                                let shortD = formattedPanelDates[idx];
-                                if (rawTimestamp.includes(shortD)) extractedRowDate = shortD;
-                            });
-                        }
-
-                        // 2. 尋找這一列數據屬於哪一個上課日期
-                        let targetPanelDateIndex = formattedPanelDates.indexOf(extractedRowDate);
-                        
-                        if (targetPanelDateIndex !== -1) {
-                            let matchedActualDate = customConfig.dates[targetPanelDateIndex];
-
-                            // 3. 日期對上了，開始向後比對整列的獨立學號格子
-                            cells.forEach(cell => {
-                                let cleanCellText = cell.replace(/"/g, '').trim();
-                                const foundStudent = currentStudents.find(student => student.id === cleanCellText);
-                                if (foundStudent) {
-                                    if(foundStudent.attendance[matchedActualDate] !== 1) {
-                                        foundStudent.attendance[matchedActualDate] = 1; 
-                                        dataChanged = true;
-                                    }
-                                    matchCount++;
-                                }
-                            });
-                        }
-                    }
-                    if(matchCount > 0) { debugEl.innerHTML += `<br>🎉 [成功對齊] 系統已依時間戳記與學號自動打勾了 ${matchCount} 人次！`; }
-                    if (dataChanged) { renderTable(); calculateStats(); }
-                })
-                .catch(e => { debugEl.innerHTML = "❌ [異常提示] 請確認您的發布網址。"; });
         }
 
         function updateClassFilterDropdown() {
@@ -391,6 +329,106 @@
         }
 
         function initTable() { loadSettings(); renderTable(); calculateStats(); setInterval(fetchCloudAttendance, 4000); fetchCloudAttendance(); }
+
+        function renderTable() {
+            const tbody = document.getElementById('student-table-body');
+            const searchKeyword = document.getElementById('search-box').value.toLowerCase().trim();
+            const classFilter = document.getElementById('class-filter').value;
+            tbody.innerHTML = '';
+            
+            let filtered = currentStudents.filter(s => {
+                return (s.name.toLowerCase().includes(searchKeyword) || s.id.includes(searchKeyword)) && (classFilter === '' || s.dept_class === classFilter);
+            });
+
+            filtered.forEach((student, index) => {
+                const tr = document.createElement('tr');
+                let attCount = 0; customConfig.dates.forEach(d => { if(student.attendance[d] === 1) attCount++; });
+                
+                let chkHtml = '';
+                customConfig.dates.forEach((d) => {
+                    const isChecked = student.attendance[d] === 1 ? 'checked' : '';
+                    chkHtml += `<td class="checkbox-cell"><input type="checkbox" class="chk-btn" ${isChecked} onchange="toggleAttendance('${student.id}', '${d}')"></td>`;
+                });
+
+                const statusBadge = attCount === customConfig.dates.length ? '<span class="badge badge-success">全勤</span>' : (attCount === 0 ? '<span class="badge badge-danger">缺席</span>' : '<span class="badge" style="background:#f1f3f4;color:#5f6368;">一般</span>');
+                tr.innerHTML = `<td>${index + 1}</td><td>${student.id}</td><td><strong>${student.name}</strong></td><td>${student.dept_class}</td>${chkHtml}<td style="text-align:center;font-weight:bold;">${attCount}次</td><td style="text-align:center;color:var(--primary);font-weight:bold;">${((attCount/customConfig.dates.length)*100).toFixed(0)}%</td><td style="text-align:center;">${statusBadge}</td>`;
+                tbody.appendChild(tr);
+            });
+            document.getElementById('total-students-count').innerText = currentStudents.length;
+        }
+
+        function toggleAttendance(studentId, date) {
+            const student = currentStudents.find(s => s.id === studentId);
+            if (student) { student.attendance[date] = student.attendance[date] === 1 ? 0 : 1; renderTable(); calculateStats(); }
+        }
+
+        function calculateStats() {
+            let totalPerfect = 0; let sumTotalRates = 0; const dateCounts = {};
+            customConfig.dates.forEach(d => dateCounts[d] = 0);
+            currentStudents.forEach(s => {
+                let count = 0; customConfig.dates.forEach(d => { if (s.attendance[d] === 1) { count++; dateCounts[d]++; } });
+                if (count === customConfig.dates.length) totalPerfect++;
+                sumTotalRates += (count / customConfig.dates.length);
+            });
+            document.getElementById('perfect-attendance-count').innerText = totalPerfect;
+            document.getElementById('avg-attendance-rate').innerText = currentStudents.length ? ((sumTotalRates / currentStudents.length) * 100).toFixed(1) + '%' : '0%';
+            customConfig.dates.forEach((d, i) => { const el = document.getElementById(`sum-d${i}`); if(el) el.innerText = dateCounts[d] || 0; });
+        }
+
+        function fetchCloudAttendance() {
+            const debugEl = document.getElementById('debug-banner');
+            if (!customConfig.csvUrl) return;
+
+            let targetUrl = customConfig.csvUrl;
+            if(targetUrl.includes('/pub?')) { targetUrl = targetUrl.replace('/pub?', '/export?format=csv&'); }
+            const backupFetchUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(targetUrl);
+
+            fetch(targetUrl)
+                .then(res => { if (!res.ok) { return fetch(backupFetchUrl).then(r => r.json()).then(data => data.contents); } return res.text(); })
+                .catch(() => { return fetch(backupFetchUrl).then(r => r.json()).then(data => data.contents); })
+                .then(csvText => {
+                    if(!csvText || csvText.trim().length < 10) return;
+                    const lines = csvText.split(/\r?\n/);
+                    let dataChanged = false;
+                    let matchCount = 0;
+
+                    let previewLines = [];
+                    for(let k=0; k<Math.min(lines.length, 3); k++) previewLines.push(`行 ${k+1}: ${lines[k].substring(0, 60)}`);
+                    debugEl.innerHTML = `🟢 [連線成功] 獨立欄位解構通暢！最新回覆總筆數：${lines.length - 1} 筆。<br>📊 【Google 后台原始資料預覽】<br>${previewLines.join('<br>')}`;
+
+                    for (let i = 1; i < lines.length; i++) {
+                        let line = lines[i].trim(); if (!line) continue;
+                        const cells = line.split(','); if (!cells || cells.length < 1) continue;
+
+                        let firstCellText = cells[0].replace(/"/g, '').toLowerCase();
+                        let matchedDateInRow = null;
+                        
+                        customConfig.dates.forEach(d => {
+                            let cleanDate = d.trim();
+                            if (firstCellText.includes(cleanDate.toLowerCase()) || firstCellText.includes(cleanDate.replace(/\//g, '-')) || firstCellText.includes(cleanDate.replace(/\/0/g, '/'))) {
+                                matchedDateInRow = d;
+                            }
+                        });
+                        
+                        if (matchedDateInRow) {
+                            cells.forEach(cell => {
+                                let cleanCellText = cell.replace(/"/g, '').trim();
+                                const foundStudent = currentStudents.find(student => student.id === cleanCellText);
+                                if (foundStudent) {
+                                    if(foundStudent.attendance[matchedDateInRow] !== 1) {
+                                        foundStudent.attendance[matchedDateInRow] = 1; dataChanged = true;
+                                    }
+                                    matchCount++;
+                                }
+                            });
+                        }
+                    }
+                    if(matchCount > 0) { debugEl.innerHTML += `<br>🎉 [對齊成功] 已在表單獨立欄位中精準識別學號，自動打勾了 ${matchCount} 人次！`; }
+                    if (dataChanged) { renderTable(); calculateStats(); }
+                })
+                .catch(e => { debugEl.innerHTML = "❌ [異常提示] 請確認您的發布網址。"; });
+        }
+
         function resetFilters() { document.getElementById('search-box').value = ''; document.getElementById('class-filter').value = ''; renderTable(); }
         document.getElementById('search-box').addEventListener('input', renderTable);
         document.getElementById('class-filter').addEventListener('change', renderTable);
