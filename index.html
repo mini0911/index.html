@@ -364,6 +364,152 @@
         document.getElementById('search-box').addEventListener('input', renderTable);
         document.getElementById('class-filter').addEventListener('change', renderTable);
         window.onload = initTable;
+    // ========================================================
+        // 🔥 終極本機核心功能：現場打學號立即打勾
+        // ========================================================
+        function executeDirectSignIn() {
+            const inputEl = document.getElementById('direct-student-id');
+            const msgEl = document.getElementById('signin-message');
+            const typedId = inputEl.value.trim();
+            
+            if(!typedId) { showMsg("請先輸入學號！", "var(--danger)"); return; }
+            
+            // 尋找該位學生
+            const student = currentStudents.find(s => s.id === typedId);
+            if(!student) { showMsg(`⚠️ 找不到學號 [${typedId}]，請確認是否輸入正確！`, "var(--danger)"); return; }
+            
+            // 抓取目前面板上第一個設定的日期欄（作為當天的簽到欄位）
+            const activeDate = customConfig.dates[0];
+            
+            if(student.attendance[activeDate] === 1) {
+                showMsg(`🎉 ${student.name} (${student.dept_class}) 之前已經完成過簽到囉！`, "#c62828");
+            } else {
+                student.attendance[activeDate] = 1; // 實體原地打勾！
+                showMsg(`✅ 簽到成功！ ${student.dept_class} - ${student.name} 已完成打勾。`, "var(--success)");
+                renderTable();
+                calculateStats();
+            }
+            inputEl.value = ''; // 清空輸入框
+            inputEl.focus();
+        }
+
+        function showMsg(text, color) {
+            const msgEl = document.getElementById('signin-message');
+            msgEl.innerText = text; msgEl.style.color = color;
+        }
+
+        // 綁定輸入框 Enter 鍵快捷簽到
+        document.getElementById('direct-student-id').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') { executeDirectSignIn(); }
+        });
+
+        function updateClassFilterDropdown() {
+            const select = document.getElementById('class-filter'); const saved = select.value;
+            const classSet = new Set(); currentStudents.forEach(s => { if(s.dept_class) classSet.add(s.dept_class); });
+            const classes = Array.from(classSet).sort();
+            select.innerHTML = '<option value="">所有班級</option>';
+            classes.forEach(c => { select.innerHTML += `<option value="${c}">${c}</option>`; });
+            if(classes.includes(saved)) select.value = saved;
+        }
+
+        function openConfigModal() { document.getElementById('config-modal').style.display = 'flex'; }
+        function closeConfigModal() { document.getElementById('config-modal').style.display = 'none'; }
+
+        function saveConfig() {
+            customConfig.title = document.getElementById('cfg-title').value;
+            customConfig.subtitle = document.getElementById('cfg-subtitle').value;
+            for(let i=0; i<7; i++) customConfig.dates[i] = document.getElementById(`cfg-d${i}`).value.trim();
+            customConfig.csvUrl = document.getElementById('cfg-csv-url').value.trim();
+            customConfig.rawStudentsList = document.getElementById('cfg-students-raw').value;
+            localStorage.setItem('movie_club_rollcall_final_cfg', JSON.stringify(customConfig));
+            closeConfigModal(); loadSettings(); renderTable(); calculateStats(); fetchCloudAttendance();
+        }
+
+        function initTable() { loadSettings(); renderTable(); calculateStats(); setInterval(fetchCloudAttendance, 5000); fetchCloudAttendance(); }
+
+        function renderTable() {
+            const tbody = document.getElementById('student-table-body');
+            const searchKeyword = document.getElementById('search-box').value.toLowerCase().trim();
+            const classFilter = document.getElementById('class-filter').value;
+            tbody.innerHTML = '';
+            
+            let filtered = currentStudents.filter(s => {
+                return (s.name.toLowerCase().includes(searchKeyword) || s.id.includes(searchKeyword)) && (classFilter === '' || s.dept_class === classFilter);
+            });
+
+            filtered.forEach((student, index) => {
+                const tr = document.createElement('tr');
+                let attCount = 0; customConfig.dates.forEach(d => { if(student.attendance[d] === 1) attCount++; });
+                
+                let chkHtml = '';
+                customConfig.dates.forEach((d) => {
+                    const isChecked = student.attendance[d] === 1 ? 'checked' : '';
+                    chkHtml += `<td class="checkbox-cell"><input type="checkbox" class="chk-btn" ${isChecked} onchange="toggleAttendance('${student.id}', '${d}')"></td>`;
+                });
+
+                const statusBadge = attCount === customConfig.dates.length ? '<span class="badge badge-success">全勤</span>' : (attCount === 0 ? '<span class="badge badge-danger">缺席</span>' : '<span class="badge" style="background:#f1f3f4;color:#5f6368;">一般</span>');
+                tr.innerHTML = `<td>${index + 1}</td><td>${student.id}</td><td><strong>${student.name}</strong></td><td>${student.dept_class}</td>${chkHtml}<td style="text-align:center;font-weight:bold;">${attCount}次</td><td style="text-align:center;color:var(--primary);font-weight:bold;">${((attCount/customConfig.dates.length)*100).toFixed(0)}%</td><td style="text-align:center;">${statusBadge}</td>`;
+                tbody.appendChild(tr);
+            });
+            document.getElementById('total-students-count').innerText = currentStudents.length;
+        }
+
+        function toggleAttendance(studentId, date) {
+            const student = currentStudents.find(s => s.id === studentId);
+            if (student) { student.attendance[date] = student.attendance[date] === 1 ? 0 : 1; renderTable(); calculateStats(); }
+        }
+
+        function calculateStats() {
+            let totalPerfect = 0; let sumTotalRates = 0; const dateCounts = {};
+            customConfig.dates.forEach(d => dateCounts[d] = 0);
+            currentStudents.forEach(s => {
+                let count = 0; customConfig.dates.forEach(d => { if (s.attendance[d] === 1) { count++; dateCounts[d]++; } });
+                if (count === customConfig.dates.length) totalPerfect++;
+                sumTotalRates += (count / customConfig.dates.length);
+            });
+            document.getElementById('perfect-attendance-count').innerText = totalPerfect;
+            document.getElementById('avg-attendance-rate').innerText = currentStudents.length ? ((sumTotalRates / currentStudents.length) * 100).toFixed(1) + '%' : '0%';
+            customConfig.dates.forEach((d, i) => { const el = document.getElementById(`sum-d${i}`); if(el) el.innerText = dateCounts[d] || 0; });
+        }
+
+        function fetchCloudAttendance() {
+            if (!customConfig.csvUrl || !customConfig.csvUrl.startsWith('http')) return;
+            fetch(customConfig.csvUrl).then(res => res.text()).then(csvText => {
+                const lines = csvText.split(/\r?\n/); let dataChanged = false;
+                for (let i = 1; i < lines.length; i++) {
+                    let line = lines[i].trim(); if (!line) continue;
+                    const cells = line.split(','); if (!cells || cells.length < 1) continue;
+                    let combinedRowText = line.replace(/"/g, '').toLowerCase();
+                    let matchedDateInRow = null;
+                    customConfig.dates.forEach(d => {
+                        let cleanDate = d.trim();
+                        if (combinedRowText.includes(cleanDate.toLowerCase()) || combinedRowText.includes(cleanDate.replace(/\//g, '-').toLowerCase()) || combinedRowText.includes(cleanDate.replace(/\/0/g, '/').toLowerCase())) {
+                            matchedDateInRow = d;
+                        }
+                    });
+                    if (matchedDateInRow) {
+                        currentStudents.forEach(student => {
+                            cells.forEach(cell => {
+                                if (cell.replace(/"/g, '').trim() === student.id && student.attendance[matchedDateInRow] !== 1) {
+                                    student.attendance[matchedDateInRow] = 1; dataChanged = true;
+                                }
+                            });
+                        });
+                    }
+                }
+                if (dataChanged) { renderTable(); calculateStats(); }
+            }).catch(e => {});
+        }
+
+        function resetFilters() { document.getElementById('search-box').value = ''; document.getElementById('class-filter').value = ''; renderTable(); }
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentStudents, null, 2));
+            const downloadAnchor = document.createElement('a'); downloadAnchor.setAttribute("href", dataStr); downloadAnchor.setAttribute("download", "社團點名最終統計結果.json");
+            document.body.appendChild(downloadAnchor); downloadAnchor.click(); downloadAnchor.remove();
+        }
+        document.getElementById('search-box').addEventListener('input', renderTable);
+        document.getElementById('class-filter').addEventListener('change', renderTable);
+        window.onload = initTable;
     </script>
 </body>
 </html>
