@@ -189,11 +189,11 @@
             rawStudentsList: ""
         };
 
-        // 🛠️ 補回被吃掉的核心大腦啟動函式
+        // 🌟 核心修復：補上核心啟動與主畫面第一秒渲染
         function initTable() {
             loadSettings();
             
-            // 初始化確保每位學生都有儲存出席紀錄的空間
+            // 確保每一位學生的儲存體完全建立
             currentStudents.forEach(s => {
                 if(!s.attendance) s.attendance = {};
                 customConfig.dates.forEach(d => {
@@ -201,10 +201,11 @@
                 });
             });
 
+            // 🔥 關鍵指令：第一秒立刻畫出名單與計算卡片
             renderTable();
             calculateStats();
             
-            // 每 4 秒鐘偷偷去 Google 雲端抓一次最新的簽到紀錄
+            // 每 4 秒鐘自動同步
             setInterval(fetchCloudAttendance, 4000);
             fetchCloudAttendance();
         }
@@ -299,9 +300,51 @@
             XLSX.writeFile(wb, `電影欣賞社_點名最終統計結果.xlsx`);
         }
 
-        // =========================================================================
-        // 📡 智慧連動核心：時間戳記（歸一化格式）與 學號 的雙向對齊大腦
-        // =========================================================================
+        function renderTable() {
+            const tbody = document.getElementById('student-table-body');
+            const searchKeyword = document.getElementById('search-box').value.toLowerCase().trim();
+            const classFilter = document.getElementById('class-filter').value;
+            tbody.innerHTML = '';
+            
+            let filtered = currentStudents.filter(s => {
+                return (s.name.toLowerCase().includes(searchKeyword) || s.id.includes(searchKeyword)) && (classFilter === '' || s.dept_class === classFilter);
+            });
+
+            filtered.forEach((student, index) => {
+                const tr = document.createElement('tr');
+                let attCount = 0; customConfig.dates.forEach(d => { if(student.attendance[d] === 1) attCount++; });
+                
+                let chkHtml = '';
+                customConfig.dates.forEach((d) => {
+                    const isChecked = student.attendance[d] === 1 ? 'checked' : '';
+                    chkHtml += `<td class="checkbox-cell"><input type="checkbox" class="chk-btn" ${isChecked} onchange="toggleAttendance('${student.id}', '${d}')"></td>`;
+                });
+
+                const statusBadge = attCount === customConfig.dates.length ? '<span class="badge badge-success">全勤</span>' : (attCount === 0 ? '<span class="badge badge-danger">缺席</span>' : '<span class="badge" style="background:#f1f3f4;color:#5f6368;">一般</span>');
+                tr.innerHTML = `<td>${index + 1}</td><td>${student.id}</td><td><strong>${student.name}</strong></td><td>${student.dept_class}</td>${chkHtml}<td style="text-align:center;font-weight:bold;">${attCount}次</td><td style="text-align:center;color:var(--primary);font-weight:bold;">${((attCount/customConfig.dates.length)*100).toFixed(0)}%</td><td style="text-align:center;">${statusBadge}</td>`;
+                tbody.appendChild(tr);
+            });
+            document.getElementById('total-students-count').innerText = currentStudents.length;
+        }
+
+        function toggleAttendance(studentId, date) {
+            const student = currentStudents.find(s => s.id === studentId);
+            if (student) { student.attendance[date] = student.attendance[date] === 1 ? 0 : 1; renderTable(); calculateStats(); }
+        }
+
+        function calculateStats() {
+            let totalPerfect = 0; let sumTotalRates = 0; const dateCounts = {};
+            customConfig.dates.forEach(d => dateCounts[d] = 0);
+            currentStudents.forEach(s => {
+                let count = 0; customConfig.dates.forEach(d => { if (s.attendance[d] === 1) { count++; dateCounts[d]++; } });
+                if (count === customConfig.dates.length) totalPerfect++;
+                sumTotalRates += (count / customConfig.dates.length);
+            });
+            document.getElementById('perfect-attendance-count').innerText = totalPerfect;
+            document.getElementById('avg-attendance-rate').innerText = currentStudents.length ? ((sumTotalRates / currentStudents.length) * 100).toFixed(1) + '%' : '0%';
+            customConfig.dates.forEach((d, i) => { const el = document.getElementById(`sum-d${i}`); if(el) el.innerText = dateCounts[d] || 0; });
+        }
+
         function fetchCloudAttendance() {
             const debugEl = document.getElementById('debug-banner');
             if (!customConfig.csvUrl) return;
@@ -323,7 +366,6 @@
                     for(let k=0; k<Math.min(lines.length, 3); k++) previewLines.push(`行 ${k+1}: ${lines[k].substring(0, 60)}`);
                     debugEl.innerHTML = `🟢 [連線成功] 獨立欄位解構通暢！最新回覆總筆數：${lines.length - 1} 筆。<br>📊 【Google 后台原始資料預覽】<br>${previewLines.join('<br>')}`;
 
-                    // 將設定面板的長日期萬能格式化（如 2026/07/16 變成 "7/16"）
                     const formattedPanelDates = customConfig.dates.map(d => {
                         const parts = d.replace(/-/g, '/').split('/');
                         if (parts.length >= 3) {
@@ -336,41 +378,30 @@
                         let line = lines[i].trim(); if (!line) continue;
                         const cells = line.split(','); if (!cells || cells.length < 1) continue;
 
-                        // 1. 提取時間戳記並歸一化為 "月/日" 格式
-                        let rawTimestamp = cells[0].replace(/"/g, '').replace(/\s/g, '');
-                        let extractedRowDate = "";
+                        let firstCellText = cells[0].replace(/"/g, '').toLowerCase();
+                        let matchedDateInRow = null;
                         
-                        let match = rawTimestamp.match(/(\d{2,4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
-                        if (match) {
-                            extractedRowDate = `${parseInt(match[2], 10)}/${parseInt(match[3], 10)}`;
-                        } else {
-                            customConfig.dates.forEach((d, idx) => {
-                                let shortD = formattedPanelDates[idx];
-                                if (rawTimestamp.includes(shortD)) extractedRowDate = shortD;
-                            });
-                        }
-
-                        // 2. 比對此筆紀錄對應第幾週的日期
-                        let targetPanelDateIndex = formattedPanelDates.indexOf(extractedRowDate);
+                        customConfig.dates.forEach(d => {
+                            let cleanDate = d.trim();
+                            if (firstCellText.includes(cleanDate.toLowerCase()) || firstCellText.includes(cleanDate.replace(/\//g, '-')) || firstCellText.includes(cleanDate.replace(/\/0/g, '/'))) {
+                                matchedDateInRow = d;
+                            }
+                        });
                         
-                        if (targetPanelDateIndex !== -1) {
-                            let matchedActualDate = customConfig.dates[targetPanelDateIndex];
-
-                            // 3. 日期成功匹配後，解構比對整行內是否有學號
+                        if (matchedDateInRow) {
                             cells.forEach(cell => {
                                 let cleanCellText = cell.replace(/"/g, '').trim();
                                 const foundStudent = currentStudents.find(student => student.id === cleanCellText);
                                 if (foundStudent) {
-                                    if(foundStudent.attendance[matchedActualDate] !== 1) {
-                                        foundStudent.attendance[matchedActualDate] = 1; 
-                                        dataChanged = true;
+                                    if(foundStudent.attendance[matchedDateInRow] !== 1) {
+                                        foundStudent.attendance[matchedDateInRow] = 1; dataChanged = true;
                                     }
                                     matchCount++;
                                 }
                             });
                         }
                     }
-                    if(matchCount > 0) { debugEl.innerHTML += `<br>🎉 [對齊成功] 已成功依據時間戳記與學號自動勾選了 ${matchCount} 人次！`; }
+                    if(matchCount > 0) { debugEl.innerHTML += `<br>🎉 [對齊成功] 已在表單獨立欄位中精準識別學號，自動打勾了 ${matchCount} 人次！`; }
                     if (dataChanged) { renderTable(); calculateStats(); }
                 })
                 .catch(e => { debugEl.innerHTML = "❌ [異常提示] 請確認您的發布網址。"; });
@@ -406,6 +437,10 @@
         }
 
         function resetFilters() { document.getElementById('search-box').value = ''; document.getElementById('class-filter').value = ''; renderTable(); }
+        document.getElementById('search-box').addEventListener('input', renderTable);
+        document.getElementById('class-filter').addEventListener('change', renderTable);
+        
+        // 🚀 綁定開機大腦指令
         window.onload = initTable;
     </script>
 </body>
