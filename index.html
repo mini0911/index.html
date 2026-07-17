@@ -63,7 +63,6 @@
         .badge-danger { background-color: #ffebee; color: #c62828; }
         .date-summary-row th { font-size: 11px; color: #5f6368; text-align: center; background-color: #e8eaed; }
         
-        /* ⚙️ 萬用面板自訂按鈕與彈出視窗樣式 */
         .config-btn-container { margin: 15px 0; text-align: center; }
         .config-trigger-btn { background-color: #0288d1; color: white; border: none; padding: 12px 24px; font-size: 15px; font-weight: bold; border-radius: 30px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
@@ -84,13 +83,12 @@
 <body>
     <div class="container">
         <header>
-            <h1 id="view-title">電影欣賞社 網頁互動點名系統</h1>
+            <h1 id="view-title">電影欣賞社 - 網頁互動點名與統計系統</h1>
             <p id="view-subtitle">自動連動 LINE 官方帳號與 Firebase 實時資料庫，實時極速點名打勾。</p>
         </header>
 
         <div class="debug-banner" id="debug-banner">📡 LINE 實時通訊基地台串接中...</div>
 
-        <!-- 📱 教師現場手動簽到/補簽區 -->
         <div class="manual-panel">
             <p style="font-weight: bold; color: var(--primary); margin: 0;">📱 教師現場手動簽到／補簽（輸入學號按 Enter）</p>
             <div class="manual-row">
@@ -100,14 +98,12 @@
             <p id="manual-msg" class="manual-msg"></p>
         </div>
 
-        <!-- 📊 數據統計卡片 -->
         <div class="dashboard-grid">
             <div class="stat-card"><div class="stat-title">總選課人數</div><div class="stat-value" id="total-students-count">0</div></div>
             <div class="stat-card success"><div class="stat-title">今日平均出席率</div><div class="stat-value" id="avg-attendance-rate">0%</div></div>
             <div class="stat-card"><div class="stat-title">目前全勤人數</div><div class="stat-value" id="perfect-attendance-count">0</div></div>
         </div>
 
-        <!-- 🔍 篩選控制列 -->
         <div class="controls">
             <input type="text" id="search-box" class="search-input" placeholder="搜尋姓名、學號...">
             <select id="class-filter" class="filter-select"><option value="">所有班級</option></select>
@@ -115,7 +111,6 @@
             <button class="btn btn-success" style="margin-left: auto; background-color: #1f7246;" onclick="exportToExcel()">📊 匯出點名統計 (Excel .xlsx)</button>
         </div>
 
-        <!-- 📋 主要學生資料點名表格 -->
         <div class="table-container">
             <table>
                 <thead>
@@ -151,29 +146,27 @@
             </table>
         </div>
 
-        <!-- ⚙️ 萬用自訂面版觸發按鈕[cite: 1] -->
         <div class="config-btn-container">
             <button class="config-trigger-btn" onclick="openConfigModal()">⚙️ 開啟萬用設定面板 (更換資料庫網址與學生名單)</button>
         </div>
     </div>
 
-    <!-- ⚙️ 萬用大設定面板彈出式視窗層[cite: 1] -->
     <div class="modal-overlay" id="config-modal">
         <div class="modal-box">
             <h2>⚙️ 點名系統大自訂面版</h2>
             <div class="form-group"><label>網頁大標題</label><input type="text" id="cfg-title"></div>
             <div class="form-group"><label>網頁副標題說明</label><input type="text" id="cfg-subtitle"></div>
             <div class="form-group">
-                <label>設定 7 個上課日期 (格式：2026/7/17)[cite: 1]</label>
+                <label>設定 7 個上課日期 (格式：2026/7/17)</label>
                 <div class="date-inputs-grid">
                     <input type="text" id="cfg-d0"><input type="text" id="cfg-d1"><input type="text" id="cfg-d2">
                     <input type="text" id="cfg-d3"><input type="text" id="cfg-d4"><input type="text" id="cfg-d5"><input type="text" id="cfg-d6">
                 </div>
             </div>
-            <div class="form-group"><label>Firebase Realtime Database 網址 (開頭必須含 https://)[cite: 1]</label><input type="text" id="cfg-csv-url"></div>
-            <div class="form-group"><label>學生名單自訂 (格式：學號 姓名 班級，中間可用空格或逗號，每行一人)</label><textarea id="cfg-students-raw" style="height:150px;"></textarea></div>
+            <div class="form-group"><label>Firebase Realtime Database 網址 (開頭必須含 https://)</label><input type="text" id="cfg-csv-url"></div>
+            <div class="form-group"><label>學生名單自訂 (格式：學號 姓名 班級，中間空一格，每行一人)</label><textarea id="cfg-students-raw" style="height:150px;"></textarea></div>
             <div class="modal-actions" style="justify-content: space-between;">
-                <button class="btn btn-danger" onclick="resetToOfficialDefault()">⚠️ 救回內建學生名單</button>
+                <button class="btn btn-danger" onclick="resetToOfficialDefault()">⚠️ 救回完整內建學生名單</button>
                 <div>
                     <button class="btn" style="background:#5f6368;" onclick="closeConfigModal()">取消</button>
                     <button class="btn btn-success" onclick="saveConfig()">儲存變更</button>
@@ -183,96 +176,70 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
-    <!-- 載入 LINE 實時通訊模組主核心晶片 -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
     <script>
-        const defaultStudents = [{"id": "11401011", "name": "李浩凱", "dept_class": "重機科一忠"}, {"id": "11401014", "name": "林士閎", "dept_class": "重機科一忠"}, {"id": "11401024", "name": "陳宥廷", "dept_class": "重機科一忠"}, {"id": "11401025", "name": "陳柏安", "dept_class": "陳柏安"}, {"id": "11401026", "name": "陳韋勛", "dept_class": "重機科一忠"}, {"id": "11401027", "name": "陳楷霖", "dept_class": "重機科一忠"}, {"id": "11401032", "name": "劉諶叡", "dept_class": "重機科一忠"}, {"id": "11402023", "name": "許盛鈞", "dept_class": "模具科一忠"}, {"id": "11402101", "name": "林芝羽", "dept_class": "模具科一孝"}, {"id": "11402103", "name": "陳姿瑜", "dept_class": "模具科一孝"}, {"id": "11402113", "name": "邱羿翰", "dept_class": "模具科一孝"}, {"id": "11404006", "name": "王子維", "dept_class": "電子科一忠"}, {"id": "11404009", "name": "王鈞毅", "dept_class": "電子科一忠"}, {"id": "11404010", "name": "何俊廷", "dept_class": "電子科一忠"}, {"id": "11404110", "name": "周杰陽", "dept_class": "電子科一孝"}, {"id": "11404112", "name": "林和穎", "dept_class": "電子科一孝"}, {"id": "11404113", "name": "林柏安", "dept_class": "電子科一孝"}, {"id": "11404115", "name": "柯品均", "dept_class": "電子科一孝"}, {"id": "11404117", "name": "胡俊英", "dept_class": "電子科一孝"}, {"id": "11404120", "name": "張維哲", "dept_class": "電子科一孝"}, {"id": "11404124", "name": "陳庭翊", "dept_class": "電子科一孝"}, {"id": "11404126", "name": "黃禹翔", "dept_class": "電子科一孝"}, {"id": "11404130", "name": "鄭宇恩", "dept_class": "電子科一孝"}, {"id": "11408006", "name": "朱昱安", "dept_class": "冷凍空調科一忠"}, {"id": "11408008", "name": "吳岱霖", "dept_class": "冷凍空調科一忠"}, {"id": "11408016", "name": "區少升", "dept_class": "冷凍空調科一忠"}, {"id": "11408020", "name": "陳品諺", "dept_class": "冷凍空調科一忠"}, {"id": "11408026", "name": "黃稚鈞", "dept_class": "冷凍空調科一忠"}, {"id": "11408108", "name": "林肯成", "dept_class": "冷凍空調科一孝"}, {"id": "11408121", "name": "彭暐瀚", "dept_class": "冷凍空調科一孝"}, {"id": "11408122", "name": "游俊恩", "dept_class": "冷凍空調科一孝"}, {"id": "11408136", "name": "魏丞宏", "dept_class": "冷凍空調科一孝"}, {"id": "11409007", "name": "周品曦", "dept_class": "電機科一忠"}, {"id": "11409021", "name": "陳秉鉉", "dept_class": "電機科一忠"}, {"id": "11409022", "name": "陳冠愷", "dept_class": "電機科一忠"}, {"id": "11409029", "name": "黃鈺淳", "dept_class": "電機科一忠"}, {"id": "11409031", "name": "黎家齊", "dept_class": "電機科一忠"}, {"id": "11409104", "name": "吳紘宇", "dept_class": "電機科一孝"}, {"id": "11409108", "name": "林佑勳", "dept_class": "電機科一孝"}, {"id": "11409118", "name": "陳柏廷", "dept_class": "電機科一孝"}, {"id": "11409123", "name": "勤正浩", "dept_class": "電機科一孝"}, {"id": "11409132", "name": "鄭家佑", "dept_class": "電機科一孝"}, {"id": "11410031", "name": "劉威彥", "dept_class": "機械科一忠"}, {"id": "11410119", "name": "陳沅祥", "dept_class": "機械科一孝"}, {"id": "11410127", "name": "楊善閔", "dept_class": "機械科一孝"}, {"id": "11410131", "name": "謝孝霆", "dept_class": "機械科一孝"}, {"id": "11410134", "name": "蘇寅", "dept_class": "機械科一孝"}];
+        // ===================================================================
+        // 🌟 區塊一：已填入您完整的 215 位學生名單資料
+        // ===================================================================
+        const defaultStudents = [{"id":"11401011","name":"李浩凱","dept_class":"重機科一忠"},{"id":"11401014","name":"林士閎","dept_class":"重機科一忠"},{"id":"11401024","name":"陳宥廷","dept_class":"重機科一忠"},{"id":"11401025","name":"陳柏安","dept_class":"重機科一忠"},{"id":"11401026","name":"陳韋勛","dept_class":"重機科一忠"},{"id":"11401027","name":"陳楷霖","dept_class":"重機科一忠"},{"id":"11401032","name":"劉諶叡","dept_class":"重機科一忠"},{"id":"11402023","name":"許盛鈞","dept_class":"模具科一忠"},{"id":"11402101","name":"林芝羽","dept_class":"模具科一孝"},{"id":"11402103","name":"陳姿瑜","dept_class":"模具科一孝"},{"id":"11402113","name":"邱羿翰","dept_class":"模具科一孝"},{"id":"11404006","name":"王子維","dept_class":"電子科一忠"},{"id":"11404009","name":"王鈞毅","dept_class":"電子科一忠"},{"id":"11404010","name":"何俊廷","dept_class":"電子科一忠"},{"id":"11404011","name":"吳彥霆","dept_class":"電子科一忠"},{"id":"11404029","name":"陳昱傑","dept_class":"電子科一忠"},{"id":"11404110","name":"周杰陽","dept_class":"電子科一孝"},{"id":"11404112","name":"林和穎","dept_class":"電子科一孝"},{"id":"11404113","name":"林柏安","dept_class":"電子科一孝"},{"id":"11404115","name":"柯品均","dept_class":"電子科一孝"},{"id":"11404117","name":"胡俊英","dept_class":"電子科一孝"},{"id":"11404120","name":"張維哲","dept_class":"電子科一孝"},{"id":"11404124","name":"陳庭翊","dept_class":"電子科一孝"},{"id":"11404126","name":"黃禹翔","dept_class":"電子科一孝"},{"id":"11404130","name":"鄭宇恩","dept_class":"電子科一孝"},{"id":"11405011","name":"吳展旭","dept_class":"土木科一忠"},{"id":"11405016","name":"林知炫","dept_class":"土木科一忠"},{"id":"11405110","name":"江孟哲","dept_class":"土木科一孝"},{"id":"11405114","name":"李泓儀","dept_class":"土木科一孝"},{"id":"11405116","name":"林弘裕","dept_class":"土木科一孝"},{"id":"11405120","name":"施劭儒","dept_class":"土木科一孝"},{"id":"11405124","name":"陳一愷","dept_class":"土木科一孝"},{"id":"11405127","name":"廖廷軒","dept_class":"土木科一孝"},{"id":"11406031","name":"鄭可謙","dept_class":"建築科一忠"},{"id":"11406106","name":"劉軒辰","dept_class":"建築科一孝"},{"id":"11406107","name":"鄭恩旻","dept_class":"建築科一孝"},{"id":"11406110","name":"王子豪","dept_class":"建築科一孝"},{"id":"11406117","name":"林小平","dept_class":"建築科一孝"},{"id":"11406122","name":"勒卡而・旮巴Lkal・Kapa","dept_class":"建築科一孝"},{"id":"11407022","name":"曾泓維","dept_class":"汽車科一忠"},{"id":"11407024","name":"黃佑恩","dept_class":"汽車科一忠"},{"id":"11407025","name":"黃靖捷","dept_class":"汽車科一忠"},{"id":"11407106","name":"林宥安","dept_class":"汽車科一孝"},{"id":"11407107","name":"林桓安","dept_class":"汽車科一孝"},{"id":"11407108","name":"林泰澄","dept_class":"汽車科一孝"},{"id":"11407118","name":"陳雋淇","dept_class":"汽車科一孝"},{"id":"11407121","name":"黃澤楷","dept_class":"汽車科一孝"},{"id":"11407124","name":"葉宥宏","dept_class":"汽車科一孝"},{"id":"11407126","name":"蔡承勳","dept_class":"汽車科一孝"},{"id":"11407130","name":"蕭禎賢","dept_class":"汽車科一孝"},{"id":"11408006","name":"朱昱安","dept_class":"冷凍空調科一忠"},{"id":"11408008","name":"吳岱霖","dept_class":"冷凍空調科一忠"},{"id":"11408016","name":"區少升","dept_class":"冷凍空調科一忠"},{"id":"11408020","name":"陳品諺","dept_class":"冷凍空調科一忠"},{"id":"11408026","name":"黃稚鈞","dept_class":"冷凍空調科一忠"},{"id":"11408108","name":"林肯成","dept_class":"冷凍空調科一孝"},{"id":"11408121","name":"彭暐瀚","dept_class":"冷凍空調科一孝"},{"id":"11408122","name":"游俊恩","dept_class":"冷凍空調科一孝"},{"id":"11408136","name":"魏丞宏","dept_class":"冷凍空調科一孝"},{"id":"11409007","name":"周品曦","dept_class":"電機科一忠"},{"id":"11409021","name":"陳秉鉉","dept_class":"電機科一忠"},{"id":"11409022","name":"陳冠愷","dept_class":"電機科一忠"},{"id":"11409029","name":"黃鈺淳","dept_class":"電機科一忠"},{"id":"11409031","name":"黎家齊","dept_class":"電機科一忠"},{"id":"11409104","name":"吳紘宇","dept_class":"電機科一孝"},{"id":"11409108","name":"林佑勳","dept_class":"電機科一孝"},{"id":"11409118","name":"陳柏廷","dept_class":"電機科一孝"},{"id":"11409123","name":"勤正浩","dept_class":"電機科一孝"},{"id":"11409124","name":"楊峻瑋","dept_class":"電機科一孝"},{"id":"11409132","name":"鄭家佑","dept_class":"電機科一孝"},{"id":"11410031","name":"劉威彥","dept_class":"機械科一忠"},{"id":"11410119","name":"陳沅祥","dept_class":"機械科一孝"},{"id":"11410127","name":"楊善閔","dept_class":"機械科一孝"},{"id":"11410131","name":"謝孝霆","dept_class":"機械科一孝"},{"id":"11410134","name":"蘇寅","dept_class":"機械科一孝"},{"id":"11301003","name":"田翊新","dept_class":"重機科二忠"},{"id":"11301022","name":"陳威良","dept_class":"重機科二忠"},{"id":"11301025","name":"陳詠昕","dept_class":"重機科二忠"},{"id":"11301110","name":"林宏鈞","dept_class":"重機科二孝"},{"id":"11202128","name":"游祐程","dept_class":"模具科二忠"},{"id":"11302006","name":"黃晴婠","dept_class":"模具科二忠"},{"id":"11302011","name":"林承旻","dept_class":"模具科二忠"},{"id":"11302016","name":"張華軒","dept_class":"模具科二忠"},{"id":"11302018","name":"許耕源","dept_class":"模具科二忠"},{"id":"11302020","name":"陳冠辰","dept_class":"模具科二忠"},{"id":"11302030","name":"廖梓亦","dept_class":"模具科二忠"},{"id":"11304014","name":"林威融","dept_class":"電子科二忠"},{"id":"11304031","name":"廖澤綱","dept_class":"電子科二忠"},{"id":"11304115","name":"孫廷翰","dept_class":"電子科二孝"},{"id":"11305012","name":"吳庭恩","dept_class":"土木科二忠"},{"id":"11305029","name":"張恩杰","dept_class":"土木科二忠"},{"id":"11306115","name":"李亮瑋","dept_class":"建築科二孝"},{"id":"11306126","name":"詹立宇","dept_class":"建築科二孝"},{"id":"11307011","name":"杜頤宥","dept_class":"汽車科二忠"},{"id":"11307105","name":"宋宥均","dept_class":"汽車科二孝"},{"id":"11307118","name":"陳乙篁","dept_class":"汽車科二孝"},{"id":"11307127","name":"楊家宏","dept_class":"汽車科二孝"},{"id":"11307134","name":"謝杰穎","dept_class":"汽車科二孝"},{"id":"11308004","name":"吳育熙","dept_class":"冷凍空調科二忠"},{"id":"11308011","name":"林品嶧","dept_class":"冷凍空調科二忠"},{"id":"11308015","name":"洪翊倫","dept_class":"冷凍空調科二忠"},{"id":"11308017","name":"張泰祥","dept_class":"冷凍空調科二忠"},{"id":"11308021","name":"陳宣叡","dept_class":"冷凍空調科二忠"},{"id":"11308026","name":"黃文昇","dept_class":"冷凍空調科二忠"},{"id":"11309108","name":"林言家","dept_class":"電機科二孝"},{"id":"11309109","name":"林亞佐","dept_class":"電機科二孝"},{"id":"11309110","name":"林昱丞","dept_class":"電機科二孝"},{"id":"11309113","name":"范宸維","dept_class":"電機科二孝"},{"id":"11309124","name":"黃鴻緯","dept_class":"電機科二孝"},{"id":"11309129","name":"蔣承澤","dept_class":"電機科二孝"},{"id":"11309130","name":"鄧明鈞","dept_class":"電機科二孝"},{"id":"11309131","name":"鄭至勛","dept_class":"電機科二孝"},{"id":"11310113","name":"姚元博","dept_class":"機械科二孝"},{"id":"11310115","name":"唐維壕","dept_class":"機械科二孝"},{"id":"11310120","name":"陳汝睿","dept_class":"機械科二孝"},{"id":"11310125","name":"曾柏翰","dept_class":"機械科二孝"},{"id":"11315004","name":"邱于哲","dept_class":"機械加工科二忠"},{"id":"11315006","name":"張偉倫","dept_class":"機械加工科二忠"},{"id":"11315008","name":"許宸睿","dept_class":"機械加工科二忠"},{"id":"11315012","name":"葉宇宸","dept_class":"機械加工科二忠"},{"id":"11401008","name":"吳悜瑋","dept_class":"重機科一忠"},{"id":"11401012","name":"李博丞","dept_class":"重機科一忠"},{"id":"11401022","name":"郭韋良","dept_class":"重機科一忠"},{"id":"11402005","name":"彭翊荃","dept_class":"模具科一忠"},{"id":"11402012","name":"林宗德","dept_class":"模具科一忠"},{"id":"11402014","name":"林羿廷","dept_class":"模具科一忠"},{"id":"11402016","name":"夏子峻","dept_class":"模具科一忠"},{"id":"11402018","name":"張允齊","dept_class":"模具科一忠"},{"id":"11402022","name":"莊博鈞","dept_class":"模具科一忠"},{"id":"11402105","name":"曾怡婷","dept_class":"模具科一孝"},{"id":"11402114","name":"施閔傑","dept_class":"模具科一孝"},{"id":"11402123","name":"黃昕亞","dept_class":"模具科一孝"},{"id":"11402129","name":"鄭佳侑","dept_class":"模具科一孝"},{"id":"11403015","name":"林威漢","dept_class":"鑄造科一忠"},{"id":"11403019","name":"陳威旬","dept_class":"鑄造科一忠"},{"id":"11403025","name":"蔡政祐","dept_class":"鑄造科一忠"},{"id":"11403102","name":"白承叡","dept_class":"鑄造科一孝"},{"id":"11403113","name":"張鈞崴","dept_class":"鑄造科一孝"},{"id":"11404111","name":"林辰祐","dept_class":"電子科一孝"},{"id":"11404118","name":"高佳瑋","dept_class":"電子科一孝"},{"id":"11404119","name":"張祐豪","dept_class":"電子科一孝"},{"id":"11405101","name":"王逸蓁","dept_class":"土木科一孝"},{"id":"11405107","name":"羅苡甄","dept_class":"土木科一孝"},{"id":"11405113","name":"李丞恩","dept_class":"土木科一孝"},{"id":"11406013","name":"杜承恩","dept_class":"建築科一忠"},{"id":"11406021","name":"陳柏俊","dept_class":"建築科一忠"},{"id":"11406113","name":"李武駿","dept_class":"建築科一孝"},{"id":"11406116","name":"周育銘","dept_class":"建築科一孝"},{"id":"11406126","name":"陳宥宇","dept_class":"建築科一孝"},{"id":"11406128","name":"蔡翊展","dept_class":"建築科一孝"},{"id":"11406131","name":"簡震","dept_class":"建築科一孝"},{"id":"11406133","name":"蘇品齊","dept_class":"建築科一孝"},{"id":"11407018","name":"陳宇幟","dept_class":"汽車科一忠"},{"id":"11407029","name":"蔡承翰","dept_class":"汽車科一忠"},{"id":"11407112","name":"張舜傑","dept_class":"汽車科一孝"},{"id":"11407132","name":"簡子淇","dept_class":"汽車科一孝"},{"id":"11408017","name":"許文駿","dept_class":"冷凍空調科一忠"},{"id":"11408023","name":"曾宇謙","dept_class":"冷凍空調科一忠"},{"id":"11408118","name":"陳劭恩","dept_class":"冷凍空調科一孝"},{"id":"11408119","name":"陳均瑋","dept_class":"冷凍空調科一孝"},{"id":"11408132","name":"鄭名峰","dept_class":"冷凍空調科一孝"},{"id":"11409001","name":"王彦博","dept_class":"電機科一忠"},{"id":"11409018","name":"張哲睿","dept_class":"電機科一忠"},{"id":"11409024","name":"陳致嘉","dept_class":"電機科一忠"},{"id":"11409028","name":"黃莛閎","dept_class":"電機科一忠"},{"id":"11409103","name":"江冠皜","dept_class":"電機科一孝"},{"id":"11409105","name":"李杰恩","dept_class":"電機科一孝"},{"id":"11409106","name":"李炘育","dept_class":"電機科一孝"},{"id":"11409107","name":"周宣瑋","dept_class":"電機科一孝"},{"id":"11409120","name":"曾雋翰","dept_class":"電機科一孝"},{"id":"11310109","name":"林冠穎","dept_class":"機械科一忠"},{"id":"11301002","name":"王韋翔","dept_class":"重機科二忠"},{"id":"11201119","name":"陳聖安","dept_class":"重機科二孝"},{"id":"11301125","name":"曾亮鈞","dept_class":"重機科二孝"},{"id":"11301132","name":"蘇裕程","dept_class":"重機科二孝"},{"id":"11302007","name":"朱恩德","dept_class":"模具科二忠"},{"id":"11302008","name":"吳協錦","dept_class":"模具科二忠"},{"id":"11302010","name":"林千博","dept_class":"模具科二忠"},{"id":"11302012","name":"邱𥡪頡","dept_class":"模具科二忠"},{"id":"11302021","name":"陳奕澂","dept_class":"模具科二忠"},{"id":"11303001","name":"王廷碩","dept_class":"鑄造科二忠"},{"id":"11303103","name":"王瑞鴻","dept_class":"鑄造科二孝"},{"id":"11303108","name":"林宏原","dept_class":"鑄造科二孝"},{"id":"11303118","name":"陳宏禮","dept_class":"鑄造科二孝"},{"id":"11303119","name":"陳冠廷","dept_class":"鑄造科二孝"},{"id":"11304010","name":"李致陞","dept_class":"電子科二忠"},{"id":"11304026","name":"黃嵩井","dept_class":"電子科二忠"},{"id":"11304028","name":"楊勝崴","dept_class":"電子科二忠"},{"id":"11304030","name":"詹芠賢","dept_class":"電子科二忠"},{"id":"11304110","name":"李宥伽","dept_class":"電子科二孝"},{"id":"11305001","name":"王蔚元","dept_class":"土木科二忠"},{"id":"11305018","name":"李敏顥","dept_class":"土木科二忠"},{"id":"11305112","name":"李興誠","dept_class":"土木科二孝"},{"id":"11306002","name":"李語恩","dept_class":"建築科二忠"},{"id":"11306005","name":"張上忻","dept_class":"建築科二忠"},{"id":"11306006","name":"陳又歆","dept_class":"建築科二忠"},{"id":"11306008","name":"葉芸希","dept_class":"建築科二忠"},{"id":"11306014","name":"李俊諺","dept_class":"建築科二忠"},{"id":"11306015","name":"李昱德","dept_class":"建築科二忠"},{"id":"11306019","name":"洪翊恩","dept_class":"建築科二忠"},{"id":"11306103","name":"李宇茜","dept_class":"建築科二孝"},{"id":"11306105","name":"梁睿庭","dept_class":"建築科二孝"},{"id":"11306118","name":"許家偉","dept_class":"建築科二孝"},{"id":"11307001","name":"王浚宇","dept_class":"汽車科二忠"},{"id":"11307103","name":"吳胤廷","dept_class":"汽車科二孝"},{"id":"11307112","name":"林彥勳","dept_class":"汽車科二孝"},{"id":"11307128","name":"劉宇鈞","dept_class":"汽車科二孝"},{"id":"11307133","name":"謝帛豫","汽車科二孝"},{"id":"11308001","name":"丁瑀賢","dept_class":"冷凍空調科二忠"},{"id":"11308003","name":"吳羽承","dept_class":"冷凍空調科二忠"},{"id":"11308007","name":"李柏毅","dept_class":"冷凍空調科二忠"},{"id":"11308008","name":"李浚瑋","dept_class":"冷凍空調科二忠"},{"id":"11308013","name":"林郁傑","dept_class":"冷凍空調科二忠"},{"id":"11308014","name":"林敬峰","dept_class":"冷凍空調科二忠"},{"id":"11308020","name":"陳泓廷","dept_class":"冷凍空調科二忠"},{"id":"11308023","name":"陳柏霖","dept_class":"冷凍空調科二忠"},{"id":"11308025","name":"陳學宇","dept_class":"冷凍空調科二忠"},{"id":"11308028","name":"楊于陞","dept_class":"冷凍空調科二忠"},{"id":"11308029","name":"葉耕碩","dept_class":"冷凍空調科二忠"},{"id":"11308031","name":"劉星辰","dept_class":"冷凍空調科二忠"},{"id":"11308033","name":"蔡丞鈞","dept_class":"冷凍空調科二忠"},{"id":"11308034","name":"鄭元順","dept_class":"冷凍空調科二忠"},{"id":"11309101","name":"王柏堯","dept_class":"電機科二孝"},{"id":"11309105","name":"汪宸銘","dept_class":"電機科二孝"},{"id":"11309106","name":"沈柏佑","dept_class":"電機科二孝"},{"id":"11309119","name":"許呈胤","dept_class":"電機科二孝"},{"id":"11309120","name":"陳煥奇","dept_class":"電機科二孝"},{"id":"11309122","name":"黃冠尹","dept_class":"電機科二孝"},{"id":"11309123","name":"黃裕軒","dept_class":"電機科二孝"},{"id":"11309125","name":"楊家驊","dept_class":"電機科二孝"},{"id":"11309126","name":"葉宏哲","dept_class":"電機科二孝"},{"id":"11309128","name":"趙世琋","dept_class":"電機科二孝"},{"id":"11309133","name":"鮑勇諭","dept_class":"電機科二孝"},{"id":"11309134","name":"謝芫樺","dept_class":"電機科二孝"},{"id":"11309135","name":"謝智捷","dept_class":"電機科二孝"},{"id":"11310029","name":"馮宇承","dept_class":"機械科二忠"},{"id":"11310034","name":"蔡新澤","dept_class":"機械科二忠"},{"id":"11310104","name":"吳秉霖","dept_class":"機械科二孝"},{"id":"11310107","name":"谷應絃","dept_class":"機械科二孝"},{"id":"11310110","name":"林柏安","dept_class":"機械科二孝"},{"id":"11310111","name":"邱少輔","dept_class":"機械科二孝"},{"id":"11310132","name":"潘廖賢","dept_class":"機械科二孝"},{"id":"11315001","name":"王靖宇","dept_class":"機械加工科二忠"},{"id":"11315007","name":"梁詠翔","dept_class":"機械加工科二忠"},{"id":"11501001","name":"余明霖","dept_class":"機械加工科二忠"}];
         
         let currentStudents = [];
         let customConfig = {
             title: "電影欣賞社 - 網頁互動點名與統計系統",
             subtitle: "自動連動 LINE 官方帳號與 Firebase 實時資料庫，實時極速點名打勾。",
-            dates: ['2026/7/17', '2026/7/18', '2026/7/19', '2026/7/20', '2026/7/21', '2026/7/22', '2026/7/23'],
-            csvUrl: "https://你的專案名稱-default-rtdb.asia-southeast1.firebasedatabase.app/", // 此處複用變數來儲存 Firebase 網址
+            
+            // 🌟 區塊二：這 7 個上課日期已設定為今天的精準格式 (2026/7/17)
+            dates: ['2026/7/17', '2026/7/24', '2026/7/31', '2026/8/7', '2026/8/14', '2026/8/21', '2026/8/28'],
+            
+            // 🌟 區塊三：請在此直接替換填入您的 Firebase 實時資料庫完整網址（結尾不要斜線 / ）
+            csvUrl: "https://你的專案名稱-default-rtdb.asia-southeast1.firebasedatabase.app",
             rawStudentsList: ""
         };
 
-        let database = null;
-        let dbRef = null;
+        let database = null; let dbRef = null;
 
         function initTable() {
-            loadSettings();
+            // 防覆蓋機制：讀取本地標題、網址，其餘核心名單與日期強制保持硬編碼最新狀態
+            const saved = localStorage.getItem('movie_club_rollcall_firebase_v5_cfg');
+            if (saved) { 
+                try { 
+                    const parsed = JSON.parse(saved); 
+                    customConfig.title = parsed.title || customConfig.title;
+                    customConfig.subtitle = parsed.subtitle || customConfig.subtitle;
+                    if(parsed.csvUrl && parsed.csvUrl.startsWith('http')) customConfig.csvUrl = parsed.csvUrl;
+                } catch(e) {} 
+            }
             
-            // 建立乾淨的點名陣列狀態
+            currentStudents = JSON.parse(JSON.stringify(defaultStudents));
+            customConfig.rawStudentsList = defaultStudents.map(s => `${s.id} ${s.name} ${s.dept_class}`).join("\n");
+
             currentStudents.forEach(s => {
                 if(!s.attendance) s.attendance = {};
-                customConfig.dates.forEach(d => {
-                    if(s.attendance[d] === undefined) s.attendance[d] = 0;
-                });
+                customConfig.dates.forEach(d => { if(s.attendance[d] === undefined) s.attendance[d] = 0; });
             });
-
-            renderTable();
-            calculateStats();
             
-            // 驅動與建立 Firebase 資料庫連線
-            initFirebaseConnection();
-        }
-
-        function loadSettings() {
-            const saved = localStorage.getItem('movie_club_rollcall_firebase_v2_cfg');
-            if (saved) { try { customConfig = JSON.parse(saved); } catch(e) {} }
-            
-            if (customConfig.rawStudentsList && customConfig.rawStudentsList.trim().length > 10) {
-                parseRawStudents(customConfig.rawStudentsList);
-            } else {
-                forceResetToDefaultData();
-            }
-            if (currentStudents.length === 0) forceResetToDefaultData();
-
-            // 更新網頁上的文字標題與日期
             document.getElementById('view-title').innerText = customConfig.title;
             document.getElementById('view-subtitle').innerText = customConfig.subtitle;
             for(let i=0; i<7; i++) {
                 const el = document.getElementById(`th-d${i}`);
                 if(el && customConfig.dates[i]) el.innerText = customConfig.dates[i].substring(5);
             }
-            updateClassFilterDropdown();
-        }
-
-        function forceResetToDefaultData() {
-            currentStudents = JSON.parse(JSON.stringify(defaultStudents));
-            customConfig.rawStudentsList = defaultStudents.map(s => `${s.id},${s.name},${s.dept_class}`).join("\n");
-            localStorage.setItem('movie_club_rollcall_firebase_v2_cfg', JSON.stringify(customConfig));
+            
+            updateClassFilterDropdown(); renderTable(); calculateStats(); initFirebaseConnection();
         }
 
         function resetToOfficialDefault() {
-            if(confirm("確定要還原成內建的學生名單嗎？")) { 
-                forceResetToDefaultData(); 
-                loadSettings(); 
-                renderTable(); 
-                calculateStats();
-                if(customConfig.csvUrl && customConfig.csvUrl.startsWith('http')) {
-                    initFirebaseConnection();
-                }
-            }
+            if(confirm("確定要將面板重置回 HTML 程式碼內設定的 215 人原始名單嗎？")) { localStorage.removeItem('movie_club_rollcall_firebase_v5_cfg'); window.location.reload(); }
         }
 
         function parseRawStudents(rawText) {
             const lines = rawText.split("\n"); const newList = [];
             lines.forEach(line => {
-                let cleanLine = line.trim(); if (!line) return;
+                let cleanLine = line.trim(); if (!cleanLine) return;
                 let cells = cleanLine.split(/[\t,\s]+/).filter(c => c.trim() !== "");
-                if (cells.length >= 2) {
-                    newList.push({ 
-                        id: cells[0].trim(), 
-                        name: cells[1].trim(), 
-                        dept_class: cells[2] ? cells[2].trim() : "未分配班級", 
-                        attendance: {} 
-                    });
-                }
+                if (cells.length >= 2) { newList.push({ id: cells[0].trim(), name: cells[1].trim(), dept_class: cells[2] ? cells[2].trim() : "未分配班級", attendance: {} }); }
             });
             if(newList.length > 0) {
                 newList.forEach(ns => { const old = currentStudents.find(o => o.id === ns.id); ns.attendance = old ? old.attendance : {}; });
@@ -280,100 +247,54 @@
             }
         }
 
-        // 🚀 連接 Firebase 實時資料庫監聽器
         function initFirebaseConnection() {
             const debugEl = document.getElementById('debug-banner');
-            if (!customConfig.csvUrl || !customConfig.csvUrl.startsWith('http')) {
-                debugEl.innerHTML = "⚠️ [設定提示] 請點選最下方按鈕，開啟萬用設定面板填入您的 Firebase 實時資料庫網址。";
-                return;
-            }
-
+            if (!customConfig.csvUrl || !customConfig.csvUrl.startsWith('http')) { debugEl.innerHTML = "⚠️ [設定提示] 請在 HTML 程式碼內填入您的 Firebase 實時資料庫網址。"; return; }
             try {
-                // 如果之前有連線，先斷開，防重複串接
                 if (dbRef) dbRef.off();
-                
-                // 初始化應用程式
-                if (firebase.apps.length === 0) {
-                    firebase.initializeApp({ databaseURL: customConfig.csvUrl.trim() });
-                }
-                
-                database = firebase.database();
-                dbRef = database.ref('movie_club_rollcall');
-                
+                if (firebase.apps.length === 0) { firebase.initializeApp({ databaseURL: customConfig.csvUrl.trim() }); }
+                database = firebase.database(); dbRef = database.ref('movie_club_rollcall');
                 debugEl.innerHTML = "📡 [通道連接中] 正在與雲端 Firebase 建立 WebSocket 實時加密通訊...";
 
-                // 核心實時監聽：雲端有任何學號進來，網頁不重新整理，0.1秒直接響應打勾
                 dbRef.on('value', (snapshot) => {
                     const rootData = snapshot.val();
-                    
-                    // 先把名單重置，防止雲端手動刪除資料後網頁沒同步除掉
-                    currentStudents.forEach(s => {
-                        customConfig.dates.forEach(d => s.attendance[d] = 0);
-                    });
-
+                    currentStudents.forEach(s => { customConfig.dates.forEach(d => s.attendance[d] = 0); });
                     if (rootData) {
                         Object.keys(rootData).forEach(dbDateStr => {
-                            const actualPanelDate = dbDateStr.replace(/\-/g, '/'); // 轉回 2026/7/17 格式
-                            
+                            const actualPanelDate = dbDateStr.replace(/\-/g, '/');
                             if (customConfig.dates.includes(actualPanelDate)) {
                                 const dayRecords = rootData[dbDateStr];
                                 Object.keys(dayRecords).forEach(studentId => {
                                     const student = currentStudents.find(s => s.id === studentId);
-                                    if (student) {
-                                        student.attendance[actualPanelDate] = 1;
-                                    }
+                                    if (student) student.attendance[actualPanelDate] = 1;
                                 });
                             }
                         });
                     }
-
-                    renderTable();
-                    calculateStats();
-                    const now = new Date();
-                    debugEl.innerHTML = `⚡ [LINE 實時同步成功] 安全基地台運作良好！最後同步更新時間：${now.toLocaleTimeString()}`;
-                }, (error) => {
-                    debugEl.innerHTML = "❌ [權限異常] 無法讀取資料，請至 Firebase 後台確認『規則 (Rules)』是否已發布為測試模式 (true)。";
-                });
-
-            } catch(err) {
-                console.error(err);
-                debugEl.innerHTML = "❌ [格式錯誤] 設定面板中的 Firebase 網址不正確，請重新檢查。";
-            }
+                    renderTable(); calculateStats();
+                    const now = new Date(); debugEl.innerHTML = `⚡ [LINE 實時同步成功] 215人名單通暢運作！最後更新：${now.toLocaleTimeString()}`;
+                }, (error) => { debugEl.innerHTML = "❌ [權限異常] 無法讀取資料，請確認 Firebase Rules 是否已發布為測試模式 (true)。"; });
+            } catch(err) { debugEl.innerHTML = "❌ [格式錯誤] Firebase 網址不正確，請重新檢查。"; }
         }
 
-        // 老師手動在表格打勾/取消勾選，同步寫入/刪除雲端 Firebase 資料
         function toggleAttendance(studentId, date) {
-            if (!database) { alert("請先開啟萬用面板設定正確的 Firebase 網址！"); return; }
+            if (!database) { alert("請先填寫正確的 Firebase 網址！"); return; }
             const student = currentStudents.find(s => s.id === studentId);
             if (student) {
-                const nextState = student.attendance[date] === 1 ? 0 : 1;
-                const pathDate = date.replace(/\//g, '-');
-                
-                if (nextState === 1) {
-                    database.ref(`movie_club_rollcall/${pathDate}/${studentId}`).set(1);
-                } else {
-                    database.ref(`movie_club_rollcall/${pathDate}/${studentId}`).remove();
-                    student.attendance[date] = 0;
-                    renderTable(); calculateStats();
-                }
+                const nextState = student.attendance[date] === 1 ? 0 : 1; const pathDate = date.replace(/\//g, '-');
+                if (nextState === 1) { database.ref(`movie_club_rollcall/${pathDate}/${studentId}`).set(1); } 
+                else { database.ref(`movie_club_rollcall/${pathDate}/${studentId}`).remove(); student.attendance[date] = 0; renderTable(); calculateStats(); }
             }
         }
 
-        // 現場鍵盤輸入學號補簽到
         function executeManualSignIn() {
-            if (!database) { alert("請先開啟萬用面板設定正確的 Firebase 網址！"); return; }
-            const inputEl = document.getElementById('manual-student-id');
-            const typedId = inputEl.value.trim();
+            if (!database) { alert("請先填寫正確的 Firebase 網址！"); return; }
+            const inputEl = document.getElementById('manual-student-id'); const typedId = inputEl.value.trim();
             if(!typedId) { showMsg("❌ 請先輸入學號！", "#c62828"); return; }
             const student = currentStudents.find(s => s.id === typedId);
-            if(!student) { showMsg(`⚠️ 找不到學號 [${typedId}]，請確認選課名單！`, "#c62828"); return; }
-            
-            const activeDate = customConfig.dates[0]; // 預設補簽第一個日期（今天）
-            const pathDate = activeDate.replace(/\//g, '-');
-            
-            database.ref(`movie_club_rollcall/${pathDate}/${typedId}`).set(1).then(() => {
-                showMsg("✅ 現場補簽成功！已極速發射至雲端。", "var(--success)");
-            });
+            if(!student) { showMsg(`⚠️ 找不到學號 [${typedId}]！`, "#c62828"); return; }
+            const activeDate = customConfig.dates[0]; const pathDate = activeDate.replace(/\//g, '-');
+            database.ref(`movie_club_rollcall/${pathDate}/${typedId}`).set(1).then(() => { showMsg("✅ 現場補簽成功！已同步至雲端。", "var(--success)"); });
             inputEl.value = ''; inputEl.focus();
         }
 
@@ -384,21 +305,15 @@
             const searchKeyword = document.getElementById('search-box').value.toLowerCase().trim();
             const classFilter = document.getElementById('class-filter').value;
             tbody.innerHTML = '';
-            
-            let filtered = currentStudents.filter(s => {
-                return (s.name.toLowerCase().includes(searchKeyword) || s.id.includes(searchKeyword)) && (classFilter === '' || s.dept_class === classFilter);
-            });
+            let filtered = currentStudents.filter(s => (s.name.toLowerCase().includes(searchKeyword) || s.id.includes(searchKeyword)) && (classFilter === '' || s.dept_class === classFilter));
 
             filtered.forEach((student, index) => {
-                const tr = document.createElement('tr');
-                let attCount = 0; customConfig.dates.forEach(d => { if(student.attendance[d] === 1) attCount++; });
-                
+                const tr = document.createElement('tr'); let attCount = 0; customConfig.dates.forEach(d => { if(student.attendance[d] === 1) attCount++; });
                 let chkHtml = '';
                 customConfig.dates.forEach((d) => {
                     const isChecked = student.attendance[d] === 1 ? 'checked' : '';
                     chkHtml += `<td class="checkbox-cell"><input type="checkbox" class="chk-btn" ${isChecked} onchange="toggleAttendance('${student.id}', '${d}')"></td>`;
                 });
-
                 const statusBadge = attCount === customConfig.dates.length ? '<span class="badge badge-success">全勤</span>' : (attCount === 0 ? '<span class="badge badge-danger">缺席</span>' : '<span class="badge" style="background:#f1f3f4;color:#5f6368;">一般</span>');
                 tr.innerHTML = `<td>${index + 1}</td><td>${student.id}</td><td><strong>${student.name}</strong></td><td>${student.dept_class}</td>${chkHtml}<td style="text-align:center;font-weight:bold;">${attCount}次</td><td style="text-align:center;color:var(--primary);font-weight:bold;">${((attCount/customConfig.dates.length)*100).toFixed(0)}%</td><td style="text-align:center;">${statusBadge}</td>`;
                 tbody.appendChild(tr);
@@ -407,12 +322,10 @@
         }
 
         function calculateStats() {
-            let totalPerfect = 0; let sumTotalRates = 0; const dateCounts = {};
-            customConfig.dates.forEach(d => dateCounts[d] = 0);
+            let totalPerfect = 0; let sumTotalRates = 0; const dateCounts = {}; customConfig.dates.forEach(d => dateCounts[d] = 0);
             currentStudents.forEach(s => {
                 let count = 0; customConfig.dates.forEach(d => { if (s.attendance[d] === 1) { count++; dateCounts[d]++; } });
-                if (count === customConfig.dates.length) totalPerfect++;
-                sumTotalRates += (count / customConfig.dates.length);
+                if (count === customConfig.dates.length) totalPerfect++; sumTotalRates += (count / customConfig.dates.length);
             });
             document.getElementById('perfect-attendance-count').innerText = totalPerfect;
             document.getElementById('avg-attendance-rate').innerText = currentStudents.length ? ((sumTotalRates / currentStudents.length) * 100).toFixed(1) + '%' : '0%';
@@ -420,43 +333,29 @@
         }
 
         function updateClassFilterDropdown() {
-            const select = document.getElementById('class-filter'); if(!select) return;
-            const saved = select.value;
+            const select = document.getElementById('class-filter'); if(!select) return; const saved = select.value;
             const classSet = new Set(); currentStudents.forEach(s => { if(s.dept_class) classSet.add(s.dept_class); });
-            const classes = Array.from(classSet).sort();
-            select.innerHTML = '<option value="">所有班級</option>';
+            const classes = Array.from(classSet).sort(); select.innerHTML = '<option value="">所有班級</option>';
             classes.forEach(c => { select.innerHTML += `<option value="${c}">${c}</option>`; });
             if(classes.includes(saved)) select.value = saved;
         }
 
         function resetFilters() { document.getElementById('search-box').value = ''; document.getElementById('class-filter').value = ''; renderTable(); }
 
-        /* ⚙️ 萬用面板開關控制邏輯 */
         function openConfigModal() {
-            document.getElementById('cfg-title').value = customConfig.title;
-            document.getElementById('cfg-subtitle').value = customConfig.subtitle;
+            document.getElementById('cfg-title').value = customConfig.title; document.getElementById('cfg-subtitle').value = customConfig.subtitle;
             for(let i=0; i<7; i++) document.getElementById(`cfg-d${i}`).value = customConfig.dates[i];
-            document.getElementById('cfg-csv-url').value = customConfig.csvUrl;
-            document.getElementById('cfg-students-raw').value = customConfig.rawStudentsList;
+            document.getElementById('cfg-csv-url').value = customConfig.csvUrl; document.getElementById('cfg-students-raw').value = customConfig.rawStudentsList;
             document.getElementById('config-modal').style.display = 'flex';
         }
         function closeConfigModal() { document.getElementById('config-modal').style.display = 'none'; }
 
         function saveConfig() {
-            customConfig.title = document.getElementById('cfg-title').value;
-            customConfig.subtitle = document.getElementById('cfg-subtitle').value;
+            customConfig.title = document.getElementById('cfg-title').value; customConfig.subtitle = document.getElementById('cfg-subtitle').value;
             for(let i=0; i<7; i++) customConfig.dates[i] = document.getElementById(`cfg-d${i}`).value.trim();
-            customConfig.csvUrl = document.getElementById('cfg-csv-url').value.trim();
-            customConfig.rawStudentsList = document.getElementById('cfg-students-raw').value;
-            
-            localStorage.setItem('movie_club_rollcall_firebase_v2_cfg', JSON.stringify(customConfig));
-            closeConfigModal(); 
-            
-            // 重新讀取面板與重啟監聽
-            loadSettings(); 
-            renderTable(); 
-            calculateStats(); 
-            initFirebaseConnection();
+            customConfig.csvUrl = document.getElementById('cfg-csv-url').value.trim(); customConfig.rawStudentsList = document.getElementById('cfg-students-raw').value;
+            localStorage.setItem('movie_club_rollcall_firebase_v5_cfg', JSON.stringify(customConfig));
+            closeConfigModal(); parseRawStudents(customConfig.rawStudentsList); renderTable(); calculateStats(); initFirebaseConnection();
         }
 
         function exportToExcel() {
@@ -467,8 +366,7 @@
                 rows.push([index + 1, s.id, s.name, s.dept_class, s.attendance[customConfig.dates[0]]===1?"V":"", s.attendance[customConfig.dates[1]]===1?"V":"", s.attendance[customConfig.dates[2]]===1?"V":"", s.attendance[customConfig.dates[3]]===1?"V":"", s.attendance[customConfig.dates[4]]===1?"V":"", s.attendance[customConfig.dates[5]]===1?"V":"", s.attendance[customConfig.dates[6]]===1?"V":"", attCount + "次", ((attCount / customConfig.dates.length) * 100).toFixed(0) + "%", attCount === customConfig.dates.length ? "全勤" : (attCount === 0 ? "缺席" : "一般")]);
             });
             const wb = XLSX.utils.book_new(); const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
-            XLSX.utils.book_append_sheet(wb, ws, "點名統計紀錄");
-            XLSX.writeFile(wb, `電影欣賞社_實時點名統計結果.xlsx`);
+            XLSX.utils.book_append_sheet(wb, ws, "點名統計紀錄"); XLSX.writeFile(wb, `電影欣賞社_實時點名統計結果.xlsx`);
         }
         
         document.addEventListener("DOMContentLoaded", function() {
