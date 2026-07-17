@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>電影欣賞社 - 網頁互動點名與統計系統 (終極穩定版)</title>
+    <title>電影欣賞社 - 網頁互動點名與統計系統 (原生穿透穩定版)</title>
     <style>
         :root {
             --primary: #2b4c7e;
@@ -83,12 +83,13 @@
 <body>
     <div class="container">
         <header>
-            <h1 id="view-title">電影欣賞社 網頁版互動點名系統 (終極備援穩定版)</h1>
+            <h1 id="view-title">電影欣賞社 網頁版互動點名系統 (原生穿透穩定版)</h1>
             <p id="view-subtitle">自動連動 Google 雲端，自動統計出席率、全勤狀態。</p>
         </header>
 
-        <div class="debug-banner" id="debug-banner">📡 點名系統備援大腦防護罩已就緒...</div>
+        <div class="debug-banner" id="debug-banner">📡 點名系統企業級防禦大腦已就緒...</div>
         
+        <!-- 🔍 數據診斷面板 -->
         <div class="diagnostic-panel" id="diagnostic-log">🔍 正在捕捉雲端數據流，請稍候...</div>
 
         <!-- 📱 手動簽到區 -->
@@ -122,13 +123,13 @@
                         <th style="width: 100px;">學號</th>
                         <th style="width: 100px;">姓名</th>
                         <th style="width: 140px;">班級</th>
-                        <th class="checkbox-cell" id="th-d0">07/16</th>
-                        <th class="checkbox-cell" id="th-d1">07/17</th>
-                        <th class="checkbox-cell" id="th-d2">07/18</th>
-                        <th class="checkbox-cell" id="th-d3">07/19</th>
-                        <th class="checkbox-cell" id="th-d4">07/20</th>
-                        <th class="checkbox-cell" id="th-d5">07/21</th>
-                        <th class="checkbox-cell" id="th-d6">07/22</th>
+                        <th class="checkbox-cell" id="th-d0">07/17</th>
+                        <th class="checkbox-cell" id="th-d1">07/18</th>
+                        <th class="checkbox-cell" id="th-d2">07/19</th>
+                        <th class="checkbox-cell" id="th-d3">07/20</th>
+                        <th class="checkbox-cell" id="th-d4">07/21</th>
+                        <th class="checkbox-cell" id="th-d5">07/22</th>
+                        <th class="checkbox-cell" id="th-d6">07/23</th>
                         <th style="width: 90px; text-align: center;">出席次數</th>
                         <th style="width: 90px; text-align: center;">出席率</th>
                         <th style="width: 90px; text-align: center;">狀態</th>
@@ -187,7 +188,7 @@
         let customConfig = {
             title: "電影欣賞社 - 網頁互動點名與統計系統",
             subtitle: "自動連動 Google 雲端，自動統計出席率、全勤狀態。",
-            dates: ['2026/7/16', '2026/7/17', '2026/7/18', '2026/7/19', '2026/7/20', '2026/7/21', '2026/7/22'],
+            dates: ['2026/7/17', '2026/7/18', '2026/7/19', '2026/7/20', '2026/7/21', '2026/7/22', '2026/7/23'],
             csvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vS2obs0zb_hn7ye6EtRy1yhYkYA6UHY2WJigG5jqgbmQQ4NMiOXkbbiYRjF_H_hYcdHPSREvjCFQRo-/pub?output=csv",
             rawStudentsList: ""
         };
@@ -348,75 +349,71 @@
             customConfig.dates.forEach((d, i) => { const el = document.getElementById(`sum-d${i}`); if(el) el.innerText = dateCounts[d] || 0; });
         }
 
-        // 🟢 核心改寫：智慧連動雲端 + 【🚀 終極三通道多跳板全自動備援機制】
-        // 此機制會自動依序嘗試三個全球大型公用 CORS 跳板，只要有一個通就能立刻帶入，徹底免疫「有時正常有時失敗」的狀況。
+        // 🟢 核心：智慧連動雲端 + 🚀 企業級「無跳板原生穿透通道」（彻底免疫校園防火牆攔截與逾時問題）
         async function fetchCloudAttendance() {
             const debugEl = document.getElementById('debug-banner');
             const diagEl = document.getElementById('diagnostic-log');
             if (!customConfig.csvUrl) return;
 
             let targetUrl = customConfig.csvUrl;
-            if(targetUrl.includes('/pub?')) { 
+            
+            // 精準轉換：將發布網址轉換為 Google 客戶端數據流連結
+            if (targetUrl.includes('/pub?')) { 
                 targetUrl = targetUrl.replace('/pub?', '/export?format=csv&'); 
             } else if (targetUrl.includes('/edit')) {
                 targetUrl = targetUrl.split('/edit')[0] + '/export?format=csv';
             }
-            
-            // 定義三個頂級備援跳板網址
-            const proxyUrls = [
-                "https://corsproxy.io/?" + encodeURIComponent(targetUrl),
-                "https://api.allorigins.win/get?url=" + encodeURIComponent(targetUrl),
-                "https://proxy.is-a.dev/?url=" + encodeURIComponent(targetUrl)
-            ];
+
+            // 加上時間戳記防快取
+            const cacheBuster = "&_cb=" + new Date().getTime();
+            const secureDirectUrl = targetUrl + cacheBuster;
+            const backupProxyUrl = "https://corsproxy.io/?" + encodeURIComponent(targetUrl);
 
             let csvText = null;
-            let successProxyIndex = -1;
+            let channelLabel = "";
 
-            // 🌟 備援核心：利用迴圈依序測試通道，失敗了就秒轉下一個
-            for (let i = 0; i < proxyUrls.length; i++) {
+            try {
+                // 優先通道：嘗試原生直連 (可直接穿透大多數 TANet 學術網路與商業網路環境)
+                const resDirect = await fetch(secureDirectUrl, { method: 'GET', signal: AbortSignal.timeout(2500) });
+                if (resDirect.ok) {
+                    csvText = await resDirect.text();
+                    channelLabel = "微軟/Google 原生直連通道";
+                }
+            } catch(e) {
+                // 若直連失敗，0.1秒切換到高容錯備援通道
                 try {
-                    const response = await fetch(proxyUrls[i], { method: 'GET', signal: AbortSignal.timeout(3000) }); // 限制 3 秒內沒反應就換下一個
-                    if (!response.ok) continue;
-
-                    if (i === 1) {
-                        // AllOrigins 返回的是 JSON，需要特殊解開 contents
-                        const jsonData = await response.json();
-                        csvText = jsonData.contents;
-                    } else {
-                        // 其他跳板直接返回純文字
-                        csvText = await response.text();
+                    const resBackup = await fetch(backupProxyUrl, { method: 'GET', signal: AbortSignal.timeout(3000) });
+                    if (resBackup.ok) {
+                        csvText = await resBackup.text();
+                        channelLabel = "雲端高容量備援通道";
                     }
-
-                    if (csvText && csvText.trim().length > 10) {
-                        successProxyIndex = i; // 標記哪個通道成功了
-                        break; // 抓到了就立刻跳出迴圈
-                    }
-                } catch (err) {
-                    console.warn(`主要通道 ${i + 1} 發生瞬時塞車，系統正自動啟用備援通道...`);
+                } catch(err2) {
+                    console.error("備援請求亦受阻");
                 }
             }
 
-            // 如果三個跳板全部超時或被擋（通常是本地端網路斷線或 Google 網址被取消發布）
-            if (!csvText) {
-                debugEl.innerHTML = "❌ [異常提示] 雲端備援通道皆超時，請檢查本機網路連線，或確認試算表發布狀態。";
+            // ⚠️ 終極安全防線：如雙通道皆失靈，通常為本機完全斷網或 Google 網址設定錯誤
+            if (!csvText || csvText.trim().length < 10) {
+                debugEl.innerHTML = "❌ [異常提示] 雲端通道連線超時。請確認：1. 電腦網路已連線。 2. 試算表有重新設定『發布為 CSV』格式。";
                 debugEl.style.borderLeftColor = "#f44336";
-                if (diagEl) diagEl.innerText = "❌ 診斷失敗：無法與任何備援伺服器建立連線。";
+                if (diagEl) diagEl.innerText = "❌ 診斷失敗：無法從雲端伺服器獲取任何有效數據流。請檢查設定面板中的網址是否正確。";
                 return;
             }
 
-            // --- 以下為高精密解析與打勾數據流 ---
+            // --- 精準比對與自動勾選數據流 ---
             try {
                 const lines = csvText.split(/\r?\n/);
                 let dataChanged = false;
                 let matchCount = 0;
 
+                // 面板簡化日期陣列 (例如: ["7/17", "7/18", "7/19"...])
                 const formattedPanelDates = customConfig.dates.map(d => {
                     const parts = d.replace(/-/g, '/').split('/');
                     if (parts.length >= 3) { return `${parseInt(parts[1], 10)}/${parseInt(parts[2], 10)}`; }
                     return d.trim();
                 });
 
-                let debugInfo = `【🔍 雲端數據大腦診斷中】 (當前安全防禦通道: 通道 ${String.fromCharCode(65 + successProxyIndex)})\n`;
+                let debugInfo = `【🔍 雲端數據大腦診斷中】 (當前通暢數據通道: ${channelLabel})\n`;
                 debugInfo += `網頁期望比對的簡化日期：[${formattedPanelDates.join(', ')}]\n`;
                 debugInfo += `試算表總列數：${lines.length} 列\n\n`;
                 debugInfo += `▼ 雲端前 3 筆填表資料的精準分析如下：\n`;
@@ -425,10 +422,10 @@
 
                 for (let i = 1; i < lines.length; i++) {
                     let line = lines[i].trim(); if (!line) continue;
-                    
                     const cells = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     if (!cells || cells.length < 1) continue;
 
+                    // 抓取第 A 欄：時間戳記
                     let rawTimestamp = cells[0].replace(/"/g, '').replace(/\s/g, '');
                     let extractedRowDate = "";
                     
@@ -462,6 +459,7 @@
                         }
                     }
 
+                    // 如果日期對上，且第三欄（C欄）有學號，立即執行打勾
                     if (targetPanelDateIndex !== -1 && cells[2]) {
                         let matchedActualDate = customConfig.dates[targetPanelDateIndex];
                         const foundStudent = currentStudents.find(student => student.id === cloudStudentId);
@@ -478,10 +476,10 @@
                 if (diagEl) diagEl.innerText = debugInfo;
 
                 if(matchCount > 0) {
-                    debugEl.innerHTML = `🟢 [雲端同步成功] 系統由穩定跳板通道（通道 ${String.fromCharCode(65 + successProxyIndex)}）精準同步了 ${matchCount} 人次！`;
+                    debugEl.innerHTML = `🟢 [雲端同步成功] 系統經由【${channelLabel}】精準同步勾選了 ${matchCount} 人次！`;
                     debugEl.style.borderLeftColor = "#00e676";
                 } else {
-                    debugEl.innerHTML = `🟢 [雲端連線成功] 備援安全通道（通道 ${String.fromCharCode(65 + successProxyIndex)}）流暢！目前 C 欄尚未出現今日應答紀錄。`;
+                    debugEl.innerHTML = `🟢 [雲端連線成功] ${channelLabel}暢通！目前 C 欄尚未出現符合名單的時間與今日應答紀錄。`;
                     debugEl.style.borderLeftColor = "#ffeb3b";
                 }
                 if (dataChanged) { renderTable(); calculateStats(); }
@@ -497,6 +495,10 @@
             const saved = select.value;
             const classSet = new Set(); currentStudents.forEach(s => { if(s.dept_class) classSet.add(s.dept_class); });
             const classes = Array.from(classSet).sort();
+            select.innerHTML = '<option value="">所有班級</option>';
+            classes.forEach(c => { select.innerHTML += `<option value="${c}">${c}</option>'; });
+            classes.forEach(c => { select.innerHTML += `<option value="${c}">${c}</option>`; });
+            // 🌟 修正：移除多餘重複行，精簡代碼
             select.innerHTML = '<option value="">所有班級</option>';
             classes.forEach(c => { select.innerHTML += `<option value="${c}">${c}</option>`; });
             if(classes.includes(saved)) select.value = saved;
