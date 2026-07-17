@@ -151,26 +151,26 @@
             </table>
         </div>
 
-        <!-- ⚙️ 萬用自訂面版觸發按鈕[cite: 1] -->
+        <!-- ⚙️ 萬用自訂面版觸發按鈕 -->
         <div class="config-btn-container">
             <button class="config-trigger-btn" onclick="openConfigModal()">⚙️ 開啟萬用設定面板 (更換資料庫網址與學生名單)</button>
         </div>
     </div>
 
-    <!-- ⚙️ 萬用大設定面板彈出式視窗層[cite: 1] -->
+    <!-- ⚙️ 萬用大設定面板彈出式視窗層 -->
     <div class="modal-overlay" id="config-modal">
         <div class="modal-box">
             <h2>⚙️ 點名系統大自訂面版</h2>
             <div class="form-group"><label>網頁大標題</label><input type="text" id="cfg-title"></div>
             <div class="form-group"><label>網頁副標題說明</label><input type="text" id="cfg-subtitle"></div>
             <div class="form-group">
-                <label>設定 7 個上課日期 (格式：2026/7/17)[cite: 1]</label>
+                <label>設定 7 個上課日期 (格式：2026/7/17)</label>
                 <div class="date-inputs-grid">
                     <input type="text" id="cfg-d0"><input type="text" id="cfg-d1"><input type="text" id="cfg-d2">
                     <input type="text" id="cfg-d3"><input type="text" id="cfg-d4"><input type="text" id="cfg-d5"><input type="text" id="cfg-d6">
                 </div>
             </div>
-            <div class="form-group"><label>Firebase Realtime Database 網址 (開頭必須含 https://)[cite: 1]</label><input type="text" id="cfg-csv-url"></div>
+            <div class="form-group"><label>Firebase Realtime Database 網址 (開頭必須含 https://)</label><input type="text" id="cfg-csv-url"></div>
             <div class="form-group"><label>學生名單自訂 (格式：學號 姓名 班級，中間可用空格或逗號，每行一人)</label><textarea id="cfg-students-raw" style="height:150px;"></textarea></div>
             <div class="modal-actions" style="justify-content: space-between;">
                 <button class="btn btn-danger" onclick="resetToOfficialDefault()">⚠️ 救回內建學生名單</button>
@@ -189,14 +189,14 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
     <script>
-        const defaultStudents = [{"id": "11401011", "name": "李浩凱", "dept_class": "重機科一忠"}, {"id": "11401014", "name": "林士閎", "dept_class": "重機科一忠"}, {"id": "11401024", "name": "陳宥廷", "dept_class": "重機科一忠"}, {"id": "11401025", "name": "陳柏安", "dept_class": "陳柏安"}, {"id": "11401026", "name": "陳韋勛", "dept_class": "重機科一忠"}, {"id": "11401027", "name": "陳楷霖", "dept_class": "重機科一忠"}, {"id": "11401032", "name": "劉諶叡", "dept_class": "重機科一忠"}, {"id": "11402023", "name": "許盛鈞", "dept_class": "模具科一忠"}, {"id": "11402101", "name": "林芝羽", "dept_class": "模具科一孝"}, {"id": "11402103", "name": "陳姿瑜", "dept_class": "模具科一孝"}, {"id": "11402113", "name": "邱羿翰", "dept_class": "模具科一孝"}, {"id": "11404006", "name": "王子維", "dept_class": "電子科一忠"}, {"id": "11404009", "name": "王鈞毅", "dept_class": "電子科一忠"}, {"id": "11404010", "name": "何俊廷", "dept_class": "電子科一忠"}, {"id": "11404110", "name": "周杰陽", "dept_class": "電子科一孝"}, {"id": "11404112", "name": "林和穎", "dept_class": "電子科一孝"}, {"id": "11404113", "name": "林柏安", "dept_class": "電子科一孝"}, {"id": "11404115", "name": "柯品均", "dept_class": "電子科一孝"}, {"id": "11404117", "name": "胡俊英", "dept_class": "電子科一孝"}, {"id": "11404120", "name": "張維哲", "dept_class": "電子科一孝"}, {"id": "11404124", "name": "陳庭翊", "dept_class": "電子科一孝"}, {"id": "11404126", "name": "黃禹翔", "dept_class": "電子科一孝"}, {"id": "11404130", "name": "鄭宇恩", "dept_class": "電子科一孝"}, {"id": "11408006", "name": "朱昱安", "dept_class": "冷凍空調科一忠"}, {"id": "11408008", "name": "吳岱霖", "dept_class": "冷凍空調科一忠"}, {"id": "11408016", "name": "區少升", "dept_class": "冷凍空調科一忠"}, {"id": "11408020", "name": "陳品諺", "dept_class": "冷凍空調科一忠"}, {"id": "11408026", "name": "黃稚鈞", "dept_class": "冷凍空調科一忠"}, {"id": "11408108", "name": "林肯成", "dept_class": "冷凍空調科一孝"}, {"id": "11408121", "name": "彭暐瀚", "dept_class": "冷凍空調科一孝"}, {"id": "11408122", "name": "游俊恩", "dept_class": "冷凍空調科一孝"}, {"id": "11408136", "name": "魏丞宏", "dept_class": "冷凍空調科一孝"}, {"id": "11409007", "name": "周品曦", "dept_class": "電機科一忠"}, {"id": "11409021", "name": "陳秉鉉", "dept_class": "電機科一忠"}, {"id": "11409022", "name": "陳冠愷", "dept_class": "電機科一忠"}, {"id": "11409029", "name": "黃鈺淳", "dept_class": "電機科一忠"}, {"id": "11409031", "name": "黎家齊", "dept_class": "電機科一忠"}, {"id": "11409104", "name": "吳紘宇", "dept_class": "電機科一孝"}, {"id": "11409108", "name": "林佑勳", "dept_class": "電機科一孝"}, {"id": "11409118", "name": "陳柏廷", "dept_class": "電機科一孝"}, {"id": "11409123", "name": "勤正浩", "dept_class": "電機科一孝"}, {"id": "11409132", "name": "鄭家佑", "dept_class": "電機科一孝"}, {"id": "11410031", "name": "劉威彥", "dept_class": "機械科一忠"}, {"id": "11410119", "name": "陳沅祥", "dept_class": "機械科一孝"}, {"id": "11410127", "name": "楊善閔", "dept_class": "機械科一孝"}, {"id": "11410131", "name": "謝孝霆", "dept_class": "機械科一孝"}, {"id": "11410134", "name": "蘇寅", "dept_class": "機械科一孝"}];
+        const defaultStudents = [{"id": "11401011", "name": "李浩凱", "dept_class": "重機科一忠"}, {"id": "11401014", "name": "林士閎", "dept_class": "重機科一忠"}, {"id": "11401024", "name": "陈宥廷", "dept_class": "重機科一忠"}, {"id": "11401025", "name": "陈柏安", "dept_class": "陈柏安"}, {"id": "11401026", "name": "陈韦勛", "dept_class": "重機科一忠"}, {"id": "11401027", "name": "陈楷霖", "dept_class": "重機科一忠"}, {"id": "11401032", "name": "劉諶叡", "dept_class": "重機科一忠"}, {"id": "11402023", "name": "許盛鈞", "dept_class": "模具科一忠"}, {"id": "11402101", "name": "林芝羽", "dept_class": "模具科一孝"}, {"id": "11402103", "name": "陈姿瑜", "dept_class": "模具科一孝"}, {"id": "11402113", "name": "邱羿翰", "dept_class": "模具科一孝"}, {"id": "11404006", "name": "王子維", "dept_class": "電子科一忠"}, {"id": "11404009", "name": "王鈞毅", "dept_class": "電子科一忠"}, {"id": "11404010", "name": "何俊廷", "dept_class": "電子科一忠"}, {"id": "11404110", "name": "周杰陽", "dept_class": "電子科一孝"}, {"id": "11404112", "name": "林和穎", "dept_class": "電子科一孝"}, {"id": "11404113", "name": "林柏安", "dept_class": "電子科一孝"}, {"id": "11404115", "name": "柯品均", "dept_class": "電子科一孝"}, {"id": "11404117", "name": "胡俊英", "dept_class": "電子科一孝"}, {"id": "11404120", "name": "張維哲", "dept_class": "電子科一孝"}, {"id": "11404124", "name": "陈庭翊", "dept_class": "電子科一孝"}, {"id": "11404126", "name": "黃禹翔", "dept_class": "電子科一孝"}, {"id": "11404130", "name": "鄭宇恩", "dept_class": "電子科一孝"}, {"id": "11408006", "name": "朱昱安", "dept_class": "冷凍空調科一忠"}, {"id": "11408008", "name": "吳岱霖", "dept_class": "冷凍空調科一忠"}, {"id": "11408016", "name": "區少升", "dept_class": "冷凍空調科一忠"}, {"id": "11408020", "name": "陈品諺", "dept_class": "冷凍空調科一忠"}, {"id": "11408026", "name": "黃稚鈞", "dept_class": "冷凍空調科一忠"}, {"id": "11408108", "name": "林肯成", "dept_class": "冷凍空調科一孝"}, {"id": "11408121", "name": "彭暐瀚", "dept_class": "冷凍空調科一孝"}, {"id": "11408122", "name": "游俊恩", "dept_class": "冷凍空調科一孝"}, {"id": "11408136", "name": "魏丞宏", "dept_class": "冷凍空調科一孝"}, {"id": "11409007", "name": "周品曦", "dept_class": "電機科一忠"}, {"id": "11409021", "name": "陈秉鉉", "dept_class": "電機科一忠"}, {"id": "11409022", "name": "陈冠愷", "dept_class": "電機科一忠"}, {"id": "11409029", "name": "黃鈺淳", "dept_class": "電機科一忠"}, {"id": "11409031", "name": "黎家齊", "dept_class": "電機科一忠"}, {"id": "11409104", "name": "吳紘宇", "dept_class": "電機科一孝"}, {"id": "11409108", "name": "林佑勳", "dept_class": "電機科一孝"}, {"id": "11409118", "name": "陈柏廷", "dept_class": "電機科一孝"}, {"id": "11409123", "name": "勤正浩", "dept_class": "電機科一孝"}, {"id": "11409132", "name": "鄭家佑", "dept_class": "電機科一孝"}, {"id": "11410031", "name": "劉威彥", "dept_class": "機械科一忠"}, {"id": "11410119", "name": "陈沅祥", "dept_class": "機械科一孝"}, {"id": "11410127", "name": "楊善閔", "dept_class": "機械科一孝"}, {"id": "11410131", "name": "謝孝霆", "dept_class": "機械科一孝"}, {"id": "11410134", "name": "蘇寅", "dept_class": "機械科一孝"}];
         
         let currentStudents = [];
         let customConfig = {
             title: "電影欣賞社 - 網頁互動點名與統計系統",
             subtitle: "自動連動 LINE 官方帳號與 Firebase 實時資料庫，實時極速點名打勾。",
             dates: ['2026/7/17', '2026/7/18', '2026/7/19', '2026/7/20', '2026/7/21', '2026/7/22', '2026/7/23'],
-            csvUrl: "https://movie-76596-default-rtdb.asia-southeast1.firebasedatabase.app/", // 此處複用變數來儲存 Firebase 網址
+            csvUrl: "https://movie-76596-default-rtdb.asia-southeast1.firebasedatabase.app/",
             rawStudentsList: ""
         };
 
@@ -204,6 +204,10 @@
         let dbRef = null;
 
         function initTable() {
+            // 🎯 【強制覆寫晶片】強行在網頁開啟第一時間鎖定您的 Firebase 網址，杜絕不同網頁暫存作怪
+            customConfig.csvUrl = "https://movie-76596-default-rtdb.asia-southeast1.firebasedatabase.app/";
+            localStorage.setItem('movie_club_rollcall_firebase_v2_cfg', JSON.stringify(customConfig));
+
             loadSettings();
             
             // 建立乾淨的點名陣列狀態
