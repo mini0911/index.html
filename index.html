@@ -63,6 +63,7 @@
         .badge-danger { background-color: #ffebee; color: #c62828; }
         .date-summary-row th { font-size: 11px; color: #5f6368; text-align: center; background-color: #e8eaed; }
         
+        /* ⚙️ 萬用面板自訂按鈕與彈出視窗樣式 */
         .config-btn-container { margin: 15px 0; text-align: center; }
         .config-trigger-btn { background-color: #0288d1; color: white; border: none; padding: 12px 24px; font-size: 15px; font-weight: bold; border-radius: 30px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
@@ -202,10 +203,14 @@
         let dbRef = null;
 
         function initTable() {
-            // 🎯 【強制覆寫防呆晶片】確保無論哪個新裝置或瀏覽器開啟，都強制將網址鎖死為您的資料庫網址！
+            // 🎯 【第一重：標題鎖死晶片】不論暫存如何，一律強行固定網頁大、副標題文字！
+            customConfig.title = "電影欣賞社";
+            customConfig.subtitle = "115學年度第1學期。";
+
+            // 🎯 【第二重：網址鎖死晶片】強行在網頁開啟第一時間鎖定您的 Firebase 網址！
             customConfig.csvUrl = "https://movie-76596-default-rtdb.asia-southeast1.firebasedatabase.app/";
             
-            // 🎯 【選課名單同步晶片】強制在初始化時，將最新的 236 人名單字串重寫回暫存，確保多網頁同步人數不卡死！
+            // 🎯 【第三重：名單人數對齊晶片】強制在初始化時將 236 人名單字串重寫回暫存，確保多網頁同步人數！
             customConfig.rawStudentsList = defaultStudents.map(s => `${s.id}\t${s.name}\t${s.dept_class}`).join("\n");
             localStorage.setItem('movie_club_rollcall_firebase_v2_cfg', JSON.stringify(customConfig));
 
