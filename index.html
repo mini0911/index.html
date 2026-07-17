@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>電影欣賞社 - 網頁互動點名與統計系統 (LINE Bot 實時極速聯動版)</title>
+    <title>電影欣賞社 - 網頁互動點名與統計系統 (萬用面板實時版)</title>
     <style>
         :root {
             --primary: #2b4c7e;
@@ -63,6 +63,17 @@
         .badge-danger { background-color: #ffebee; color: #c62828; }
         .date-summary-row th { font-size: 11px; color: #5f6368; text-align: center; background-color: #e8eaed; }
         
+        /* ⚙️ 萬用面板自訂按鈕與彈出視窗樣式 */
+        .config-btn-container { margin: 15px 0; text-align: center; }
+        .config-trigger-btn { background-color: #0288d1; color: white; border: none; padding: 12px 24px; font-size: 15px; font-weight: bold; border-radius: 30px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-box { background: white; padding: 24px; border-radius: 12px; width: 90%; max-width: 650px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 6px; color: #5f6368; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; }
+        .date-inputs-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .modal-actions { margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px; }
+
         @keyframes popAnim {
             0% { transform: scale(1); }
             50% { transform: scale(1.4); background-color: #00e676; }
@@ -73,13 +84,13 @@
 <body>
     <div class="container">
         <header>
-            <h1>電影欣賞社 網頁互動點名系統 (LINE Bot 實時聯動版)</h1>
-            <p>📱 同學使用 LINE 綁定官方帳號直接發送學號，螢幕將於 0.1 秒內極速實時自動勾選。</p>
+            <h1 id="view-title">電影欣賞社 網頁互動點名系統</h1>
+            <p id="view-subtitle">自動連動 LINE 官方帳號與 Firebase 實時資料庫，實時極速點名打勾。</p>
         </header>
 
-        <div class="debug-banner" id="debug-banner">📡 LINE 實時通訊模組啟動中...</div>
+        <div class="debug-banner" id="debug-banner">📡 LINE 實時通訊基地台串接中...</div>
 
-        <!-- 📱 手動補簽區 -->
+        <!-- 📱 教師現場手動簽到/補簽區 -->
         <div class="manual-panel">
             <p style="font-weight: bold; color: var(--primary); margin: 0;">📱 教師現場手動簽到／補簽（輸入學號按 Enter）</p>
             <div class="manual-row">
@@ -89,12 +100,14 @@
             <p id="manual-msg" class="manual-msg"></p>
         </div>
 
+        <!-- 📊 數據統計卡片 -->
         <div class="dashboard-grid">
             <div class="stat-card"><div class="stat-title">總選課人數</div><div class="stat-value" id="total-students-count">0</div></div>
             <div class="stat-card success"><div class="stat-title">今日平均出席率</div><div class="stat-value" id="avg-attendance-rate">0%</div></div>
             <div class="stat-card"><div class="stat-title">目前全勤人數</div><div class="stat-value" id="perfect-attendance-count">0</div></div>
         </div>
 
+        <!-- 🔍 篩選控制列 -->
         <div class="controls">
             <input type="text" id="search-box" class="search-input" placeholder="搜尋姓名、學號...">
             <select id="class-filter" class="filter-select"><option value="">所有班級</option></select>
@@ -102,6 +115,7 @@
             <button class="btn btn-success" style="margin-left: auto; background-color: #1f7246;" onclick="exportToExcel()">📊 匯出點名統計 (Excel .xlsx)</button>
         </div>
 
+        <!-- 📋 主要學生資料點名表格 -->
         <div class="table-container">
             <table>
                 <thead>
@@ -136,11 +150,41 @@
                 <tbody id="student-table-body"></tbody>
             </table>
         </div>
+
+        <!-- ⚙️ 萬用自訂面版觸發按鈕[cite: 1] -->
+        <div class="config-btn-container">
+            <button class="config-trigger-btn" onclick="openConfigModal()">⚙️ 開啟萬用設定面板 (更換資料庫網址與學生名單)</button>
+        </div>
+    </div>
+
+    <!-- ⚙️ 萬用大設定面板彈出式視窗層[cite: 1] -->
+    <div class="modal-overlay" id="config-modal">
+        <div class="modal-box">
+            <h2>⚙️ 點名系統大自訂面版</h2>
+            <div class="form-group"><label>網頁大標題</label><input type="text" id="cfg-title"></div>
+            <div class="form-group"><label>網頁副標題說明</label><input type="text" id="cfg-subtitle"></div>
+            <div class="form-group">
+                <label>設定 7 個上課日期 (格式：2026/7/17)[cite: 1]</label>
+                <div class="date-inputs-grid">
+                    <input type="text" id="cfg-d0"><input type="text" id="cfg-d1"><input type="text" id="cfg-d2">
+                    <input type="text" id="cfg-d3"><input type="text" id="cfg-d4"><input type="text" id="cfg-d5"><input type="text" id="cfg-d6">
+                </div>
+            </div>
+            <div class="form-group"><label>Firebase Realtime Database 網址 (開頭必須含 https://)[cite: 1]</label><input type="text" id="cfg-csv-url"></div>
+            <div class="form-group"><label>學生名單自訂 (格式：學號 姓名 班級，中間可用空格或逗號，每行一人)</label><textarea id="cfg-students-raw" style="height:150px;"></textarea></div>
+            <div class="modal-actions" style="justify-content: space-between;">
+                <button class="btn btn-danger" onclick="resetToOfficialDefault()">⚠️ 救回內建學生名單</button>
+                <div>
+                    <button class="btn" style="background:#5f6368;" onclick="closeConfigModal()">取消</button>
+                    <button class="btn btn-success" onclick="saveConfig()">儲存變更</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
-    <!-- 載入 LINE Bot 即時通訊模組元件 -->
+    <!-- 載入 LINE 實時通訊模組主核心晶片 -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
@@ -149,64 +193,157 @@
         
         let currentStudents = [];
         let customConfig = {
-            dates: ['2026/7/17', '2026/7/18', '2026/7/19', '2026/7/20', '2026/7/21', '2026/7/22', '2026/7/23']
+            title: "電影欣賞社 - 網頁互動點名與統計系統",
+            subtitle: "自動連動 LINE 官方帳號與 Firebase 實時資料庫，實時極速點名打勾。",
+            dates: ['2026/7/17', '2026/7/18', '2026/7/19', '2026/7/20', '2026/7/21', '2026/7/22', '2026/7/23'],
+            csvUrl: "https://你的專案名稱-default-rtdb.asia-southeast1.firebasedatabase.app/", // 此處複用變數來儲存 Firebase 網址
+            rawStudentsList: ""
         };
 
-        // 🌟 請與 GAS 大腦綁定同一個 Firebase 資料庫網址
-        const firebaseConfig = {
-            databaseURL: "https://你的專案名稱-default-rtdb.asia-southeast1.firebasedatabase.app/"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        let database = null;
+        let dbRef = null;
 
         function initTable() {
-            currentStudents = JSON.parse(JSON.stringify(defaultStudents));
+            loadSettings();
+            
+            // 建立乾淨的點名陣列狀態
             currentStudents.forEach(s => {
-                s.attendance = {};
-                customConfig.dates.forEach(d => s.attendance[d] = 0);
+                if(!s.attendance) s.attendance = {};
+                customConfig.dates.forEach(d => {
+                    if(s.attendance[d] === undefined) s.attendance[d] = 0;
+                });
             });
-            updateClassFilterDropdown();
+
             renderTable();
             calculateStats();
             
-            // 🚀 啟動監聽：LINE 簽到一完成，網頁立刻響應自動勾選！
-            startRealtimeListening();
+            // 驅動與建立 Firebase 資料庫連線
+            initFirebaseConnection();
         }
 
-        function startRealtimeListening() {
-            const debugEl = document.getElementById('debug-banner');
+        function loadSettings() {
+            const saved = localStorage.getItem('movie_club_rollcall_firebase_v2_cfg');
+            if (saved) { try { customConfig = JSON.parse(saved); } catch(e) {} }
             
-            database.ref('movie_club_rollcall').on('value', (snapshot) => {
-                const rootData = snapshot.val();
-                if (!rootData) {
-                    debugEl.innerHTML = "🟢 [通道暢通] LINE 實時通訊基地台已就緒！請社員直接在 LINE 對話框輸入學號簽到...";
-                    return;
-                }
+            if (customConfig.rawStudentsList && customConfig.rawStudentsList.trim().length > 10) {
+                parseRawStudents(customConfig.rawStudentsList);
+            } else {
+                forceResetToDefaultData();
+            }
+            if (currentStudents.length === 0) forceResetToDefaultData();
 
-                // 巡過所有日期
-                Object.keys(rootData).forEach(dbDateStr => {
-                    const actualPanelDate = dbDateStr.replace(/\-/g, '/');
+            // 更新網頁上的文字標題與日期
+            document.getElementById('view-title').innerText = customConfig.title;
+            document.getElementById('view-subtitle').innerText = customConfig.subtitle;
+            for(let i=0; i<7; i++) {
+                const el = document.getElementById(`th-d${i}`);
+                if(el && customConfig.dates[i]) el.innerText = customConfig.dates[i].substring(5);
+            }
+            updateClassFilterDropdown();
+        }
+
+        function forceResetToDefaultData() {
+            currentStudents = JSON.parse(JSON.stringify(defaultStudents));
+            customConfig.rawStudentsList = defaultStudents.map(s => `${s.id},${s.name},${s.dept_class}`).join("\n");
+            localStorage.setItem('movie_club_rollcall_firebase_v2_cfg', JSON.stringify(customConfig));
+        }
+
+        function resetToOfficialDefault() {
+            if(confirm("確定要還原成內建的學生名單嗎？")) { 
+                forceResetToDefaultData(); 
+                loadSettings(); 
+                renderTable(); 
+                calculateStats();
+                if(customConfig.csvUrl && customConfig.csvUrl.startsWith('http')) {
+                    initFirebaseConnection();
+                }
+            }
+        }
+
+        function parseRawStudents(rawText) {
+            const lines = rawText.split("\n"); const newList = [];
+            lines.forEach(line => {
+                let cleanLine = line.trim(); if (!line) return;
+                let cells = cleanLine.split(/[\t,\s]+/).filter(c => c.trim() !== "");
+                if (cells.length >= 2) {
+                    newList.push({ 
+                        id: cells[0].trim(), 
+                        name: cells[1].trim(), 
+                        dept_class: cells[2] ? cells[2].trim() : "未分配班級", 
+                        attendance: {} 
+                    });
+                }
+            });
+            if(newList.length > 0) {
+                newList.forEach(ns => { const old = currentStudents.find(o => o.id === ns.id); ns.attendance = old ? old.attendance : {}; });
+                currentStudents = newList;
+            }
+        }
+
+        // 🚀 連接 Firebase 實時資料庫監聽器
+        function initFirebaseConnection() {
+            const debugEl = document.getElementById('debug-banner');
+            if (!customConfig.csvUrl || !customConfig.csvUrl.startsWith('http')) {
+                debugEl.innerHTML = "⚠️ [設定提示] 請點選最下方按鈕，開啟萬用設定面板填入您的 Firebase 實時資料庫網址。";
+                return;
+            }
+
+            try {
+                // 如果之前有連線，先斷開，防重複串接
+                if (dbRef) dbRef.off();
+                
+                // 初始化應用程式
+                if (firebase.apps.length === 0) {
+                    firebase.initializeApp({ databaseURL: customConfig.csvUrl.trim() });
+                }
+                
+                database = firebase.database();
+                dbRef = database.ref('movie_club_rollcall');
+                
+                debugEl.innerHTML = "📡 [通道連接中] 正在與雲端 Firebase 建立 WebSocket 實時加密通訊...";
+
+                // 核心實時監聽：雲端有任何學號進來，網頁不重新整理，0.1秒直接響應打勾
+                dbRef.on('value', (snapshot) => {
+                    const rootData = snapshot.val();
                     
-                    if (customConfig.dates.includes(actualPanelDate)) {
-                        const dayRecords = rootData[dbDateStr];
-                        Object.keys(dayRecords).forEach(studentId => {
-                            const student = currentStudents.find(s => s.id === studentId);
-                            if (student) {
-                                student.attendance[actualPanelDate] = 1;
+                    // 先把名單重置，防止雲端手動刪除資料後網頁沒同步除掉
+                    currentStudents.forEach(s => {
+                        customConfig.dates.forEach(d => s.attendance[d] = 0);
+                    });
+
+                    if (rootData) {
+                        Object.keys(rootData).forEach(dbDateStr => {
+                            const actualPanelDate = dbDateStr.replace(/\-/g, '/'); // 轉回 2026/7/17 格式
+                            
+                            if (customConfig.dates.includes(actualPanelDate)) {
+                                const dayRecords = rootData[dbDateStr];
+                                Object.keys(dayRecords).forEach(studentId => {
+                                    const student = currentStudents.find(s => s.id === studentId);
+                                    if (student) {
+                                        student.attendance[actualPanelDate] = 1;
+                                    }
+                                });
                             }
                         });
                     }
+
+                    renderTable();
+                    calculateStats();
+                    const now = new Date();
+                    debugEl.innerHTML = `⚡ [LINE 實時同步成功] 安全基地台運作良好！最後同步更新時間：${now.toLocaleTimeString()}`;
+                }, (error) => {
+                    debugEl.innerHTML = "❌ [權限異常] 無法讀取資料，請至 Firebase 後台確認『規則 (Rules)』是否已發布為測試模式 (true)。";
                 });
 
-                renderTable();
-                calculateStats();
-                
-                const now = new Date();
-                debugEl.innerHTML = `⚡ [LINE 實時同步成功] 偵測到最新簽到異動！最後接收時間：${now.toLocaleTimeString()}`;
-            });
+            } catch(err) {
+                console.error(err);
+                debugEl.innerHTML = "❌ [格式錯誤] 設定面板中的 Firebase 網址不正確，請重新檢查。";
+            }
         }
 
+        // 老師手動在表格打勾/取消勾選，同步寫入/刪除雲端 Firebase 資料
         function toggleAttendance(studentId, date) {
+            if (!database) { alert("請先開啟萬用面板設定正確的 Firebase 網址！"); return; }
             const student = currentStudents.find(s => s.id === studentId);
             if (student) {
                 const nextState = student.attendance[date] === 1 ? 0 : 1;
@@ -222,18 +359,20 @@
             }
         }
 
+        // 現場鍵盤輸入學號補簽到
         function executeManualSignIn() {
+            if (!database) { alert("請先開啟萬用面板設定正確的 Firebase 網址！"); return; }
             const inputEl = document.getElementById('manual-student-id');
             const typedId = inputEl.value.trim();
             if(!typedId) { showMsg("❌ 請先輸入學號！", "#c62828"); return; }
             const student = currentStudents.find(s => s.id === typedId);
-            if(!student) { showMsg(`⚠️ 找不到學號 [${typedId}]！`, "#c62828"); return; }
+            if(!student) { showMsg(`⚠️ 找不到學號 [${typedId}]，請確認選課名單！`, "#c62828"); return; }
             
-            const activeDate = customConfig.dates[0];
+            const activeDate = customConfig.dates[0]; // 預設補簽第一個日期（今天）
             const pathDate = activeDate.replace(/\//g, '-');
             
             database.ref(`movie_club_rollcall/${pathDate}/${typedId}`).set(1).then(() => {
-                showMsg(`✅ 補簽成功！ ${student.name} 資料已拋送至雲端。`, "var(--success)");
+                showMsg("✅ 現場補簽成功！已極速發射至雲端。", "var(--success)");
             });
             inputEl.value = ''; inputEl.focus();
         }
@@ -282,15 +421,44 @@
 
         function updateClassFilterDropdown() {
             const select = document.getElementById('class-filter'); if(!select) return;
-            const classSet = new Set(); defaultStudents.forEach(s => { if(s.dept_class) classSet.add(s.dept_class); });
+            const saved = select.value;
+            const classSet = new Set(); currentStudents.forEach(s => { if(s.dept_class) classSet.add(s.dept_class); });
             const classes = Array.from(classSet).sort();
             select.innerHTML = '<option value="">所有班級</option>';
             classes.forEach(c => { select.innerHTML += `<option value="${c}">${c}</option>`; });
+            if(classes.includes(saved)) select.value = saved;
         }
 
         function resetFilters() { document.getElementById('search-box').value = ''; document.getElementById('class-filter').value = ''; renderTable(); }
 
-        // 📊 點名網頁本身也具備「手動點名寫回 Firebase」與「直接匯出 Excel」的功能
+        /* ⚙️ 萬用面板開關控制邏輯 */
+        function openConfigModal() {
+            document.getElementById('cfg-title').value = customConfig.title;
+            document.getElementById('cfg-subtitle').value = customConfig.subtitle;
+            for(let i=0; i<7; i++) document.getElementById(`cfg-d${i}`).value = customConfig.dates[i];
+            document.getElementById('cfg-csv-url').value = customConfig.csvUrl;
+            document.getElementById('cfg-students-raw').value = customConfig.rawStudentsList;
+            document.getElementById('config-modal').style.display = 'flex';
+        }
+        function closeConfigModal() { document.getElementById('config-modal').style.display = 'none'; }
+
+        function saveConfig() {
+            customConfig.title = document.getElementById('cfg-title').value;
+            customConfig.subtitle = document.getElementById('cfg-subtitle').value;
+            for(let i=0; i<7; i++) customConfig.dates[i] = document.getElementById(`cfg-d${i}`).value.trim();
+            customConfig.csvUrl = document.getElementById('cfg-csv-url').value.trim();
+            customConfig.rawStudentsList = document.getElementById('cfg-students-raw').value;
+            
+            localStorage.setItem('movie_club_rollcall_firebase_v2_cfg', JSON.stringify(customConfig));
+            closeConfigModal(); 
+            
+            // 重新讀取面板與重啟監聽
+            loadSettings(); 
+            renderTable(); 
+            calculateStats(); 
+            initFirebaseConnection();
+        }
+
         function exportToExcel() {
             const header = ["序號", "學號", "姓名", "班級", customConfig.dates[0], customConfig.dates[1], customConfig.dates[2], customConfig.dates[3], customConfig.dates[4], customConfig.dates[5], customConfig.dates[6], "出席次數", "出席率", "狀態"];
             const rows = [];
@@ -299,8 +467,8 @@
                 rows.push([index + 1, s.id, s.name, s.dept_class, s.attendance[customConfig.dates[0]]===1?"V":"", s.attendance[customConfig.dates[1]]===1?"V":"", s.attendance[customConfig.dates[2]]===1?"V":"", s.attendance[customConfig.dates[3]]===1?"V":"", s.attendance[customConfig.dates[4]]===1?"V":"", s.attendance[customConfig.dates[5]]===1?"V":"", s.attendance[customConfig.dates[6]]===1?"V":"", attCount + "次", ((attCount / customConfig.dates.length) * 100).toFixed(0) + "%", attCount === customConfig.dates.length ? "全勤" : (attCount === 0 ? "缺席" : "一般")]);
             });
             const wb = XLSX.utils.book_new(); const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
-            XLSX.utils.book_append_sheet(wb, ws, "點名LINE Bot統計");
-            XLSX.writeFile(wb, `電影欣賞社_LINE實時統計結果.xlsx`);
+            XLSX.utils.book_append_sheet(wb, ws, "點名統計紀錄");
+            XLSX.writeFile(wb, `電影欣賞社_實時點名統計結果.xlsx`);
         }
         
         document.addEventListener("DOMContentLoaded", function() {
