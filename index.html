@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>電影欣賞社 - 網頁互動點名與統計系統</title>
+    <title>電影欣賞社 - 網頁互動點名與統計系統 (診斷版)</title>
     <style>
         :root {
             --primary: #2b4c7e;
@@ -23,8 +23,15 @@
         
         .debug-banner {
             background-color: #2c3e50; color: #fff; padding: 14px 18px; border-radius: 8px;
-            margin-bottom: 20px; font-size: 14px; font-weight: bold; line-height: 1.5;
+            margin-bottom: 10px; font-size: 14px; font-weight: bold; line-height: 1.5;
             border-left: 6px solid #00e676; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* 🔎 核心 Debug 顯示面板樣式 */
+        .diagnostic-panel {
+            background-color: #fdd835; color: #333; padding: 16px; border-radius: 8px;
+            margin-bottom: 20px; font-size: 13px; font-family: monospace; border-left: 6px solid #f57f17;
+            white-space: pre-wrap; line-height: 1.6; display: block; box-shadow: 0 2px 6px rgba(0,0,0,0.08);
         }
 
         .manual-panel {
@@ -77,11 +84,14 @@
 <body>
     <div class="container">
         <header>
-            <h1 id="view-title">電影欣賞社 網頁版互動點名系統</h1>
+            <h1 id="view-title">電影欣賞社 網頁版互動點名系統 (診斷模式)</h1>
             <p id="view-subtitle">自動連動 Google 雲端，自動統計出席率、全勤狀態。</p>
         </header>
 
         <div class="debug-banner" id="debug-banner">📡 點名系統智慧定位大腦已就緒...</div>
+        
+        <!-- 🔎 系統大腦剖析面板：用來看破真相 -->
+        <div class="diagnostic-panel" id="diagnostic-log">🔍 正在捕捉雲端數據流，請稍候... (若持續無畫面，代表試算表內完全無人填寫)</div>
 
         <!-- 📱 手動簽到區 -->
         <div class="manual-panel">
@@ -115,12 +125,12 @@
                         <th style="width: 100px;">姓名</th>
                         <th style="width: 140px;">班級</th>
                         <th class="checkbox-cell" id="th-d0">07/16</th>
-                        <th class="checkbox-cell" id="th-d1">03/27</th>
-                        <th class="checkbox-cell" id="th-d2">04/24</th>
-                        <th class="checkbox-cell" id="th-d3">05/08</th>
-                        <th class="checkbox-cell" id="th-d4">05/29</th>
-                        <th class="checkbox-cell" id="th-d5">06/05</th>
-                        <th class="checkbox-cell" id="th-d6">06/12</th>
+                        <th class="checkbox-cell" id="th-d1">07/17</th>
+                        <th class="checkbox-cell" id="th-d2">07/18</th>
+                        <th class="checkbox-cell" id="th-d3">07/19</th>
+                        <th class="checkbox-cell" id="th-d4">07/20</th>
+                        <th class="checkbox-cell" id="th-d5">07/21</th>
+                        <th class="checkbox-cell" id="th-d6">07/22</th>
                         <th style="width: 90px; text-align: center;">出席次數</th>
                         <th style="width: 90px; text-align: center;">出席率</th>
                         <th style="width: 90px; text-align: center;">狀態</th>
@@ -230,7 +240,7 @@
         function parseRawStudents(rawText) {
             const lines = rawText.split("\n"); const newList = [];
             lines.forEach(line => {
-                let cleanLine = line.trim(); if (!cleanLine) return;
+                let cleanLine = line.trim(); if (!line) return;
                 let cells = cleanLine.split(/[\t,\s]+/).filter(c => c.trim() !== "");
                 if (cells.length >= 2) {
                     newList.push({ 
@@ -340,42 +350,57 @@
             customConfig.dates.forEach((d, i) => { const el = document.getElementById(`sum-d${i}`); if(el) el.innerText = dateCounts[d] || 0; });
         }
 
-        // 🟢 智慧連動雲端主核心函數（已修正為精準抓取第三欄學號）
+        // 🟢 智慧連動雲端 + 🚀 強效診斷抓 Bug 核心
         function fetchCloudAttendance() {
             const debugEl = document.getElementById('debug-banner');
+            const diagEl = document.getElementById('diagnostic-log');
             if (!customConfig.csvUrl) return;
 
             let targetUrl = customConfig.csvUrl;
-            if(targetUrl.includes('/pub?')) { targetUrl = targetUrl.replace('/pub?', '/export?format=csv&'); }
+            if(targetUrl.includes('/pub?')) { 
+                targetUrl = targetUrl.replace('/pub?', '/export?format=csv&'); 
+            }
+            
             const backupFetchUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(targetUrl);
 
-            fetch(targetUrl)
-                .then(res => { if (!res.ok) { return fetch(backupFetchUrl).then(r => r.json()).then(data => data.contents); } return res.text(); })
-                .catch(() => { return fetch(backupFetchUrl).then(r => r.json()).then(data => data.contents); })
-                .then(csvText => {
-                    if(!csvText || csvText.trim().length < 10) return;
+            fetch(backupFetchUrl)
+                .then(res => { 
+                    if (!res.ok) throw new Error("網路代理連線異常"); 
+                    return res.json(); 
+                })
+                .then(data => {
+                    const csvText = data.contents;
+                    if(!csvText || csvText.trim().length < 10) {
+                        if (diagEl) diagEl.innerText = "⚠️ 警告：從雲端下載的資料格數過少或為空。";
+                        return;
+                    }
                     
-                    // 用來相容 Windows 和 Linux 系統的換行符號
                     const lines = csvText.split(/\r?\n/);
                     let dataChanged = false;
                     let matchCount = 0;
 
-                    // 將設定中的 2026/7/16 格式簡化成 7/16，以便比對試算表時間戳記
+                    // 面板簡化日期陣列 (例如: ["7/16", "7/17", "7/18"...])
                     const formattedPanelDates = customConfig.dates.map(d => {
                         const parts = d.replace(/-/g, '/').split('/');
                         if (parts.length >= 3) { return `${parseInt(parts[1], 10)}/${parseInt(parts[2], 10)}`; }
                         return d.trim();
                     });
 
-                    // 從試算表第二行開始巡（跳過標頭欄位）
+                    // 🛠️ 診斷回報：將前 3 筆雲端資料呈現在網頁上方便排查
+                    let debugInfo = `【🔍 雲端數據大腦診斷中】\n`;
+                    debugInfo += `網頁期望比對的簡化日期：[${formattedPanelDates.join(', ')}]\n`;
+                    debugInfo += `試算表總列數：${lines.length} 列\n\n`;
+                    debugInfo += `▼ 雲端前 3 筆填表資料的精準分析如下：\n`;
+
+                    let trackedLinesCount = 0;
+
                     for (let i = 1; i < lines.length; i++) {
                         let line = lines[i].trim(); if (!line) continue;
                         
-                        // 🌟 修正：使用更安全的 CSV 切割函數，確保即使有空欄位，欄位順序也不會錯亂
                         const cells = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                        if (!cells || cells.length < 3) continue; // 如果不滿 3 欄直接跳過
+                        if (!cells || cells.length < 1) continue;
 
-                        // 1. 抓取第一欄：時間戳記（用來判斷是哪一天的點名紀錄）
+                        // 抓取第 A 欄：時間戳記
                         let rawTimestamp = cells[0].replace(/"/g, '').replace(/\s/g, '');
                         let extractedRowDate = "";
                         
@@ -390,14 +415,31 @@
 
                         let targetPanelDateIndex = formattedPanelDates.indexOf(extractedRowDate);
                         
-                        // 2. 如果日期符合我們設定的 7 天之一，則精準撈取【第三欄（索引2）】的學號
-                        if (targetPanelDateIndex !== -1) {
+                        // 抓取 C 欄學號
+                        let cloudStudentId = cells[2] ? cells[2].replace(/"/g, '').trim() : "（無資料）";
+
+                        // 收集診斷前 3 筆
+                        if(trackedLinesCount < 3) {
+                            trackedLinesCount++;
+                            debugInfo += `[第 ${i} 列紀錄] ➔ A欄時間戳記: "${cells[0]}", 系統判定日期為: "${extractedRowDate || '無法辨識'}"\n`;
+                            debugInfo += `              ➔ B欄電子郵件: "${cells[1] || ''}"\n`;
+                            debugInfo += `              ➔ C欄(第3欄)學號: "${cloudStudentId}" ➔ 比對結果: `;
+                            
+                            if (targetPanelDateIndex === -1) {
+                                debugInfo += `❌ 日期不符合目前設定的 7 個日期！被系統過濾掉。\n\n`;
+                            } else {
+                                const testStudent = currentStudents.find(student => student.id === cloudStudentId);
+                                if (!testStudent) {
+                                    debugInfo += `❌ 日期符合(${customConfig.dates[targetPanelDateIndex]})，但此學號不在下方的 308 人名單中！\n\n`;
+                                } else {
+                                    debugInfo += `✅ 日期符合、學號正確！應該要打勾。\n\n`;
+                                }
+                            }
+                        }
+
+                        // 2. 真正進行比對打勾邏輯
+                        if (targetPanelDateIndex !== -1 && cells[2]) {
                             let matchedActualDate = customConfig.dates[targetPanelDateIndex];
-                            
-                            // 🌟 核心修正：精準指定 cells[2]（第三欄），去掉引號與空白
-                            let cloudStudentId = cells[2].replace(/"/g, '').trim(); 
-                            
-                            // 在現有名單找尋該學號
                             const foundStudent = currentStudents.find(student => student.id === cloudStudentId);
                             if (foundStudent) {
                                 if(foundStudent.attendance[matchedActualDate] !== 1) {
@@ -409,16 +451,22 @@
                         }
                     }
                     
+                    if (diagEl) diagEl.innerText = debugInfo;
+
                     if(matchCount > 0) {
-                        debugEl.innerHTML = `🟢 [雲端同步成功] 系統已鎖定【第三欄學號】！目前共自動追蹤勾選了 ${matchCount} 人次！`;
+                        debugEl.innerHTML = `🟢 [雲端同步成功] 系統已與 Google C 欄對齊！目前共自動追蹤勾選了 ${matchCount} 人次！`;
                         debugEl.style.borderLeftColor = "#00e676";
                     } else {
-                        debugEl.innerHTML = `🟢 [雲端連線成功] 系統通暢，目前試算表第三欄尚未出現符合名單的今日應答學號。`;
+                        debugEl.innerHTML = `🟢 [雲端連線成功] 通道暢通！目前 C 欄尚未成功勾選任何人（請看下方黃色面板診斷原因）。`;
                         debugEl.style.borderLeftColor = "#ffeb3b";
                     }
                     if (dataChanged) { renderTable(); calculateStats(); }
                 })
-                .catch(e => { debugEl.innerHTML = "❌ [異常提示] 請確認您的 Google 試算表「發布到網路」權限已開啟（必須選取發布為 CSV 格式）。"; });
+                .catch(e => { 
+                    console.error(e);
+                    debugEl.innerHTML = "❌ [異常提示] 雲端通道連線超時，請確認 Google 網址是否正確。"; 
+                    if (diagEl) diagEl.innerText = "❌ 診斷失敗：" + e.message;
+                });
         }
 
         function updateClassFilterDropdown() {
@@ -453,7 +501,6 @@
 
         function resetFilters() { document.getElementById('search-box').value = ''; document.getElementById('class-filter').value = ''; renderTable(); }
         
-        // 🌟 修正：確保 DOM 完全載入完成後再行初始化與監聽綁定
         document.addEventListener("DOMContentLoaded", function() {
             initTable();
             document.getElementById('search-box').addEventListener('input', renderTable);
