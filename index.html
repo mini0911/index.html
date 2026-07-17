@@ -161,7 +161,7 @@
             <div class="form-group"><label>Google 試算表 CSV 網址</label><input type="text" id="cfg-csv-url"></div>
             <div class="form-group"><label>學生名單自訂 (格式：學號 姓名 班級，中間可用空格或逗號，每行一人)</label><textarea id="cfg-students-raw" style="height:150px;"></textarea></div>
             <div class="modal-actions" style="justify-content: space-between;">
-                <button class="btn btn-danger" onclick="resetToOfficialDefault()">⚠️ 救回 308 位學生名單</button>
+                <button class="btn btn-danger" onclick="resetToOfficialDefault()">⚠️ 救回內建學生名單</button>
                 <div>
                     <button class="btn" style="background:#5f6368;" onclick="closeConfigModal()">取消</button>
                     <button class="btn btn-success" onclick="saveConfig()">儲存</button>
@@ -210,7 +210,10 @@
 
             document.getElementById('view-title').innerText = customConfig.title;
             document.getElementById('view-subtitle').innerText = customConfig.subtitle;
-            for(let i=0; i<7; i++) document.getElementById(`th-d${i}`).innerText = customConfig.dates[i].substring(5);
+            for(let i=0; i<7; i++) {
+                const el = document.getElementById(`th-d${i}`);
+                if(el && customConfig.dates[i]) el.innerText = customConfig.dates[i].substring(5);
+            }
             updateClassFilterDropdown();
         }
 
@@ -221,7 +224,7 @@
         }
 
         function resetToOfficialDefault() {
-            if(confirm("確定要還原成內建的 308 位學生名單嗎？")) { forceResetToDefaultData(); loadSettings(); renderTable(); calculateStats(); }
+            if(confirm("確定要還原成內建的學生名單嗎？")) { forceResetToDefaultData(); loadSettings(); renderTable(); calculateStats(); }
         }
 
         function parseRawStudents(rawText) {
@@ -247,13 +250,13 @@
         function executeManualSignIn() {
             const inputEl = document.getElementById('manual-student-id');
             const typedId = inputEl.value.trim();
-            if(!typedId) { showMsg("❌ 請先輸入學號！", "var(--danger)"); return; }
+            if(!typedId) { showMsg("❌ 請先輸入學號！", "#c62828"); return; }
             const student = currentStudents.find(s => s.id === typedId);
-            if(!student) { showMsg(`⚠️ 找不到學號 [${typedId}]，請檢查名單！`, "var(--danger)"); return; }
+            if(!student) { showMsg(`⚠️ 找不到學號 [${typedId}]，請檢查名單！`, "#c62828"); return; }
             
             const activeDate = customConfig.dates[0]; 
             if(student.attendance[activeDate] === 1) {
-                showMsg(`🎉 ${student.name} 之前已經完成過簽到囉！`, "#cbd5e1");
+                showMsg(`🎉 ${student.name} 之前已經完成過簽到囉！`, "#5f6368");
             } else {
                 student.attendance[activeDate] = 1; 
                 showMsg(`✅ 現場補簽成功！ ${student.name} 已打勾。`, "var(--success)");
@@ -263,7 +266,6 @@
         }
 
         function showMsg(text, color) { const el = document.getElementById('manual-msg'); el.innerText = text; el.style.color = color; }
-        document.getElementById('manual-student-id').addEventListener('keypress', function(e) { if (e.key === 'Enter') executeManualSignIn(); });
 
         function exportToExcel() {
             const header = ["序號", "學號", "姓名", "班級", 
@@ -338,6 +340,7 @@
             customConfig.dates.forEach((d, i) => { const el = document.getElementById(`sum-d${i}`); if(el) el.innerText = dateCounts[d] || 0; });
         }
 
+        // 🟢 智慧連動雲端主核心函數（已修正為精準抓取第三欄學號）
         function fetchCloudAttendance() {
             const debugEl = document.getElementById('debug-banner');
             if (!customConfig.csvUrl) return;
@@ -351,22 +354,28 @@
                 .catch(() => { return fetch(backupFetchUrl).then(r => r.json()).then(data => data.contents); })
                 .then(csvText => {
                     if(!csvText || csvText.trim().length < 10) return;
+                    
+                    // 用來相容 Windows 和 Linux 系統的換行符號
                     const lines = csvText.split(/\r?\n/);
                     let dataChanged = false;
                     let matchCount = 0;
 
+                    // 將設定中的 2026/7/16 格式簡化成 7/16，以便比對試算表時間戳記
                     const formattedPanelDates = customConfig.dates.map(d => {
                         const parts = d.replace(/-/g, '/').split('/');
                         if (parts.length >= 3) { return `${parseInt(parts[1], 10)}/${parseInt(parts[2], 10)}`; }
                         return d.trim();
                     });
 
+                    // 從試算表第二行開始巡（跳過標頭欄位）
                     for (let i = 1; i < lines.length; i++) {
                         let line = lines[i].trim(); if (!line) continue;
                         
-                        const cells = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || line.split(',');
-                        if (!cells || cells.length < 1) continue;
+                        // 🌟 修正：使用更安全的 CSV 切割函數，確保即使有空欄位，欄位順序也不會錯亂
+                        const cells = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                        if (!cells || cells.length < 3) continue; // 如果不滿 3 欄直接跳過
 
+                        // 1. 抓取第一欄：時間戳記（用來判斷是哪一天的點名紀錄）
                         let rawTimestamp = cells[0].replace(/"/g, '').replace(/\s/g, '');
                         let extractedRowDate = "";
                         
@@ -381,41 +390,43 @@
 
                         let targetPanelDateIndex = formattedPanelDates.indexOf(extractedRowDate);
                         
+                        // 2. 如果日期符合我們設定的 7 天之一，則精準撈取【第三欄（索引2）】的學號
                         if (targetPanelDateIndex !== -1) {
                             let matchedActualDate = customConfig.dates[targetPanelDateIndex];
                             
-                            cells.forEach(cell => {
-                                let cleanCellText = cell.replace(/"/g, '').trim();
-                                const foundStudent = currentStudents.find(student => student.id === cleanCellText);
-                                if (foundStudent) {
-                                    if(foundStudent.attendance[matchedActualDate] !== 1) {
-                                        foundStudent.attendance[matchedActualDate] = 1; 
-                                        dataChanged = true;
-                                    }
-                                    matchCount++;
+                            // 🌟 核心修正：精準指定 cells[2]（第三欄），去掉引號與空白
+                            let cloudStudentId = cells[2].replace(/"/g, '').trim(); 
+                            
+                            // 在現有名單找尋該學號
+                            const foundStudent = currentStudents.find(student => student.id === cloudStudentId);
+                            if (foundStudent) {
+                                if(foundStudent.attendance[matchedActualDate] !== 1) {
+                                    foundStudent.attendance[matchedActualDate] = 1; 
+                                    dataChanged = true;
                                 }
-                            });
+                                matchCount++;
+                            }
                         }
                     }
                     
                     if(matchCount > 0) {
-                        debugEl.innerHTML = `🟢 [雲端同步成功] 系統已與試算表對齊！目前共自動追蹤勾選了 ${matchCount} 人次！`;
+                        debugEl.innerHTML = `🟢 [雲端同步成功] 系統已鎖定【第三欄學號】！目前共自動追蹤勾選了 ${matchCount} 人次！`;
                         debugEl.style.borderLeftColor = "#00e676";
                     } else {
-                        debugEl.innerHTML = `🟢 [雲端連線成功] 系統通暢，目前試算表尚未出現符合名單的今日應答紀錄。`;
+                        debugEl.innerHTML = `🟢 [雲端連線成功] 系統通暢，目前試算表第三欄尚未出現符合名單的今日應答學號。`;
                         debugEl.style.borderLeftColor = "#ffeb3b";
                     }
                     if (dataChanged) { renderTable(); calculateStats(); }
                 })
-                .catch(e => { debugEl.innerHTML = "❌ [異常提示] 請確認您的發布網址權源已開啟。"; });
+                .catch(e => { debugEl.innerHTML = "❌ [異常提示] 請確認您的 Google 試算表「發布到網路」權限已開啟（必須選取發布為 CSV 格式）。"; });
         }
 
         function updateClassFilterDropdown() {
-            const select = document.getElementById('class-filter'); const saved = select.value;
+            const select = document.getElementById('class-filter'); if(!select) return;
+            const saved = select.value;
             const classSet = new Set(); currentStudents.forEach(s => { if(s.dept_class) classSet.add(s.dept_class); });
             const classes = Array.from(classSet).sort();
             select.innerHTML = '<option value="">所有班級</option>';
-            // 🌟 核心修復：修正成對的反單引號語法
             classes.forEach(c => { select.innerHTML += `<option value="${c}">${c}</option>`; });
             if(classes.includes(saved)) select.value = saved;
         }
@@ -441,9 +452,14 @@
         }
 
         function resetFilters() { document.getElementById('search-box').value = ''; document.getElementById('class-filter').value = ''; renderTable(); }
-        document.getElementById('search-box').addEventListener('input', renderTable);
-        document.getElementById('class-filter').addEventListener('change', renderTable);
-        window.onload = initTable;
+        
+        // 🌟 修正：確保 DOM 完全載入完成後再行初始化與監聽綁定
+        document.addEventListener("DOMContentLoaded", function() {
+            initTable();
+            document.getElementById('search-box').addEventListener('input', renderTable);
+            document.getElementById('class-filter').addEventListener('change', renderTable);
+            document.getElementById('manual-student-id').addEventListener('keypress', function(e) { if (e.key === 'Enter') executeManualSignIn(); });
+        });
     </script>
 </body>
 </html>
