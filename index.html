@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>電影欣賞社 - 網頁互動點名與統計系統 (診斷版)</title>
+    <title>電影欣賞社 - 網頁互動點名與統計系統 (終極穩定版)</title>
     <style>
         :root {
             --primary: #2b4c7e;
@@ -27,7 +27,6 @@
             border-left: 6px solid #00e676; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        /* 🔎 核心 Debug 顯示面板樣式 */
         .diagnostic-panel {
             background-color: #fdd835; color: #333; padding: 16px; border-radius: 8px;
             margin-bottom: 20px; font-size: 13px; font-family: monospace; border-left: 6px solid #f57f17;
@@ -84,14 +83,13 @@
 <body>
     <div class="container">
         <header>
-            <h1 id="view-title">電影欣賞社 網頁版互動點名系統 (診斷模式)</h1>
+            <h1 id="view-title">電影欣賞社 網頁版互動點名系統 (終極備援穩定版)</h1>
             <p id="view-subtitle">自動連動 Google 雲端，自動統計出席率、全勤狀態。</p>
         </header>
 
-        <div class="debug-banner" id="debug-banner">📡 點名系統智慧定位大腦已就緒...</div>
+        <div class="debug-banner" id="debug-banner">📡 點名系統備援大腦防護罩已就緒...</div>
         
-        <!-- 🔎 系統大腦剖析面板：用來看破真相 -->
-        <div class="diagnostic-panel" id="diagnostic-log">🔍 正在捕捉雲端數據流，請稍候... (若持續無畫面，代表試算表內完全無人填寫)</div>
+        <div class="diagnostic-panel" id="diagnostic-log">🔍 正在捕捉雲端數據流，請稍候...</div>
 
         <!-- 📱 手動簽到區 -->
         <div class="manual-panel">
@@ -350,8 +348,9 @@
             customConfig.dates.forEach((d, i) => { const el = document.getElementById(`sum-d${i}`); if(el) el.innerText = dateCounts[d] || 0; });
         }
 
-        // 🟢 智慧連動雲端 + 🚀 強效診斷抓 Bug 核心
-        function fetchCloudAttendance() {
+        // 🟢 核心改寫：智慧連動雲端 + 【🚀 終極三通道多跳板全自動備援機制】
+        // 此機制會自動依序嘗試三個全球大型公用 CORS 跳板，只要有一個通就能立刻帶入，徹底免疫「有時正常有時失敗」的狀況。
+        async function fetchCloudAttendance() {
             const debugEl = document.getElementById('debug-banner');
             const diagEl = document.getElementById('diagnostic-log');
             if (!customConfig.csvUrl) return;
@@ -359,114 +358,138 @@
             let targetUrl = customConfig.csvUrl;
             if(targetUrl.includes('/pub?')) { 
                 targetUrl = targetUrl.replace('/pub?', '/export?format=csv&'); 
+            } else if (targetUrl.includes('/edit')) {
+                targetUrl = targetUrl.split('/edit')[0] + '/export?format=csv';
             }
             
-            const backupFetchUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(targetUrl);
+            // 定義三個頂級備援跳板網址
+            const proxyUrls = [
+                "https://corsproxy.io/?" + encodeURIComponent(targetUrl),
+                "https://api.allorigins.win/get?url=" + encodeURIComponent(targetUrl),
+                "https://proxy.is-a.dev/?url=" + encodeURIComponent(targetUrl)
+            ];
 
-            fetch(backupFetchUrl)
-                .then(res => { 
-                    if (!res.ok) throw new Error("網路代理連線異常"); 
-                    return res.json(); 
-                })
-                .then(data => {
-                    const csvText = data.contents;
-                    if(!csvText || csvText.trim().length < 10) {
-                        if (diagEl) diagEl.innerText = "⚠️ 警告：從雲端下載的資料格數過少或為空。";
-                        return;
-                    }
-                    
-                    const lines = csvText.split(/\r?\n/);
-                    let dataChanged = false;
-                    let matchCount = 0;
+            let csvText = null;
+            let successProxyIndex = -1;
 
-                    // 面板簡化日期陣列 (例如: ["7/16", "7/17", "7/18"...])
-                    const formattedPanelDates = customConfig.dates.map(d => {
-                        const parts = d.replace(/-/g, '/').split('/');
-                        if (parts.length >= 3) { return `${parseInt(parts[1], 10)}/${parseInt(parts[2], 10)}`; }
-                        return d.trim();
-                    });
+            // 🌟 備援核心：利用迴圈依序測試通道，失敗了就秒轉下一個
+            for (let i = 0; i < proxyUrls.length; i++) {
+                try {
+                    const response = await fetch(proxyUrls[i], { method: 'GET', signal: AbortSignal.timeout(3000) }); // 限制 3 秒內沒反應就換下一個
+                    if (!response.ok) continue;
 
-                    // 🛠️ 診斷回報：將前 3 筆雲端資料呈現在網頁上方便排查
-                    let debugInfo = `【🔍 雲端數據大腦診斷中】\n`;
-                    debugInfo += `網頁期望比對的簡化日期：[${formattedPanelDates.join(', ')}]\n`;
-                    debugInfo += `試算表總列數：${lines.length} 列\n\n`;
-                    debugInfo += `▼ 雲端前 3 筆填表資料的精準分析如下：\n`;
-
-                    let trackedLinesCount = 0;
-
-                    for (let i = 1; i < lines.length; i++) {
-                        let line = lines[i].trim(); if (!line) continue;
-                        
-                        const cells = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                        if (!cells || cells.length < 1) continue;
-
-                        // 抓取第 A 欄：時間戳記
-                        let rawTimestamp = cells[0].replace(/"/g, '').replace(/\s/g, '');
-                        let extractedRowDate = "";
-                        
-                        let match = rawTimestamp.match(/(\d{2,4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
-                        if (match) {
-                            extractedRowDate = `${parseInt(match[2], 10)}/${parseInt(match[3], 10)}`;
-                        } else {
-                            customConfig.dates.forEach((d, idx) => {
-                                if (rawTimestamp.includes(formattedPanelDates[idx])) extractedRowDate = formattedPanelDates[idx];
-                            });
-                        }
-
-                        let targetPanelDateIndex = formattedPanelDates.indexOf(extractedRowDate);
-                        
-                        // 抓取 C 欄學號
-                        let cloudStudentId = cells[2] ? cells[2].replace(/"/g, '').trim() : "（無資料）";
-
-                        // 收集診斷前 3 筆
-                        if(trackedLinesCount < 3) {
-                            trackedLinesCount++;
-                            debugInfo += `[第 ${i} 列紀錄] ➔ A欄時間戳記: "${cells[0]}", 系統判定日期為: "${extractedRowDate || '無法辨識'}"\n`;
-                            debugInfo += `              ➔ B欄電子郵件: "${cells[1] || ''}"\n`;
-                            debugInfo += `              ➔ C欄(第3欄)學號: "${cloudStudentId}" ➔ 比對結果: `;
-                            
-                            if (targetPanelDateIndex === -1) {
-                                debugInfo += `❌ 日期不符合目前設定的 7 個日期！被系統過濾掉。\n\n`;
-                            } else {
-                                const testStudent = currentStudents.find(student => student.id === cloudStudentId);
-                                if (!testStudent) {
-                                    debugInfo += `❌ 日期符合(${customConfig.dates[targetPanelDateIndex]})，但此學號不在下方的 308 人名單中！\n\n`;
-                                } else {
-                                    debugInfo += `✅ 日期符合、學號正確！應該要打勾。\n\n`;
-                                }
-                            }
-                        }
-
-                        // 2. 真正進行比對打勾邏輯
-                        if (targetPanelDateIndex !== -1 && cells[2]) {
-                            let matchedActualDate = customConfig.dates[targetPanelDateIndex];
-                            const foundStudent = currentStudents.find(student => student.id === cloudStudentId);
-                            if (foundStudent) {
-                                if(foundStudent.attendance[matchedActualDate] !== 1) {
-                                    foundStudent.attendance[matchedActualDate] = 1; 
-                                    dataChanged = true;
-                                }
-                                matchCount++;
-                            }
-                        }
-                    }
-                    
-                    if (diagEl) diagEl.innerText = debugInfo;
-
-                    if(matchCount > 0) {
-                        debugEl.innerHTML = `🟢 [雲端同步成功] 系統已與 Google C 欄對齊！目前共自動追蹤勾選了 ${matchCount} 人次！`;
-                        debugEl.style.borderLeftColor = "#00e676";
+                    if (i === 1) {
+                        // AllOrigins 返回的是 JSON，需要特殊解開 contents
+                        const jsonData = await response.json();
+                        csvText = jsonData.contents;
                     } else {
-                        debugEl.innerHTML = `🟢 [雲端連線成功] 通道暢通！目前 C 欄尚未成功勾選任何人（請看下方黃色面板診斷原因）。`;
-                        debugEl.style.borderLeftColor = "#ffeb3b";
+                        // 其他跳板直接返回純文字
+                        csvText = await response.text();
                     }
-                    if (dataChanged) { renderTable(); calculateStats(); }
-                })
-                .catch(e => { 
-                    console.error(e);
-                    debugEl.innerHTML = "❌ [異常提示] 雲端通道連線超時，請確認 Google 網址是否正確。"; 
-                    if (diagEl) diagEl.innerText = "❌ 診斷失敗：" + e.message;
+
+                    if (csvText && csvText.trim().length > 10) {
+                        successProxyIndex = i; // 標記哪個通道成功了
+                        break; // 抓到了就立刻跳出迴圈
+                    }
+                } catch (err) {
+                    console.warn(`主要通道 ${i + 1} 發生瞬時塞車，系統正自動啟用備援通道...`);
+                }
+            }
+
+            // 如果三個跳板全部超時或被擋（通常是本地端網路斷線或 Google 網址被取消發布）
+            if (!csvText) {
+                debugEl.innerHTML = "❌ [異常提示] 雲端備援通道皆超時，請檢查本機網路連線，或確認試算表發布狀態。";
+                debugEl.style.borderLeftColor = "#f44336";
+                if (diagEl) diagEl.innerText = "❌ 診斷失敗：無法與任何備援伺服器建立連線。";
+                return;
+            }
+
+            // --- 以下為高精密解析與打勾數據流 ---
+            try {
+                const lines = csvText.split(/\r?\n/);
+                let dataChanged = false;
+                let matchCount = 0;
+
+                const formattedPanelDates = customConfig.dates.map(d => {
+                    const parts = d.replace(/-/g, '/').split('/');
+                    if (parts.length >= 3) { return `${parseInt(parts[1], 10)}/${parseInt(parts[2], 10)}`; }
+                    return d.trim();
                 });
+
+                let debugInfo = `【🔍 雲端數據大腦診斷中】 (當前安全防禦通道: 通道 ${String.fromCharCode(65 + successProxyIndex)})\n`;
+                debugInfo += `網頁期望比對的簡化日期：[${formattedPanelDates.join(', ')}]\n`;
+                debugInfo += `試算表總列數：${lines.length} 列\n\n`;
+                debugInfo += `▼ 雲端前 3 筆填表資料的精準分析如下：\n`;
+
+                let trackedLinesCount = 0;
+
+                for (let i = 1; i < lines.length; i++) {
+                    let line = lines[i].trim(); if (!line) continue;
+                    
+                    const cells = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    if (!cells || cells.length < 1) continue;
+
+                    let rawTimestamp = cells[0].replace(/"/g, '').replace(/\s/g, '');
+                    let extractedRowDate = "";
+                    
+                    let match = rawTimestamp.match(/(\d{2,4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+                    if (match) {
+                        extractedRowDate = `${parseInt(match[2], 10)}/${parseInt(match[3], 10)}`;
+                    } else {
+                        customConfig.dates.forEach((d, idx) => {
+                            if (rawTimestamp.includes(formattedPanelDates[idx])) extractedRowDate = formattedPanelDates[idx];
+                        });
+                    }
+
+                    let targetPanelDateIndex = formattedPanelDates.indexOf(extractedRowDate);
+                    let cloudStudentId = cells[2] ? cells[2].replace(/"/g, '').trim() : "（無資料）";
+
+                    if(trackedLinesCount < 3) {
+                        trackedLinesCount++;
+                        debugInfo += `[第 ${i} 列紀錄] ➔ A欄時間戳記: "${cells[0]}", 系統判定日期為: "${extractedRowDate || '無法辨識'}"\n`;
+                        debugInfo += `              ➔ B欄電子郵件: "${cells[1] || ''}"\n`;
+                        debugInfo += `              ➔ C欄(第3欄)學號: "${cloudStudentId}" ➔ 比對結果: `;
+                        
+                        if (targetPanelDateIndex === -1) {
+                            debugInfo += `❌ 日期不符合目前設定的 7 個日期！被系統過濾掉。\n\n`;
+                        } else {
+                            const testStudent = currentStudents.find(student => student.id === cloudStudentId);
+                            if (!testStudent) {
+                                debugInfo += `❌ 日期符合(${customConfig.dates[targetPanelDateIndex]})，但此學號不在下方的 308 人名單中！\n\n`;
+                            } else {
+                                debugInfo += `✅ 日期符合、學號正確！應該要打勾。\n\n`;
+                            }
+                        }
+                    }
+
+                    if (targetPanelDateIndex !== -1 && cells[2]) {
+                        let matchedActualDate = customConfig.dates[targetPanelDateIndex];
+                        const foundStudent = currentStudents.find(student => student.id === cloudStudentId);
+                        if (foundStudent) {
+                            if(foundStudent.attendance[matchedActualDate] !== 1) {
+                                foundStudent.attendance[matchedActualDate] = 1; 
+                                dataChanged = true;
+                            }
+                            matchCount++;
+                        }
+                    }
+                }
+                
+                if (diagEl) diagEl.innerText = debugInfo;
+
+                if(matchCount > 0) {
+                    debugEl.innerHTML = `🟢 [雲端同步成功] 系統由穩定跳板通道（通道 ${String.fromCharCode(65 + successProxyIndex)}）精準同步了 ${matchCount} 人次！`;
+                    debugEl.style.borderLeftColor = "#00e676";
+                } else {
+                    debugEl.innerHTML = `🟢 [雲端連線成功] 備援安全通道（通道 ${String.fromCharCode(65 + successProxyIndex)}）流暢！目前 C 欄尚未出現今日應答紀錄。`;
+                    debugEl.style.borderLeftColor = "#ffeb3b";
+                }
+                if (dataChanged) { renderTable(); calculateStats(); }
+
+            } catch (parseError) {
+                console.error(parseError);
+                if (diagEl) diagEl.innerText = "❌ 解析 CSV 數據流錯誤：" + parseError.message;
+            }
         }
 
         function updateClassFilterDropdown() {
