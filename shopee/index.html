@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>嚴選好物推薦 | 蝦皮優惠清單</title>
+    <!-- Tailwind CSS (樣式庫) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 圖示 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 隱藏滾動條但保持可滾動 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen pb-12">
+
+    <!-- 個人頭像與資訊 -->
+    <div class="max-w-md mx-auto pt-8 px-4 text-center">
+        <div class="relative w-24 h-24 mx-auto mb-3">
+            <img src="https://picsum.photos/200" alt="Avatar" class="w-24 h-24 rounded-full object-cover shadow-md border-2 border-white">
+            <span class="absolute bottom-0 right-0 bg-red-500 text-white rounded-full p-1 text-xs border-2 border-white">
+                <i class="fa-solid font-bold fa-bag-shopping"></i>
+            </span>
+        </div>
+        <h1 class="text-xl font-bold text-slate-900">好物嚴選清單</h1>
+        <p class="text-xs text-slate-500 mt-1">點擊下方卡片即可直接開啟蝦皮 App 購買 🛍️</p>
+
+        <!-- 社群連結按鈕 -->
+        <div class="flex justify-center gap-3 mt-4">
+            <a href="https://instagram.com" target="_blank" class="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-pink-500 hover:bg-slate-100 transition">
+                <i class="fa-brands fa-instagram text-lg"></i>
+            </a>
+            <a href="https://youtube.com" target="_blank" class="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-red-600 hover:bg-slate-100 transition">
+                <i class="fa-brands fa-youtube text-lg"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- 分類標籤 (Category Filter) -->
+    <div class="max-w-md mx-auto mt-6 px-4">
+        <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+            <button onclick="filterCategory('all')" class="cat-btn bg-red-500 text-white px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shadow-sm transition">全部</button>
+            <button onclick="filterCategory('3c')" class="cat-btn bg-white text-slate-600 px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shadow-sm hover:bg-slate-100 transition">3C 數位</button>
+            <button onclick="filterCategory('beauty')" class="cat-btn bg-white text-slate-600 px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shadow-sm hover:bg-slate-100 transition">美妝護膚</button>
+            <button onclick="filterCategory('life')" class="cat-btn bg-white text-slate-600 px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shadow-sm hover:bg-slate-100 transition">生活居家</button>
+        </div>
+    </div>
+
+    <!-- 商品清單 (Products) -->
+    <div class="max-w-md mx-auto mt-4 px-4 space-y-3" id="product-list">
+
+        <!-- 商品 1 -->
+        <a href="https://s.shopee.tw/YOUR_AFFILIATE_LINK_1" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
+            <img src="https://picsum.photos/100?random=1" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
+            <div class="flex-1 min-w-0">
+                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">熱銷推薦</span>
+                <h2 class="text-sm font-bold text-slate-800 truncate">高清無線藍牙耳機 (開箱同款)</h2>
+                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">音質超好、降噪強，續航力可達 24 小時</p>
+                <div class="mt-2 flex items-center justify-between">
+                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
+                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                </div>
+            </div>
+        </a>
+
+        <!-- 商品 2 -->
+        <a href="https://s.shopee.tw/YOUR_AFFILIATE_LINK_2" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="beauty">
+            <img src="https://picsum.photos/100?random=2" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
+            <div class="flex-1 min-w-0">
+                <span class="inline-block px-2 py-0.5 bg-amber-50 text-amber-600 text-[10px] font-semibold rounded mb-1">控油必備</span>
+                <h2 class="text-sm font-bold text-slate-800 truncate">男仕控油清爽保濕乳液</h2>
+                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">夏天不再油光滿面，質地輕薄好吸收</p>
+                <div class="mt-2 flex items-center justify-between">
+                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
+                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                </div>
+            </div>
+        </a>
+
+        <!-- 商品 3 -->
+        <a href="https://s.shopee.tw/YOUR_AFFILIATE_LINK_3" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="life">
+            <img src="https://picsum.photos/100?random=3" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
+            <div class="flex-1 min-w-0">
+                <span class="inline-block px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-semibold rounded mb-1">實用好物</span>
+                <h2 class="text-sm font-bold text-slate-800 truncate">多功能桌上型擴充插座</h2>
+                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">帶快充 USB 埠，桌面收納更整潔</p>
+                <div class="mt-2 flex items-center justify-between">
+                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
+                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                </div>
+            </div>
+        </a>
+
+    </div>
+
+    <!-- 頁尾 -->
+    <footer class="text-center text-xs text-slate-400 mt-10">
+        <p>© 2026 好物嚴選 All Rights Reserved.</p>
+    </footer>
+
+    <!-- 分類切換邏輯 -->
+    <script>
+        function filterCategory(cat) {
+            const items = document.querySelectorAll('.product-item');
+            const buttons = document.querySelectorAll('.cat-btn');
+
+            // 切換按鈕樣式
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-red-500', 'text-white');
+                btn.classList.add('bg-white', 'text-slate-600');
+            });
+            event.target.classList.remove('bg-white', 'text-slate-600');
+            event.target.classList.add('bg-red-500', 'text-white');
+
+            // 切換商品顯示
+            items.forEach(item => {
+                if (cat === 'all' || item.dataset.category === cat) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
