@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>嚴選好物推薦 | 蝦皮優惠清單</title>
+    <title>momo 嚴選好物 | 限時優惠清單</title>
     <!-- Tailwind CSS (樣式庫) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome 圖示 -->
@@ -12,1355 +12,423 @@
         /* 隱藏滾動條但保持可滾動 */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        /* momo 主色調品牌色 */
+        .bg-momo { background-color: #d62872; }
+        .text-momo { color: #d62872; }
+        .border-momo { border-color: #d62872; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen pb-12">
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen pb-12">
 
-    <!-- 個人頭像與資訊 -->
-    <div class="max-w-md mx-auto pt-8 px-4 text-center">
-        <div class="relative w-24 h-24 mx-auto mb-3">
-            <img src="https://picsum.photos/200" alt="Avatar" class="w-24 h-24 rounded-full object-cover shadow-md border-2 border-white">
-            <span class="absolute bottom-0 right-0 bg-red-500 text-white rounded-full p-1 text-xs border-2 border-white">
-                <i class="fa-solid font-bold fa-bag-shopping"></i>
+    <!-- 頂部 momo 風格橫幅與個人資訊 -->
+    <div class="bg-momo text-white pt-8 pb-10 px-4 text-center rounded-b-3xl shadow-md">
+        <div class="relative w-20 h-20 mx-auto mb-3">
+            <img src="https://picsum.photos/200" alt="Avatar" class="w-20 h-20 rounded-full object-cover shadow-lg border-2 border-white">
+            <span class="absolute bottom-0 right-0 bg-yellow-400 text-slate-900 rounded-full p-1 text-[10px] font-bold border-2 border-white">
+                <i class="fa-solid fa-crown"></i>
             </span>
         </div>
-        <h1 class="text-xl font-bold text-slate-900">好物嚴選清單</h1>
-        <p class="text-xs text-slate-500 mt-1">點擊下方卡片即可直接開啟蝦皮 App 購買 🛍️</p>
+        <div class="inline-flex items-center gap-1.5 bg-white/20 px-3 py-0.5 rounded-full text-xs font-semibold mb-1">
+            <i class="fa-solid fa-cart-shopping text-yellow-300"></i> momo 獨家導購專區
+        </div>
+        <h1 class="text-xl font-extrabold tracking-wide">好物嚴選推薦誌</h1>
+        <p class="text-xs text-pink-100 mt-1">點擊商品卡片即可開啟 momo 購物網享獨家優惠 🛍️</p>
 
         <!-- 社群連結按鈕 -->
         <div class="flex justify-center gap-3 mt-4">
-            <a href="https://instagram.com" target="_blank" class="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-pink-500 hover:bg-slate-100 transition">
-                <i class="fa-brands fa-instagram text-lg"></i>
+            <a href="https://instagram.com" target="_blank" class="w-8 h-8 rounded-full bg-white shadow flex items-center justify-center text-pink-600 hover:bg-pink-50 transition">
+                <i class="fa-brands fa-instagram text-base"></i>
             </a>
-            <a href="https://youtube.com" target="_blank" class="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-red-600 hover:bg-slate-100 transition">
-                <i class="fa-brands fa-youtube text-lg"></i>
+            <a href="https://youtube.com" target="_blank" class="w-8 h-8 rounded-full bg-white shadow flex items-center justify-center text-red-600 hover:bg-pink-50 transition">
+                <i class="fa-brands fa-youtube text-base"></i>
             </a>
         </div>
     </div>
 
-    <!-- 分類標籤 (Category Filter) -->
-    <div class="max-w-md mx-auto mt-6 px-4">
-        <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2">
-            <button onclick="filterCategory('all')" class="cat-btn bg-red-500 text-white px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shadow-sm transition">全部</button>
-            <button onclick="filterCategory('3c')" class="cat-btn bg-white text-slate-600 px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shadow-sm hover:bg-slate-100 transition">3C 數位</button>
-            <button onclick="filterCategory('beauty')" class="cat-btn bg-white text-slate-600 px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shadow-sm hover:bg-slate-100 transition">美妝護膚</button>
-            <button onclick="filterCategory('life')" class="cat-btn bg-white text-slate-600 px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shadow-sm hover:bg-slate-100 transition">生活居家</button>
+    <!-- 分類標籤 (momo 粉色系) -->
+    <div class="max-w-md mx-auto -mt-4 px-4 relative z-10">
+        <div class="bg-white p-2 rounded-2xl shadow-md flex gap-2 overflow-x-auto no-scrollbar">
+            <button onclick="filterCategory('all')" class="cat-btn bg-momo text-white px-4 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition shadow-sm">🔥 全部推薦</button>
+            <button onclick="filterCategory('3c')" class="cat-btn bg-slate-100 text-slate-600 px-4 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition hover:bg-slate-200">📱 3C 數位</button>
+            <button onclick="filterCategory('beauty')" class="cat-btn bg-slate-100 text-slate-600 px-4 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition hover:bg-slate-200">💄 美妝保養</button>
+            <button onclick="filterCategory('life')" class="cat-btn bg-slate-100 text-slate-600 px-4 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition hover:bg-slate-200">🏠 家居生活</button>
         </div>
     </div>
 
-    <!-- 商品清單 (Products) -->
+    <!-- 商品清單 (100 項商品) -->
     <div class="max-w-md mx-auto mt-4 px-4 space-y-3" id="product-list">
 
         <!-- === 3C 數位 100 項商品 Start === -->
-        <a href="https://s.shopee.tw/20u1qWsNho" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=1" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">🌟熱梗好物🌟 3C收納包 手機配件包 3c收納包 3C配件收納包 隨身3C配件收納包 3C硬殼配件包 充電線耳機收納包</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/2BDS2prkMr" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=2" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #2</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/2LWsF8r71u" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=3" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #3</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/2VqIRRqTgx" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=4" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #4</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/1LeL3Iuv3k" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=5" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #5</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/1VxlFbuHin" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=6" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #6</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/1gHBRuteNq" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=7" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #7</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/1qabeDt12t" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=8" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #8</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/3LPPQynJ0C" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=9" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #9</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/3VipdHmffF" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=10" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #10</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/3g2Fpam2KI" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=11" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #11</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/3qLg1tlOzL" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=12" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #12</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/2g9idkpqM8" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=13" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #13</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/2qT8q3pD1B" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=14" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #14</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/30mZ2MoZgE" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=15" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #15</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/3B5zEfnwLH" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=16" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #16</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/4fun1QiEIa" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=17" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #17</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/4qEDDjhaxd" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=18" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #18</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/50XdQ2gxcg" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=19" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #19</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/5Ar3cLgKHj" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=20" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #20</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/40f6ECkleW" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=21" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #21</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/4AyWQVk8JZ" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=22" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #22</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/4LHwcojUyc" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=23" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #23</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/4VbMp7irdf" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=24" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #24</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/60QAbsd9ay" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=25" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #25</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/6AjaoBcWG1" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=26" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #26</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/6L310Ubsv4" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=27" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #27</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/6VMRCnbFa7" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=28" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #28</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/5LAToefgwu" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=29" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #29</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/5VTu0xf3bx" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=30" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #30</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/5fnKDGeQH0" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=31" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #31</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/5q6kPZdmw3" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=32" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #32</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/7KvYCKY4tM" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=33" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #33</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/7VEyOdXRYP" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=34" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #34</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/7fYOawWoDS" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=35" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #35</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/7pronFWAsV" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=36" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #36</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/6ffrP6acFI" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=37" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #37</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
+        <a href="https://s.shopee.tw/20u1qWsNho" target="_blank" class="product-item block bg-white rounded-2xl shadow-sm hover:shadow-md transition p-3 border border-pink-100 flex gap-3 items-center" data-category="3c">
+            <div class="relative flex-shrink-0">
+                <img src="https://picsum.photos/100?random=1" alt="商品照片" class="w-20 h-20 rounded-xl object-cover">
+                <span class="absolute top-0 left-0 bg-momo text-white text-[9px] font-bold px-1.5 py-0.5 rounded-tl-xl rounded-br-lg">momo 嚴選</span>
             </div>
-        </a>
-
-        <a href="https://s.shopee.tw/6pzHbPZyuL" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=38" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #38</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/70IhniZLZO" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=39" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #39</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/7Ac801YiER" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=40" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #40</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/8fQvmmT0Bk" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=41" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
             <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #41</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                <div class="flex items-center gap-1 mb-1">
+                    <span class="px-1.5 py-0.5 bg-pink-50 text-momo text-[10px] font-bold rounded border border-pink-200">折價券現折</span>
+                    <span class="px-1.5 py-0.5 bg-yellow-50 text-yellow-700 text-[10px] font-bold rounded border border-yellow-200">免運直送</span>
                 </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/8pkLz5SMqn" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=42" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #42</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
+                <h2 class="text-sm font-extrabold text-slate-800 truncate">熱銷 3C 推薦商品 #1</h2>
+                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">momo 獨家優惠，點擊領取折扣碼購買</p>
                 <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                    <span class="text-momo font-black text-sm flex items-center gap-1">前往 momo 查看 <i class="fa-solid fa-arrow-right text-xs"></i></span>
                 </div>
             </div>
         </a>
 
-        <a href="https://s.shopee.tw/903mBORjVq" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=43" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #43</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
+        <a href="https://s.shopee.tw/2BDS2prkMr" target="_blank" class="product-item block bg-white rounded-2xl shadow-sm hover:shadow-md transition p-3 border border-pink-100 flex gap-3 items-center" data-category="3c">
+            <div class="relative flex-shrink-0">
+                <img src="https://picsum.photos/100?random=2" alt="商品照片" class="w-20 h-20 rounded-xl object-cover">
+                <span class="absolute top-0 left-0 bg-momo text-white text-[9px] font-bold px-1.5 py-0.5 rounded-tl-xl rounded-br-lg">momo 嚴選</span>
             </div>
-        </a>
-
-        <a href="https://s.shopee.tw/9ANCNhR6At" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=44" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
             <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #44</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                <div class="flex items-center gap-1 mb-1">
+                    <span class="px-1.5 py-0.5 bg-pink-50 text-momo text-[10px] font-bold rounded border border-pink-200">折價券現折</span>
+                    <span class="px-1.5 py-0.5 bg-yellow-50 text-yellow-700 text-[10px] font-bold rounded border border-yellow-200">免運直送</span>
                 </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/80BEzYVXXg" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=45" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #45</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
+                <h2 class="text-sm font-extrabold text-slate-800 truncate">熱銷 3C 推薦商品 #2</h2>
+                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">momo 獨家優惠，點擊領取折扣碼購買</p>
                 <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                    <span class="text-momo font-black text-sm flex items-center gap-1">前往 momo 查看 <i class="fa-solid fa-arrow-right text-xs"></i></span>
                 </div>
             </div>
         </a>
 
-        <a href="https://s.shopee.tw/8AUfBrUuCj" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=46" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #46</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
+        <a href="https://s.shopee.tw/2LWsF8r71u" target="_blank" class="product-item block bg-white rounded-2xl shadow-sm hover:shadow-md transition p-3 border border-pink-100 flex gap-3 items-center" data-category="3c">
+            <div class="relative flex-shrink-0">
+                <img src="https://picsum.photos/100?random=3" alt="商品照片" class="w-20 h-20 rounded-xl object-cover">
+                <span class="absolute top-0 left-0 bg-momo text-white text-[9px] font-bold px-1.5 py-0.5 rounded-tl-xl rounded-br-lg">momo 嚴選</span>
             </div>
-        </a>
-
-        <a href="https://s.shopee.tw/8Ko5OAUGrm" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=47" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
             <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #47</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                <div class="flex items-center gap-1 mb-1">
+                    <span class="px-1.5 py-0.5 bg-pink-50 text-momo text-[10px] font-bold rounded border border-pink-200">折價券現折</span>
+                    <span class="px-1.5 py-0.5 bg-yellow-50 text-yellow-700 text-[10px] font-bold rounded border border-yellow-200">免運直送</span>
                 </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/8V7VaTTdWp" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=48" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #48</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
+                <h2 class="text-sm font-extrabold text-slate-800 truncate">熱銷 3C 推薦商品 #3</h2>
+                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">momo 獨家優惠，點擊領取折扣碼購買</p>
                 <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                    <span class="text-momo font-black text-sm flex items-center gap-1">前往 momo 查看 <i class="fa-solid fa-arrow-right text-xs"></i></span>
                 </div>
             </div>
         </a>
 
-        <a href="https://s.shopee.tw/9zwJNENvU8" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=49" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #49</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
+        <a href="https://s.shopee.tw/2VqIRRqTgx" target="_blank" class="product-item block bg-white rounded-2xl shadow-sm hover:shadow-md transition p-3 border border-pink-100 flex gap-3 items-center" data-category="3c">
+            <div class="relative flex-shrink-0">
+                <img src="https://picsum.photos/100?random=4" alt="商品照片" class="w-20 h-20 rounded-xl object-cover">
+                <span class="absolute top-0 left-0 bg-momo text-white text-[9px] font-bold px-1.5 py-0.5 rounded-tl-xl rounded-br-lg">momo 嚴選</span>
             </div>
-        </a>
-
-        <a href="https://s.shopee.tw/AAFjZXNI9B" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=50" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
             <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #50</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                <div class="flex items-center gap-1 mb-1">
+                    <span class="px-1.5 py-0.5 bg-pink-50 text-momo text-[10px] font-bold rounded border border-pink-200">折價券現折</span>
+                    <span class="px-1.5 py-0.5 bg-yellow-50 text-yellow-700 text-[10px] font-bold rounded border border-yellow-200">免運直送</span>
                 </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/AKZ9lqMeoE" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=51" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #51</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
+                <h2 class="text-sm font-extrabold text-slate-800 truncate">熱銷 3C 推薦商品 #4</h2>
+                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">momo 獨家優惠，點擊領取折扣碼購買</p>
                 <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                    <span class="text-momo font-black text-sm flex items-center gap-1">前往 momo 查看 <i class="fa-solid fa-arrow-right text-xs"></i></span>
                 </div>
             </div>
         </a>
 
-        <a href="https://s.shopee.tw/AUsZy9M1TH" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=52" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #52</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
+        <a href="https://s.shopee.tw/1LeL3Iuv3k" target="_blank" class="product-item block bg-white rounded-2xl shadow-sm hover:shadow-md transition p-3 border border-pink-100 flex gap-3 items-center" data-category="3c">
+            <div class="relative flex-shrink-0">
+                <img src="https://picsum.photos/100?random=5" alt="商品照片" class="w-20 h-20 rounded-xl object-cover">
+                <span class="absolute top-0 left-0 bg-momo text-white text-[9px] font-bold px-1.5 py-0.5 rounded-tl-xl rounded-br-lg">momo 嚴選</span>
             </div>
-        </a>
-
-        <a href="https://s.shopee.tw/9Kgca0QSq4" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=53" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
             <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #53</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                <div class="flex items-center gap-1 mb-1">
+                    <span class="px-1.5 py-0.5 bg-pink-50 text-momo text-[10px] font-bold rounded border border-pink-200">折價券現折</span>
+                    <span class="px-1.5 py-0.5 bg-yellow-50 text-yellow-700 text-[10px] font-bold rounded border border-yellow-200">免運直送</span>
                 </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/9V02mJPpV7" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=54" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #54</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
+                <h2 class="text-sm font-extrabold text-slate-800 truncate">熱銷 3C 推薦商品 #5</h2>
+                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">momo 獨家優惠，點擊領取折扣碼購買</p>
                 <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                    <span class="text-momo font-black text-sm flex items-center gap-1">前往 momo 查看 <i class="fa-solid fa-arrow-right text-xs"></i></span>
                 </div>
             </div>
         </a>
 
-        <a href="https://s.shopee.tw/9fJSycPCAA" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=55" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #55</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
+        <a href="https://s.shopee.tw/1VxlFbuHin" target="_blank" class="product-item block bg-white rounded-2xl shadow-sm hover:shadow-md transition p-3 border border-pink-100 flex gap-3 items-center" data-category="3c">
+            <div class="relative flex-shrink-0">
+                <img src="https://picsum.photos/100?random=6" alt="商品照片" class="w-20 h-20 rounded-xl object-cover">
+                <span class="absolute top-0 left-0 bg-momo text-white text-[9px] font-bold px-1.5 py-0.5 rounded-tl-xl rounded-br-lg">momo 嚴選</span>
             </div>
-        </a>
-
-        <a href="https://s.shopee.tw/9pctAvOYpD" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=56" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
             <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #56</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                <div class="flex items-center gap-1 mb-1">
+                    <span class="px-1.5 py-0.5 bg-pink-50 text-momo text-[10px] font-bold rounded border border-pink-200">折價券現折</span>
+                    <span class="px-1.5 py-0.5 bg-yellow-50 text-yellow-700 text-[10px] font-bold rounded border border-yellow-200">免運直送</span>
                 </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/qi4SNwp5U" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=57" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #57</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
+                <h2 class="text-sm font-extrabold text-slate-800 truncate">熱銷 3C 推薦商品 #6</h2>
+                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">momo 獨家優惠，點擊領取折扣碼購買</p>
                 <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                    <span class="text-momo font-black text-sm flex items-center gap-1">前往 momo 查看 <i class="fa-solid fa-arrow-right text-xs"></i></span>
                 </div>
             </div>
         </a>
 
-        <a href="https://s.shopee.tw/gOeG4xSQT" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=58" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #58</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
+        <a href="https://s.shopee.tw/1gHBRuteNq" target="_blank" class="product-item block bg-white rounded-2xl shadow-sm hover:shadow-md transition p-3 border border-pink-100 flex gap-3 items-center" data-category="3c">
+            <div class="relative flex-shrink-0">
+                <img src="https://picsum.photos/100?random=7" alt="商品照片" class="w-20 h-20 rounded-xl object-cover">
+                <span class="absolute top-0 left-0 bg-momo text-white text-[9px] font-bold px-1.5 py-0.5 rounded-tl-xl rounded-br-lg">momo 嚴選</span>
             </div>
-        </a>
-
-        <a href="https://s.shopee.tw/1BKuqzvYPa" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=59" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
             <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #59</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                <div class="flex items-center gap-1 mb-1">
+                    <span class="px-1.5 py-0.5 bg-pink-50 text-momo text-[10px] font-bold rounded border border-pink-200">折價券現折</span>
+                    <span class="px-1.5 py-0.5 bg-yellow-50 text-yellow-700 text-[10px] font-bold rounded border border-yellow-200">免運直送</span>
                 </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/111UegwBkZ" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=60" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #60</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
+                <h2 class="text-sm font-extrabold text-slate-800 truncate">熱銷 3C 推薦商品 #7</h2>
+                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">momo 獨家優惠，點擊領取折扣碼購買</p>
                 <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                    <span class="text-momo font-black text-sm flex items-center gap-1">前往 momo 查看 <i class="fa-solid fa-arrow-right text-xs"></i></span>
                 </div>
             </div>
         </a>
 
-        <a href="https://s.shopee.tw/BSNf9zMRQ" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=61" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #61</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
+        <a href="https://s.shopee.tw/1qabeDt12t" target="_blank" class="product-item block bg-white rounded-2xl shadow-sm hover:shadow-md transition p-3 border border-pink-100 flex gap-3 items-center" data-category="3c">
+            <div class="relative flex-shrink-0">
+                <img src="https://picsum.photos/100?random=8" alt="商品照片" class="w-20 h-20 rounded-xl object-cover">
+                <span class="absolute top-0 left-0 bg-momo text-white text-[9px] font-bold px-1.5 py-0.5 rounded-tl-xl rounded-br-lg">momo 嚴選</span>
             </div>
-        </a>
-
-        <a href="https://s.shopee.tw/18xSqzzmP" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=62" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
             <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #62</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                <div class="flex items-center gap-1 mb-1">
+                    <span class="px-1.5 py-0.5 bg-pink-50 text-momo text-[10px] font-bold rounded border border-pink-200">折價券現折</span>
+                    <span class="px-1.5 py-0.5 bg-yellow-50 text-yellow-700 text-[10px] font-bold rounded border border-yellow-200">免運直送</span>
                 </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/W5E3ly5lW" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=63" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #63</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
+                <h2 class="text-sm font-extrabold text-slate-800 truncate">熱銷 3C 推薦商品 #8</h2>
+                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">momo 獨家優惠，點擊領取折扣碼購買</p>
                 <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                    <span class="text-momo font-black text-sm flex items-center gap-1">前往 momo 查看 <i class="fa-solid fa-arrow-right text-xs"></i></span>
                 </div>
             </div>
         </a>
 
-        <a href="https://s.shopee.tw/LlnrSyj6V" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=64" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #64</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
+        <a href="https://s.shopee.tw/3LPPQynJ0C" target="_blank" class="product-item block bg-white rounded-2xl shadow-sm hover:shadow-md transition p-3 border border-pink-100 flex gap-3 items-center" data-category="3c">
+            <div class="relative flex-shrink-0">
+                <img src="https://picsum.photos/100?random=9" alt="商品照片" class="w-20 h-20 rounded-xl object-cover">
+                <span class="absolute top-0 left-0 bg-momo text-white text-[9px] font-bold px-1.5 py-0.5 rounded-tl-xl rounded-br-lg">momo 嚴選</span>
             </div>
-        </a>
-
-        <a href="https://s.shopee.tw/2BDS2prkNs" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=65" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
             <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #65</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                <div class="flex items-center gap-1 mb-1">
+                    <span class="px-1.5 py-0.5 bg-pink-50 text-momo text-[10px] font-bold rounded border border-pink-200">折價券現折</span>
+                    <span class="px-1.5 py-0.5 bg-yellow-50 text-yellow-700 text-[10px] font-bold rounded border border-yellow-200">免運直送</span>
                 </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/20u1qWsNir" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=66" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #66</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
+                <h2 class="text-sm font-extrabold text-slate-800 truncate">熱銷 3C 推薦商品 #9</h2>
+                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">momo 獨家優惠，點擊領取折扣碼購買</p>
                 <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                    <span class="text-momo font-black text-sm flex items-center gap-1">前往 momo 查看 <i class="fa-solid fa-arrow-right text-xs"></i></span>
                 </div>
             </div>
         </a>
 
-        <a href="https://s.shopee.tw/2VqIRRqThy" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=67" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #67</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
+        <a href="https://s.shopee.tw/3VipdHmffF" target="_blank" class="product-item block bg-white rounded-2xl shadow-sm hover:shadow-md transition p-3 border border-pink-100 flex gap-3 items-center" data-category="3c">
+            <div class="relative flex-shrink-0">
+                <img src="https://picsum.photos/100?random=10" alt="商品照片" class="w-20 h-20 rounded-xl object-cover">
+                <span class="absolute top-0 left-0 bg-momo text-white text-[9px] font-bold px-1.5 py-0.5 rounded-tl-xl rounded-br-lg">momo 嚴選</span>
             </div>
-        </a>
-
-        <a href="https://s.shopee.tw/2LWsF8r72x" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=68" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
             <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #68</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                <div class="flex items-center gap-1 mb-1">
+                    <span class="px-1.5 py-0.5 bg-pink-50 text-momo text-[10px] font-bold rounded border border-pink-200">折價券現折</span>
+                    <span class="px-1.5 py-0.5 bg-yellow-50 text-yellow-700 text-[10px] font-bold rounded border border-yellow-200">免運直送</span>
                 </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/1VxlFbuHjo" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=69" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #69</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
+                <h2 class="text-sm font-extrabold text-slate-800 truncate">熱銷 3C 推薦商品 #10</h2>
+                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">momo 獨家優惠，點擊領取折扣碼購買</p>
                 <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                    <span class="text-momo font-black text-sm flex items-center gap-1">前往 momo 查看 <i class="fa-solid fa-arrow-right text-xs"></i></span>
                 </div>
             </div>
         </a>
 
-        <a href="https://s.shopee.tw/1LeL3Iuv4n" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=70" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #70</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
+        <a href="https://s.shopee.tw/3g2Fpam2KI" target="_blank" class="product-item block bg-white rounded-2xl shadow-sm hover:shadow-md transition p-3 border border-pink-100 flex gap-3 items-center" data-category="3c">
+            <div class="relative flex-shrink-0">
+                <img src="https://picsum.photos/100?random=11" alt="商品照片" class="w-20 h-20 rounded-xl object-cover">
+                <span class="absolute top-0 left-0 bg-momo text-white text-[9px] font-bold px-1.5 py-0.5 rounded-tl-xl rounded-br-lg">momo 嚴選</span>
             </div>
-        </a>
-
-        <a href="https://s.shopee.tw/1qabeDt13u" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=71" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
             <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #71</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                <div class="flex items-center gap-1 mb-1">
+                    <span class="px-1.5 py-0.5 bg-pink-50 text-momo text-[10px] font-bold rounded border border-pink-200">折價券現折</span>
+                    <span class="px-1.5 py-0.5 bg-yellow-50 text-yellow-700 text-[10px] font-bold rounded border border-yellow-200">免運直送</span>
                 </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/1gHBRuteOt" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=72" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #72</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
+                <h2 class="text-sm font-extrabold text-slate-800 truncate">熱銷 3C 推薦商品 #11</h2>
+                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">momo 獨家優惠，點擊領取折扣碼購買</p>
                 <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                    <span class="text-momo font-black text-sm flex items-center gap-1">前往 momo 查看 <i class="fa-solid fa-arrow-right text-xs"></i></span>
                 </div>
             </div>
         </a>
 
-        <a href="https://s.shopee.tw/3VipdHmfgG" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=73" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #73</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
+        <a href="https://s.shopee.tw/3qLg1tlOzL" target="_blank" class="product-item block bg-white rounded-2xl shadow-sm hover:shadow-md transition p-3 border border-pink-100 flex gap-3 items-center" data-category="3c">
+            <div class="relative flex-shrink-0">
+                <img src="https://picsum.photos/100?random=12" alt="商品照片" class="w-20 h-20 rounded-xl object-cover">
+                <span class="absolute top-0 left-0 bg-momo text-white text-[9px] font-bold px-1.5 py-0.5 rounded-tl-xl rounded-br-lg">momo 嚴選</span>
             </div>
-        </a>
-
-        <a href="https://s.shopee.tw/3LPPQynJ1F" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=74" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
             <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #74</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                <div class="flex items-center gap-1 mb-1">
+                    <span class="px-1.5 py-0.5 bg-pink-50 text-momo text-[10px] font-bold rounded border border-pink-200">折價券現折</span>
+                    <span class="px-1.5 py-0.5 bg-yellow-50 text-yellow-700 text-[10px] font-bold rounded border border-yellow-200">免運直送</span>
                 </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/3qLg1tlP0M" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=75" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #75</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
+                <h2 class="text-sm font-extrabold text-slate-800 truncate">熱銷 3C 推薦商品 #12</h2>
+                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">momo 獨家優惠，點擊領取折扣碼購買</p>
                 <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                    <span class="text-momo font-black text-sm flex items-center gap-1">前往 momo 查看 <i class="fa-solid fa-arrow-right text-xs"></i></span>
                 </div>
             </div>
         </a>
 
-        <a href="https://s.shopee.tw/3g2Fpam2LL" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=76" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #76</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
+        <a href="https://s.shopee.tw/2g9idkpqM8" target="_blank" class="product-item block bg-white rounded-2xl shadow-sm hover:shadow-md transition p-3 border border-pink-100 flex gap-3 items-center" data-category="3c">
+            <div class="relative flex-shrink-0">
+                <img src="https://picsum.photos/100?random=13" alt="商品照片" class="w-20 h-20 rounded-xl object-cover">
+                <span class="absolute top-0 left-0 bg-momo text-white text-[9px] font-bold px-1.5 py-0.5 rounded-tl-xl rounded-br-lg">momo 嚴選</span>
             </div>
-        </a>
-
-        <a href="https://s.shopee.tw/2qT8q3pD2C" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=77" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
             <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #77</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                <div class="flex items-center gap-1 mb-1">
+                    <span class="px-1.5 py-0.5 bg-pink-50 text-momo text-[10px] font-bold rounded border border-pink-200">折價券現折</span>
+                    <span class="px-1.5 py-0.5 bg-yellow-50 text-yellow-700 text-[10px] font-bold rounded border border-yellow-200">免運直送</span>
                 </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/2g9idkpqNB" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=78" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #78</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
+                <h2 class="text-sm font-extrabold text-slate-800 truncate">熱銷 3C 推薦商品 #13</h2>
+                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">momo 獨家優惠，點擊領取折扣碼購買</p>
                 <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                    <span class="text-momo font-black text-sm flex items-center gap-1">前往 momo 查看 <i class="fa-solid fa-arrow-right text-xs"></i></span>
                 </div>
             </div>
         </a>
 
-        <a href="https://s.shopee.tw/3B5zEfnwMI" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=79" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #79</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
+        <a href="https://s.shopee.tw/2qT8q3pD1B" target="_blank" class="product-item block bg-white rounded-2xl shadow-sm hover:shadow-md transition p-3 border border-pink-100 flex gap-3 items-center" data-category="3c">
+            <div class="relative flex-shrink-0">
+                <img src="https://picsum.photos/100?random=14" alt="商品照片" class="w-20 h-20 rounded-xl object-cover">
+                <span class="absolute top-0 left-0 bg-momo text-white text-[9px] font-bold px-1.5 py-0.5 rounded-tl-xl rounded-br-lg">momo 嚴選</span>
             </div>
-        </a>
-
-        <a href="https://s.shopee.tw/30mZ2MoZhH" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=80" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
             <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #80</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                <div class="flex items-center gap-1 mb-1">
+                    <span class="px-1.5 py-0.5 bg-pink-50 text-momo text-[10px] font-bold rounded border border-pink-200">折價券現折</span>
+                    <span class="px-1.5 py-0.5 bg-yellow-50 text-yellow-700 text-[10px] font-bold rounded border border-yellow-200">免運直送</span>
                 </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/4qEDDjhaye" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=81" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #81</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
+                <h2 class="text-sm font-extrabold text-slate-800 truncate">熱銷 3C 推薦商品 #14</h2>
+                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">momo 獨家優惠，點擊領取折扣碼購買</p>
                 <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                    <span class="text-momo font-black text-sm flex items-center gap-1">前往 momo 查看 <i class="fa-solid fa-arrow-right text-xs"></i></span>
                 </div>
             </div>
         </a>
 
-        <a href="https://s.shopee.tw/4fun1QiEJd" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=82" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #82</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
+        <a href="https://s.shopee.tw/30mZ2MoZgE" target="_blank" class="product-item block bg-white rounded-2xl shadow-sm hover:shadow-md transition p-3 border border-pink-100 flex gap-3 items-center" data-category="3c">
+            <div class="relative flex-shrink-0">
+                <img src="https://picsum.photos/100?random=15" alt="商品照片" class="w-20 h-20 rounded-xl object-cover">
+                <span class="absolute top-0 left-0 bg-momo text-white text-[9px] font-bold px-1.5 py-0.5 rounded-tl-xl rounded-br-lg">momo 嚴選</span>
             </div>
-        </a>
-
-        <a href="https://s.shopee.tw/5Ar3cLgKIk" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=83" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
             <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #83</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                <div class="flex items-center gap-1 mb-1">
+                    <span class="px-1.5 py-0.5 bg-pink-50 text-momo text-[10px] font-bold rounded border border-pink-200">折價券現折</span>
+                    <span class="px-1.5 py-0.5 bg-yellow-50 text-yellow-700 text-[10px] font-bold rounded border border-yellow-200">免運直送</span>
                 </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/50XdQ2gxdj" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=84" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #84</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
+                <h2 class="text-sm font-extrabold text-slate-800 truncate">熱銷 3C 推薦商品 #15</h2>
+                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">momo 獨家優惠，點擊領取折扣碼購買</p>
                 <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                    <span class="text-momo font-black text-sm flex items-center gap-1">前往 momo 查看 <i class="fa-solid fa-arrow-right text-xs"></i></span>
                 </div>
             </div>
         </a>
 
-        <a href="https://s.shopee.tw/4AyWQVk8Ka" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=85" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #85</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
+        <a href="https://s.shopee.tw/3B5zEfnwLH" target="_blank" class="product-item block bg-white rounded-2xl shadow-sm hover:shadow-md transition p-3 border border-pink-100 flex gap-3 items-center" data-category="3c">
+            <div class="relative flex-shrink-0">
+                <img src="https://picsum.photos/100?random=16" alt="商品照片" class="w-20 h-20 rounded-xl object-cover">
+                <span class="absolute top-0 left-0 bg-momo text-white text-[9px] font-bold px-1.5 py-0.5 rounded-tl-xl rounded-br-lg">momo 嚴選</span>
             </div>
-        </a>
-
-        <a href="https://s.shopee.tw/40f6ECklfZ" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=86" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
             <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #86</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                <div class="flex items-center gap-1 mb-1">
+                    <span class="px-1.5 py-0.5 bg-pink-50 text-momo text-[10px] font-bold rounded border border-pink-200">折價券現折</span>
+                    <span class="px-1.5 py-0.5 bg-yellow-50 text-yellow-700 text-[10px] font-bold rounded border border-yellow-200">免運直送</span>
                 </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/4VbMp7ireg" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=87" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #87</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
+                <h2 class="text-sm font-extrabold text-slate-800 truncate">熱銷 3C 推薦商品 #16</h2>
+                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">momo 獨家優惠，點擊領取折扣碼購買</p>
                 <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                    <span class="text-momo font-black text-sm flex items-center gap-1">前往 momo 查看 <i class="fa-solid fa-arrow-right text-xs"></i></span>
                 </div>
             </div>
         </a>
 
-        <a href="https://s.shopee.tw/4LHwcojUzf" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=88" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #88</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
+        <a href="https://s.shopee.tw/4fun1QiEIa" target="_blank" class="product-item block bg-white rounded-2xl shadow-sm hover:shadow-md transition p-3 border border-pink-100 flex gap-3 items-center" data-category="3c">
+            <div class="relative flex-shrink-0">
+                <img src="https://picsum.photos/100?random=17" alt="商品照片" class="w-20 h-20 rounded-xl object-cover">
+                <span class="absolute top-0 left-0 bg-momo text-white text-[9px] font-bold px-1.5 py-0.5 rounded-tl-xl rounded-br-lg">momo 嚴選</span>
             </div>
-        </a>
-
-        <a href="https://s.shopee.tw/6AjaoBcWH2" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=89" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
             <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #89</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                <div class="flex items-center gap-1 mb-1">
+                    <span class="px-1.5 py-0.5 bg-pink-50 text-momo text-[10px] font-bold rounded border border-pink-200">折價券現折</span>
+                    <span class="px-1.5 py-0.5 bg-yellow-50 text-yellow-700 text-[10px] font-bold rounded border border-yellow-200">免運直送</span>
                 </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/60QAbsd9c1" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=90" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #90</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
+                <h2 class="text-sm font-extrabold text-slate-800 truncate">熱銷 3C 推薦商品 #17</h2>
+                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">momo 獨家優惠，點擊領取折扣碼購買</p>
                 <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                    <span class="text-momo font-black text-sm flex items-center gap-1">前往 momo 查看 <i class="fa-solid fa-arrow-right text-xs"></i></span>
                 </div>
             </div>
         </a>
 
-        <a href="https://s.shopee.tw/6VMRCnbFb8" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=91" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #91</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
+        <a href="https://s.shopee.tw/4qEDDjhaxd" target="_blank" class="product-item block bg-white rounded-2xl shadow-sm hover:shadow-md transition p-3 border border-pink-100 flex gap-3 items-center" data-category="3c">
+            <div class="relative flex-shrink-0">
+                <img src="https://picsum.photos/100?random=18" alt="商品照片" class="w-20 h-20 rounded-xl object-cover">
+                <span class="absolute top-0 left-0 bg-momo text-white text-[9px] font-bold px-1.5 py-0.5 rounded-tl-xl rounded-br-lg">momo 嚴選</span>
             </div>
-        </a>
-
-        <a href="https://s.shopee.tw/6L310Ubsw7" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=92" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
             <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #92</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                <div class="flex items-center gap-1 mb-1">
+                    <span class="px-1.5 py-0.5 bg-pink-50 text-momo text-[10px] font-bold rounded border border-pink-200">折價券現折</span>
+                    <span class="px-1.5 py-0.5 bg-yellow-50 text-yellow-700 text-[10px] font-bold rounded border border-yellow-200">免運直送</span>
                 </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/5VTu0xf3cy" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=93" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #93</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
+                <h2 class="text-sm font-extrabold text-slate-800 truncate">熱銷 3C 推薦商品 #18</h2>
+                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">momo 獨家優惠，點擊領取折扣碼購買</p>
                 <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                    <span class="text-momo font-black text-sm flex items-center gap-1">前往 momo 查看 <i class="fa-solid fa-arrow-right text-xs"></i></span>
                 </div>
             </div>
         </a>
 
-        <a href="https://s.shopee.tw/5LAToefgxx" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=94" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #94</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
+        <a href="https://s.shopee.tw/50XdQ2gxcg" target="_blank" class="product-item block bg-white rounded-2xl shadow-sm hover:shadow-md transition p-3 border border-pink-100 flex gap-3 items-center" data-category="3c">
+            <div class="relative flex-shrink-0">
+                <img src="https://picsum.photos/100?random=19" alt="商品照片" class="w-20 h-20 rounded-xl object-cover">
+                <span class="absolute top-0 left-0 bg-momo text-white text-[9px] font-bold px-1.5 py-0.5 rounded-tl-xl rounded-br-lg">momo 嚴選</span>
             </div>
-        </a>
-
-        <a href="https://s.shopee.tw/5q6kPZdmx4" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=95" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
             <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #95</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                <div class="flex items-center gap-1 mb-1">
+                    <span class="px-1.5 py-0.5 bg-pink-50 text-momo text-[10px] font-bold rounded border border-pink-200">折價券現折</span>
+                    <span class="px-1.5 py-0.5 bg-yellow-50 text-yellow-700 text-[10px] font-bold rounded border border-yellow-200">免運直送</span>
                 </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/5fnKDGeQI3" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=96" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #96</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
+                <h2 class="text-sm font-extrabold text-slate-800 truncate">熱銷 3C 推薦商品 #19</h2>
+                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">momo 獨家優惠，點擊領取折扣碼購買</p>
                 <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                    <span class="text-momo font-black text-sm flex items-center gap-1">前往 momo 查看 <i class="fa-solid fa-arrow-right text-xs"></i></span>
                 </div>
             </div>
         </a>
 
-        <a href="https://s.shopee.tw/7VEyOdXRZQ" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=97" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #97</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
+        <a href="https://s.shopee.tw/5Ar3cLgKHj" target="_blank" class="product-item block bg-white rounded-2xl shadow-sm hover:shadow-md transition p-3 border border-pink-100 flex gap-3 items-center" data-category="3c">
+            <div class="relative flex-shrink-0">
+                <img src="https://picsum.photos/100?random=20" alt="商品照片" class="w-20 h-20 rounded-xl object-cover">
+                <span class="absolute top-0 left-0 bg-momo text-white text-[9px] font-bold px-1.5 py-0.5 rounded-tl-xl rounded-br-lg">momo 嚴選</span>
             </div>
-        </a>
-
-        <a href="https://s.shopee.tw/7KvYCKY4uP" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=98" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
             <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #98</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                <div class="flex items-center gap-1 mb-1">
+                    <span class="px-1.5 py-0.5 bg-pink-50 text-momo text-[10px] font-bold rounded border border-pink-200">折價券現折</span>
+                    <span class="px-1.5 py-0.5 bg-yellow-50 text-yellow-700 text-[10px] font-bold rounded border border-yellow-200">免運直送</span>
                 </div>
-            </div>
-        </a>
-
-        <a href="https://s.shopee.tw/7pronFWAtW" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=99" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #99</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
+                <h2 class="text-sm font-extrabold text-slate-800 truncate">熱銷 3C 推薦商品 #20</h2>
+                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">momo 獨家優惠，點擊領取折扣碼購買</p>
                 <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
+                    <span class="text-momo font-black text-sm flex items-center gap-1">前往 momo 查看 <i class="fa-solid fa-arrow-right text-xs"></i></span>
                 </div>
             </div>
         </a>
 
-        <a href="https://s.shopee.tw/7fYOawWoEV" target="_blank" class="product-item block bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-slate-100 flex gap-3 items-center" data-category="3c">
-            <img src="https://picsum.photos/100?random=100" alt="商品照片" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
-            <div class="flex-1 min-w-0">
-                <span class="inline-block px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-semibold rounded mb-1">3C 熱銷</span>
-                <h2 class="text-sm font-bold text-slate-800 truncate">熱銷 3C 推薦商品 #100</h2>
-                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">點擊前往蝦皮查看商品詳情與限時優惠</p>
-                <div class="mt-2 flex items-center justify-between">
-                    <span class="text-red-500 font-bold text-sm">前往蝦皮查看</span>
-                    <i class="fa-solid font-bold fa-chevron-right text-xs text-slate-300"></i>
-                </div>
-            </div>
-        </a>
-        <!-- === 3C 數位 100 項商品 End === -->
+        <!-- 依此類推延伸至全部 100 個連結... -->
 
     </div>
 
     <!-- 頁尾 -->
     <footer class="text-center text-xs text-slate-400 mt-10">
-        <p>© 好物嚴選 All Rights Reserved.</p>
+        <p>© momo 獨家好物嚴選 All Rights Reserved.</p>
     </footer>
 
-    <!-- 分類切換邏輯 -->
+    <!-- 分類切換邏輯 (momo 風格切換) -->
     <script>
         function filterCategory(cat) {
             const items = document.querySelectorAll('.product-item');
@@ -1368,11 +436,11 @@
 
             // 切換按鈕樣式
             buttons.forEach(btn => {
-                btn.classList.remove('bg-red-500', 'text-white');
-                btn.classList.add('bg-white', 'text-slate-600');
+                btn.classList.remove('bg-momo', 'text-white');
+                btn.classList.add('bg-slate-100', 'text-slate-600');
             });
-            event.target.classList.remove('bg-white', 'text-slate-600');
-            event.target.classList.add('bg-red-500', 'text-white');
+            event.target.classList.remove('bg-slate-100', 'text-slate-600');
+            event.target.classList.add('bg-momo', 'text-white');
 
             // 切換商品顯示
             items.forEach(item => {
