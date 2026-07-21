@@ -49,6 +49,7 @@
         .filter-select { min-width: 150px; }
         .btn { color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px; background-color: var(--primary); }
         .btn-success { background-color: var(--success); }
+        .btn-danger { background-color: #c62828; }
         
         .table-container { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
@@ -203,20 +204,14 @@
         let dbRef = null;
 
         function initTable() {
-            // 🎯 【第一重：標題鎖死晶片】不論暫存如何，一律強行固定網頁大、副標題文字！
             customConfig.title = "電影欣賞社";
             customConfig.subtitle = "115學年度第1學期。";
-
-            // 🎯 【第二重：網址鎖死晶片】強行在網頁開啟第一時間鎖定您的 Firebase 網址！
             customConfig.csvUrl = "https://movie-76596-default-rtdb.asia-southeast1.firebasedatabase.app/";
-            
-            // 🎯 【第三重：名單人數對齊晶片】強制在初始化時將 236 人名單字串重寫回暫存，確保多網頁同步人數！
             customConfig.rawStudentsList = defaultStudents.map(s => `${s.id}\t${s.name}\t${s.dept_class}`).join("\n");
             localStorage.setItem('movie_club_rollcall_firebase_v2_cfg', JSON.stringify(customConfig));
 
             loadSettings();
             
-            // 建立乾淨的點名陣列狀態
             currentStudents.forEach(s => {
                 if(!s.attendance) s.attendance = {};
                 customConfig.dates.forEach(d => {
@@ -226,8 +221,6 @@
 
             renderTable();
             calculateStats();
-            
-            // 驅動與建立 Firebase 資料庫連線
             initFirebaseConnection();
         }
 
@@ -242,7 +235,6 @@
             }
             if (currentStudents.length === 0) forceResetToDefaultData();
 
-            // 更新網頁上的文字標題與日期
             document.getElementById('view-title').innerText = customConfig.title;
             document.getElementById('view-subtitle').innerText = customConfig.subtitle;
             for(let i=0; i<7; i++) {
@@ -290,7 +282,6 @@
             }
         }
 
-        // 🚀 連接 Firebase 實時資料庫監聽器
         function initFirebaseConnection() {
             const debugEl = document.getElementById('debug-banner');
             if (!customConfig.csvUrl || !customConfig.csvUrl.startsWith('http')) {
@@ -364,21 +355,41 @@
             }
         }
 
+        // 🎯 嚴格簽到機制：阻擋不在名單中的學號
         function executeManualSignIn() {
-            if (!database) { alert("請先開啟萬用面板設定正確的 Firebase 網址！"); return; }
+            if (!database) { 
+                alert("請先開啟萬用面板設定正確的 Firebase 網址！"); 
+                return; 
+            }
+
             const inputEl = document.getElementById('manual-student-id');
             const typedId = inputEl.value.trim();
-            if(!typedId) { showMsg("❌ 請先輸入學號！", "#c62828"); return; }
+
+            if (!typedId) { 
+                showMsg("❌ 請先輸入學號！", "#c62828"); 
+                return; 
+            }
+
+            // 嚴格檢查：比對學號是否存在於名單中
             const student = currentStudents.find(s => s.id === typedId);
-            if(!student) { showMsg(`⚠️ 找不到學號 [${typedId}]，請確認選課名單！`, "#c62828"); return; }
-            
+
+            if (!student) { 
+                showMsg(`❌ 簽到失敗！學號 [${typedId}] 不在選課名單中，無法簽到。`, "#c62828"); 
+                inputEl.select();
+                return; 
+            }
+
             const activeDate = customConfig.dates[0]; 
             const pathDate = activeDate.replace(/\//g, '-');
-            
+
             database.ref(`movie_club_rollcall/${pathDate}/${typedId}`).set(1).then(() => {
-                showMsg("✅ 現場補簽成功！已極速發射至雲端。", "var(--success)");
+                showMsg(`✅ [${student.name}] 簽到成功！`, "var(--success)");
+            }).catch((err) => {
+                showMsg("❌ 雲端同步失敗，請檢查網路連線。", "#c62828");
             });
-            inputEl.value = ''; inputEl.focus();
+
+            inputEl.value = ''; 
+            inputEl.focus();
         }
 
         function showMsg(text, color) { const el = document.getElementById('manual-msg'); el.innerText = text; el.style.color = color; }
