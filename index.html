@@ -57,7 +57,7 @@
         th { background-color: #f1f3f4; color: #202124; font-weight: 600; position: sticky; top: 0; }
         .checkbox-cell { text-align: center; }
         
-        /* 🔒 唯讀勾選框樣式，點擊不會被觸發 */
+        /* 🔒 唯讀勾選框樣式，防止被滑鼠點擊改動 */
         .chk-btn { 
             appearance: none; 
             width: 20px; 
@@ -363,7 +363,7 @@
             }
         }
 
-        // 🎯 嚴格簽到機制：僅允許由手動輸入學號觸發
+        // 🎯 完美修復後的手動簽到：自動抓當前日期 + 寫入 Firebase + 即時同步前端打勾
         function executeManualSignIn() {
             if (!database) { 
                 alert("請先開啟萬用面板設定正確的 Firebase 網址！"); 
@@ -378,6 +378,7 @@
                 return; 
             }
 
+            // 1. 嚴格比對名單中是否存在該學號
             const student = currentStudents.find(s => s.id === typedId);
 
             if (!student) { 
@@ -386,11 +387,21 @@
                 return; 
             }
 
-            const activeDate = customConfig.dates[0]; 
+            // 2. 自動取得今日日期，若不在設定的7個日期中，預設選擇第1個日期
+            const today = new Date();
+            const todayStr = `${today.getFullYear()}/${today.getMonth()+1}/${today.getDate()}`;
+            
+            let activeDate = customConfig.dates.find(d => d === todayStr) || customConfig.dates[0];
             const pathDate = activeDate.replace(/\//g, '-');
 
+            // 3. 寫入雲端 Firebase
             database.ref(`movie_club_rollcall/${pathDate}/${typedId}`).set(1).then(() => {
-                showMsg(`✅ [${student.name}] 簽到成功！`, "var(--success)");
+                // 4. 🎉 記憶體同步更新並重新繪製畫面
+                student.attendance[activeDate] = 1;
+                renderTable(); 
+                calculateStats();
+
+                showMsg(`✅ [${student.name}] (${activeDate.substring(5)}) 簽到成功！`, "var(--success)");
             }).catch((err) => {
                 showMsg("❌ 雲端同步失敗，請檢查網路連線。", "#c62828");
             });
@@ -418,7 +429,7 @@
                 let chkHtml = '';
                 customConfig.dates.forEach((d) => {
                     const isChecked = student.attendance[d] === 1 ? 'checked' : '';
-                    // 🔒 加上 disabled 屬性，防止直接點擊網頁表格取消打勾
+                    // 🔒 加上 disabled 防止手滑點掉勾選紀錄
                     chkHtml += `<td class="checkbox-cell"><input type="checkbox" class="chk-btn" ${isChecked} disabled></td>`;
                 });
 
