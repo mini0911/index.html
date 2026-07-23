@@ -33,7 +33,7 @@
 </head>
 <body>
     <div class="card">
-        <h2>🎬 電影欣赏社點名系統</h2>
+        <h2>🎬 電影欣賞社點名系統</h2>
         <p>請開啟手機藍芽，系統正在感應講台點名定位器...</p>
         
         <div id="status-display" class="status-badge badge-loading">📡 正在搜尋講台藍芽訊號...</div>
@@ -93,7 +93,7 @@
 
                 if (device) {
                     hasFoundBeacon = true;
-                    showStatus("✅ 藍芽驗證成功！您確實在教室現場。", "badge-success");
+                    showStatus("✅ 藍芽驗證成功！您確實已在教室現場。", "badge-success");
                     document.getElementById('form-area').style.display = 'block';
                     document.getElementById('scan-btn').style.display = 'none';
                 }
