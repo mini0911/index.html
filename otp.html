@@ -169,7 +169,7 @@
 
         <!-- 快閃驗證碼卡片 -->
         <div class="otp-box">
-            <div class="otp-label">⚡ 當前動態快閃口令（每 30 秒自動更新）</div>
+            <div class="otp-label">⚡ 當前動態快閃口令（每 10 秒自動更新）</div>
             <div class="otp-number" id="otp-code">----</div>
 
             <!-- 倒數進度條 -->
@@ -206,7 +206,7 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        let remainingSeconds = 30;
+        let remainingSeconds = 10;
         let otpTimer = null;
 
         // 🎲 隨機產生 4 位數驗證碼並寫入 Firebase
