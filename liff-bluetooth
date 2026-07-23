@@ -52,12 +52,11 @@
 
     <script>
         // =================================================================
-        // 🔒 1. 講台藍芽防丟器設定（請填入您防丟器搜尋到的藍芽名稱）
+        // 🎯 1. LINE LIFF ID 與 Firebase 串接設定
         // =================================================================
-        const BEACON_NAME = "AirTag"; // ⬅️ 請改為您買到的藍芽防丟器名稱 (例如: Find Tag / iTag)
+        // ⚠️ 請填入您從 LINE Login 頻道申請出來的 LIFF ID (請勿填寫完整 URL，僅填寫 ID 即可，例如: "2010738162-AbCdEfGh")
+        const LIFF_ID = "2010768591-SwfwcK3q"; 
 
-        // 🎯 2. LINE LIFF ID 與 Firebase 串接設定
-        const LIFF_ID = "2010768591-SwfwcK3q"; // ⬅️ 請換成您從 LINE Login 申請出來的 LIFF ID
         const FIREBASE_DB_URL = "https://movie-76596-default-rtdb.asia-southeast1.firebasedatabase.app/";
 
         let hasFoundBeacon = false;
@@ -79,15 +78,21 @@
             });
         });
 
-        // 📡 核心驗證功能：呼叫手機藍芽晶片，掃描周圍是否有講台防丟器
+        // 📡 核心驗證功能：呼叫手機藍芽晶片，掃描周圍是否有講台防丟器 (相容 AirTag / iTag / Find Tag)
         async function requestBluetooth() {
             showStatus("📡 正在感應講台藍芽訊號...", "badge-loading");
             document.getElementById('scan-btn').style.display = 'none';
 
             try {
-                // 呼叫 Web Bluetooth API 請求連結特定名稱的藍芽裝置
+                // 呼叫 Web Bluetooth API 請求連結藍芽裝置
                 const device = await navigator.bluetooth.requestDevice({
-                    filters: [{ name: BEACON_NAME }],
+                    filters: [
+                        { name: 'AirTag' },
+                        { namePrefix: 'Air' },
+                        { namePrefix: 'Find' },
+                        { namePrefix: 'iTag' },
+                        { namePrefix: 'iTracing' }
+                    ],
                     optionalServices: [] 
                 });
 
@@ -122,7 +127,7 @@
 
             document.getElementById('submit-btn').disabled = true;
             
-            // 取得今天的日期格式 (例: 2026-7-17)
+            // 取得今天的日期格式 (例: 2026-7-23)
             const today = new Date();
             const dateStr = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
 
