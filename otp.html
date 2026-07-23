@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電影欣賞社 - 現場動態快閃口令大螢幕</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-dark: #1e293b;
+            --accent-green: #00e676;
+            --accent-yellow: #ffea00;
+            --primary-blue: #3b82f6;
+            --text-light: #f8fafc;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: var(--card-dark);
+            border-radius: 24px;
+            padding: 40px 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            position: relative;
+        }
+
+        header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: var(--primary-blue);
+            margin-bottom: 8px;
+        }
+
+        header p {
+            font-size: 18px;
+            color: #94a3b8;
+            margin-bottom: 30px;
+        }
+
+        .otp-box {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 20px;
+            padding: 30px 20px;
+            border: 2px solid var(--primary-blue);
+            box-shadow: inset 0 0 20px rgba(59, 130, 246, 0.2);
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .otp-label {
+            font-size: 20px;
+            font-weight: 700;
+            color: #cbd5e1;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .otp-number {
+            font-size: 110px;
+            font-weight: 900;
+            letter-spacing: 20px;
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--accent-green);
+            text-shadow: 0 0 25px rgba(0, 230, 118, 0.6);
+            line-height: 1.1;
+            user-select: none;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #00e676, #ffea00);
+            transition: width 1s linear;
+        }
+
+        .instructions {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 6px solid var(--primary-blue);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .instructions h3 {
+            font-size: 18px;
+            color: var(--primary-blue);
+            margin-bottom: 8px;
+        }
+
+        .instructions p {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #e2e8f0;
+        }
+
+        .highlight {
+            color: var(--accent-yellow);
+            font-weight: bold;
+            font-size: 20px;
+            background: rgba(255, 234, 0, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .status-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            background-color: var(--accent-green);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-green);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>🎬 電影欣賞社 - 課堂點名驗證</h1>
+            <p>115 學年度第 1 學期現場即時簽到</p>
+        </header>
+
+        <!-- 快閃驗證碼卡片 -->
+        <div class="otp-box">
+            <div class="otp-label">⚡ 當前動態快閃口令（每 30 秒自動更新）</div>
+            <div class="otp-number" id="otp-code">----</div>
+
+            <!-- 倒數進度條 -->
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+        </div>
+
+        <!-- 簽到指引說明 -->
+        <div class="instructions">
+            <h3>📱 簽到方式說明：</h3>
+            <p>請開啟 LINE 點名助手，傳送：<span class="highlight">學號 口令</span></p>
+            <p>範例：若您的學號為 11401011，請輸入 <span class="highlight">11401011 <span id="example-code">8521</span></span> 即可完成簽到！</p>
+        </div>
+
+        <!-- 狀態指示燈 -->
+        <div class="status-tag">
+            <div class="dot"></div>
+            <span id="firebase-status">Firebase 實時加密連線中...</span>
+        </div>
+    </div>
+
+    <!-- Firebase Realtime Database SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+    <script>
+        // 🌟 Firebase 資料庫設定 (已帶入您的專屬網址)
+        const firebaseConfig = {
+            databaseURL: "https://movie-76596-default-rtdb.asia-southeast1.firebasedatabase.app/"
+        };
+
+        // 初始化 Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        let remainingSeconds = 30;
+        let otpTimer = null;
+
+        // 🎲 隨機產生 4 位數驗證碼並寫入 Firebase
+        function generateOTP() {
+            const newCode = Math.floor(1000 + Math.random() * 9000).toString();
+            
+            // 更新 UI 畫面
+            document.getElementById('otp-code').innerText = newCode;
+            document.getElementById('example-code').innerText = newCode;
+
+            // 寫入 Firebase Realtime Database
+            database.ref('movie_club_rollcall/current_code').set(newCode)
+                .then(() => {
+                    document.getElementById('firebase-status').innerText = `⚡ 實時廣播成功！口令：${newCode}`;
+                })
+                .catch((err) => {
+                    document.getElementById('firebase-status').innerText = `❌ Firebase 寫入失敗，請檢查網路連線`;
+                });
+
+            remainingSeconds = 30;
+            updateProgressBar();
+        }
+
+        // ⏱️ 計時器邏輯
+        function startTimer() {
+            generateOTP();
+            
+            if (otpTimer) clearInterval(otpTimer);
+            
+            otpTimer = setInterval(() => {
+                remainingSeconds--;
+                updateProgressBar();
+
+                if (remainingSeconds <= 0) {
+                    generateOTP();
+                }
+            }, 1000);
+        }
+
+        // 📊 更新倒數計時進度條
+        function updateProgressBar() {
+            const percentage = (remainingSeconds / 30) * 100;
+            const bar = document.getElementById('progress-bar');
+            if (bar) {
+                bar.style.width = percentage + '%';
+            }
+        }
+
+        // 頁面載入後自動啟動
+        document.addEventListener("DOMContentLoaded", () => {
+            startTimer();
+        });
+    </script>
+</body>
+</html>
