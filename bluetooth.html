@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎬 電影欣賞社 - 藍芽實體現場簽到</title>
+    <!-- 引入 LINE LIFF SDK 與 Firebase 晶片 -->
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <style>
+        :root {
+            --primary: #2b4c7e;
+            --success: #2e7d32;
+            --error: #c62828;
+            --bg: #f8f9fa;
+        }
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg); color: #2c3e50; text-align: center; padding: 40px 15px; margin: 0; }
+        .card { background: white; padding: 30px 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); max-width: 420px; margin: 0 auto; }
+        h2 { color: var(--primary); margin-top: 0; font-size: 22px; }
+        p { color: #5f6368; font-size: 14px; line-height: 1.5; }
+        .status-badge { display: inline-block; padding: 12px 24px; border-radius: 30px; font-weight: bold; margin: 20px 0; font-size: 15px; width: 100%; word-break: break-all; }
+        .badge-loading { background: #eef4fc; color: #1565c0; }
+        .badge-success { background: #e8f5e9; color: var(--success); }
+        .badge-error { background: #ffebee; color: var(--error); }
+        input { width: 100%; padding: 15px; border: 2px solid #badcfa; border-radius: 30px; font-size: 18px; text-align: center; font-weight: bold; outline: none; margin-bottom: 15px; }
+        button { background-color: var(--primary); color: white; border: none; padding: 15px 30px; border-radius: 30px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; transition: all 0.2s; }
+        button:disabled { background-color: #cbd5e1; cursor: not-allowed; }
+        .btn-scan { background-color: #0288d1; margin-top: 10px; }
+        .hint-text { font-size: 12px; color: #9aa0a6; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>🎬 電影欣賞社點名系統</h2>
+        <p>請開啟手機藍芽，系統正在感應講台點名定位器...</p>
+        
+        <div id="status-display" class="status-badge badge-loading">📡 正在搜尋講台藍芽訊號...</div>
+        
+        <!-- 驗證成功後顯示學號輸入區 -->
+        <div id="form-area" style="display: none;">
+            <input type="text" id="student-id" placeholder="請在此輸入您的學號" maxlength="12">
+            <button id="submit-btn" onclick="executeBeaconRollCall()">確認藍芽在線並簽到</button>
+        </div>
+
+        <!-- 驗證失敗時的重新手動掃描按鈕 -->
+        <button id="scan-btn" class="btn-scan" style="display: none;" onclick="requestBluetooth()">🔍 重新感應講台藍芽</button>
+        
+        <p class="hint-text">💡 提示：點名時請務必開啟手機「藍芽」功能，並距離講台 15 公尺以內。</p>
+    </div>
+
+    <script>
+        // =================================================================
+        // 🔒 1. 講台藍芽防丟器設定（請填入您防丟器搜尋到的藍芽名稱）
+        // =================================================================
+        const BEACON_NAME = "Am Tag"; // ⬅️ 請改為您買到的藍芽防丟器名稱 (例如: Find Tag / iTag)
+
+        // 🎯 2. LINE LIFF ID 與 Firebase 串接設定
+        const LIFF_ID = "2010768591-SwfwcK3q"; // ⬅️ 請換成您從 LINE Login 申請出來的 LIFF ID
+        const FIREBASE_DB_URL = "https://movie-76596-default-rtdb.asia-southeast1.firebasedatabase.app/";
+
+        let hasFoundBeacon = false;
+
+        // 初始化 Firebase 資料庫
+        firebase.initializeApp({ databaseURL: FIREBASE_DB_URL });
+        const database = firebase.database();
+
+        // 頁面載入後自動啟動 LIFF
+        document.addEventListener("DOMContentLoaded", function() {
+            liff.init({ liffId: LIFF_ID }).then(() => {
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                } else {
+                    requestBluetooth();
+                }
+            }).catch(err => {
+                showStatus("❌ LINE LIFF 初始化失敗：" + err.message, "badge-error");
+            });
+        });
+
+        // 📡 核心驗證功能：呼叫手機藍芽晶片，掃描周圍是否有講台防丟器
+        async function requestBluetooth() {
+            showStatus("📡 正在感應講台藍芽訊號...", "badge-loading");
+            document.getElementById('scan-btn').style.display = 'none';
+
+            try {
+                // 呼叫 Web Bluetooth API 請求連結特定名稱的藍芽裝置
+                const device = await navigator.bluetooth.requestDevice({
+                    filters: [{ name: BEACON_NAME }],
+                    optionalServices: [] 
+                });
+
+                if (device) {
+                    hasFoundBeacon = true;
+                    showStatus("✅ 藍芽驗證成功！您確實已在教室現場。", "badge-success");
+                    document.getElementById('form-area').style.display = 'block';
+                    document.getElementById('scan-btn').style.display = 'none';
+                }
+            } catch (error) {
+                console.error(error);
+                hasFoundBeacon = false;
+                showStatus("❌ 簽到失敗：未感應到講台藍芽，請確認手機已開啟藍芽並站在教室內！", "badge-error");
+                document.getElementById('form-area').style.display = 'none';
+                document.getElementById('scan-btn').style.display = 'block';
+            }
+        }
+
+        // 🚀 執行簽到打勾程序
+        function executeBeaconRollCall() {
+            const studentIdInput = document.getElementById('student-id');
+            const studentId = studentIdInput.value.trim();
+
+            if (!studentId) { 
+                alert("請先輸入您的學號！"); 
+                return; 
+            }
+            if (!hasFoundBeacon) { 
+                alert("未通過現場藍芽驗證，無法簽到！"); 
+                return; 
+            }
+
+            document.getElementById('submit-btn').disabled = true;
+            
+            // 取得今天的日期格式 (例: 2026-7-17)
+            const today = new Date();
+            const dateStr = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+
+            // 寫入 Firebase Realtime Database
+            database.ref(`movie_club_rollcall/${dateStr}/${studentId}`).set(1).then(() => {
+                showStatus(`🎉 簽到成功！學號 [${studentId}] 大螢幕已同步打勾。`, "badge-success");
+                
+                // 讓學生的 LINE 對話框自動送出留底訊息，並自動關閉視窗
+                liff.sendMessages([{
+                    type: 'text',
+                    text: `🙋‍♂️ 我已通過現場實體藍芽感應點名！學號：${studentId}`
+                }]).then(() => {
+                    setTimeout(() => { liff.closeWindow(); }, 1500); 
+                }).catch(() => {
+                    setTimeout(() => { liff.closeWindow(); }, 1500);
+                });
+            }).catch(err => {
+                alert("寫入資料庫失敗，請重試：" + err.message);
+                document.getElementById('submit-btn').disabled = false;
+            });
+        }
+
+        function showStatus(text, className) {
+            const el = document.getElementById('status-display');
+            el.innerText = text;
+            el.className = `status-badge ${className}`;
+        }
+    </script>
+</body>
+</html>
