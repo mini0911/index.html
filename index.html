@@ -30,12 +30,11 @@
         .manual-panel {
             background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;
             border: 2px solid var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            display: flex; flex-direction: column; align-items: center; gap: 12px;
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
         }
-        .manual-row { display: flex; gap: 10px; width: 100%; max-width: 550px; flex-wrap: wrap; justify-content: center; }
-        .manual-input { flex: 1; min-width: 200px; padding: 12px 18px; border: 2px solid #badcfa; border-radius: 30px; font-size: 16px; text-align: center; font-weight: bold; outline: none; }
-        .manual-btn { background-color: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 30px; font-size: 15px; font-weight: bold; cursor: pointer; }
-        .ble-btn { background-color: #0288d1; color: white; border: none; padding: 12px 24px; border-radius: 30px; font-size: 15px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+        .manual-row { display: flex; gap: 10px; width: 100%; max-width: 500px; }
+        .manual-input { flex: 1; padding: 12px 18px; border: 2px solid #badcfa; border-radius: 30px; font-size: 16px; text-align: center; font-weight: bold; outline: none; }
+        .manual-btn { background-color: var(--primary); color: white; border: none; padding: 0 24px; border-radius: 30px; font-size: 15px; font-weight: bold; cursor: pointer; }
         .manual-msg { font-size: 14px; font-weight: bold; margin: 0; height: 18px; }
 
         .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 20px; }
@@ -117,13 +116,12 @@
 
         <div class="debug-banner" id="debug-banner">📡 LINE 實時通訊基地台串接中...</div>
 
-        <!-- 📱 現場手動 / 藍芽簽到區 -->
+        <!-- 📱 教師現場手動簽到/補簽區 -->
         <div class="manual-panel">
-            <p style="font-weight: bold; color: var(--primary); margin: 0;">📱 現場簽到（輸入學號或使用藍芽感應）</p>
+            <p style="font-weight: bold; color: var(--primary); margin: 0;">📱 教師現場手動簽到／補簽（輸入學號按 Enter）</p>
             <div class="manual-row">
                 <input type="text" id="manual-student-id" class="manual-input" placeholder="請在此輸入學生學號..." maxlength="12">
                 <button class="manual-btn" onclick="executeManualSignIn()">確認簽到</button>
-                <button class="ble-btn" onclick="executeBluetoothSignIn()">📡 藍芽感應簽到</button>
             </div>
             <p id="manual-msg" class="manual-msg"></p>
         </div>
@@ -192,7 +190,7 @@
             <div class="form-group"><label>網頁大標題</label><input type="text" id="cfg-title"></div>
             <div class="form-group"><label>網頁副標題說明</label><input type="text" id="cfg-subtitle"></div>
             <div class="form-group">
-                <label>設定 7 個上課日期 (格式：2026/07/17)</label>
+                <label>設定 7 個上課日期 (格式：2026/7/17)</label>
                 <div class="date-inputs-grid">
                     <input type="text" id="cfg-d0"><input type="text" id="cfg-d1"><input type="text" id="cfg-d2">
                     <input type="text" id="cfg-d3"><input type="text" id="cfg-d4"><input type="text" id="cfg-d5"><input type="text" id="cfg-d6">
@@ -229,6 +227,7 @@
         let database = null;
         let dbRef = null;
 
+        // 日期規格化處理：把斜線/沒補零轉成與 Firebase 相同的 YYYY-MM-DD
         function normalizeDateStr(dateStr) {
             if (!dateStr) return '';
             const parts = dateStr.replace(/\/-/g, '-').split('-');
@@ -342,12 +341,14 @@
                 dbRef.on('value', (snapshot) => {
                     const rootData = snapshot.val();
                     
+                    // 重置網頁記憶體中的點名狀態
                     currentStudents.forEach(s => {
                         customConfig.dates.forEach(d => s.attendance[d] = 0);
                     });
 
                     if (rootData) {
                         Object.keys(rootData).forEach(dbDateStr => {
+                            // 統一日期為 YYYY-MM-DD
                             const normalizedDbDate = normalizeDateStr(dbDateStr);
                             
                             customConfig.dates.forEach(panelDate => {
@@ -382,15 +383,28 @@
             }
         }
 
-        // 🎯 手動簽到
+        // 🎯 手動簽到函式（與 Firebase 及日期格式對齊）
         function executeManualSignIn() {
-            if (!database) { alert("請先開啟萬用面板設定正確的 Firebase 網址！"); return; }
+            if (!database) { 
+                alert("請先開啟萬用面板設定正確的 Firebase 網址！"); 
+                return; 
+            }
+
             const inputEl = document.getElementById('manual-student-id');
             const typedId = inputEl.value.trim();
 
-            if (!typedId) { showMsg("❌ 請先輸入學號！", "#c62828"); return; }
+            if (!typedId) { 
+                showMsg("❌ 請先輸入學號！", "#c62828"); 
+                return; 
+            }
+
             const student = currentStudents.find(s => s.id === typedId);
-            if (!student) { showMsg(`❌ 簽到失敗！學號 [${typedId}] 不在選課名單中。`, "#c62828"); inputEl.select(); return; }
+
+            if (!student) { 
+                showMsg(`❌ 簽到失敗！學號 [${typedId}] 不在選課名單中，無法簽到。`, "#c62828"); 
+                inputEl.select();
+                return; 
+            }
 
             const today = new Date();
             const y = today.getFullYear();
@@ -398,6 +412,7 @@
             const d = String(today.getDate()).padStart(2, '0');
             const todayNormalized = `${y}-${m}-${d}`;
 
+            // 自動配對面板中的日期
             let activeDate = customConfig.dates.find(date => normalizeDateStr(date) === todayNormalized) || customConfig.dates[0];
             const pathDate = normalizeDateStr(activeDate);
 
@@ -407,53 +422,8 @@
                 showMsg("❌ 雲端同步失敗，請檢查網路連線。", "#c62828");
             });
 
-            inputEl.value = ''; inputEl.focus();
-        }
-
-        // 📡 藍芽感應簽到功能 (Web Bluetooth API)
-        async function executeBluetoothSignIn() {
-            if (!navigator.bluetooth) {
-                showMsg("❌ 您的瀏覽器或環境不支援 Web Bluetooth！請使用 Chrome 或連線 HTTPS 網址。", "#c62828");
-                return;
-            }
-
-            if (!database) { alert("請先開啟萬用面板設定正確的 Firebase 網址！"); return; }
-
-            try {
-                showMsg("📡 正在掃描附近的藍芽裝置...", "#0288d1");
-                
-                // 搜尋附近的藍芽廣播裝置（可接受所有廣播裝置，或過濾廣播名稱）
-                const device = await navigator.bluetooth.requestDevice({
-                    acceptAllDevices: true,
-                    optionalServices: ['battery_service'] // 可加入特定服務 UUID
-                });
-
-                showMsg(`🔍 已找到裝置 [${device.name || '未知裝置'}]，正在連結讀取驗證...`, "#0288d1");
-
-                // 如果裝置名稱中含有 8 位數學號，自動識別學號；否則要求學生配合
-                const matchedId = (device.name && device.name.match(/\d{8}/)) ? device.name.match(/\d{8}/)[0] : null;
-
-                if (matchedId) {
-                    const student = currentStudents.find(s => s.id === matchedId);
-                    if (student) {
-                        document.getElementById('manual-student-id').value = matchedId;
-                        executeManualSignIn();
-                        showMsg(`🎉 藍芽近距離驗證成功！自動簽到【${student.name}】`, "var(--success)");
-                    } else {
-                        showMsg(`⚠️ 藍芽識別學號 [${matchedId}] 不在名單中。`, "#c62828");
-                    }
-                } else {
-                    // 若藍芽發射器為固定教室 Beacon（如 MovieClub_Beacon），通過實體連線即完成簽到驗證
-                    showMsg(`✅ 藍芽感應驗證成功！請輸入學號完成簽到。`, "var(--success)");
-                }
-
-            } catch (error) {
-                if (error.name === 'NotFoundError') {
-                    showMsg("ℹ️ 已取消藍芽裝置連線。", "#5f6368");
-                } else {
-                    showMsg(`❌ 藍芽感應失敗：${error.message}`, "#c62828");
-                }
-            }
+            inputEl.value = ''; 
+            inputEl.focus();
         }
 
         function showMsg(text, color) { const el = document.getElementById('manual-msg'); el.innerText = text; el.style.color = color; }
