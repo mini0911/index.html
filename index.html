@@ -57,6 +57,7 @@
         th { background-color: #f1f3f4; color: #202124; font-weight: 600; position: sticky; top: 0; }
         .checkbox-cell { text-align: center; }
         
+        /* 🔒 唯讀勾選框樣式，防止被滑鼠點擊改動 */
         .chk-btn { 
             appearance: none; 
             width: 20px; 
@@ -219,26 +220,13 @@
         let customConfig = {
             title: "電影欣賞社 - 網頁互動點名與統計系統",
             subtitle: "自動連動 LINE 官方帳號與 Firebase 實時資料庫，實時極速點名打勾。",
-            dates: ['2026/07/17', '2026/07/18', '2026/07/19', '2026/07/20', '2026/07/21', '2026/07/22', '2026/07/23'],
+            dates: ['2026/7/17', '2026/7/18', '2026/7/19', '2026/7/20', '2026/7/21', '2026/7/22', '2026/7/23'],
             csvUrl: "https://movie-76596-default-rtdb.asia-southeast1.firebasedatabase.app/",
             rawStudentsList: ""
         };
 
         let database = null;
         let dbRef = null;
-
-        // 日期規格化處理：把斜線/沒補零轉成與 Firebase 相同的 YYYY-MM-DD
-        function normalizeDateStr(dateStr) {
-            if (!dateStr) return '';
-            const parts = dateStr.replace(/\/-/g, '-').split('-');
-            if (parts.length === 3) {
-                const y = parts[0];
-                const m = parts[1].padStart(2, '0');
-                const d = parts[2].padStart(2, '0');
-                return `${y}-${m}-${d}`;
-            }
-            return dateStr;
-        }
 
         function initTable() {
             customConfig.title = "電影欣賞社";
@@ -341,31 +329,23 @@
                 dbRef.on('value', (snapshot) => {
                     const rootData = snapshot.val();
                     
-                    // 重置網頁記憶體中的點名狀態
                     currentStudents.forEach(s => {
                         customConfig.dates.forEach(d => s.attendance[d] = 0);
                     });
 
                     if (rootData) {
                         Object.keys(rootData).forEach(dbDateStr => {
-                            // 統一日期為 YYYY-MM-DD
-                            const normalizedDbDate = normalizeDateStr(dbDateStr);
+                            const actualPanelDate = dbDateStr.replace(/\-/g, '/');
                             
-                            customConfig.dates.forEach(panelDate => {
-                                const normalizedPanelDate = normalizeDateStr(panelDate);
-
-                                if (normalizedDbDate === normalizedPanelDate) {
-                                    const dayRecords = rootData[dbDateStr];
-                                    if (dayRecords) {
-                                        Object.keys(dayRecords).forEach(studentId => {
-                                            const student = currentStudents.find(s => s.id === studentId);
-                                            if (student) {
-                                                student.attendance[panelDate] = 1;
-                                            }
-                                        });
+                            if (customConfig.dates.includes(actualPanelDate)) {
+                                const dayRecords = rootData[dbDateStr];
+                                Object.keys(dayRecords).forEach(studentId => {
+                                    const student = currentStudents.find(s => s.id === studentId);
+                                    if (student) {
+                                        student.attendance[actualPanelDate] = 1;
                                     }
-                                }
-                            });
+                                });
+                            }
                         });
                     }
 
@@ -383,7 +363,7 @@
             }
         }
 
-        // 🎯 手動簽到函式（與 Firebase 及日期格式對齊）
+        // 🎯 完美修復後的手動簽到：自動抓當前日期 + 寫入 Firebase + 即時同步前端打勾
         function executeManualSignIn() {
             if (!database) { 
                 alert("請先開啟萬用面板設定正確的 Firebase 網址！"); 
@@ -398,6 +378,7 @@
                 return; 
             }
 
+            // 1. 嚴格比對名單中是否存在該學號
             const student = currentStudents.find(s => s.id === typedId);
 
             if (!student) { 
@@ -406,17 +387,20 @@
                 return; 
             }
 
+            // 2. 自動取得今日日期，若不在設定的7個日期中，預設選擇第1個日期
             const today = new Date();
-            const y = today.getFullYear();
-            const m = String(today.getMonth() + 1).padStart(2, '0');
-            const d = String(today.getDate()).padStart(2, '0');
-            const todayNormalized = `${y}-${m}-${d}`;
+            const todayStr = `${today.getFullYear()}/${today.getMonth()+1}/${today.getDate()}`;
+            
+            let activeDate = customConfig.dates.find(d => d === todayStr) || customConfig.dates[0];
+            const pathDate = activeDate.replace(/\//g, '-');
 
-            // 自動配對面板中的日期
-            let activeDate = customConfig.dates.find(date => normalizeDateStr(date) === todayNormalized) || customConfig.dates[0];
-            const pathDate = normalizeDateStr(activeDate);
-
+            // 3. 寫入雲端 Firebase
             database.ref(`movie_club_rollcall/${pathDate}/${typedId}`).set(1).then(() => {
+                // 4. 🎉 記憶體同步更新並重新繪製畫面
+                student.attendance[activeDate] = 1;
+                renderTable(); 
+                calculateStats();
+
                 showMsg(`✅ [${student.name}] (${activeDate.substring(5)}) 簽到成功！`, "var(--success)");
             }).catch((err) => {
                 showMsg("❌ 雲端同步失敗，請檢查網路連線。", "#c62828");
@@ -445,6 +429,7 @@
                 let chkHtml = '';
                 customConfig.dates.forEach((d) => {
                     const isChecked = student.attendance[d] === 1 ? 'checked' : '';
+                    // 🔒 加上 disabled 防止手滑點掉勾選紀錄
                     chkHtml += `<td class="checkbox-cell"><input type="checkbox" class="chk-btn" ${isChecked} disabled></td>`;
                 });
 
