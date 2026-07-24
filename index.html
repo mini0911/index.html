@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>電影欣賞社 - 網頁互動點名與統計系統 (萬用面板實時版)</title>
+    <title>電影欣賞社 - 網頁互動點名與統計系統 (實時純淨版)</title>
     <style>
         :root {
             --primary: #2b4c7e;
@@ -57,7 +57,6 @@
         th { background-color: #f1f3f4; color: #202124; font-weight: 600; position: sticky; top: 0; }
         .checkbox-cell { text-align: center; }
 
-        /* 🔒 唯讀勾選框樣式 */
         .chk-btn { 
             appearance: none; 
             width: 20px; 
@@ -228,7 +227,7 @@
         let database = null;
         let dbRef = null;
 
-        // 🎯 徹底修復：將所有斜線 / 正確轉為 - 並補零至 YYYY-MM-DD
+        // 🎯 雙向日期歸一化晶片：不論格式為何，一律強制轉換成標準 YYYY-MM-DD
         function normalizeDateStr(dateStr) {
             if (!dateStr) return '';
             const cleanStr = dateStr.trim().replace(/\//g, '-');
@@ -256,19 +255,16 @@
         }
 
         function loadSettings() {
-            // 🎯 使用 v5 版本號，強制清理瀏覽器舊暫存
-            const saved = localStorage.getItem('movie_club_rollcall_firebase_v5_cfg');
-            if (saved) { 
-                try { customConfig = JSON.parse(saved); } catch(e) {} 
-            } else {
-                customConfig.rawStudentsList = defaultStudents.map(s => `${s.id}\t${s.name}\t${s.dept_class}`).join("\n");
-            }
+            // 🎯 徹底禁用快取機制：直接載入最新設定，避免舊暫存覆蓋新日期
+            customConfig = {
+                title: "電影欣賞社",
+                subtitle: "115學年度第1學期",
+                dates: ['2026/07/24', '2026/07/27', '2026/07/28', '2026/07/29', '2026/07/30', '2026/07/31', '2026/08/03'],
+                csvUrl: "https://movie-76596-default-rtdb.asia-southeast1.firebasedatabase.app/",
+                rawStudentsList: defaultStudents.map(s => `${s.id}\t${s.name}\t${s.dept_class}`).join("\n")
+            };
 
-            if (customConfig.rawStudentsList && customConfig.rawStudentsList.trim().length > 10) {
-                parseRawStudents(customConfig.rawStudentsList);
-            } else {
-                forceResetToDefaultData();
-            }
+            parseRawStudents(customConfig.rawStudentsList);
 
             document.getElementById('view-title').innerText = customConfig.title;
             document.getElementById('view-subtitle').innerText = customConfig.subtitle;
@@ -286,20 +282,10 @@
 
         function forceResetToDefaultData() {
             currentStudents = JSON.parse(JSON.stringify(defaultStudents));
-            customConfig.rawStudentsList = defaultStudents.map(s => `${s.id}\t${s.name}\t${s.dept_class}`).join("\n");
-            localStorage.setItem('movie_club_rollcall_firebase_v5_cfg', JSON.stringify(customConfig));
         }
 
         function resetToOfficialDefault() {
             if(confirm("確定要還原成預設學生名單與設定嗎？")) { 
-                localStorage.removeItem('movie_club_rollcall_firebase_v5_cfg');
-                customConfig = {
-                    title: "電影欣賞社",
-                    subtitle: "115學年度第1學期",
-                    dates: ['2026/07/24', '2026/07/27', '2026/07/28', '2026/07/29', '2026/07/30', '2026/07/31', '2026/08/03'],
-                    csvUrl: "https://movie-76596-default-rtdb.asia-southeast1.firebasedatabase.app/",
-                    rawStudentsList: defaultStudents.map(s => `${s.id}\t${s.name}\t${s.dept_class}`).join("\n")
-                };
                 forceResetToDefaultData(); 
                 loadSettings(); 
                 renderTable(); 
@@ -353,13 +339,13 @@
                 dbRef.on('value', (snapshot) => {
                     const rootData = snapshot.val();
 
-                    // 1. 重置本地記憶體
+                    // 1. 每次收到數據更新，先把本地打勾快取重置為 0
                     currentStudents.forEach(s => {
                         if (!s.attendance) s.attendance = {};
                         customConfig.dates.forEach(d => s.attendance[d] = 0);
                     });
 
-                    // 2. 實時比對 Firebase 上的簽到紀錄
+                    // 2. 精準對齊 Firebase 上的最新簽到狀態
                     if (rootData) {
                         Object.keys(rootData).forEach(dbDateStr => {
                             if (dbDateStr === "current_code") return;
@@ -398,7 +384,6 @@
             }
         }
 
-        // 🎯 手動簽到
         function executeManualSignIn() {
             if (!database) { alert("請先開啟萬用面板設定正確的 Firebase 網址！"); return; }
             const inputEl = document.getElementById('manual-student-id');
@@ -502,7 +487,6 @@
         }
         function closeConfigModal() { document.getElementById('config-modal').style.display = 'none'; }
 
-        // 🎯 儲存萬用設定面板內容
         function saveConfig() {
             customConfig.title = document.getElementById('cfg-title').value;
             customConfig.subtitle = document.getElementById('cfg-subtitle').value;
@@ -510,10 +494,7 @@
             customConfig.csvUrl = document.getElementById('cfg-csv-url').value.trim();
             customConfig.rawStudentsList = document.getElementById('cfg-students-raw').value;
 
-            // 儲存至 v5 記憶體
-            localStorage.setItem('movie_club_rollcall_firebase_v5_cfg', JSON.stringify(customConfig));
             closeConfigModal(); 
-
             loadSettings(); 
             renderTable(); 
             calculateStats(); 
