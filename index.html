@@ -191,7 +191,7 @@
             <div class="form-group"><label>網頁大標題</label><input type="text" id="cfg-title"></div>
             <div class="form-group"><label>網頁副標題說明</label><input type="text" id="cfg-subtitle"></div>
             <div class="form-group">
-                <label>設定 7 個上課日期 (格式：2026/07/24 或 07/24)</label>
+                <label>設定 7 個上課日期 (可填寫 2026/07/24 或 07/24)</label>
                 <div class="date-inputs-grid">
                     <input type="text" id="cfg-d0"><input type="text" id="cfg-d1"><input type="text" id="cfg-d2">
                     <input type="text" id="cfg-d3"><input type="text" id="cfg-d4"><input type="text" id="cfg-d5"><input type="text" id="cfg-d6">
@@ -228,10 +228,10 @@
         let database = null;
         let dbRef = null;
 
-        // 🎯 智慧日期規格化晶片：不論格式輸入什麼，統一轉為 YYYY-MM-DD
+        // 🎯 徹底修復：將所有斜線 / 正確轉為 - 並補零至 YYYY-MM-DD
         function normalizeDateStr(dateStr) {
             if (!dateStr) return '';
-            const cleanStr = dateStr.trim().replace(/\/-/g, '-');
+            const cleanStr = dateStr.trim().replace(/\//g, '-');
             const parts = cleanStr.split('-');
             const currentYear = new Date().getFullYear();
 
@@ -256,8 +256,8 @@
         }
 
         function loadSettings() {
-            // 🎯 使用 v4 版本號，強制隔離瀏覽器舊暫存
-            const saved = localStorage.getItem('movie_club_rollcall_firebase_v4_cfg');
+            // 🎯 使用 v5 版本號，強制清理瀏覽器舊暫存
+            const saved = localStorage.getItem('movie_club_rollcall_firebase_v5_cfg');
             if (saved) { 
                 try { customConfig = JSON.parse(saved); } catch(e) {} 
             } else {
@@ -287,12 +287,12 @@
         function forceResetToDefaultData() {
             currentStudents = JSON.parse(JSON.stringify(defaultStudents));
             customConfig.rawStudentsList = defaultStudents.map(s => `${s.id}\t${s.name}\t${s.dept_class}`).join("\n");
-            localStorage.setItem('movie_club_rollcall_firebase_v4_cfg', JSON.stringify(customConfig));
+            localStorage.setItem('movie_club_rollcall_firebase_v5_cfg', JSON.stringify(customConfig));
         }
 
         function resetToOfficialDefault() {
             if(confirm("確定要還原成預設學生名單與設定嗎？")) { 
-                localStorage.removeItem('movie_club_rollcall_firebase_v4_cfg');
+                localStorage.removeItem('movie_club_rollcall_firebase_v5_cfg');
                 customConfig = {
                     title: "電影欣賞社",
                     subtitle: "115學年度第1學期",
@@ -353,16 +353,16 @@
                 dbRef.on('value', (snapshot) => {
                     const rootData = snapshot.val();
 
-                    // 1. 每次雲端推送資料（包含簽到與退簽），先將記憶體歸零
+                    // 1. 重置本地記憶體
                     currentStudents.forEach(s => {
                         if (!s.attendance) s.attendance = {};
                         customConfig.dates.forEach(d => s.attendance[d] = 0);
                     });
 
-                    // 2. 比對所有留在雲端的簽到紀錄
+                    // 2. 實時比對 Firebase 上的簽到紀錄
                     if (rootData) {
                         Object.keys(rootData).forEach(dbDateStr => {
-                            if (dbDateStr === "current_code") return; // 忽略 OTP 驗證碼
+                            if (dbDateStr === "current_code") return;
 
                             const normalizedDbDate = normalizeDateStr(dbDateStr);
 
@@ -375,7 +375,6 @@
                                         Object.keys(dayRecords).forEach(studentId => {
                                             const student = currentStudents.find(s => s.id === studentId);
                                             if (student) {
-                                                // 在雲端上的標記為 1 (打勾)，被退簽刪除的則維持 0 (自動取消打勾)
                                                 student.attendance[panelDate] = 1;
                                             }
                                         });
@@ -511,8 +510,8 @@
             customConfig.csvUrl = document.getElementById('cfg-csv-url').value.trim();
             customConfig.rawStudentsList = document.getElementById('cfg-students-raw').value;
 
-            // 儲存至 v4 記憶體
-            localStorage.setItem('movie_club_rollcall_firebase_v4_cfg', JSON.stringify(customConfig));
+            // 儲存至 v5 記憶體
+            localStorage.setItem('movie_club_rollcall_firebase_v5_cfg', JSON.stringify(customConfig));
             closeConfigModal(); 
 
             loadSettings(); 
