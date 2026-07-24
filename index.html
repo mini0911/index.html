@@ -57,7 +57,7 @@
         th { background-color: #f1f3f4; color: #202124; font-weight: 600; position: sticky; top: 0; }
         .checkbox-cell { text-align: center; }
 
-        /* 🔒 唯讀勾選框樣式，防止被滑鼠點擊改動 */
+        /* 🔒 唯讀勾選框樣式，防止被滑鼠手滑點掉 */
         .chk-btn { 
             appearance: none; 
             width: 20px; 
@@ -191,7 +191,7 @@
             <div class="form-group"><label>網頁大標題</label><input type="text" id="cfg-title"></div>
             <div class="form-group"><label>網頁副標題說明</label><input type="text" id="cfg-subtitle"></div>
             <div class="form-group">
-                <label>設定 7 個上課日期 (格式：2026/7/17)</label>
+                <label>設定 7 個上課日期 (可填寫 07/24 或 2026/07/24)</label>
                 <div class="date-inputs-grid">
                     <input type="text" id="cfg-d0"><input type="text" id="cfg-d1"><input type="text" id="cfg-d2">
                     <input type="text" id="cfg-d3"><input type="text" id="cfg-d4"><input type="text" id="cfg-d5"><input type="text" id="cfg-d6">
@@ -218,9 +218,9 @@
 
         let currentStudents = [];
         let customConfig = {
-            title: "電影欣賞社 - 網頁互動點名與統計系統",
-            subtitle: "自動連動 LINE 官方帳號與 Firebase 實時資料庫，實時極速點名打勾。",
-            dates: ['2026/7/24', '2026/7/27', '2026/7/28', '2026/7/29', '2026/7/30', '2026/7/31', '2026/8/3'],
+            title: "電影欣賞社",
+            subtitle: "115學年度第1學期",
+            dates: ['2026/07/24', '2026/07/27', '2026/07/28', '2026/07/29', '2026/07/30', '2026/07/31', '2026/08/03'],
             csvUrl: "https://movie-76596-default-rtdb.asia-southeast1.firebasedatabase.app/",
             rawStudentsList: ""
         };
@@ -228,43 +228,58 @@
         let database = null;
         let dbRef = null;
 
+        // 🎯 智慧日期規格化晶片：不論格式輸入什麼，統一轉為 YYYY-MM-DD
+        function normalizeDateStr(dateStr) {
+            if (!dateStr) return '';
+            const cleanStr = dateStr.trim().replace(/\/-/g, '-');
+            const parts = cleanStr.split('-');
+            const currentYear = new Date().getFullYear();
+
+            if (parts.length === 3) {
+                const y = parts[0];
+                const m = parts[1].padStart(2, '0');
+                const d = parts[2].padStart(2, '0');
+                return `${y}-${m}-${d}`;
+            } else if (parts.length === 2) {
+                const m = parts[0].padStart(2, '0');
+                const d = parts[1].padStart(2, '0');
+                return `${currentYear}-${m}-${d}`;
+            }
+            return dateStr;
+        }
+
         function initTable() {
-            customConfig.title = "電影欣賞社";
-            customConfig.subtitle = "115學年度第1學期。";
-            customConfig.csvUrl = "https://movie-76596-default-rtdb.asia-southeast1.firebasedatabase.app/";
-            customConfig.rawStudentsList = defaultStudents.map(s => `${s.id}\t${s.name}\t${s.dept_class}`).join("\n");
-            localStorage.setItem('movie_club_rollcall_firebase_v3_cfg', JSON.stringify(customConfig));
-
             loadSettings();
-
-            currentStudents.forEach(s => {
-                if(!s.attendance) s.attendance = {};
-                customConfig.dates.forEach(d => {
-                    if(s.attendance[d] === undefined) s.attendance[d] = 0;
-                });
-            });
-
             renderTable();
             calculateStats();
             initFirebaseConnection();
         }
 
         function loadSettings() {
+            // 使用 v3 key 避免舊有暫存干擾
             const saved = localStorage.getItem('movie_club_rollcall_firebase_v3_cfg');
-            if (saved) { try { customConfig = JSON.parse(saved); } catch(e) {} }
+            if (saved) { 
+                try { customConfig = JSON.parse(saved); } catch(e) {} 
+            } else {
+                customConfig.rawStudentsList = defaultStudents.map(s => `${s.id}\t${s.name}\t${s.dept_class}`).join("\n");
+            }
 
             if (customConfig.rawStudentsList && customConfig.rawStudentsList.trim().length > 10) {
                 parseRawStudents(customConfig.rawStudentsList);
             } else {
                 forceResetToDefaultData();
             }
-            if (currentStudents.length === 0) forceResetToDefaultData();
 
             document.getElementById('view-title').innerText = customConfig.title;
             document.getElementById('view-subtitle').innerText = customConfig.subtitle;
+            
+            // 更新 7 個日期標頭（顯示 MM/DD）
             for(let i=0; i<7; i++) {
                 const el = document.getElementById(`th-d${i}`);
-                if(el && customConfig.dates[i]) el.innerText = customConfig.dates[i].substring(5);
+                if(el && customConfig.dates[i]) {
+                    const norm = normalizeDateStr(customConfig.dates[i]);
+                    el.innerText = norm.substring(5).replace('-', '/');
+                }
             }
             updateClassFilterDropdown();
         }
@@ -272,18 +287,24 @@
         function forceResetToDefaultData() {
             currentStudents = JSON.parse(JSON.stringify(defaultStudents));
             customConfig.rawStudentsList = defaultStudents.map(s => `${s.id}\t${s.name}\t${s.dept_class}`).join("\n");
-            localStorage.setItem('movie_club_rollcall_firebase_v2_cfg', JSON.stringify(customConfig));
+            localStorage.setItem('movie_club_rollcall_firebase_v3_cfg', JSON.stringify(customConfig));
         }
 
         function resetToOfficialDefault() {
-            if(confirm("確定要還原成大名單的預設學生資料嗎？")) { 
+            if(confirm("確定要還原成預設學生名單與設定嗎？")) { 
+                localStorage.removeItem('movie_club_rollcall_firebase_v3_cfg');
+                customConfig = {
+                    title: "電影欣賞社",
+                    subtitle: "115學年度第1學期",
+                    dates: ['2026/07/24', '2026/07/27', '2026/07/28', '2026/07/29', '2026/07/30', '2026/07/31', '2026/08/03'],
+                    csvUrl: "https://movie-76596-default-rtdb.asia-southeast1.firebasedatabase.app/",
+                    rawStudentsList: defaultStudents.map(s => `${s.id}\t${s.name}\t${s.dept_class}`).join("\n")
+                };
                 forceResetToDefaultData(); 
                 loadSettings(); 
                 renderTable(); 
                 calculateStats();
-                if(customConfig.csvUrl && customConfig.csvUrl.startsWith('http')) {
-                    initFirebaseConnection();
-                }
+                initFirebaseConnection();
             }
         }
 
@@ -302,7 +323,10 @@
                 }
             });
             if(newList.length > 0) {
-                newList.forEach(ns => { const old = currentStudents.find(o => o.id === ns.id); ns.attendance = old ? old.attendance : {}; });
+                newList.forEach(ns => { 
+                    const old = currentStudents.find(o => o.id === ns.id); 
+                    ns.attendance = old ? old.attendance : {}; 
+                });
                 currentStudents = newList;
             }
         }
@@ -329,23 +353,35 @@
                 dbRef.on('value', (snapshot) => {
                     const rootData = snapshot.val();
 
+                    // 1. 每次雲端推送資料（包含簽到與退簽），先將記憶體歸零
                     currentStudents.forEach(s => {
+                        if (!s.attendance) s.attendance = {};
                         customConfig.dates.forEach(d => s.attendance[d] = 0);
                     });
 
+                    // 2. 比對所有留在雲端的簽到紀錄
                     if (rootData) {
                         Object.keys(rootData).forEach(dbDateStr => {
-                            const actualPanelDate = dbDateStr.replace(/\-/g, '/');
+                            if (dbDateStr === "current_code") return;
 
-                            if (customConfig.dates.includes(actualPanelDate)) {
-                                const dayRecords = rootData[dbDateStr];
-                                Object.keys(dayRecords).forEach(studentId => {
-                                    const student = currentStudents.find(s => s.id === studentId);
-                                    if (student) {
-                                        student.attendance[actualPanelDate] = 1;
+                            const normalizedDbDate = normalizeDateStr(dbDateStr);
+
+                            customConfig.dates.forEach(panelDate => {
+                                const normalizedPanelDate = normalizeDateStr(panelDate);
+
+                                if (normalizedDbDate === normalizedPanelDate) {
+                                    const dayRecords = rootData[dbDateStr];
+                                    if (dayRecords) {
+                                        Object.keys(dayRecords).forEach(studentId => {
+                                            const student = currentStudents.find(s => s.id === studentId);
+                                            if (student) {
+                                                // 在雲端上的標記為 1 (打勾)，被退簽刪除的則維持 0 (自動取消打勾)
+                                                student.attendance[panelDate] = 1;
+                                            }
+                                        });
                                     }
-                                });
-                            }
+                                }
+                            });
                         });
                     }
 
@@ -363,51 +399,32 @@
             }
         }
 
-        // 🎯 完美修復後的手動簽到：自動抓當前日期 + 寫入 Firebase + 即時同步前端打勾
+        // 🎯 手動簽到
         function executeManualSignIn() {
-            if (!database) { 
-                alert("請先開啟萬用面板設定正確的 Firebase 網址！"); 
-                return; 
-            }
-
+            if (!database) { alert("請先開啟萬用面板設定正確的 Firebase 網址！"); return; }
             const inputEl = document.getElementById('manual-student-id');
             const typedId = inputEl.value.trim();
 
-            if (!typedId) { 
-                showMsg("❌ 請先輸入學號！", "#c62828"); 
-                return; 
-            }
-
-            // 1. 嚴格比對名單中是否存在該學號
+            if (!typedId) { showMsg("❌ 請先輸入學號！", "#c62828"); return; }
             const student = currentStudents.find(s => s.id === typedId);
+            if (!student) { showMsg(`❌ 簽到失敗！學號 [${typedId}] 不在選課名單中，無法簽到。`, "#c62828"); inputEl.select(); return; }
 
-            if (!student) { 
-                showMsg(`❌ 簽到失敗！學號 [${typedId}] 不在選課名單中，無法簽到。`, "#c62828"); 
-                inputEl.select();
-                return; 
-            }
-
-            // 2. 自動取得今日日期，若不在設定的7個日期中，預設選擇第1個日期
             const today = new Date();
-            const todayStr = `${today.getFullYear()}/${today.getMonth()+1}/${today.getDate()}`;
+            const y = today.getFullYear();
+            const m = String(today.getMonth() + 1).padStart(2, '0');
+            const d = String(today.getDate()).padStart(2, '0');
+            const todayNormalized = `${y}-${m}-${d}`;
 
-            let activeDate = customConfig.dates.find(d => d === todayStr) || customConfig.dates[0];
-            const pathDate = activeDate.replace(/\//g, '-');
+            let activeDate = customConfig.dates.find(date => normalizeDateStr(date) === todayNormalized) || customConfig.dates[0];
+            const pathDate = normalizeDateStr(activeDate);
 
-            // 3. 寫入雲端 Firebase
             database.ref(`movie_club_rollcall/${pathDate}/${typedId}`).set(1).then(() => {
-                // 4. 🎉 記憶體同步更新並重新繪製畫面
-                student.attendance[activeDate] = 1;
-                renderTable(); 
-                calculateStats();
-
-                showMsg(`✅ [${student.name}] (${activeDate.substring(5)}) 簽到成功！`, "var(--success)");
+                showMsg(`✅ [${student.name}] (${pathDate}) 簽到成功！`, "var(--success)");
             }).catch((err) => {
                 showMsg("❌ 雲端同步失敗，請檢查網路連線。", "#c62828");
             });
 
-            inputEl.value = ''; 
-            inputEl.focus();
+            inputEl.value = ''; inputEl.focus();
         }
 
         function showMsg(text, color) { const el = document.getElementById('manual-msg'); el.innerText = text; el.style.color = color; }
@@ -424,12 +441,15 @@
 
             filtered.forEach((student, index) => {
                 const tr = document.createElement('tr');
-                let attCount = 0; customConfig.dates.forEach(d => { if(student.attendance[d] === 1) attCount++; });
+                let attCount = 0; 
+                
+                customConfig.dates.forEach(d => { 
+                    if(student.attendance && student.attendance[d] === 1) attCount++; 
+                });
 
                 let chkHtml = '';
                 customConfig.dates.forEach((d) => {
-                    const isChecked = student.attendance[d] === 1 ? 'checked' : '';
-                    // 🔒 加上 disabled 防止手滑點掉勾選紀錄
+                    const isChecked = (student.attendance && student.attendance[d] === 1) ? 'checked' : '';
                     chkHtml += `<td class="checkbox-cell"><input type="checkbox" class="chk-btn" ${isChecked} disabled></td>`;
                 });
 
@@ -443,11 +463,19 @@
         function calculateStats() {
             let totalPerfect = 0; let sumTotalRates = 0; const dateCounts = {};
             customConfig.dates.forEach(d => dateCounts[d] = 0);
+            
             currentStudents.forEach(s => {
-                let count = 0; customConfig.dates.forEach(d => { if (s.attendance[d] === 1) { count++; dateCounts[d]++; } });
+                let count = 0; 
+                customConfig.dates.forEach(d => { 
+                    if (s.attendance && s.attendance[d] === 1) { 
+                        count++; 
+                        dateCounts[d]++; 
+                    } 
+                });
                 if (count === customConfig.dates.length) totalPerfect++;
                 sumTotalRates += (count / customConfig.dates.length);
             });
+            
             document.getElementById('perfect-attendance-count').innerText = totalPerfect;
             document.getElementById('avg-attendance-rate').innerText = currentStudents.length ? ((sumTotalRates / currentStudents.length) * 100).toFixed(1) + '%' : '0%';
             customConfig.dates.forEach((d, i) => { const el = document.getElementById(`sum-d${i}`); if(el) el.innerText = dateCounts[d] || 0; });
@@ -475,6 +503,7 @@
         }
         function closeConfigModal() { document.getElementById('config-modal').style.display = 'none'; }
 
+        // 🎯 儲存萬用設定面板內容
         function saveConfig() {
             customConfig.title = document.getElementById('cfg-title').value;
             customConfig.subtitle = document.getElementById('cfg-subtitle').value;
@@ -482,7 +511,8 @@
             customConfig.csvUrl = document.getElementById('cfg-csv-url').value.trim();
             customConfig.rawStudentsList = document.getElementById('cfg-students-raw').value;
 
-            localStorage.setItem('movie_club_rollcall_firebase_v2_cfg', JSON.stringify(customConfig));
+            // 儲存至 v3 記憶體
+            localStorage.setItem('movie_club_rollcall_firebase_v3_cfg', JSON.stringify(customConfig));
             closeConfigModal(); 
 
             loadSettings(); 
@@ -495,8 +525,19 @@
             const header = ["序號", "學號", "姓名", "班級", customConfig.dates[0], customConfig.dates[1], customConfig.dates[2], customConfig.dates[3], customConfig.dates[4], customConfig.dates[5], customConfig.dates[6], "出席次數", "出席率", "狀態"];
             const rows = [];
             currentStudents.forEach((s, index) => {
-                let attCount = 0; customConfig.dates.forEach(d => { if(s.attendance[d] === 1) attCount++; });
-                rows.push([index + 1, s.id, s.name, s.dept_class, s.attendance[customConfig.dates[0]]===1?"V":"", s.attendance[customConfig.dates[1]]===1?"V":"", s.attendance[customConfig.dates[2]]===1?"V":"", s.attendance[customConfig.dates[3]]===1?"V":"", s.attendance[customConfig.dates[4]]===1?"V":"", s.attendance[customConfig.dates[5]]===1?"V":"", s.attendance[customConfig.dates[6]]===1?"V":"", attCount + "次", ((attCount / customConfig.dates.length) * 100).toFixed(0) + "%", attCount === customConfig.dates.length ? "全勤" : (attCount === 0 ? "缺席" : "一般")]);
+                let attCount = 0; customConfig.dates.forEach(d => { if(s.attendance && s.attendance[d] === 1) attCount++; });
+                rows.push([
+                    index + 1, s.id, s.name, s.dept_class, 
+                    (s.attendance && s.attendance[customConfig.dates[0]]===1)?"V":"", 
+                    (s.attendance && s.attendance[customConfig.dates[1]]===1)?"V":"", 
+                    (s.attendance && s.attendance[customConfig.dates[2]]===1)?"V":"", 
+                    (s.attendance && s.attendance[customConfig.dates[3]]===1)?"V":"", 
+                    (s.attendance && s.attendance[customConfig.dates[4]]===1)?"V":"", 
+                    (s.attendance && s.attendance[customConfig.dates[5]]===1)?"V":"", 
+                    (s.attendance && s.attendance[customConfig.dates[6]]===1)?"V":"", 
+                    attCount + "次", ((attCount / customConfig.dates.length) * 100).toFixed(0) + "%", 
+                    attCount === customConfig.dates.length ? "全勤" : (attCount === 0 ? "缺席" : "一般")
+                ]);
             });
             const wb = XLSX.utils.book_new(); const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
             XLSX.utils.book_append_sheet(wb, ws, "點名統計紀錄");
