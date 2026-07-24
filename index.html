@@ -250,7 +250,7 @@
         }
 
         function loadSettings() {
-            const saved = localStorage.getItem('movie_club_rollcall_firebase_v2_cfg');
+            const saved = localStorage.getItem('movie_club_rollcall_firebase_v3_cfg');
             if (saved) { try { customConfig = JSON.parse(saved); } catch(e) {} }
 
             if (customConfig.rawStudentsList && customConfig.rawStudentsList.trim().length > 10) {
