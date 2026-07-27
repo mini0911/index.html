@@ -169,7 +169,7 @@
 
         <!-- 快閃驗證碼卡片 -->
         <div class="otp-box">
-            <div class="otp-label">⚡ 當前動態快閃口令（每 10 秒自動更新）</div>
+            <div class="otp-label">⚡ 當前動態快閃口令（每 15 秒自動更新）</div>
             <div class="otp-number" id="otp-code">----</div>
 
             <!-- 倒數進度條 -->
@@ -230,7 +230,7 @@
             updateProgressBar();
         }
 
-        // ⏱️ 計時器邏輯 (10 秒版本)
+        // ⏱️ 計時器邏輯 (15秒版本)
         function startTimer() {
             generateOTP();
             
@@ -243,12 +243,12 @@
                 if (remainingSeconds <= 0) {
                     generateOTP();
                 }
-            }, 1000);
+            }, 1500);
         }
 
         // 📊 更新倒數計時進度條
         function updateProgressBar() {
-            const percentage = (remainingSeconds / 10) * 100;
+            const percentage = (remainingSeconds / 15) * 100;
             const bar = document.getElementById('progress-bar');
             if (bar) {
                 bar.style.width = percentage + '%';
