@@ -206,7 +206,7 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        let remainingSeconds = 10;
+        let remainingSeconds = 15;
         let otpTimer = null;
 
         // 🎲 隨機產生 4 位數驗證碼並寫入 Firebase
@@ -226,7 +226,7 @@
                     document.getElementById('firebase-status').innerText = `❌ Firebase 寫入失敗，請檢查網路連線`;
                 });
 
-            remainingSeconds = 10;
+            remainingSeconds = 15;
             updateProgressBar();
         }
 
@@ -243,7 +243,7 @@
                 if (remainingSeconds <= 0) {
                     generateOTP();
                 }
-            }, 1500);
+            }, 1000);
         }
 
         // 📊 更新倒數計時進度條
