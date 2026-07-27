@@ -255,19 +255,13 @@
         }
 
         function loadSettings() {
-            // 🎯 優先讀取 LocalStorage 中的使用者自訂資料，解決新增學生無法存檔問題
-            const savedRawList = localStorage.getItem('movie_club_custom_students');
-            const savedTitle = localStorage.getItem('movie_club_title');
-            const savedSubtitle = localStorage.getItem('movie_club_subtitle');
-            const savedDates = localStorage.getItem('movie_club_dates');
-            const savedCsvUrl = localStorage.getItem('movie_club_csv_url');
-
+            // 🎯 徹底禁用快取機制：直接載入最新設定，避免舊暫存覆蓋新日期
             customConfig = {
-                title: savedTitle || "電影欣賞社",
-                subtitle: savedSubtitle || "115學年度第1學期",
-                dates: savedDates ? JSON.parse(savedDates) : ['2026/07/24', '2026/07/27', '2026/07/28', '2026/07/29', '2026/07/30', '2026/07/31', '2026/08/03'],
-                csvUrl: savedCsvUrl || "https://movie-76596-default-rtdb.asia-southeast1.firebasedatabase.app/",
-                rawStudentsList: savedRawList ? savedRawList : defaultStudents.map(s => `${s.id}\t${s.name}\t${s.dept_class}`).join("\n")
+                title: "電影欣賞社",
+                subtitle: "115學年度第1學期",
+                dates: ['2026/07/24', '2026/07/27', '2026/07/28', '2026/07/29', '2026/07/30', '2026/07/31', '2026/08/03'],
+                csvUrl: "https://movie-76596-default-rtdb.asia-southeast1.firebasedatabase.app/",
+                rawStudentsList: defaultStudents.map(s => `${s.id}\t${s.name}\t${s.dept_class}`).join("\n")
             };
 
             parseRawStudents(customConfig.rawStudentsList);
@@ -291,13 +285,7 @@
         }
 
         function resetToOfficialDefault() {
-            if(confirm("確定要還原成預設學生名單與設定嗎？此操作將清空自訂新增的名單。")) { 
-                localStorage.removeItem('movie_club_custom_students');
-                localStorage.removeItem('movie_club_title');
-                localStorage.removeItem('movie_club_subtitle');
-                localStorage.removeItem('movie_club_dates');
-                localStorage.removeItem('movie_club_csv_url');
-                
+            if(confirm("確定要還原成預設學生名單與設定嗎？")) { 
                 forceResetToDefaultData(); 
                 loadSettings(); 
                 renderTable(); 
@@ -505,13 +493,6 @@
             for(let i=0; i<7; i++) customConfig.dates[i] = document.getElementById(`cfg-d${i}`).value.trim();
             customConfig.csvUrl = document.getElementById('cfg-csv-url').value.trim();
             customConfig.rawStudentsList = document.getElementById('cfg-students-raw').value;
-
-            // 🎯 將最新的設定值全部寫入瀏覽器 LocalStorage
-            localStorage.setItem('movie_club_title', customConfig.title);
-            localStorage.setItem('movie_club_subtitle', customConfig.subtitle);
-            localStorage.setItem('movie_club_dates', JSON.stringify(customConfig.dates));
-            localStorage.setItem('movie_club_csv_url', customConfig.csvUrl);
-            localStorage.setItem('movie_club_custom_students', customConfig.rawStudentsList);
 
             closeConfigModal(); 
             loadSettings(); 
