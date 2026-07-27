@@ -255,7 +255,6 @@
         }
 
         function loadSettings() {
-            // 🎯 徹底禁用快取機制：直接載入最新設定，避免舊暫存覆蓋新日期
             customConfig = {
                 title: "電影欣賞社",
                 subtitle: "115學年度第1學期",
@@ -339,13 +338,13 @@
                 dbRef.on('value', (snapshot) => {
                     const rootData = snapshot.val();
 
-                    // 1. 每次收到數據更新，先把本地打勾快取重置為 0
+                    // 1. 重置本地打勾快取
                     currentStudents.forEach(s => {
                         if (!s.attendance) s.attendance = {};
                         customConfig.dates.forEach(d => s.attendance[d] = 0);
                     });
 
-                    // 2. 精準對齊 Firebase 上的最新簽到狀態
+                    // 2. 🌟 精準比對（同時相容 true、1 等值，防閃爍）
                     if (rootData) {
                         Object.keys(rootData).forEach(dbDateStr => {
                             if (dbDateStr === "current_code") return;
@@ -360,7 +359,8 @@
                                     if (dayRecords) {
                                         Object.keys(dayRecords).forEach(studentId => {
                                             const student = currentStudents.find(s => s.id === studentId);
-                                            if (student) {
+                                            // 核心修復：只要該學號存在且值不為 null/false/0，即視為打勾成功
+                                            if (student && dayRecords[studentId]) {
                                                 student.attendance[panelDate] = 1;
                                             }
                                         });
@@ -402,7 +402,8 @@
             let activeDate = customConfig.dates.find(date => normalizeDateStr(date) === todayNormalized) || customConfig.dates[0];
             const pathDate = normalizeDateStr(activeDate);
 
-            database.ref(`movie_club_rollcall/${pathDate}/${typedId}`).set(1).then(() => {
+            // 🌟 核心修復：改寫入 true，保持型態與 GAS 端一致
+            database.ref(`movie_club_rollcall/${pathDate}/${typedId}`).set(true).then(() => {
                 showMsg(`✅ [${student.name}] (${pathDate}) 簽到成功！`, "var(--success)");
             }).catch((err) => {
                 showMsg("❌ 雲端同步失敗，請檢查網路連線。", "#c62828");
