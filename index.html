@@ -335,16 +335,17 @@
 
                 debugEl.innerHTML = "📡 [通道連接中] 正在與雲端 Firebase 建立 WebSocket 實時加密通訊...";
 
+                // 🌟 整合後的 Firebase 實時監聽邏輯（防閃爍、相容 true / 1 / 字串）
                 dbRef.on('value', (snapshot) => {
                     const rootData = snapshot.val();
 
-                    // 1. 重置本地打勾快取
+                    // 1. 先重置本地狀態
                     currentStudents.forEach(s => {
                         if (!s.attendance) s.attendance = {};
                         customConfig.dates.forEach(d => s.attendance[d] = 0);
                     });
 
-                    // 2. 🌟 精準比對（同時相容 true、1 等值，防閃爍）
+                    // 2. 增強判定：只要 dayRecords[studentId] 有值 (true、1、或字串)，就認定為已簽到！
                     if (rootData) {
                         Object.keys(rootData).forEach(dbDateStr => {
                             if (dbDateStr === "current_code") return;
@@ -359,7 +360,7 @@
                                     if (dayRecords) {
                                         Object.keys(dayRecords).forEach(studentId => {
                                             const student = currentStudents.find(s => s.id === studentId);
-                                            // 核心修復：只要該學號存在且值不為 null/false/0，即視為打勾成功
+                                            // 🌟 核心修正：只要該學號存在且不為 null/false/0，就算出席！
                                             if (student && dayRecords[studentId]) {
                                                 student.attendance[panelDate] = 1;
                                             }
