@@ -257,7 +257,6 @@
         }
 
         function loadSettings() {
-            // 🎯 載入最新 8 天日期設定
             customConfig = {
                 title: "電影欣賞社",
                 subtitle: "115學年度第1學期",
@@ -341,13 +340,16 @@
                 dbRef.on('value', (snapshot) => {
                     const rootData = snapshot.val();
 
-                    // 1. 每次收到數據更新，先把本地打勾快取重置為 0
+                    // 1. 重置本地出席快取
                     currentStudents.forEach(s => {
                         if (!s.attendance) s.attendance = {};
-                        customConfig.dates.forEach(d => s.attendance[d] = 0);
+                        customConfig.dates.forEach(d => {
+                            const normD = normalizeDateStr(d);
+                            s.attendance[normD] = 0;
+                        });
                     });
 
-                    // 2. 精準對齊 Firebase 上的最新簽到狀態
+                    // 2. 對齊 Firebase 最新資料（使用標準化 YYYY-MM-DD 比對）
                     if (rootData) {
                         Object.keys(rootData).forEach(dbDateStr => {
                             if (dbDateStr === "current_code") return;
@@ -363,7 +365,7 @@
                                         Object.keys(dayRecords).forEach(studentId => {
                                             const student = currentStudents.find(s => s.id === studentId);
                                             if (student) {
-                                                student.attendance[panelDate] = 1;
+                                                student.attendance[normalizedPanelDate] = 1;
                                             }
                                         });
                                     }
@@ -401,16 +403,18 @@
             const d = String(today.getDate()).padStart(2, '0');
             const todayNormalized = `${y}-${m}-${d}`;
 
+            // 比對是否符合設定的日期，否則預設簽到在第一天
             let activeDate = customConfig.dates.find(date => normalizeDateStr(date) === todayNormalized) || customConfig.dates[0];
             const pathDate = normalizeDateStr(activeDate);
 
             database.ref(`movie_club_rollcall/${pathDate}/${typedId}`).set(1).then(() => {
                 showMsg(`✅ [${student.name}] (${pathDate}) 簽到成功！`, "var(--success)");
             }).catch((err) => {
-                showMsg("❌ 雲端同步失敗，請檢查網路連線。", "#c62828");
+                showMsg("❌ 雲端同步失敗，請檢查網路連線或 Firebase Rules。", "#c62828");
             });
 
-            inputEl.value = ''; inputEl.focus();
+            inputEl.value = ''; 
+            inputEl.focus();
         }
 
         function showMsg(text, color) { const el = document.getElementById('manual-msg'); el.innerText = text; el.style.color = color; }
@@ -430,12 +434,14 @@
                 let attCount = 0; 
                 
                 customConfig.dates.forEach(d => { 
-                    if(student.attendance && student.attendance[d] === 1) attCount++; 
+                    const normD = normalizeDateStr(d);
+                    if(student.attendance && student.attendance[normD] === 1) attCount++; 
                 });
 
                 let chkHtml = '';
                 customConfig.dates.forEach((d) => {
-                    const isChecked = (student.attendance && student.attendance[d] === 1) ? 'checked' : '';
+                    const normD = normalizeDateStr(d);
+                    const isChecked = (student.attendance && student.attendance[normD] === 1) ? 'checked' : '';
                     chkHtml += `<td class="checkbox-cell"><input type="checkbox" class="chk-btn" ${isChecked} disabled></td>`;
                 });
 
@@ -448,14 +454,15 @@
 
         function calculateStats() {
             let totalPerfect = 0; let sumTotalRates = 0; const dateCounts = {};
-            customConfig.dates.forEach(d => dateCounts[d] = 0);
+            customConfig.dates.forEach(d => dateCounts[normalizeDateStr(d)] = 0);
             
             currentStudents.forEach(s => {
                 let count = 0; 
                 customConfig.dates.forEach(d => { 
-                    if (s.attendance && s.attendance[d] === 1) { 
+                    const normD = normalizeDateStr(d);
+                    if (s.attendance && s.attendance[normD] === 1) { 
                         count++; 
-                        dateCounts[d]++; 
+                        dateCounts[normD]++; 
                     } 
                 });
                 if (count === customConfig.dates.length) totalPerfect++;
@@ -464,7 +471,11 @@
             
             document.getElementById('perfect-attendance-count').innerText = totalPerfect;
             document.getElementById('avg-attendance-rate').innerText = currentStudents.length ? ((sumTotalRates / currentStudents.length) * 100).toFixed(1) + '%' : '0%';
-            customConfig.dates.forEach((d, i) => { const el = document.getElementById(`sum-d${i}`); if(el) el.innerText = dateCounts[d] || 0; });
+            customConfig.dates.forEach((d, i) => { 
+                const normD = normalizeDateStr(d);
+                const el = document.getElementById(`sum-d${i}`); 
+                if(el) el.innerText = dateCounts[normD] || 0; 
+            });
         }
 
         function updateClassFilterDropdown() {
@@ -507,9 +518,16 @@
             const header = ["序號", "學號", "姓名", "班級", ...customConfig.dates, "出席次數", "出席率", "狀態"];
             const rows = [];
             currentStudents.forEach((s, index) => {
-                let attCount = 0; customConfig.dates.forEach(d => { if(s.attendance && s.attendance[d] === 1) attCount++; });
+                let attCount = 0; 
+                customConfig.dates.forEach(d => { 
+                    const normD = normalizeDateStr(d);
+                    if(s.attendance && s.attendance[normD] === 1) attCount++; 
+                });
                 
-                const dateStatus = customConfig.dates.map(d => (s.attendance && s.attendance[d] === 1) ? "V" : "");
+                const dateStatus = customConfig.dates.map(d => {
+                    const normD = normalizeDateStr(d);
+                    return (s.attendance && s.attendance[normD] === 1) ? "V" : "";
+                });
 
                 rows.push([
                     index + 1, s.id, s.name, s.dept_class, 
