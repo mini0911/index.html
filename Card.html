@@ -246,13 +246,13 @@
         // 即時更新整張卡片
         function updateCard() {
             // 更新姓名與職稱
-            const name = document.getElementById('inputName').value.trim() || "陳琇眞";
+            const name = document.getElementById('inputName').value.trim() || "";
             const title = document.getElementById('inputTitle').value.trim() || "校安";
             document.getElementById('cardName').textContent = name;
             document.getElementById('cardTitle').textContent = title;
 
             // 更新科別標籤（超大字體與質感卡片風格）
-            const deptInput = document.getElementById('inputDept').value.trim() || "電子科, 門市科";
+            const deptInput = document.getElementById('inputDept').value.trim() || ", ";
             const deptContainer = document.getElementById('deptContainer');
             deptContainer.innerHTML = '';
             
