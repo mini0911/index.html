@@ -33,7 +33,7 @@
     <style>
         body {
             font-family: 'Noto Sans TC', sans-serif;
-            background-color: #f8fafc;
+            background-color: #f1f5f9;
         }
 
         /* A5 橫式卡片比例容器 (210mm x 148mm 比例) */
@@ -87,8 +87,8 @@
 </head>
 <body class="min-h-screen py-8 px-4 flex flex-col items-center justify-start">
 
-    <!-- 頂部頁籤與說明 (非列印區域) -->
-    <header class="w-full max-w-[1150px] mb-6 no-print flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+    <!-- 頂部頁籤與功能按鈕 (非列印區域) -->
+    <header class="w-full max-w-[1000px] mb-6 no-print flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
         <div class="flex items-center gap-3">
             <div class="w-12 h-12 rounded-xl bg-sky-500 text-white flex items-center justify-center text-2xl shadow-md">
                 <i class="fa-solid fa-id-card"></i>
@@ -108,127 +108,132 @@
         </div>
     </header>
 
-    <!-- 主內容區：左側編輯表單 + 右側卡片即時預覽 -->
-    <main class="w-full max-w-[1150px] grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    <!-- 主內容區：上方控制面板 + 下方卡片預覽區（完全上下分離） -->
+    <main class="w-full max-w-[1000px] flex flex-col items-center gap-8">
 
-        <!-- ================= 編輯控制面板 (5 欄寬) ================= -->
-        <section class="lg:col-span-5 bg-white p-6 rounded-2xl shadow-md border border-slate-200 no-print space-y-5">
-            <h2 class="text-lg font-bold text-slate-800 border-b pb-3 flex items-center gap-2 font-maru">
+        <!-- ================= 上方：編輯與調節控制面板 (非列印區域) ================= -->
+        <section class="w-full bg-white p-6 rounded-2xl shadow-sm border border-slate-200 no-print">
+            <h2 class="text-lg font-bold text-slate-800 border-b pb-3 mb-5 flex items-center gap-2 font-maru">
                 <i class="fa-solid fa-sliders text-sky-500"></i> 卡片內容與字體調節
             </h2>
 
-            <!-- 1. 校安姓名與職稱 -->
-            <div class="space-y-3">
-                <label class="block text-sm font-bold text-slate-700">1. 校安姓名與職稱</label>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <span class="text-xs text-slate-500 mb-1 block">姓名</span>
-                        <input type="text" id="inputName" value="" placeholder="請輸入姓名" oninput="updateCard()" 
-                               class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-sky-400 focus:border-sky-400 outline-none transition">
-                    </div>
-                    <div>
-                        <span class="text-xs text-slate-500 mb-1 block">職稱</span>
-                        <input type="text" id="inputTitle" value="校安" oninput="updateCard()" 
-                               class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-sky-400 focus:border-sky-400 outline-none transition">
-                    </div>
-                </div>
-            </div>
-
-            <!-- 2. 輔導科別（含自由開關） -->
-            <div class="space-y-2">
-                <div class="flex items-center justify-between">
-                    <label class="text-sm font-bold text-slate-700">2. 輔導科別</label>
-                    <label class="inline-flex items-center cursor-pointer gap-2">
-                        <span class="text-xs text-slate-500 font-bold" id="deptToggleText">顯示科別</span>
-                        <input type="checkbox" id="toggleDept" checked onchange="toggleDeptVisibility()" class="sr-only peer">
-                        <div class="relative w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-sky-500"></div>
-                    </label>
-                </div>
-                <div id="deptInputGroup">
-                    <p class="text-xs text-slate-400 mb-1.5">可輸入多個科別，請用逗號、頓號或空格分隔（例如：電子科, 門市科）</p>
-                    <input type="text" id="inputDept" value="" placeholder="例如：電子科, 門市科" oninput="updateCard()" 
-                           class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-sky-400 focus:border-sky-400 outline-none transition">
-                </div>
-            </div>
-
-            <!-- 3. 左側照片上傳 -->
-            <div>
-                <label class="block text-sm font-bold text-slate-700 mb-1">3. 左側個人照片上傳</label>
-                <p class="text-xs text-slate-400 mb-2">建議使用全身或半身去背 PNG 或清晰直式 JPG</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                 
-                <div class="flex items-center gap-3">
-                    <label class="flex-1 cursor-pointer bg-sky-50 border-2 border-dashed border-sky-300 hover:bg-sky-100/70 text-sky-700 rounded-xl p-3 text-center transition flex items-center justify-center gap-2 text-sm font-bold">
-                        <i class="fa-solid fa-cloud-arrow-up text-lg"></i> 選擇圖片
-                        <input type="file" id="imageUploader" accept="image/*" onchange="handleImageUpload(event)" class="hidden">
+                <!-- 左半部：文字與照片設定 -->
+                <div class="space-y-4">
+                    <!-- 1. 校安姓名與職稱 -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-slate-700">1. 校安姓名與職稱</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <span class="text-xs text-slate-500 mb-1 block">姓名</span>
+                                <input type="text" id="inputName" value="" placeholder="請輸入姓名" oninput="updateCard()" 
+                                       class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-sky-400 focus:border-sky-400 outline-none transition">
+                            </div>
+                            <div>
+                                <span class="text-xs text-slate-500 mb-1 block">職稱</span>
+                                <input type="text" id="inputTitle" value="校安" oninput="updateCard()" 
+                                       class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-sky-400 focus:border-sky-400 outline-none transition">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. 輔導科別（含開關） -->
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label class="text-sm font-bold text-slate-700">2. 輔導科別</label>
+                            <label class="inline-flex items-center cursor-pointer gap-2">
+                                <span class="text-xs text-slate-500 font-bold" id="deptToggleText">顯示科別</span>
+                                <input type="checkbox" id="toggleDept" checked onchange="toggleDeptVisibility()" class="sr-only peer">
+                                <div class="relative w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-sky-500"></div>
+                            </label>
+                        </div>
+                        <div id="deptInputGroup">
+                            <p class="text-xs text-slate-400 mb-1.5">可輸入多個科別，請用逗號、頓號或空格分隔（例如：電子科, 門市科）</p>
+                            <input type="text" id="inputDept" value="" placeholder="例如：電子科, 門市科" oninput="updateCard()" 
+                                   class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-sky-400 focus:border-sky-400 outline-none transition">
+                        </div>
+                    </div>
+
+                    <!-- 3. 左側照片上傳 -->
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">3. 左側個人照片上傳</label>
+                        <div class="flex items-center gap-3">
+                            <label class="flex-1 cursor-pointer bg-sky-50 border-2 border-dashed border-sky-300 hover:bg-sky-100/70 text-sky-700 rounded-xl p-3 text-center transition flex items-center justify-center gap-2 text-sm font-bold">
+                                <i class="fa-solid fa-cloud-arrow-up text-lg"></i> 選擇圖片檔案
+                                <input type="file" id="imageUploader" accept="image/*" onchange="handleImageUpload(event)" class="hidden">
+                            </label>
+                            <button onclick="removeImage()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 p-3 rounded-xl text-sm font-bold transition" title="移除圖片">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右半部：自訂字體大小調節區 -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80 space-y-3.5">
+                    <label class="block text-sm font-black text-slate-700 font-maru flex items-center gap-1.5 border-b pb-2">
+                        <i class="fa-solid fa-text-height text-sky-500"></i> 自訂字體大小 (px)
                     </label>
-                    <button onclick="removeImage()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 p-3 rounded-xl text-sm font-bold transition" title="移除圖片">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- 4. 自訂字體大小控制區 -->
-            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80 space-y-3.5">
-                <label class="block text-sm font-black text-slate-700 font-maru flex items-center gap-1.5">
-                    <i class="fa-solid fa-text-height text-sky-500"></i> 自訂字體大小 (px)
-                </label>
-                
-                <!-- 姓名大小 -->
-                <div class="space-y-1">
-                    <div class="flex justify-between text-xs font-bold text-slate-600">
-                        <span>姓名大小</span>
-                        <span id="nameSizeVal" class="text-sky-600 font-mono">56px</span>
+                    
+                    <!-- 姓名大小 -->
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-xs font-bold text-slate-600">
+                            <span>姓名大小</span>
+                            <span id="nameSizeVal" class="text-sky-600 font-mono">56px</span>
+                        </div>
+                        <input type="range" id="sizeName" min="28" max="80" value="56" oninput="updateCard()" 
+                               class="w-full accent-sky-500 h-1.5 bg-slate-200 rounded-lg cursor-pointer">
                     </div>
-                    <input type="range" id="sizeName" min="28" max="80" value="56" oninput="updateCard()" 
-                           class="w-full accent-sky-500 h-1.5 bg-slate-200 rounded-lg cursor-pointer">
+
+                    <!-- 職稱大小 -->
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-xs font-bold text-slate-600">
+                            <span>職稱大小</span>
+                            <span id="titleSizeVal" class="text-sky-600 font-mono">36px</span>
+                        </div>
+                        <input type="range" id="sizeTitle" min="18" max="50" value="36" oninput="updateCard()" 
+                               class="w-full accent-sky-500 h-1.5 bg-slate-200 rounded-lg cursor-pointer">
+                    </div>
+
+                    <!-- 輔導科別標題大小 -->
+                    <div id="sizeDeptLabelWrapper" class="space-y-1 transition-opacity duration-200">
+                        <div class="flex justify-between text-xs font-bold text-slate-600">
+                            <span>「輔導科別」標題大小</span>
+                            <span id="deptLabelSizeVal" class="text-sky-600 font-mono">26px</span>
+                        </div>
+                        <input type="range" id="sizeDeptLabel" min="16" max="40" value="26" oninput="updateCard()" 
+                               class="w-full accent-sky-500 h-1.5 bg-slate-200 rounded-lg cursor-pointer">
+                    </div>
+
+                    <!-- 科別項目文字大小 -->
+                    <div id="sizeDeptItemWrapper" class="space-y-1 transition-opacity duration-200">
+                        <div class="flex justify-between text-xs font-bold text-slate-600">
+                            <span>科別名稱大小</span>
+                            <span id="deptItemSizeVal" class="text-sky-600 font-mono">34px</span>
+                        </div>
+                        <input type="range" id="sizeDeptItem" min="18" max="54" value="34" oninput="updateCard()" 
+                               class="w-full accent-sky-500 h-1.5 bg-slate-200 rounded-lg cursor-pointer">
+                    </div>
                 </div>
 
-                <!-- 職稱大小 -->
-                <div class="space-y-1">
-                    <div class="flex justify-between text-xs font-bold text-slate-600">
-                        <span>職稱大小</span>
-                        <span id="titleSizeVal" class="text-sky-600 font-mono">36px</span>
-                    </div>
-                    <input type="range" id="sizeTitle" min="18" max="50" value="36" oninput="updateCard()" 
-                           class="w-full accent-sky-500 h-1.5 bg-slate-200 rounded-lg cursor-pointer">
-                </div>
-
-                <!-- 輔導科別標題大小 -->
-                <div id="sizeDeptLabelWrapper" class="space-y-1 transition-opacity duration-200">
-                    <div class="flex justify-between text-xs font-bold text-slate-600">
-                        <span>「輔導科別」標題大小</span>
-                        <span id="deptLabelSizeVal" class="text-sky-600 font-mono">26px</span>
-                    </div>
-                    <input type="range" id="sizeDeptLabel" min="16" max="40" value="26" oninput="updateCard()" 
-                           class="w-full accent-sky-500 h-1.5 bg-slate-200 rounded-lg cursor-pointer">
-                </div>
-
-                <!-- 科別項目文字大小 -->
-                <div id="sizeDeptItemWrapper" class="space-y-1 transition-opacity duration-200">
-                    <div class="flex justify-between text-xs font-bold text-slate-600">
-                        <span>科別名稱大小</span>
-                        <span id="deptItemSizeVal" class="text-sky-600 font-mono">34px</span>
-                    </div>
-                    <input type="range" id="sizeDeptItem" min="18" max="54" value="34" oninput="updateCard()" 
-                           class="w-full accent-sky-500 h-1.5 bg-slate-200 rounded-lg cursor-pointer">
-                </div>
             </div>
         </section>
 
-        <!-- ================= 右側卡片預覽區 (7 欄寬) ================= -->
-        <section class="lg:col-span-7 flex flex-col items-center w-full">
-            <div class="no-print w-full flex justify-between items-center mb-3 px-1">
+        <!-- ================= 下方：卡片預覽區（完全獨立寬闊展示） ================= -->
+        <section class="flex flex-col items-center w-full">
+            <div class="no-print w-[840px] flex justify-between items-center mb-3 px-1">
                 <span class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
                     A5 橫式即時卡片預覽 (210 x 148 mm)
                 </span>
-                <span class="text-xs text-slate-400">左右佈局獨立互不壓迫</span>
+                <span class="text-xs text-slate-400">標準 A5 輸出規格</span>
             </div>
 
-            <!-- A5 橫式介紹小卡主體 -->
+            <!-- A5 橫式小卡主體 (840px x 592px) -->
             <div id="a5Card" class="a5-card bg-white rounded-3xl shadow-2xl overflow-hidden p-6 relative flex gap-6 border border-slate-200 shrink-0">
                 
-                <!-- ================= 左半邊區塊 (固定寬度 320px、不收縮、溢出隱藏) ================= -->
+                <!-- 左半邊：照片展示區 -->
                 <div class="w-[320px] shrink-0 h-full bg-gradient-to-b from-sky-50/90 to-sky-100/60 rounded-2xl relative flex items-center justify-center border-l-8 border-amber-400 overflow-hidden shadow-inner p-3">
                     <img id="cardImage" src="" alt="校安照片" class="max-h-[500px] max-w-[290px] w-auto h-auto object-contain drop-shadow-md z-10 hidden">
                     <div id="cardImagePlaceholder" class="text-sky-300 flex flex-col items-center justify-center gap-3">
@@ -239,7 +244,7 @@
                     </div>
                 </div>
 
-                <!-- ================= 右半邊區塊 (彈性滿版 flex-1、獨立 min-w-0) ================= -->
+                <!-- 右半邊：文字資訊區 -->
                 <div class="flex-1 min-w-0 h-full flex flex-col justify-between py-5 px-6 bg-slate-50/70 rounded-2xl border border-slate-100 overflow-hidden">
                     
                     <div class="space-y-6 w-full">
@@ -251,7 +256,7 @@
                             </div>
                         </div>
 
-                        <!-- 2. 姓名與職稱（自動換行且不外溢） -->
+                        <!-- 2. 姓名與職稱 -->
                         <div class="flex items-baseline flex-wrap gap-x-4 gap-y-2 border-b-2 border-sky-100 pb-4 w-full">
                             <h2 id="cardName" class="font-black text-slate-900 tracking-tight font-maru leading-tight break-words"></h2>
                             <span id="cardTitle" class="font-black text-sky-600 font-maru tracking-wide shrink-0">校安</span>
@@ -380,7 +385,7 @@
                 if (depts.length === 0) {
                     deptContainer.innerHTML = '<div class="w-full text-center py-3.5 bg-white/70 rounded-2xl border border-dashed border-slate-300 text-base text-slate-400 font-bold font-maru">尚未填寫科別</div>';
                 } else {
-                    const gridClass = depts.length === 1 ? 'grid grid-cols-1 gap-3 w-full' : 'grid grid-cols-2 gap-3 w-full';
+                    const gridClass = depts.length === 1 ? 'grid grid-cols-1 gap-3 w-full' : 'grid grid-cols-2 gap-3.5 w-full';
                     const wrapper = document.createElement('div');
                     wrapper.className = gridClass;
 
