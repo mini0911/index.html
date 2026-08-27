@@ -242,7 +242,7 @@
 
                         <!-- 2. 姓名與職稱（支援自訂字體） -->
                         <div class="flex items-baseline flex-wrap gap-4 border-b-2 border-sky-100 pb-4">
-                            <h2 id="cardName" class="font-black text-slate-900 tracking-tight font-maru leading-none">陳琇眞</h2>
+                            <h2 id="cardName" class="font-black text-slate-900 tracking-tight font-maru leading-none"></h2>
                             <span id="cardTitle" class="font-black text-sky-600 font-maru tracking-wide">校安</span>
                         </div>
 
@@ -309,7 +309,7 @@
             document.getElementById('deptItemSizeVal').textContent = sizeDeptItem + 'px';
 
             // 更新姓名與職稱（套用自訂字體）
-            const name = document.getElementById('inputName').value.trim() || "陳琇眞";
+            const name = document.getElementById('inputName').value.trim() || "";
             const title = document.getElementById('inputTitle').value.trim() || "校安";
             
             const cardName = document.getElementById('cardName');
@@ -325,7 +325,7 @@
             cardDeptLabel.style.fontSize = sizeDeptLabel + 'px';
 
             // 更新科別標籤（套用自訂字體與滿版 Grid）
-            const deptInput = document.getElementById('inputDept').value.trim() || "電子科, 門市科";
+            const deptInput = document.getElementById('inputDept').value.trim() || ", ";
             const deptContainer = document.getElementById('deptContainer');
             deptContainer.innerHTML = '';
             
