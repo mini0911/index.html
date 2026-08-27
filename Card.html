@@ -95,7 +95,7 @@
             </div>
             <div>
                 <h1 class="text-2xl font-black text-slate-800 font-maru">校安介紹 A5 橫式小卡生成器</h1>
-                <p class="text-xs text-slate-500">自由編輯姓名、科別、照片與各區塊字體大小，並可直接輸出 A5 橫式列印</p>
+                <p class="text-xs text-slate-500">自由編輯姓名、科別、組室、照片與各區塊字體大小，並可直接輸出 A5 橫式列印</p>
             </div>
         </div>
         <div class="flex items-center gap-3">
@@ -108,7 +108,7 @@
         </div>
     </header>
 
-    <!-- 主內容區：上方控制面板 + 下方卡片預覽區（完全上下分離） -->
+    <!-- 主內容區：上方控制面板 + 下方卡片預覽區 -->
     <main class="w-full max-w-[1000px] flex flex-col items-center gap-8">
 
         <!-- ================= 上方：編輯與調節控制面板 (非列印區域) ================= -->
@@ -119,7 +119,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                 
-                <!-- 左半部：文字與照片設定 -->
+                <!-- 左半部：文字、組室與照片設定 -->
                 <div class="space-y-4">
                     <!-- 1. 校安姓名與職稱 -->
                     <div class="space-y-2">
@@ -155,9 +155,26 @@
                         </div>
                     </div>
 
-                    <!-- 3. 左側照片上傳 -->
+                    <!-- 3. 所屬組室下拉選單 -->
                     <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-1">3. 左側個人照片上傳</label>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">3. 右下角所屬組室</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <select id="selectSection" onchange="handleSectionChange()" 
+                                    class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-sky-400 focus:border-sky-400 outline-none transition font-medium text-slate-700">
+                                <option value="學安室">學安室</option>
+                                <option value="訓育組">訓育組</option>
+                                <option value="生輔組">生輔組</option>
+                                <option value="衛生組">衛生組</option>
+                                <option value="custom">自訂組室名稱...</option>
+                            </select>
+                            <input type="text" id="inputCustomSection" placeholder="請輸入組室名稱" oninput="updateCard()" 
+                                   class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-sky-400 focus:border-sky-400 outline-none transition hidden">
+                        </div>
+                    </div>
+
+                    <!-- 4. 左側照片上傳 -->
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">4. 左側個人照片上傳</label>
                         <div class="flex items-center gap-3">
                             <label class="flex-1 cursor-pointer bg-sky-50 border-2 border-dashed border-sky-300 hover:bg-sky-100/70 text-sky-700 rounded-xl p-3 text-center transition flex items-center justify-center gap-2 text-sm font-bold">
                                 <i class="fa-solid fa-cloud-arrow-up text-lg"></i> 選擇圖片檔案
@@ -220,7 +237,7 @@
             </div>
         </section>
 
-        <!-- ================= 下方：卡片預覽區（完全獨立寬闊展示） ================= -->
+        <!-- ================= 下方：卡片預覽區 ================= -->
         <section class="flex flex-col items-center w-full">
             <div class="no-print w-[840px] flex justify-between items-center mb-3 px-1">
                 <span class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
@@ -280,7 +297,7 @@
                         <span class="flex items-center gap-2 text-sky-700 truncate">
                             <i class="fa-solid fa-heart text-rose-500 shrink-0"></i> 用心關懷 ‧ 守護校園
                         </span>
-                        <span class="text-slate-600 shrink-0">學務處 學安室</span>
+                        <span id="cardOfficeSection" class="text-slate-600 shrink-0">學務處 學安室</span>
                     </div>
 
                 </div>
@@ -296,6 +313,8 @@
             name: "",
             title: "校安",
             departments: ", ",
+            section: "學安室",
+            customSection: "",
             showDept: true,
             image: "",
             sizeName: 56,
@@ -310,6 +329,19 @@
         window.addEventListener('DOMContentLoaded', () => {
             updateCard();
         });
+
+        // 處理組室下拉選單變更
+        function handleSectionChange() {
+            const select = document.getElementById('selectSection');
+            const customInput = document.getElementById('inputCustomSection');
+            if (select.value === 'custom') {
+                customInput.classList.remove('hidden');
+                customInput.focus();
+            } else {
+                customInput.classList.add('hidden');
+            }
+            updateCard();
+        }
 
         // 輔導科別顯示開關切換
         function toggleDeptVisibility() {
@@ -354,7 +386,7 @@
             document.getElementById('deptLabelSizeVal').textContent = sizeDeptLabel + 'px';
             document.getElementById('deptItemSizeVal').textContent = sizeDeptItem + 'px';
 
-            // 更新姓名與職稱（套用自訂字體）
+            // 更新姓名與職稱
             const name = document.getElementById('inputName').value.trim() || "";
             const title = document.getElementById('inputTitle').value.trim() || "校安";
             
@@ -371,12 +403,19 @@
 
             cardDeptLabel.style.fontSize = sizeDeptLabel + 'px';
 
+            // 更新右下角所屬處室與組室
+            const selectSection = document.getElementById('selectSection').value;
+            let sectionName = selectSection;
+            if (selectSection === 'custom') {
+                sectionName = document.getElementById('inputCustomSection').value.trim() || "組室";
+            }
+            document.getElementById('cardOfficeSection').textContent = `學務處 ${sectionName}`;
+
             // 判斷是否顯示科別區塊
             const isDeptVisible = document.getElementById('toggleDept').checked;
             if (isDeptVisible) {
                 cardDeptSection.classList.remove('hidden');
 
-                // 更新科別標籤（套用自訂字體與滿版 Grid）
                 const deptInput = document.getElementById('inputDept').value.trim() || ", ";
                 const deptContainer = document.getElementById('deptContainer');
                 deptContainer.innerHTML = '';
@@ -443,6 +482,10 @@
             document.getElementById('inputDept').value = DEFAULT_DATA.departments;
             document.getElementById('toggleDept').checked = DEFAULT_DATA.showDept;
             
+            document.getElementById('selectSection').value = DEFAULT_DATA.section;
+            document.getElementById('inputCustomSection').value = DEFAULT_DATA.customSection;
+            document.getElementById('inputCustomSection').classList.add('hidden');
+
             document.getElementById('sizeName').value = DEFAULT_DATA.sizeName;
             document.getElementById('sizeTitle').value = DEFAULT_DATA.sizeTitle;
             document.getElementById('sizeDeptLabel').value = DEFAULT_DATA.sizeDeptLabel;
