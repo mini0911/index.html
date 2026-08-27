@@ -123,7 +123,7 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <span class="text-xs text-slate-500 mb-1 block">姓名</span>
-                        <input type="text" id="inputName" value="" oninput="updateCard()" 
+                        <input type="text" id="inputName" value="" placeholder="請輸入姓名" oninput="updateCard()" 
                                class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-sky-400 focus:border-sky-400 outline-none transition">
                     </div>
                     <div>
@@ -138,7 +138,7 @@
             <div>
                 <label class="block text-sm font-bold text-slate-700 mb-1">2. 輔導科別</label>
                 <p class="text-xs text-slate-400 mb-1.5">可輸入多個科別，請用逗號或頓號分隔（例如：電子科, 門市科）</p>
-                <input type="text" id="inputDept" value=", " oninput="updateCard()" 
+                <input type="text" id="inputDept" value="" placeholder="例如：電子科, 資訊科" oninput="updateCard()" 
                        class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-sky-400 focus:border-sky-400 outline-none transition">
             </div>
 
@@ -181,7 +181,7 @@
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
                     A5 橫式即時卡片預覽 (210 x 148 mm)
                 </span>
-                <span class="text-xs text-slate-400">滑鼠停留在圖片可直接點擊更換</span>
+                <span class="text-xs text-slate-400">可即時輸入內容預覽</span>
             </div>
 
             <!-- A5 橫式介紹小卡主體 -->
@@ -192,25 +192,25 @@
                     
                     <!-- 左側文字資料區塊 (靠上對齊) -->
                     <div class="z-10 flex flex-col justify-start pr-1">
-                        <!-- 1. 校安姓名與職稱 (放大呈現) -->
-                        <div class="mb-4">
-                            <div class="flex flex-col items-start gap-1">
-                                <h2 id="cardName" class="text-5xl md:text-6xl font-black text-slate-900 tracking-tight font-maru leading-none">陳琇眞</h2>
-                                <span id="cardTitle" class="text-2xl font-bold text-sky-600 font-maru mt-1.5">校安</span>
+                        <!-- 1. 校安姓名與職稱（並排呈現、姓名微縮小、職稱放大） -->
+                        <div class="mb-3.5">
+                            <div class="flex items-baseline flex-wrap gap-2.5">
+                                <h2 id="cardName" class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight font-maru leading-tight">陳琇眞</h2>
+                                <span id="cardTitle" class="text-2xl font-black text-sky-600 font-maru tracking-wide">校安</span>
                             </div>
-                            <p class="text-sm font-bold text-slate-500 mt-3 font-maru flex items-center gap-1.5">
+                            <p class="text-xs font-bold text-slate-500 mt-2 font-maru flex items-center gap-1.5">
                                 <i class="fa-solid fa-bookmark text-amber-500 text-xs"></i> 輔導科別
                             </p>
                         </div>
 
-                        <!-- 2. 輔導科別 (平均分配寬度，獨立於照片上方) -->
+                        <!-- 2. 輔導科別 -->
                         <div id="deptContainer" class="grid grid-cols-2 gap-2 mb-3">
                             <!-- 動態生成科別標籤 -->
                         </div>
                     </div>
 
                     <!-- 3. 照片展示區域 -->
-                    <div class="relative z-10 w-full flex-1 min-h-[160px] flex items-center justify-center overflow-hidden rounded-xl bg-white/60 border border-sky-200/50 mt-2">
+                    <div class="relative z-10 w-full flex-1 min-h-[160px] flex items-center justify-center overflow-hidden rounded-xl bg-white/60 border border-sky-200/50 mt-1">
                         <img id="cardImage" src="" alt="校安照片" class="max-h-full max-w-full object-contain drop-shadow-md hidden">
                         <div id="cardImagePlaceholder" class="text-sky-300 flex flex-col items-center justify-center gap-2">
                             <i class="fa-regular fa-image text-4xl"></i>
@@ -223,15 +223,15 @@
                 <div class="w-[60%] flex flex-col justify-between p-4 bg-slate-50/70 rounded-2xl border border-slate-100">
                     <div>
                         <!-- 右側標題 -->
-                        <div class="flex items-center gap-2.5 border-b-2 border-sky-500/20 pb-3 mb-4">
+                        <div class="flex items-center gap-2.5 border-b-2 border-sky-500/20 pb-3 mb-3.5">
                             <div class="w-8 h-8 rounded-lg bg-sky-500 text-white flex items-center justify-center text-base shadow-sm">
                                 <i class="fa-solid fa-clipboard-check"></i>
                             </div>
                             <h3 class="text-xl font-black text-slate-800 font-maru tracking-wide">主要負責業務</h3>
                         </div>
 
-                        <!-- 業務列表 -->
-                        <div id="cardBusinessList" class="space-y-2.5">
+                        <!-- 業務列表（字體加大 text-base） -->
+                        <div id="cardBusinessList" class="space-y-2">
                             <!-- 動態生成業務項目 -->
                         </div>
                     </div>
@@ -253,9 +253,9 @@
     <script>
         // 預設資料
         const DEFAULT_DATA = {
-            name: "",
+            name: "陳琇眞",
             title: "校安",
-            departments: ", ",
+            departments: "電子科, 門市科",
             business: [
                 "學生校內外生活輔導與關懷",
                 "校園安全維護及防制霸凌業務",
@@ -298,13 +298,13 @@
         // 即時更新整張卡片
         function updateCard() {
             // 更新姓名與職稱
-            const name = document.getElementById('inputName').value.trim() || "姓名";
-            const title = document.getElementById('inputTitle').value.trim() || "職稱";
+            const name = document.getElementById('inputName').value.trim() || "陳琇眞";
+            const title = document.getElementById('inputTitle').value.trim() || "校安";
             document.getElementById('cardName').textContent = name;
             document.getElementById('cardTitle').textContent = title;
 
             // 更新科別標籤
-            const deptInput = document.getElementById('inputDept').value;
+            const deptInput = document.getElementById('inputDept').value.trim() || "電子科, 門市科";
             const deptContainer = document.getElementById('deptContainer');
             deptContainer.innerHTML = '';
             
@@ -314,21 +314,21 @@
             } else {
                 depts.forEach(dept => {
                     const tag = document.createElement('div');
-                    tag.className = 'bg-white/90 border border-sky-200 text-sky-800 text-xs font-bold px-2.5 py-1.5 rounded-lg text-center shadow-sm font-maru truncate';
+                    tag.className = 'bg-white/90 border border-sky-200 text-sky-800 text-xs font-bold px-2 py-1.5 rounded-lg text-center shadow-sm font-maru truncate';
                     tag.textContent = dept;
                     deptContainer.appendChild(tag);
                 });
             }
 
-            // 更新業務清單
+            // 更新業務清單（放大為 text-base）
             const cardBusinessList = document.getElementById('cardBusinessList');
             cardBusinessList.innerHTML = '';
             currentBusiness.forEach(item => {
                 if (!item.trim()) return;
                 const div = document.createElement('div');
-                div.className = 'flex items-start gap-2.5 text-sm text-slate-700 bg-white p-2.5 rounded-xl border border-slate-200/70 shadow-sm';
+                div.className = 'flex items-start gap-2.5 text-base text-slate-800 bg-white p-2.5 rounded-xl border border-slate-200/70 shadow-sm';
                 div.innerHTML = `
-                    <i class="fa-solid fa-circle-check text-sky-500 mt-1 text-xs shrink-0"></i>
+                    <i class="fa-solid fa-circle-check text-sky-500 mt-1 text-sm shrink-0"></i>
                     <span class="font-medium leading-relaxed">${escapeHtml(item)}</span>
                 `;
                 cardBusinessList.appendChild(div);
