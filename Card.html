@@ -88,14 +88,14 @@
 <body class="min-h-screen py-8 px-4 flex flex-col items-center justify-start">
 
     <!-- 頂部頁籤與說明 (非列印區域) -->
-    <header class="w-full max-w-[1100px] mb-6 no-print flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+    <header class="w-full max-w-[1150px] mb-6 no-print flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
         <div class="flex items-center gap-3">
             <div class="w-12 h-12 rounded-xl bg-sky-500 text-white flex items-center justify-center text-2xl shadow-md">
                 <i class="fa-solid fa-id-card"></i>
             </div>
             <div>
                 <h1 class="text-2xl font-black text-slate-800 font-maru">校安介紹 A5 橫式小卡生成器</h1>
-                <p class="text-xs text-slate-500">自由編輯校安姓名、輔導科別與上傳個人照片，支援直接輸出 A5 橫式列印</p>
+                <p class="text-xs text-slate-500">自由編輯姓名、科別、照片與各區塊字體大小，並可直接輸出 A5 橫式列印</p>
             </div>
         </div>
         <div class="flex items-center gap-3">
@@ -109,12 +109,12 @@
     </header>
 
     <!-- 主內容區：左側編輯表單 + 右側卡片即時預覽 -->
-    <main class="w-full max-w-[1100px] grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    <main class="w-full max-w-[1150px] grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
         <!-- ================= 編輯控制面板 (5 欄寬) ================= -->
-        <section class="lg:col-span-5 bg-white p-6 rounded-2xl shadow-md border border-slate-200 no-print space-y-6">
+        <section class="lg:col-span-5 bg-white p-6 rounded-2xl shadow-md border border-slate-200 no-print space-y-5">
             <h2 class="text-lg font-bold text-slate-800 border-b pb-3 flex items-center gap-2 font-maru">
-                <i class="fa-solid fa-sliders text-sky-500"></i> 卡片內容自由編輯
+                <i class="fa-solid fa-sliders text-sky-500"></i> 卡片內容與字體調節
             </h2>
 
             <!-- 1. 校安姓名與職稱 -->
@@ -148,13 +148,60 @@
                 <p class="text-xs text-slate-400 mb-2">建議使用全身或半身去背 PNG 或清晰直式 JPG</p>
                 
                 <div class="flex items-center gap-3">
-                    <label class="flex-1 cursor-pointer bg-sky-50 border-2 border-dashed border-sky-300 hover:bg-sky-100/70 text-sky-700 rounded-xl p-3.5 text-center transition flex items-center justify-center gap-2 text-sm font-bold">
-                        <i class="fa-solid fa-cloud-arrow-up text-lg"></i> 選擇/拖曳圖片檔案
+                    <label class="flex-1 cursor-pointer bg-sky-50 border-2 border-dashed border-sky-300 hover:bg-sky-100/70 text-sky-700 rounded-xl p-3 text-center transition flex items-center justify-center gap-2 text-sm font-bold">
+                        <i class="fa-solid fa-cloud-arrow-up text-lg"></i> 選擇圖片
                         <input type="file" id="imageUploader" accept="image/*" onchange="handleImageUpload(event)" class="hidden">
                     </label>
-                    <button onclick="removeImage()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 p-3.5 rounded-xl text-sm font-bold transition" title="移除圖片">
+                    <button onclick="removeImage()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 p-3 rounded-xl text-sm font-bold transition" title="移除圖片">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
+                </div>
+            </div>
+
+            <!-- 4. 自訂字體大小控制區 -->
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80 space-y-3.5">
+                <label class="block text-sm font-black text-slate-700 font-maru flex items-center gap-1.5">
+                    <i class="fa-solid fa-text-height text-sky-500"></i> 自訂字體大小 (px)
+                </label>
+                
+                <!-- 姓名大小 -->
+                <div class="space-y-1">
+                    <div class="flex justify-between text-xs font-bold text-slate-600">
+                        <span>姓名大小</span>
+                        <span id="nameSizeVal" class="text-sky-600 font-mono">56px</span>
+                    </div>
+                    <input type="range" id="sizeName" min="28" max="80" value="56" oninput="updateCard()" 
+                           class="w-full accent-sky-500 h-1.5 bg-slate-200 rounded-lg cursor-pointer">
+                </div>
+
+                <!-- 職稱大小 -->
+                <div class="space-y-1">
+                    <div class="flex justify-between text-xs font-bold text-slate-600">
+                        <span>職稱大小</span>
+                        <span id="titleSizeVal" class="text-sky-600 font-mono">36px</span>
+                    </div>
+                    <input type="range" id="sizeTitle" min="18" max="50" value="36" oninput="updateCard()" 
+                           class="w-full accent-sky-500 h-1.5 bg-slate-200 rounded-lg cursor-pointer">
+                </div>
+
+                <!-- 輔導科別標題大小 -->
+                <div class="space-y-1">
+                    <div class="flex justify-between text-xs font-bold text-slate-600">
+                        <span>「輔導科別」標題大小</span>
+                        <span id="deptLabelSizeVal" class="text-sky-600 font-mono">26px</span>
+                    </div>
+                    <input type="range" id="sizeDeptLabel" min="16" max="40" value="26" oninput="updateCard()" 
+                           class="w-full accent-sky-500 h-1.5 bg-slate-200 rounded-lg cursor-pointer">
+                </div>
+
+                <!-- 科別項目文字大小 -->
+                <div class="space-y-1">
+                    <div class="flex justify-between text-xs font-bold text-slate-600">
+                        <span>科別名稱大小</span>
+                        <span id="deptItemSizeVal" class="text-sky-600 font-mono">34px</span>
+                    </div>
+                    <input type="range" id="sizeDeptItem" min="18" max="54" value="34" oninput="updateCard()" 
+                           class="w-full accent-sky-500 h-1.5 bg-slate-200 rounded-lg cursor-pointer">
                 </div>
             </div>
         </section>
@@ -166,7 +213,7 @@
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
                     A5 橫式即時卡片預覽 (210 x 148 mm)
                 </span>
-                <span class="text-xs text-slate-400">可即時輸入內容預覽</span>
+                <span class="text-xs text-slate-400">可即時調節字體大小</span>
             </div>
 
             <!-- A5 橫式介紹小卡主體 -->
@@ -183,7 +230,7 @@
                     </div>
                 </div>
 
-                <!-- ================= 右半邊區塊 (58% 寬度 - 放大版資訊) ================= -->
+                <!-- ================= 右半邊區塊 (58% 寬度 - 自訂字體呈現) ================= -->
                 <div class="w-[58%] flex flex-col justify-between py-5 px-6 bg-slate-50/70 rounded-2xl border border-slate-100">
                     
                     <div class="space-y-6">
@@ -193,20 +240,19 @@
                             <span>校園安全守護者</span>
                         </div>
 
-                        <!-- 2. 超大姓名與職稱（並排呈現） -->
+                        <!-- 2. 姓名與職稱（支援自訂字體） -->
                         <div class="flex items-baseline flex-wrap gap-4 border-b-2 border-sky-100 pb-4">
-                            <h2 id="cardName" class="text-5xl md:text-6xl font-black text-slate-900 tracking-tight font-maru leading-none">陳琇眞</h2>
-                            <span id="cardTitle" class="text-3xl md:text-4xl font-black text-sky-600 font-maru tracking-wide">校安</span>
+                            <h2 id="cardName" class="font-black text-slate-900 tracking-tight font-maru leading-none">陳琇眞</h2>
+                            <span id="cardTitle" class="font-black text-sky-600 font-maru tracking-wide">校安</span>
                         </div>
 
-                        <!-- 3. 輔導科別大標題與滿版標籤列表 -->
+                        <!-- 3. 輔導科別標題與滿版標籤列表 -->
                         <div class="space-y-3.5">
-                            <!-- 輔導科別標題再放大 -->
-                            <p class="text-2xl md:text-3xl font-black text-slate-800 font-maru flex items-center gap-2.5">
-                                <i class="fa-solid fa-bookmark text-amber-500 text-xl"></i> 輔導科別
+                            <p id="cardDeptLabel" class="font-black text-slate-800 font-maru flex items-center gap-2.5">
+                                <i class="fa-solid fa-bookmark text-amber-500 text-lg"></i> 輔導科別
                             </p>
                             
-                            <!-- 輔導科別標籤展示區（改為滿版 Grid 排列） -->
+                            <!-- 輔導科別標籤展示區 -->
                             <div id="deptContainer" class="w-full">
                                 <!-- 動態生成放大滿版科別標籤 -->
                             </div>
@@ -234,7 +280,11 @@
             name: "陳琇眞",
             title: "校安",
             departments: "電子科, 門市科",
-            image: ""
+            image: "",
+            sizeName: 56,
+            sizeTitle: 36,
+            sizeDeptLabel: 26,
+            sizeDeptItem: 34
         };
 
         let currentImage = "";
@@ -246,14 +296,36 @@
 
         // 即時更新整張卡片
         function updateCard() {
-            // 更新姓名與職稱
-            const name = document.getElementById('inputName').value.trim() || "";
-            const title = document.getElementById('inputTitle').value.trim() || "校安";
-            document.getElementById('cardName').textContent = name;
-            document.getElementById('cardTitle').textContent = title;
+            // 讀取自訂字體大小
+            const sizeName = document.getElementById('sizeName').value;
+            const sizeTitle = document.getElementById('sizeTitle').value;
+            const sizeDeptLabel = document.getElementById('sizeDeptLabel').value;
+            const sizeDeptItem = document.getElementById('sizeDeptItem').value;
 
-            // 更新科別標籤（滿版排列、超大字體呈現）
-            const deptInput = document.getElementById('inputDept').value.trim() || ", ";
+            // 更新數值顯示
+            document.getElementById('nameSizeVal').textContent = sizeName + 'px';
+            document.getElementById('titleSizeVal').textContent = sizeTitle + 'px';
+            document.getElementById('deptLabelSizeVal').textContent = sizeDeptLabel + 'px';
+            document.getElementById('deptItemSizeVal').textContent = sizeDeptItem + 'px';
+
+            // 更新姓名與職稱（套用自訂字體）
+            const name = document.getElementById('inputName').value.trim() || "陳琇眞";
+            const title = document.getElementById('inputTitle').value.trim() || "校安";
+            
+            const cardName = document.getElementById('cardName');
+            const cardTitle = document.getElementById('cardTitle');
+            const cardDeptLabel = document.getElementById('cardDeptLabel');
+
+            cardName.textContent = name;
+            cardName.style.fontSize = sizeName + 'px';
+
+            cardTitle.textContent = title;
+            cardTitle.style.fontSize = sizeTitle + 'px';
+
+            cardDeptLabel.style.fontSize = sizeDeptLabel + 'px';
+
+            // 更新科別標籤（套用自訂字體與滿版 Grid）
+            const deptInput = document.getElementById('inputDept').value.trim() || "電子科, 門市科";
             const deptContainer = document.getElementById('deptContainer');
             deptContainer.innerHTML = '';
             
@@ -261,15 +333,15 @@
             if (depts.length === 0) {
                 deptContainer.innerHTML = '<div class="w-full text-center py-4 bg-white/70 rounded-2xl border border-dashed border-slate-300 text-lg text-slate-400 font-bold font-maru">尚未填寫科別</div>';
             } else {
-                // 動態設定 grid 欄位（2 個科別自動雙欄滿版，單個科別單欄滿版）
                 const gridClass = depts.length === 1 ? 'grid grid-cols-1 gap-3 w-full' : 'grid grid-cols-2 gap-3.5 w-full';
                 const wrapper = document.createElement('div');
                 wrapper.className = gridClass;
 
                 depts.forEach(dept => {
                     const tag = document.createElement('div');
-                    tag.className = 'w-full bg-white border-2 border-sky-400/90 text-sky-950 text-2xl md:text-3xl font-black py-4 px-3 rounded-2xl shadow-sm font-maru tracking-wider flex items-center justify-center text-center';
+                    tag.className = 'w-full bg-white border-2 border-sky-400/90 text-sky-950 font-black py-4 px-3 rounded-2xl shadow-sm font-maru tracking-wider flex items-center justify-center text-center';
                     tag.textContent = dept;
+                    tag.style.fontSize = sizeDeptItem + 'px';
                     wrapper.appendChild(tag);
                 });
 
@@ -314,6 +386,12 @@
             document.getElementById('inputName').value = DEFAULT_DATA.name;
             document.getElementById('inputTitle').value = DEFAULT_DATA.title;
             document.getElementById('inputDept').value = DEFAULT_DATA.departments;
+            
+            document.getElementById('sizeName').value = DEFAULT_DATA.sizeName;
+            document.getElementById('sizeTitle').value = DEFAULT_DATA.sizeTitle;
+            document.getElementById('sizeDeptLabel').value = DEFAULT_DATA.sizeDeptLabel;
+            document.getElementById('sizeDeptItem').value = DEFAULT_DATA.sizeDeptItem;
+
             currentImage = "";
             document.getElementById('imageUploader').value = "";
             updateCard();
