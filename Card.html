@@ -188,26 +188,27 @@
                     
                     <div class="space-y-6">
                         <!-- 1. 頂部標章與裝飾條 -->
-                        <div class="inline-flex items-center gap-2 bg-sky-100 text-sky-800 px-3.5 py-1.5 rounded-full font-maru font-bold text-sm tracking-wide">
+                        <div class="inline-flex items-center gap-2 bg-sky-100 text-sky-800 px-4 py-1.5 rounded-full font-maru font-bold text-sm tracking-wide">
                             <i class="fa-solid fa-shield-halved text-sky-600"></i>
                             <span>校園安全守護者</span>
                         </div>
 
                         <!-- 2. 超大姓名與職稱（並排呈現） -->
-                        <div class="flex items-baseline flex-wrap gap-4 border-b-2 border-sky-100 pb-5">
+                        <div class="flex items-baseline flex-wrap gap-4 border-b-2 border-sky-100 pb-4">
                             <h2 id="cardName" class="text-5xl md:text-6xl font-black text-slate-900 tracking-tight font-maru leading-none">陳琇眞</h2>
                             <span id="cardTitle" class="text-3xl md:text-4xl font-black text-sky-600 font-maru tracking-wide">校安</span>
                         </div>
 
-                        <!-- 3. 輔導科別大標題與標籤列表 -->
-                        <div class="space-y-3">
-                            <p class="text-lg md:text-xl font-black text-slate-700 font-maru flex items-center gap-2">
-                                <i class="fa-solid fa-bookmark text-amber-500 text-base"></i> 輔導科別
+                        <!-- 3. 輔導科別大標題與滿版標籤列表 -->
+                        <div class="space-y-3.5">
+                            <!-- 輔導科別標題再放大 -->
+                            <p class="text-2xl md:text-3xl font-black text-slate-800 font-maru flex items-center gap-2.5">
+                                <i class="fa-solid fa-bookmark text-amber-500 text-xl"></i> 輔導科別
                             </p>
                             
-                            <!-- 輔導科別標籤展示區 -->
-                            <div id="deptContainer" class="flex flex-wrap gap-3">
-                                <!-- 動態生成放大版科別標籤 -->
+                            <!-- 輔導科別標籤展示區（改為滿版 Grid 排列） -->
+                            <div id="deptContainer" class="w-full">
+                                <!-- 動態生成放大滿版科別標籤 -->
                             </div>
                         </div>
                     </div>
@@ -230,9 +231,9 @@
     <script>
         // 預設資料
         const DEFAULT_DATA = {
-            name: "",
+            name: "陳琇眞",
             title: "校安",
-            departments: ", ",
+            departments: "電子科, 門市科",
             image: ""
         };
 
@@ -246,26 +247,33 @@
         // 即時更新整張卡片
         function updateCard() {
             // 更新姓名與職稱
-            const name = document.getElementById('inputName').value.trim() || "";
+            const name = document.getElementById('inputName').value.trim() || "陳琇眞";
             const title = document.getElementById('inputTitle').value.trim() || "校安";
             document.getElementById('cardName').textContent = name;
             document.getElementById('cardTitle').textContent = title;
 
-            // 更新科別標籤（超大字體與質感卡片風格）
-            const deptInput = document.getElementById('inputDept').value.trim() || ", ";
+            // 更新科別標籤（滿版排列、超大字體呈現）
+            const deptInput = document.getElementById('inputDept').value.trim() || "電子科, 門市科";
             const deptContainer = document.getElementById('deptContainer');
             deptContainer.innerHTML = '';
             
             const depts = deptInput.split(/[,，、\s]+/).filter(Boolean);
             if (depts.length === 0) {
-                deptContainer.innerHTML = '<span class="text-base text-slate-400 font-medium">尚未填寫科別</span>';
+                deptContainer.innerHTML = '<div class="w-full text-center py-4 bg-white/70 rounded-2xl border border-dashed border-slate-300 text-lg text-slate-400 font-bold font-maru">尚未填寫科別</div>';
             } else {
+                // 動態設定 grid 欄位（2 個科別自動雙欄滿版，單個科別單欄滿版）
+                const gridClass = depts.length === 1 ? 'grid grid-cols-1 gap-3 w-full' : 'grid grid-cols-2 gap-3.5 w-full';
+                const wrapper = document.createElement('div');
+                wrapper.className = gridClass;
+
                 depts.forEach(dept => {
                     const tag = document.createElement('div');
-                    tag.className = 'bg-white border-2 border-sky-300/80 text-sky-900 text-lg md:text-xl font-extrabold px-4 py-2.5 rounded-2xl shadow-sm font-maru tracking-wide';
+                    tag.className = 'w-full bg-white border-2 border-sky-400/90 text-sky-950 text-2xl md:text-3xl font-black py-4 px-3 rounded-2xl shadow-sm font-maru tracking-wider flex items-center justify-center text-center';
                     tag.textContent = dept;
-                    deptContainer.appendChild(tag);
+                    wrapper.appendChild(tag);
                 });
+
+                deptContainer.appendChild(wrapper);
             }
 
             // 更新照片展示
