@@ -138,7 +138,7 @@
             <div>
                 <label class="block text-sm font-bold text-slate-700 mb-1">2. 輔導科別</label>
                 <p class="text-xs text-slate-400 mb-1.5">可輸入多個科別，請用逗號或頓號分隔（例如：電子科, 門市科）</p>
-                <input type="text" id="inputDept" value="" placeholder="例如：電子科, 資訊科" oninput="updateCard()" 
+                <input type="text" id="inputDept" value="" placeholder="例如：電子科, 門市科" oninput="updateCard()" 
                        class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-sky-400 focus:border-sky-400 outline-none transition">
             </div>
 
@@ -192,19 +192,20 @@
                     
                     <!-- 左側文字資料區塊 (靠上對齊) -->
                     <div class="z-10 flex flex-col justify-start pr-1">
-                        <!-- 1. 校安姓名與職稱（並排呈現、姓名微縮小、職稱放大） -->
-                        <div class="mb-3.5">
+                        <!-- 1. 校安姓名與職稱 -->
+                        <div class="mb-3">
                             <div class="flex items-baseline flex-wrap gap-2.5">
                                 <h2 id="cardName" class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight font-maru leading-tight">陳琇眞</h2>
                                 <span id="cardTitle" class="text-2xl font-black text-sky-600 font-maru tracking-wide">校安</span>
                             </div>
-                            <p class="text-xs font-bold text-slate-500 mt-2 font-maru flex items-center gap-1.5">
-                                <i class="fa-solid fa-bookmark text-amber-500 text-xs"></i> 輔導科別
+                            <!-- 輔導科別標題放大 -->
+                            <p class="text-sm md:text-base font-extrabold text-slate-600 mt-2 font-maru flex items-center gap-1.5">
+                                <i class="fa-solid fa-bookmark text-amber-500 text-sm"></i> 輔導科別
                             </p>
                         </div>
 
-                        <!-- 2. 輔導科別 -->
-                        <div id="deptContainer" class="grid grid-cols-2 gap-2 mb-3">
+                        <!-- 2. 輔導科別標籤放大 -->
+                        <div id="deptContainer" class="grid grid-cols-2 gap-2 mb-2">
                             <!-- 動態生成科別標籤 -->
                         </div>
                     </div>
@@ -223,25 +224,25 @@
                 <div class="w-[60%] flex flex-col justify-between p-4 bg-slate-50/70 rounded-2xl border border-slate-100">
                     <div>
                         <!-- 右側標題 -->
-                        <div class="flex items-center gap-2.5 border-b-2 border-sky-500/20 pb-3 mb-3.5">
+                        <div class="flex items-center gap-2.5 border-b-2 border-sky-500/20 pb-2.5 mb-3">
                             <div class="w-8 h-8 rounded-lg bg-sky-500 text-white flex items-center justify-center text-base shadow-sm">
                                 <i class="fa-solid fa-clipboard-check"></i>
                             </div>
                             <h3 class="text-xl font-black text-slate-800 font-maru tracking-wide">主要負責業務</h3>
                         </div>
 
-                        <!-- 業務列表（字體加大 text-base） -->
+                        <!-- 業務列表（字體加大至 text-lg / text-xl） -->
                         <div id="cardBusinessList" class="space-y-2">
                             <!-- 動態生成業務項目 -->
                         </div>
                     </div>
 
-                    <!-- 底部標語 / 裝飾 -->
-                    <div class="pt-3 border-t border-slate-200/80 flex justify-between items-center text-xs text-slate-400 font-maru">
+                    <!-- 底部標語 / 裝飾（字體加大至 text-sm） -->
+                    <div class="pt-2.5 border-t border-slate-200/80 flex justify-between items-center text-sm text-slate-500 font-maru">
                         <span class="flex items-center gap-1.5 text-sky-700 font-bold">
-                            <i class="fa-solid fa-shield-halved text-sky-500"></i> 校園安全 ‧ 全心守護
+                            <i class="fa-solid fa-shield-halved text-sky-500 text-base"></i> 校園安全 ‧ 全心守護
                         </span>
-                        <span class="text-slate-400 font-medium">學務處 學安室</span>
+                        <span class="text-slate-500 font-bold">學務處 學安室</span>
                     </div>
                 </div>
 
@@ -303,7 +304,7 @@
             document.getElementById('cardName').textContent = name;
             document.getElementById('cardTitle').textContent = title;
 
-            // 更新科別標籤
+            // 更新科別標籤（字體放大為 text-sm ~ text-base，加重字重）
             const deptInput = document.getElementById('inputDept').value.trim() || "電子科, 門市科";
             const deptContainer = document.getElementById('deptContainer');
             deptContainer.innerHTML = '';
@@ -314,22 +315,22 @@
             } else {
                 depts.forEach(dept => {
                     const tag = document.createElement('div');
-                    tag.className = 'bg-white/90 border border-sky-200 text-sky-800 text-xs font-bold px-2 py-1.5 rounded-lg text-center shadow-sm font-maru truncate';
+                    tag.className = 'bg-white/95 border border-sky-300 text-sky-900 text-sm md:text-base font-extrabold px-3 py-1.5 rounded-xl text-center shadow-sm font-maru truncate tracking-wide';
                     tag.textContent = dept;
                     deptContainer.appendChild(tag);
                 });
             }
 
-            // 更新業務清單（放大為 text-base）
+            // 更新業務清單（放大為 text-lg md:text-xl font-bold）
             const cardBusinessList = document.getElementById('cardBusinessList');
             cardBusinessList.innerHTML = '';
             currentBusiness.forEach(item => {
                 if (!item.trim()) return;
                 const div = document.createElement('div');
-                div.className = 'flex items-start gap-2.5 text-base text-slate-800 bg-white p-2.5 rounded-xl border border-slate-200/70 shadow-sm';
+                div.className = 'flex items-center gap-3 text-base md:text-lg text-slate-800 bg-white px-3 py-2 rounded-xl border border-slate-200/80 shadow-sm';
                 div.innerHTML = `
-                    <i class="fa-solid fa-circle-check text-sky-500 mt-1 text-sm shrink-0"></i>
-                    <span class="font-medium leading-relaxed">${escapeHtml(item)}</span>
+                    <i class="fa-solid fa-circle-check text-sky-500 text-base md:text-lg shrink-0"></i>
+                    <span class="font-bold leading-snug tracking-normal">${escapeHtml(item)}</span>
                 `;
                 cardBusinessList.appendChild(div);
             });
