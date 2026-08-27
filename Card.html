@@ -95,7 +95,7 @@
             </div>
             <div>
                 <h1 class="text-2xl font-black text-slate-800 font-maru">校安介紹 A5 橫式小卡生成器</h1>
-                <p class="text-xs text-slate-500">自由編輯校安姓名、輔導科別、主要業務與上傳照片，並可直接輸出列印</p>
+                <p class="text-xs text-slate-500">自由編輯校安姓名、輔導科別與上傳個人照片，支援直接輸出 A5 橫式列印</p>
             </div>
         </div>
         <div class="flex items-center gap-3">
@@ -112,7 +112,7 @@
     <main class="w-full max-w-[1100px] grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
         <!-- ================= 編輯控制面板 (5 欄寬) ================= -->
-        <section class="lg:col-span-5 bg-white p-6 rounded-2xl shadow-md border border-slate-200 no-print space-y-5">
+        <section class="lg:col-span-5 bg-white p-6 rounded-2xl shadow-md border border-slate-200 no-print space-y-6">
             <h2 class="text-lg font-bold text-slate-800 border-b pb-3 flex items-center gap-2 font-maru">
                 <i class="fa-solid fa-sliders text-sky-500"></i> 卡片內容自由編輯
             </h2>
@@ -137,39 +137,24 @@
             <!-- 2. 輔導科別 -->
             <div>
                 <label class="block text-sm font-bold text-slate-700 mb-1">2. 輔導科別</label>
-                <p class="text-xs text-slate-400 mb-1.5">可輸入多個科別，請用逗號或頓號分隔（例如：電子科, 門市科）</p>
+                <p class="text-xs text-slate-400 mb-1.5">可輸入多個科別，請用逗號、頓號或空格分隔（例如：電子科, 門市科）</p>
                 <input type="text" id="inputDept" value="" placeholder="例如：電子科, 門市科" oninput="updateCard()" 
                        class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-sky-400 focus:border-sky-400 outline-none transition">
             </div>
 
-            <!-- 3. 照片上傳 (輔導科別下方顯示) -->
+            <!-- 3. 左側照片上傳 -->
             <div>
-                <label class="block text-sm font-bold text-slate-700 mb-1">3. 輔導科別下方照片上傳</label>
-                <p class="text-xs text-slate-400 mb-2">可上傳個人照片或 Q 版形象圖（支援去背 PNG 或一般 JPG）</p>
+                <label class="block text-sm font-bold text-slate-700 mb-1">3. 左側個人照片上傳</label>
+                <p class="text-xs text-slate-400 mb-2">建議使用全身或半身去背 PNG 或清晰直式 JPG</p>
                 
                 <div class="flex items-center gap-3">
-                    <label class="flex-1 cursor-pointer bg-sky-50 border-2 border-dashed border-sky-300 hover:bg-sky-100/70 text-sky-700 rounded-xl p-3 text-center transition flex items-center justify-center gap-2 text-sm font-bold">
+                    <label class="flex-1 cursor-pointer bg-sky-50 border-2 border-dashed border-sky-300 hover:bg-sky-100/70 text-sky-700 rounded-xl p-3.5 text-center transition flex items-center justify-center gap-2 text-sm font-bold">
                         <i class="fa-solid fa-cloud-arrow-up text-lg"></i> 選擇/拖曳圖片檔案
                         <input type="file" id="imageUploader" accept="image/*" onchange="handleImageUpload(event)" class="hidden">
                     </label>
-                    <button onclick="removeImage()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 p-3 rounded-xl text-sm font-bold transition" title="移除圖片">
+                    <button onclick="removeImage()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 p-3.5 rounded-xl text-sm font-bold transition" title="移除圖片">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
-                </div>
-            </div>
-
-            <!-- 4. 主要負責業務自由動態清單 -->
-            <div>
-                <div class="flex justify-between items-center mb-2">
-                    <label class="block text-sm font-bold text-slate-700">4. 主要負責業務</label>
-                    <button onclick="addBusinessItem()" class="text-xs bg-sky-50 hover:bg-sky-100 text-sky-700 font-bold px-2.5 py-1 rounded-lg transition flex items-center gap-1">
-                        <i class="fa-solid fa-plus"></i> 新增項目
-                    </button>
-                </div>
-                
-                <!-- 動態清單列表容器 -->
-                <div id="businessListInputs" class="space-y-2 max-h-[220px] overflow-y-auto pr-1">
-                    <!-- JavaScript 將在此動態生成輸入框 -->
                 </div>
             </div>
         </section>
@@ -185,65 +170,56 @@
             </div>
 
             <!-- A5 橫式介紹小卡主體 -->
-            <div id="a5Card" class="a5-card bg-white rounded-3xl shadow-2xl overflow-hidden p-6 relative flex gap-5 border border-slate-200 shrink-0">
+            <div id="a5Card" class="a5-card bg-white rounded-3xl shadow-2xl overflow-hidden p-6 relative flex gap-6 border border-slate-200 shrink-0">
                 
-                <!-- ================= 左半邊區塊 (40% 寬度) ================= -->
-                <div class="w-[40%] bg-gradient-to-b from-sky-50/90 to-sky-100/60 rounded-2xl p-5 relative flex flex-col justify-between border-l-8 border-amber-400 overflow-hidden shadow-inner">
-                    
-                    <!-- 左側文字資料區塊 (靠上對齊) -->
-                    <div class="z-10 flex flex-col justify-start pr-1">
-                        <!-- 1. 校安姓名與職稱 -->
-                        <div class="mb-3">
-                            <div class="flex items-baseline flex-wrap gap-2.5">
-                                <h2 id="cardName" class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight font-maru leading-tight">陳琇眞</h2>
-                                <span id="cardTitle" class="text-2xl font-black text-sky-600 font-maru tracking-wide">校安</span>
-                            </div>
-                            <!-- 輔導科別標題放大 -->
-                            <p class="text-sm md:text-base font-extrabold text-slate-600 mt-2 font-maru flex items-center gap-1.5">
-                                <i class="fa-solid fa-bookmark text-amber-500 text-sm"></i> 輔導科別
-                            </p>
+                <!-- ================= 左半邊區塊 (42% 寬度 - 純放照片) ================= -->
+                <div class="w-[42%] bg-gradient-to-b from-sky-50/90 to-sky-100/60 rounded-2xl relative flex items-center justify-center border-l-8 border-amber-400 overflow-hidden shadow-inner p-3">
+                    <img id="cardImage" src="" alt="校安照片" class="max-h-full max-w-full object-contain drop-shadow-md z-10 hidden">
+                    <div id="cardImagePlaceholder" class="text-sky-300 flex flex-col items-center justify-center gap-3">
+                        <div class="w-20 h-20 rounded-full bg-sky-100 flex items-center justify-center text-sky-400 text-4xl shadow-inner">
+                            <i class="fa-solid fa-user-tie"></i>
                         </div>
-
-                        <!-- 2. 輔導科別標籤放大 -->
-                        <div id="deptContainer" class="grid grid-cols-2 gap-2 mb-2">
-                            <!-- 動態生成科別標籤 -->
-                        </div>
-                    </div>
-
-                    <!-- 3. 照片展示區域 -->
-                    <div class="relative z-10 w-full flex-1 min-h-[160px] flex items-center justify-center overflow-hidden rounded-xl bg-white/60 border border-sky-200/50 mt-1">
-                        <img id="cardImage" src="" alt="校安照片" class="max-h-full max-w-full object-contain drop-shadow-md hidden">
-                        <div id="cardImagePlaceholder" class="text-sky-300 flex flex-col items-center justify-center gap-2">
-                            <i class="fa-regular fa-image text-4xl"></i>
-                            <span class="text-xs text-sky-400 font-maru">尚未上傳照片</span>
-                        </div>
+                        <span class="text-sm font-bold text-sky-500 font-maru">尚未上傳照片</span>
                     </div>
                 </div>
 
-                <!-- ================= 右半邊區塊 (60% 寬度) ================= -->
-                <div class="w-[60%] flex flex-col justify-between p-4 bg-slate-50/70 rounded-2xl border border-slate-100">
-                    <div>
-                        <!-- 右側標題 -->
-                        <div class="flex items-center gap-2.5 border-b-2 border-sky-500/20 pb-2.5 mb-3">
-                            <div class="w-8 h-8 rounded-lg bg-sky-500 text-white flex items-center justify-center text-base shadow-sm">
-                                <i class="fa-solid fa-clipboard-check"></i>
+                <!-- ================= 右半邊區塊 (58% 寬度 - 放大版資訊) ================= -->
+                <div class="w-[58%] flex flex-col justify-between py-5 px-6 bg-slate-50/70 rounded-2xl border border-slate-100">
+                    
+                    <div class="space-y-6">
+                        <!-- 1. 頂部標章與裝飾條 -->
+                        <div class="inline-flex items-center gap-2 bg-sky-100 text-sky-800 px-3.5 py-1.5 rounded-full font-maru font-bold text-sm tracking-wide">
+                            <i class="fa-solid fa-shield-halved text-sky-600"></i>
+                            <span>校園安全守護者</span>
+                        </div>
+
+                        <!-- 2. 超大姓名與職稱（並排呈現） -->
+                        <div class="flex items-baseline flex-wrap gap-4 border-b-2 border-sky-100 pb-5">
+                            <h2 id="cardName" class="text-5xl md:text-6xl font-black text-slate-900 tracking-tight font-maru leading-none">陳琇眞</h2>
+                            <span id="cardTitle" class="text-3xl md:text-4xl font-black text-sky-600 font-maru tracking-wide">校安</span>
+                        </div>
+
+                        <!-- 3. 輔導科別大標題與標籤列表 -->
+                        <div class="space-y-3">
+                            <p class="text-lg md:text-xl font-black text-slate-700 font-maru flex items-center gap-2">
+                                <i class="fa-solid fa-bookmark text-amber-500 text-base"></i> 輔導科別
+                            </p>
+                            
+                            <!-- 輔導科別標籤展示區 -->
+                            <div id="deptContainer" class="flex flex-wrap gap-3">
+                                <!-- 動態生成放大版科別標籤 -->
                             </div>
-                            <h3 class="text-xl font-black text-slate-800 font-maru tracking-wide">主要負責業務</h3>
-                        </div>
-
-                        <!-- 業務列表（字體加大至 text-lg / text-xl） -->
-                        <div id="cardBusinessList" class="space-y-2">
-                            <!-- 動態生成業務項目 -->
                         </div>
                     </div>
 
-                    <!-- 底部標語 / 裝飾（字體加大至 text-sm） -->
-                    <div class="pt-2.5 border-t border-slate-200/80 flex justify-between items-center text-sm text-slate-500 font-maru">
-                        <span class="flex items-center gap-1.5 text-sky-700 font-bold">
-                            <i class="fa-solid fa-shield-halved text-sky-500 text-base"></i> 校園安全 ‧ 全心守護
+                    <!-- 底部標語 -->
+                    <div class="pt-4 border-t border-slate-200 flex justify-between items-center text-sm md:text-base font-maru font-bold text-slate-500">
+                        <span class="flex items-center gap-2 text-sky-700">
+                            <i class="fa-solid fa-heart text-rose-500"></i> 用心關懷 ‧ 守護校園
                         </span>
-                        <span class="text-slate-500 font-bold">學務處 學安室</span>
+                        <span class="text-slate-600">學務處 學安室</span>
                     </div>
+
                 </div>
 
             </div>
@@ -254,47 +230,18 @@
     <script>
         // 預設資料
         const DEFAULT_DATA = {
-            name: "",
+            name: "陳琇眞",
             title: "校安",
-            departments: ", ",
-            business: [
-                "學生校內外生活輔導與關懷",
-                "校園安全維護及防制霸凌業務",
-                "學生偶發及緊急突發事件通報應變",
-                "交通安全宣導與交通糾察隊管理",
-                "全民國防教育宣導與相關行政業務"
-            ],
+            departments: "電子科, 門市科",
             image: ""
         };
 
-        let currentBusiness = [...DEFAULT_DATA.business];
         let currentImage = "";
 
         // 初始化
         window.addEventListener('DOMContentLoaded', () => {
-            renderBusinessInputs();
             updateCard();
         });
-
-        // 渲染編輯區的業務輸入欄位
-        function renderBusinessInputs() {
-            const container = document.getElementById('businessListInputs');
-            container.innerHTML = '';
-            
-            currentBusiness.forEach((item, index) => {
-                const row = document.createElement('div');
-                row.className = 'flex items-center gap-2';
-                row.innerHTML = `
-                    <span class="text-xs font-bold text-slate-400 w-4 text-center">${index + 1}</span>
-                    <input type="text" value="${escapeHtml(item)}" oninput="updateBusinessItem(${index}, this.value)"
-                           class="flex-1 border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-sky-400 outline-none">
-                    <button onclick="removeBusinessItem(${index})" class="text-slate-400 hover:text-rose-500 p-1.5 transition" title="刪除">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                `;
-                container.appendChild(row);
-            });
-        }
 
         // 即時更新整張卡片
         function updateCard() {
@@ -304,38 +251,24 @@
             document.getElementById('cardName').textContent = name;
             document.getElementById('cardTitle').textContent = title;
 
-            // 更新科別標籤（字體放大為 text-sm ~ text-base，加重字重）
+            // 更新科別標籤（超大字體與質感卡片風格）
             const deptInput = document.getElementById('inputDept').value.trim() || "電子科, 門市科";
             const deptContainer = document.getElementById('deptContainer');
             deptContainer.innerHTML = '';
             
             const depts = deptInput.split(/[,，、\s]+/).filter(Boolean);
             if (depts.length === 0) {
-                deptContainer.innerHTML = '<span class="col-span-2 text-xs text-slate-400">尚未填寫科別</span>';
+                deptContainer.innerHTML = '<span class="text-base text-slate-400 font-medium">尚未填寫科別</span>';
             } else {
                 depts.forEach(dept => {
                     const tag = document.createElement('div');
-                    tag.className = 'bg-white/95 border border-sky-300 text-sky-900 text-sm md:text-base font-extrabold px-3 py-1.5 rounded-xl text-center shadow-sm font-maru truncate tracking-wide';
+                    tag.className = 'bg-white border-2 border-sky-300/80 text-sky-900 text-lg md:text-xl font-extrabold px-4 py-2.5 rounded-2xl shadow-sm font-maru tracking-wide';
                     tag.textContent = dept;
                     deptContainer.appendChild(tag);
                 });
             }
 
-            // 更新業務清單（放大為 text-lg md:text-xl font-bold）
-            const cardBusinessList = document.getElementById('cardBusinessList');
-            cardBusinessList.innerHTML = '';
-            currentBusiness.forEach(item => {
-                if (!item.trim()) return;
-                const div = document.createElement('div');
-                div.className = 'flex items-center gap-3 text-base md:text-lg text-slate-800 bg-white px-3 py-2 rounded-xl border border-slate-200/80 shadow-sm';
-                div.innerHTML = `
-                    <i class="fa-solid fa-circle-check text-sky-500 text-base md:text-lg shrink-0"></i>
-                    <span class="font-bold leading-snug tracking-normal">${escapeHtml(item)}</span>
-                `;
-                cardBusinessList.appendChild(div);
-            });
-
-            // 更新照片
+            // 更新照片展示
             const cardImg = document.getElementById('cardImage');
             const placeholder = document.getElementById('cardImagePlaceholder');
             if (currentImage) {
@@ -347,24 +280,6 @@
                 cardImg.classList.add('hidden');
                 placeholder.classList.remove('hidden');
             }
-        }
-
-        // 業務清單操作
-        function addBusinessItem() {
-            currentBusiness.push("新增業務項目");
-            renderBusinessInputs();
-            updateCard();
-        }
-
-        function updateBusinessItem(index, value) {
-            currentBusiness[index] = value;
-            updateCard();
-        }
-
-        function removeBusinessItem(index) {
-            currentBusiness.splice(index, 1);
-            renderBusinessInputs();
-            updateCard();
         }
 
         // 圖片上傳處理
@@ -391,23 +306,9 @@
             document.getElementById('inputName').value = DEFAULT_DATA.name;
             document.getElementById('inputTitle').value = DEFAULT_DATA.title;
             document.getElementById('inputDept').value = DEFAULT_DATA.departments;
-            currentBusiness = [...DEFAULT_DATA.business];
             currentImage = "";
             document.getElementById('imageUploader').value = "";
-            renderBusinessInputs();
             updateCard();
-        }
-
-        // XSS 安全防護
-        function escapeHtml(text) {
-            const map = {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            };
-            return text.replace(/[&<>"']/g, m => map[m]);
         }
     </script>
 </body>
