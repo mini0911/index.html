@@ -134,12 +134,21 @@
                 </div>
             </div>
 
-            <!-- 2. 輔導科別 -->
-            <div>
-                <label class="block text-sm font-bold text-slate-700 mb-1">2. 輔導科別</label>
-                <p class="text-xs text-slate-400 mb-1.5">可輸入多個科別，請用逗號、頓號或空格分隔（例如：電子科, 門市科）</p>
-                <input type="text" id="inputDept" value="" placeholder="例如：電子科, 門市科" oninput="updateCard()" 
-                       class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-sky-400 focus:border-sky-400 outline-none transition">
+            <!-- 2. 輔導科別（含自由開關） -->
+            <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                    <label class="text-sm font-bold text-slate-700">2. 輔導科別</label>
+                    <label class="inline-flex items-center cursor-pointer gap-2">
+                        <span class="text-xs text-slate-500 font-bold" id="deptToggleText">顯示科別</span>
+                        <input type="checkbox" id="toggleDept" checked onchange="toggleDeptVisibility()" class="sr-only peer">
+                        <div class="relative w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-sky-500"></div>
+                    </label>
+                </div>
+                <div id="deptInputGroup">
+                    <p class="text-xs text-slate-400 mb-1.5">可輸入多個科別，請用逗號、頓號或空格分隔（例如：電子科, 門市科）</p>
+                    <input type="text" id="inputDept" value="" placeholder="例如：電子科, 門市科" oninput="updateCard()" 
+                           class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-sky-400 focus:border-sky-400 outline-none transition">
+                </div>
             </div>
 
             <!-- 3. 左側照片上傳 -->
@@ -185,7 +194,7 @@
                 </div>
 
                 <!-- 輔導科別標題大小 -->
-                <div class="space-y-1">
+                <div id="sizeDeptLabelWrapper" class="space-y-1 transition-opacity duration-200">
                     <div class="flex justify-between text-xs font-bold text-slate-600">
                         <span>「輔導科別」標題大小</span>
                         <span id="deptLabelSizeVal" class="text-sky-600 font-mono">26px</span>
@@ -195,7 +204,7 @@
                 </div>
 
                 <!-- 科別項目文字大小 -->
-                <div class="space-y-1">
+                <div id="sizeDeptItemWrapper" class="space-y-1 transition-opacity duration-200">
                     <div class="flex justify-between text-xs font-bold text-slate-600">
                         <span>科別名稱大小</span>
                         <span id="deptItemSizeVal" class="text-sky-600 font-mono">34px</span>
@@ -213,7 +222,7 @@
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
                     A5 橫式即時卡片預覽 (210 x 148 mm)
                 </span>
-                <span class="text-xs text-slate-400">可即時調節字體大小</span>
+                <span class="text-xs text-slate-400">可即時調節字體大小與開關科別</span>
             </div>
 
             <!-- A5 橫式介紹小卡主體 -->
@@ -246,8 +255,8 @@
                             <span id="cardTitle" class="font-black text-sky-600 font-maru tracking-wide">校安</span>
                         </div>
 
-                        <!-- 3. 輔導科別標題與滿版標籤列表 -->
-                        <div class="space-y-3.5">
+                        <!-- 3. 輔導科別區塊（可切換顯示/隱藏） -->
+                        <div id="cardDeptSection" class="space-y-3.5">
                             <p id="cardDeptLabel" class="font-black text-slate-800 font-maru flex items-center gap-2.5">
                                 <i class="fa-solid fa-bookmark text-amber-500 text-lg"></i> 輔導科別
                             </p>
@@ -280,6 +289,7 @@
             name: "",
             title: "校安",
             departments: ", ",
+            showDept: true,
             image: "",
             sizeName: 56,
             sizeTitle: 36,
@@ -293,6 +303,35 @@
         window.addEventListener('DOMContentLoaded', () => {
             updateCard();
         });
+
+        // 輔導科別顯示開關切換
+        function toggleDeptVisibility() {
+            const isChecked = document.getElementById('toggleDept').checked;
+            const deptInputGroup = document.getElementById('deptInputGroup');
+            const sizeDeptLabelWrapper = document.getElementById('sizeDeptLabelWrapper');
+            const sizeDeptItemWrapper = document.getElementById('sizeDeptItemWrapper');
+            const inputDept = document.getElementById('inputDept');
+            const sizeDeptLabel = document.getElementById('sizeDeptLabel');
+            const sizeDeptItem = document.getElementById('sizeDeptItem');
+
+            if (isChecked) {
+                deptInputGroup.classList.remove('opacity-40', 'pointer-events-none');
+                sizeDeptLabelWrapper.classList.remove('opacity-40', 'pointer-events-none');
+                sizeDeptItemWrapper.classList.remove('opacity-40', 'pointer-events-none');
+                inputDept.disabled = false;
+                sizeDeptLabel.disabled = false;
+                sizeDeptItem.disabled = false;
+            } else {
+                deptInputGroup.classList.add('opacity-40', 'pointer-events-none');
+                sizeDeptLabelWrapper.classList.add('opacity-40', 'pointer-events-none');
+                sizeDeptItemWrapper.classList.add('opacity-40', 'pointer-events-none');
+                inputDept.disabled = true;
+                sizeDeptLabel.disabled = true;
+                sizeDeptItem.disabled = true;
+            }
+
+            updateCard();
+        }
 
         // 即時更新整張卡片
         function updateCard() {
@@ -315,6 +354,7 @@
             const cardName = document.getElementById('cardName');
             const cardTitle = document.getElementById('cardTitle');
             const cardDeptLabel = document.getElementById('cardDeptLabel');
+            const cardDeptSection = document.getElementById('cardDeptSection');
 
             cardName.textContent = name;
             cardName.style.fontSize = sizeName + 'px';
@@ -324,28 +364,36 @@
 
             cardDeptLabel.style.fontSize = sizeDeptLabel + 'px';
 
-            // 更新科別標籤（套用自訂字體與滿版 Grid）
-            const deptInput = document.getElementById('inputDept').value.trim() || ", ";
-            const deptContainer = document.getElementById('deptContainer');
-            deptContainer.innerHTML = '';
-            
-            const depts = deptInput.split(/[,，、\s]+/).filter(Boolean);
-            if (depts.length === 0) {
-                deptContainer.innerHTML = '<div class="w-full text-center py-4 bg-white/70 rounded-2xl border border-dashed border-slate-300 text-lg text-slate-400 font-bold font-maru">尚未填寫科別</div>';
+            // 判斷是否顯示科別區塊
+            const isDeptVisible = document.getElementById('toggleDept').checked;
+            if (isDeptVisible) {
+                cardDeptSection.classList.remove('hidden');
+
+                // 更新科別標籤（套用自訂字體與滿版 Grid）
+                const deptInput = document.getElementById('inputDept').value.trim() || ", ";
+                const deptContainer = document.getElementById('deptContainer');
+                deptContainer.innerHTML = '';
+                
+                const depts = deptInput.split(/[,，、\s]+/).filter(Boolean);
+                if (depts.length === 0) {
+                    deptContainer.innerHTML = '<div class="w-full text-center py-4 bg-white/70 rounded-2xl border border-dashed border-slate-300 text-lg text-slate-400 font-bold font-maru">尚未填寫科別</div>';
+                } else {
+                    const gridClass = depts.length === 1 ? 'grid grid-cols-1 gap-3 w-full' : 'grid grid-cols-2 gap-3.5 w-full';
+                    const wrapper = document.createElement('div');
+                    wrapper.className = gridClass;
+
+                    depts.forEach(dept => {
+                        const tag = document.createElement('div');
+                        tag.className = 'w-full bg-white border-2 border-sky-400/90 text-sky-950 font-black py-4 px-3 rounded-2xl shadow-sm font-maru tracking-wider flex items-center justify-center text-center';
+                        tag.textContent = dept;
+                        tag.style.fontSize = sizeDeptItem + 'px';
+                        wrapper.appendChild(tag);
+                    });
+
+                    deptContainer.appendChild(wrapper);
+                }
             } else {
-                const gridClass = depts.length === 1 ? 'grid grid-cols-1 gap-3 w-full' : 'grid grid-cols-2 gap-3.5 w-full';
-                const wrapper = document.createElement('div');
-                wrapper.className = gridClass;
-
-                depts.forEach(dept => {
-                    const tag = document.createElement('div');
-                    tag.className = 'w-full bg-white border-2 border-sky-400/90 text-sky-950 font-black py-4 px-3 rounded-2xl shadow-sm font-maru tracking-wider flex items-center justify-center text-center';
-                    tag.textContent = dept;
-                    tag.style.fontSize = sizeDeptItem + 'px';
-                    wrapper.appendChild(tag);
-                });
-
-                deptContainer.appendChild(wrapper);
+                cardDeptSection.classList.add('hidden');
             }
 
             // 更新照片展示
@@ -386,6 +434,7 @@
             document.getElementById('inputName').value = DEFAULT_DATA.name;
             document.getElementById('inputTitle').value = DEFAULT_DATA.title;
             document.getElementById('inputDept').value = DEFAULT_DATA.departments;
+            document.getElementById('toggleDept').checked = DEFAULT_DATA.showDept;
             
             document.getElementById('sizeName').value = DEFAULT_DATA.sizeName;
             document.getElementById('sizeTitle').value = DEFAULT_DATA.sizeTitle;
@@ -394,7 +443,7 @@
 
             currentImage = "";
             document.getElementById('imageUploader').value = "";
-            updateCard();
+            toggleDeptVisibility();
         }
     </script>
 </body>
