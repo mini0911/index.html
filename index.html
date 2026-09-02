@@ -27,16 +27,6 @@
             border-left: 6px solid #00e676; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        .manual-panel {
-            background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;
-            border: 2px solid var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            display: flex; flex-direction: column; align-items: center; gap: 10px;
-        }
-        .manual-row { display: flex; gap: 10px; width: 100%; max-width: 500px; }
-        .manual-input { flex: 1; padding: 12px 18px; border: 2px solid #badcfa; border-radius: 30px; font-size: 16px; text-align: center; font-weight: bold; outline: none; }
-        .manual-btn { background-color: var(--primary); color: white; border: none; padding: 0 24px; border-radius: 30px; font-size: 15px; font-weight: bold; cursor: pointer; }
-        .manual-msg { font-size: 14px; font-weight: bold; margin: 0; height: 18px; }
-
         .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 20px; }
         .stat-card { background: white; padding: 16px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 5px solid var(--primary); }
         .stat-card.success { border-left-color: var(--success); }
@@ -115,16 +105,6 @@
         </header>
 
         <div class="debug-banner" id="debug-banner">📡 LINE 實時通訊基地台串接中...</div>
-
-        <!-- 📱 教師現場手動簽到/補簽區 -->
-        <div class="manual-panel">
-            <p style="font-weight: bold; color: var(--primary); margin: 0;">📱 教師現場手動簽到／補簽（輸入學號按 Enter）</p>
-            <div class="manual-row">
-                <input type="text" id="manual-student-id" class="manual-input" placeholder="請在此輸入學生學號..." maxlength="12">
-                <button class="manual-btn" onclick="executeManualSignIn()">確認簽到</button>
-            </div>
-            <p id="manual-msg" class="manual-msg"></p>
-        </div>
 
         <!-- 📊 數據統計卡片 -->
         <div class="dashboard-grid">
@@ -388,37 +368,6 @@
             }
         }
 
-        function executeManualSignIn() {
-            if (!database) { alert("請先開啟萬用面板設定正確的 Firebase 網址！"); return; }
-            const inputEl = document.getElementById('manual-student-id');
-            const typedId = inputEl.value.trim();
-
-            if (!typedId) { showMsg("❌ 請先輸入學號！", "#c62828"); return; }
-            const student = currentStudents.find(s => s.id === typedId);
-            if (!student) { showMsg(`❌ 簽到失敗！學號 [${typedId}] 不在選課名單中，無法簽到。`, "#c62828"); inputEl.select(); return; }
-
-            const today = new Date();
-            const y = today.getFullYear();
-            const m = String(today.getMonth() + 1).padStart(2, '0');
-            const d = String(today.getDate()).padStart(2, '0');
-            const todayNormalized = `${y}-${m}-${d}`;
-
-            // 比對是否符合設定的日期，否則預設簽到在第一天
-            let activeDate = customConfig.dates.find(date => normalizeDateStr(date) === todayNormalized) || customConfig.dates[0];
-            const pathDate = normalizeDateStr(activeDate);
-
-            database.ref(`movie_club_rollcall/${pathDate}/${typedId}`).set(1).then(() => {
-                showMsg(`✅ [${student.name}] (${pathDate}) 簽到成功！`, "var(--success)");
-            }).catch((err) => {
-                showMsg("❌ 雲端同步失敗，請檢查網路連線或 Firebase Rules。", "#c62828");
-            });
-
-            inputEl.value = ''; 
-            inputEl.focus();
-        }
-
-        function showMsg(text, color) { const el = document.getElementById('manual-msg'); el.innerText = text; el.style.color = color; }
-
         function renderTable() {
             const tbody = document.getElementById('student-table-body');
             const searchKeyword = document.getElementById('search-box').value.toLowerCase().trim();
@@ -531,7 +480,7 @@
 
                 rows.push([
                     index + 1, s.id, s.name, s.dept_class, 
-                    ...dateStatus,
+                    ...dateStatus, 
                     attCount + "次", ((attCount / customConfig.dates.length) * 100).toFixed(0) + "%", 
                     attCount === customConfig.dates.length ? "全勤" : (attCount === 0 ? "缺席" : "一般")
                 ]);
@@ -545,7 +494,6 @@
             initTable();
             document.getElementById('search-box').addEventListener('input', renderTable);
             document.getElementById('class-filter').addEventListener('change', renderTable);
-            document.getElementById('manual-student-id').addEventListener('keypress', function(e) { if (e.key === 'Enter') executeManualSignIn(); });
         });
     </script>
 </body>
