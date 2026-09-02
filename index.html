@@ -184,7 +184,7 @@
                 <button class="btn btn-danger" onclick="resetToOfficialDefault()">⚠️ 救回內建學生名單</button>
                 <div>
                     <button class="btn" style="background:#5f6368;" onclick="closeConfigModal()">取消</button>
-                    <button class="btn btn-success" onclick="saveConfig()">儲存變更</button>
+                    <button class="btn btn-success" id="btn-save-cfg" onclick="saveConfig()">儲存變更並同步雲端</button>
                 </div>
             </div>
         </div>
@@ -208,6 +208,8 @@
 
         let database = null;
         let dbRef = null;
+        let settingsRef = null;
+        let lastAttendanceRootData = null;
 
         // 🎯 雙向日期歸一化晶片：不論格式為何，一律強制轉換成標準 YYYY-MM-DD
         function normalizeDateStr(dateStr) {
@@ -230,23 +232,24 @@
         }
 
         function initTable() {
-            loadSettings();
-            renderTable();
-            calculateStats();
+            initDefaultConfig();
+            parseRawStudents(customConfig.rawStudentsList);
+            applySettingsToUI();
             initFirebaseConnection();
         }
 
-        function loadSettings() {
+        function initDefaultConfig() {
+            const savedUrl = localStorage.getItem('movie_club_firebase_url') || "https://movie-76596-default-rtdb.asia-southeast1.firebasedatabase.app/";
             customConfig = {
                 title: "電影欣賞社",
                 subtitle: "115學年度第1學期",
                 dates: ['2026/10/02', '2026/10/16', '2026/10/23', '2026/11/06', '2026/11/20', '2026/11/27', '2026/12/04', '2027/01/08'],
-                csvUrl: "https://movie-76596-default-rtdb.asia-southeast1.firebasedatabase.app/",
+                csvUrl: savedUrl,
                 rawStudentsList: defaultStudents.map(s => `${s.id}\t${s.name}\t${s.dept_class}`).join("\n")
             };
+        }
 
-            parseRawStudents(customConfig.rawStudentsList);
-
+        function applySettingsToUI() {
             document.getElementById('view-title').innerText = customConfig.title;
             document.getElementById('view-subtitle').innerText = customConfig.subtitle;
             
@@ -259,26 +262,20 @@
                 }
             }
             updateClassFilterDropdown();
-        }
-
-        function forceResetToDefaultData() {
-            currentStudents = JSON.parse(JSON.stringify(defaultStudents));
-        }
-
-        function resetToOfficialDefault() {
-            if(confirm("確定要還原成預設學生名單與設定嗎？")) { 
-                forceResetToDefaultData(); 
-                loadSettings(); 
-                renderTable(); 
-                calculateStats();
-                initFirebaseConnection();
-            }
+            renderTable();
+            calculateStats();
         }
 
         function parseRawStudents(rawText) {
-            const lines = rawText.split("\n"); const newList = [];
+            if (!rawText) {
+                currentStudents = JSON.parse(JSON.stringify(defaultStudents));
+                return;
+            }
+            const lines = rawText.split("\n"); 
+            const newList = [];
             lines.forEach(line => {
-                let cleanLine = line.trim(); if (!line) return;
+                let cleanLine = line.trim(); 
+                if (!line) return;
                 let cells = cleanLine.split(/[\t,\s]+/).filter(c => c.trim() !== "");
                 if (cells.length >= 2) {
                     newList.push({ 
@@ -289,7 +286,9 @@
                     });
                 }
             });
-            if(newList.length > 0) {
+
+            if (newList.length > 0) {
+                // 保留先前簽到快取
                 newList.forEach(ns => { 
                     const old = currentStudents.find(o => o.id === ns.id); 
                     ns.attendance = old ? old.attendance : {}; 
@@ -307,65 +306,105 @@
 
             try {
                 if (dbRef) dbRef.off();
+                if (settingsRef) settingsRef.off();
 
-                if (firebase.apps.length === 0) {
-                    firebase.initializeApp({ databaseURL: customConfig.csvUrl.trim() });
+                if (firebase.apps.length > 0) {
+                    firebase.app().delete().then(() => {
+                        startFirebaseListening();
+                    }).catch(e => {
+                        console.warn(e);
+                        startFirebaseListening();
+                    });
+                } else {
+                    startFirebaseListening();
                 }
 
+            } catch(err) {
+                console.error(err);
+                debugEl.innerHTML = "❌ [格式錯誤] 設定面板中的 Firebase 網址不正確，請重新檢查。";
+            }
+        }
+
+        function startFirebaseListening() {
+            const debugEl = document.getElementById('debug-banner');
+            try {
+                firebase.initializeApp({ databaseURL: customConfig.csvUrl.trim() });
                 database = firebase.database();
                 dbRef = database.ref('movie_club_rollcall');
+                settingsRef = database.ref('movie_club_settings');
 
                 debugEl.innerHTML = "📡 [通道連接中] 正在與雲端 Firebase 建立 WebSocket 實時加密通訊...";
 
-                dbRef.on('value', (snapshot) => {
-                    const rootData = snapshot.val();
-
-                    // 1. 重置本地出席快取
-                    currentStudents.forEach(s => {
-                        if (!s.attendance) s.attendance = {};
-                        customConfig.dates.forEach(d => {
-                            const normD = normalizeDateStr(d);
-                            s.attendance[normD] = 0;
-                        });
-                    });
-
-                    // 2. 對齊 Firebase 最新資料（使用標準化 YYYY-MM-DD 比對）
-                    if (rootData) {
-                        Object.keys(rootData).forEach(dbDateStr => {
-                            if (dbDateStr === "current_code") return;
-
-                            const normalizedDbDate = normalizeDateStr(dbDateStr);
-
-                            customConfig.dates.forEach(panelDate => {
-                                const normalizedPanelDate = normalizeDateStr(panelDate);
-
-                                if (normalizedDbDate === normalizedPanelDate) {
-                                    const dayRecords = rootData[dbDateStr];
-                                    if (dayRecords) {
-                                        Object.keys(dayRecords).forEach(studentId => {
-                                            const student = currentStudents.find(s => s.id === studentId);
-                                            if (student) {
-                                                student.attendance[normalizedPanelDate] = 1;
-                                            }
-                                        });
-                                    }
-                                }
-                            });
-                        });
+                // 🌐 1. 監聽雲端設定同步（任何裝置更動設定，所有瀏覽器即時同步生效）
+                settingsRef.on('value', (snapshot) => {
+                    const cloudConfig = snapshot.val();
+                    if (cloudConfig) {
+                        if (cloudConfig.title) customConfig.title = cloudConfig.title;
+                        if (cloudConfig.subtitle) customConfig.subtitle = cloudConfig.subtitle;
+                        if (cloudConfig.dates && Array.isArray(cloudConfig.dates)) customConfig.dates = cloudConfig.dates;
+                        if (cloudConfig.rawStudentsList) {
+                            customConfig.rawStudentsList = cloudConfig.rawStudentsList;
+                            parseRawStudents(cloudConfig.rawStudentsList);
+                        }
+                        applySettingsToUI();
+                        // 重新比對當前簽到紀錄
+                        if (lastAttendanceRootData) syncAttendanceData(lastAttendanceRootData);
                     }
+                });
 
-                    renderTable();
-                    calculateStats();
+                // 🌐 2. 監聽點名實時打卡數據
+                dbRef.on('value', (snapshot) => {
+                    lastAttendanceRootData = snapshot.val();
+                    syncAttendanceData(lastAttendanceRootData);
                     const now = new Date();
                     debugEl.innerHTML = `⚡ [LINE 實時同步成功] 安全基地台運作良好！最後同步更新時間：${now.toLocaleTimeString()}`;
                 }, (error) => {
                     debugEl.innerHTML = "❌ [權限異常] 無法讀取資料，請確認 Firebase Rules 規則是否已發布為測試模式 (true)。";
                 });
 
-            } catch(err) {
+            } catch (err) {
                 console.error(err);
-                debugEl.innerHTML = "❌ [格式錯誤] 設定面板中的 Firebase 網址不正確，請重新檢查。";
+                debugEl.innerHTML = "❌ [連線失敗] 無法連線至指定的 Firebase 資料庫。";
             }
+        }
+
+        function syncAttendanceData(rootData) {
+            // 重置本地出席快取
+            currentStudents.forEach(s => {
+                if (!s.attendance) s.attendance = {};
+                customConfig.dates.forEach(d => {
+                    const normD = normalizeDateStr(d);
+                    s.attendance[normD] = 0;
+                });
+            });
+
+            // 對齊 Firebase 最新資料
+            if (rootData) {
+                Object.keys(rootData).forEach(dbDateStr => {
+                    if (dbDateStr === "current_code") return;
+
+                    const normalizedDbDate = normalizeDateStr(dbDateStr);
+
+                    customConfig.dates.forEach(panelDate => {
+                        const normalizedPanelDate = normalizeDateStr(panelDate);
+
+                        if (normalizedDbDate === normalizedPanelDate) {
+                            const dayRecords = rootData[dbDateStr];
+                            if (dayRecords) {
+                                Object.keys(dayRecords).forEach(studentId => {
+                                    const student = currentStudents.find(s => s.id === studentId);
+                                    if (student) {
+                                        student.attendance[normalizedPanelDate] = 1;
+                                    }
+                                });
+                            }
+                        }
+                    });
+                });
+            }
+
+            renderTable();
+            calculateStats();
         }
 
         function renderTable() {
@@ -442,25 +481,82 @@
         function openConfigModal() {
             document.getElementById('cfg-title').value = customConfig.title;
             document.getElementById('cfg-subtitle').value = customConfig.subtitle;
-            for(let i=0; i<8; i++) document.getElementById(`cfg-d${i}`).value = customConfig.dates[i];
+            for(let i=0; i<8; i++) document.getElementById(`cfg-d${i}`).value = customConfig.dates[i] || '';
             document.getElementById('cfg-csv-url').value = customConfig.csvUrl;
             document.getElementById('cfg-students-raw').value = customConfig.rawStudentsList;
             document.getElementById('config-modal').style.display = 'flex';
         }
         function closeConfigModal() { document.getElementById('config-modal').style.display = 'none'; }
 
+        // ☁️ 儲存變更：直接寫入 Firebase 雲端資料庫
         function saveConfig() {
-            customConfig.title = document.getElementById('cfg-title').value;
-            customConfig.subtitle = document.getElementById('cfg-subtitle').value;
-            for(let i=0; i<8; i++) customConfig.dates[i] = document.getElementById(`cfg-d${i}`).value.trim();
-            customConfig.csvUrl = document.getElementById('cfg-csv-url').value.trim();
-            customConfig.rawStudentsList = document.getElementById('cfg-students-raw').value;
+            const saveBtn = document.getElementById('btn-save-cfg');
+            const originalText = saveBtn.innerText;
+            saveBtn.innerText = "⏳ 正在同步至雲端...";
+            saveBtn.disabled = true;
 
-            closeConfigModal(); 
-            loadSettings(); 
-            renderTable(); 
-            calculateStats(); 
-            initFirebaseConnection();
+            const newDates = [];
+            for(let i=0; i<8; i++) {
+                newDates.push(document.getElementById(`cfg-d${i}`).value.trim());
+            }
+
+            const updatedConfig = {
+                title: document.getElementById('cfg-title').value.trim(),
+                subtitle: document.getElementById('cfg-subtitle').value.trim(),
+                dates: newDates,
+                rawStudentsList: document.getElementById('cfg-students-raw').value
+            };
+
+            const newDbUrl = document.getElementById('cfg-csv-url').value.trim();
+            const isUrlChanged = (newDbUrl !== customConfig.csvUrl);
+            customConfig.csvUrl = newDbUrl;
+            localStorage.setItem('movie_club_firebase_url', newDbUrl);
+
+            // 若資料庫尚未連線或更換了 URL，先重新連線
+            if (!database || isUrlChanged) {
+                initFirebaseConnection();
+            }
+
+            // 寫入雲端節點 movie_club_settings
+            if (database) {
+                database.ref('movie_club_settings').set(updatedConfig).then(() => {
+                    saveBtn.innerText = originalText;
+                    saveBtn.disabled = false;
+                    closeConfigModal();
+                    alert("✅ 設定已成功同步至雲端！所有連線的裝置與瀏覽器將即時更新。");
+                }).catch((err) => {
+                    console.error(err);
+                    saveBtn.innerText = originalText;
+                    saveBtn.disabled = false;
+                    alert("⚠️ 雲端寫入失敗，請檢查 Firebase Rules 寫入權限是否為 true。");
+                });
+            } else {
+                saveBtn.innerText = originalText;
+                saveBtn.disabled = false;
+                alert("❌ 無法連線至 Firebase，請確認資料庫網址是否正確。");
+            }
+        }
+
+        // ☁️ 還原預設：清空雲端設定節點，讓所有裝置復原預設值
+        function resetToOfficialDefault() {
+            if(confirm("確定要將雲端設定還原成內建預設值嗎？（其他裝置也會同步重設）")) { 
+                const defaultRaw = defaultStudents.map(s => `${s.id}\t${s.name}\t${s.dept_class}`).join("\n");
+                const resetData = {
+                    title: "電影欣賞社",
+                    subtitle: "115學年度第1學期",
+                    dates: ['2026/10/02', '2026/10/16', '2026/10/23', '2026/11/06', '2026/11/20', '2026/11/27', '2026/12/04', '2027/01/08'],
+                    rawStudentsList: defaultRaw
+                };
+
+                if (database) {
+                    database.ref('movie_club_settings').set(resetData).then(() => {
+                        closeConfigModal();
+                        alert("✅ 雲端設定已成功重設為預設名單！");
+                    }).catch(() => {
+                        alert("⚠️ 雲端重設失敗，請檢查權限。");
+                    });
+                }
+            }
         }
 
         function exportToExcel() {
