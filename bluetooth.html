@@ -3,179 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>電影欣賞社 - 線上實時簽到</title>
-    <!-- 引入 LINE LIFF SDK 與 Firebase SDK -->
+    <title>電影欣賞社 - 實時簽到</title>
+    <!-- LINE LIFF SDK 與 Firebase 官方 SDK -->
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <style>
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .card { background: white; border-radius: 16px; padding: 24px; width: 100%; max-width: 420px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
-        h2 { margin-top: 0; color: #2b4c7e; text-align: center; }
-        .info { font-size: 14px; color: #666; text-align: center; margin-bottom: 20px; }
+        body { 
+            background: #f0f2f5; 
+            margin: 0; 
+            padding: 20px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+        }
+        .card { 
+            background: white; 
+            border-radius: 16px; 
+            padding: 24px; 
+            width: 100%; 
+            max-width: 420px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+        }
+        h2 { 
+            margin: 0 0 8px 0; 
+            color: #2b4c7e; 
+            text-align: center; 
+            font-size: 22px;
+        }
+        .info { 
+            font-size: 13px; 
+            color: #666; 
+            text-align: center; 
+            margin-bottom: 20px; 
+        }
         .form-group { margin-bottom: 16px; }
-        label { display: block; font-size: 14px; font-weight: bold; margin-bottom: 6px; color: #333; }
-        input { width: 100%; padding: 14px; font-size: 16px; border: 2px solid #badcfa; border-radius: 8px; outline: none; }
+        label { 
+            display: block; 
+            font-size: 14px; 
+            font-weight: bold; 
+            margin-bottom: 6px; 
+            color: #333; 
+        }
+        input { 
+            width: 100%; 
+            padding: 14px; 
+            font-size: 16px; 
+            border: 2px solid #badcfa; 
+            border-radius: 8px; 
+            outline: none; 
+            text-align: center;
+            font-weight: bold;
+        }
         input:focus { border-color: #2b4c7e; }
-        .btn { width: 100%; background: #2b4c7e; color: white; border: none; padding: 14px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; }
-        .btn:disabled { background: #ccc; cursor: not-allowed; }
-        .result-box { margin-top: 15px; padding: 12px; border-radius: 8px; font-weight: bold; text-align: center; display: none; }
-        .success { background: #e8f5e9; color: #2e7d32; }
-        .error { background: #ffebee; color: #c62828; }
-    </style>
-</head>
-<body>
-    <div class="card">
-        <h2>🎬 電影欣賞社 實時簽到</h2>
-        <p class="info" id="user-info">載入個人識別中...</p>
-
-        <div class="form-group">
-            <label>請輸入 8 碼學號：</label>
-            <input type="tel" id="student-id" placeholder="例：11401011" maxlength="8">
-        </div>
-
-        <div class="form-group">
-            <label>大螢幕 4 位快閃口令：</label>
-            <input type="tel" id="otp-code" placeholder="請查看前方大螢幕" maxlength="4">
-        </div>
-
-        <button class="btn" id="submit-btn" onclick="executeCheckIn()">確認簽到</button>
-        <div class="result-box" id="result-box"></div>
-    </div>
-
-    <script>
-        // 🌟 1. 設定你的 LIFF ID 與 Firebase 網址
-        const MY_LIFF_ID = "請替換為你的LIFF_ID"; 
-        const FIREBASE_URL = "https://movie-76596-default-rtdb.asia-southeast1.firebasedatabase.app/";
-
-        firebase.initializeApp({ databaseURL: FIREBASE_URL });
-        const db = firebase.database();
-
-        let currentLineUserId = "";
-        let currentStudents = [];
-
-        // 格式化今日日期 YYYY-MM-DD
-        function getTodayStr() {
-            const now = new Date();
-            const y = now.getFullYear();
-            const m = String(now.getMonth() + 1).padStart(2, '0');
-            const d = String(now.getDate()).padStart(2, '0');
-            return `${y}-${m}-${d}`;
+        .btn { 
+            width: 100%; 
+            background: #2b4c7e; 
+            color: white; 
+            border: none; 
+            padding: 14px; 
+            font-size: 16px; 
+            font-weight: bold; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            margin-top: 6px;
+            transition: background 0.2s;
         }
-
-        // 初始化 LIFF 取得 LINE 使用者身分（防代簽）
-        async function initLIFF() {
-            try {
-                await liff.init({ liffId: MY_LIFF_ID });
-                if (liff.isLoggedIn()) {
-                    const profile = await liff.getProfile();
-                    currentLineUserId = profile.userId;
-                    document.getElementById('user-info').innerText = `已綁定 LINE：${profile.displayName}`;
-                } else {
-                    liff.login();
-                }
-            } catch (err) {
-                // 如果沒有開 LIFF 也支援一般瀏覽器開啟（以匿名裝置指紋降級替代）
-                currentLineUserId = localStorage.getItem('device_uuid') || ('DEV_' + Math.random().toString(36).substr(2, 9));
-                localStorage.setItem('device_uuid', currentLineUserId);
-                document.getElementById('user-info').innerText = "已連線至點名基地台";
-            }
-        }
-
-        // 預載名單
-        db.ref('movie_club_settings/rawStudentsList').once('value').then((snapshot) => {
-            const raw = snapshot.val();
-            if (raw) {
-                raw.split('\n').forEach(line => {
-                    const parts = line.trim().split(/[\t,\s]+/);
-                    if (parts.length >= 2) currentStudents.push({ id: parts[0], name: parts[1] });
-                });
-            }
-        });
-
-        // ⚡ 核心簽到邏輯：直接連線 Firebase 驗證寫入，完全不經過 Apps Script
-        async function executeCheckIn() {
-            const sidInput = document.getElementById('student-id').value.trim();
-            const otpInput = document.getElementById('otp-code').value.trim();
-            const resultBox = document.getElementById('result-box');
-            const btn = document.getElementById('submit-btn');
-
-            if (!sidInput || sidInput.length !== 8) {
-                showResult("⚠️ 請填寫完整的 8 位學號！", "error");
-                return;
-            }
-            if (!otpInput || otpInput.length !== 4) {
-                showResult("⚠️ 請填寫大螢幕上的 4 位口令！", "error");
-                return;
-            }
-
-            btn.disabled = true;
-            btn.innerText = "驗證中...";
-
-            try {
-                // 1. 比對學號是否在名單中
-                const student = currentStudents.find(s => s.id === sidInput);
-                if (currentStudents.length > 0 && !student) {
-                    showResult(`❌ 簽到失敗！學號 [${sidInput}] 不在名單中。`, "error");
-                    btn.disabled = false;
-                    btn.innerText = "確認簽到";
-                    return;
-                }
-
-                // 2. 比對動態口令（同時抓取當期與上一期）
-                const [curSnap, prevSnap] = await Promise.all([
-                    db.ref('current_otp_code').once('value'),
-                    db.ref('prev_otp_code').once('value')
-                ]);
-                const curCode = String(curSnap.val() || "").trim();
-                const prevCode = String(prevSnap.val() || "").trim();
-
-                if (otpInput !== curCode && otpInput !== prevCode) {
-                    showResult("❌ 口令錯誤或已失效，請查看大螢幕最新口令！", "error");
-                    btn.disabled = false;
-                    btn.innerText = "確認簽到";
-                    return;
-                }
-
-                // 3. 一機一號防代簽檢測
-                const bindSnap = await db.ref(`movie_club_bindings/${currentLineUserId}`).once('value');
-                const boundId = bindSnap.val();
-                if (boundId && String(boundId).trim() !== sidInput) {
-                    showResult(`❌ 代簽失敗！這台手機已綁定學號 [${boundId}]。`, "error");
-                    btn.disabled = false;
-                    btn.innerText = "確認簽到";
-                    return;
-                } else if (!boundId) {
-                    await db.ref(`movie_club_bindings/${currentLineUserId}`).set(sidInput);
-                }
-
-                // 4. 寫入今日簽到紀錄
-                const todayStr = getTodayStr();
-                await db.ref(`movie_club_rollcall/${todayStr}/${sidInput}`).set(1);
-
-                const studentName = student ? student.name : "同學";
-                showResult(`🎉 簽到成功！【${studentName}】已完成點名。`, "success");
-                btn.innerText = "✅ 簽到已完成";
-
-                // 若在 LINE 內開啟，可於 2 秒後自動關閉 LIFF 視窗
-                setTimeout(() => { if (liff.isInClient()) liff.closeWindow(); }, 2500);
-
-            } catch (e) {
-                showResult("⚠️ 連線異常，請檢查網路後重試！", "error");
-                btn.disabled = false;
-                btn.innerText = "確認簽到";
-            }
-        }
-
-        function showResult(msg, type) {
-            const box = document.getElementById('result-box');
-            box.style.display = 'block';
-            box.className = `result-box ${type}`;
-            box.innerText = msg;
-        }
-
-        window.onload = initLIFF;
-    </script>
-</body>
-</html>
+        .btn:active { background: #1f3659; }
+        .btn:disabled { background: #b0bec5; cursor: not-allowed
