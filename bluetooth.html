@@ -202,55 +202,26 @@
             console.error("Firebase 初始化失敗:", e);
         }
 
-        // 🌟 核心防禦：LIFF 初始化（加入 2.5 秒逾時與非同步自動容錯）
+        // 啟動 LIFF 並抓取真實 LINE 身分
         async function initLIFF() {
             const statusEl = document.getElementById('liff-status');
-            let isResolved = false;
-
-            // ⏱️ 逾時定時器：超過 2.5 秒未回傳即強制切換至保底通道
-            const timeoutTimer = setTimeout(() => {
-                if (!isResolved) {
-                    isResolved = true;
-                    console.warn("LIFF 連線逾時，自動切換至保底通道");
-                    setupFallbackIdentity();
-                }
-            }, 2500);
-
             try {
                 if (LIFF_ID && LIFF_ID.length > 5) {
                     await liff.init({ liffId: LIFF_ID });
-                    if (!isResolved) {
-                        isResolved = true;
-                        clearTimeout(timeoutTimer);
-
-                        if (liff.isLoggedIn()) {
-                            const profile = await liff.getProfile();
-                            lineUserId = profile.userId;
-                            lineDisplayName = profile.displayName || "LINE 同學";
-                            statusEl.innerText = `👤 已認證：${lineDisplayName}`;
-                        } else {
-                            if (liff.isInClient()) {
-                                liff.login();
-                            } else {
-                                setupFallbackIdentity();
-                            }
-                        }
+                    if (liff.isLoggedIn()) {
+                        const profile = await liff.getProfile();
+                        lineUserId = profile.userId;
+                        lineDisplayName = profile.displayName || "LINE 同學";
+                        statusEl.innerText = `👤 已認證：${lineDisplayName}`;
+                    } else {
+                        liff.login();
                     }
                 } else {
-                    if (!isResolved) {
-                        isResolved = true;
-                        clearTimeout(timeoutTimer);
-                        setupFallbackIdentity();
-                    }
+                    setupFallbackIdentity();
                 }
             } catch (err) {
-                if (!isResolved) {
-                    isResolved = true;
-                    clearTimeout(timeoutTimer);
-                    console.warn("LIFF 啟用失敗，切換為瀏覽器相容模式:", err);
-                    setupFallbackIdentity();
-                    statusEl.innerText = "📡 網頁已連線至安全基地台";
-                }
+                console.warn("LIFF 啟用失敗，切換為瀏覽器相容模式:", err);
+                setupFallbackIdentity();
             }
         }
 
@@ -410,7 +381,7 @@
 
                 let lineNotified = false;
 
-                // 🌟 單軌主動推播（僅呼叫後端發送官方收據，完全移除 liff.sendMessages 避免衝突）
+                // 🌟 核心修復：單軌主動推播（僅呼叫後端發送官方收據，不使用 liff.sendMessages，避免觸發對話框二次誤判）
                 if (GAS_WEB_APP_URL && lineUserId && lineUserId.startsWith("U")) {
                     try {
                         await fetch(GAS_WEB_APP_URL, {
