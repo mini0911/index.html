@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>電影欣賞社</title>
-    <!-- Tailwind CSS for sleek responsive design -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- LINE LIFF SDK -->
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -113,7 +113,7 @@
     </div>
 
     <script>
-        // 🌟 核心參數設定（請確保此處與您的部署環境相符）
+        // 🌟 核心參數設定
         const LIFF_ID = "2010768591-SwfwcK3q"; 
         const FIREBASE_DB_URL = "https://movie-76596-default-rtdb.asia-southeast1.firebasedatabase.app/";
         const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzf-cXjOr3neShtkf5tnMyTbOayb2xAL4FOzNnGu2Ts5Swamx1n8WHA24DO3d5x7A_H3w/exec";
@@ -202,15 +202,15 @@
             console.error("Firebase 初始化失敗:", e);
         }
 
-        // 初始化 LIFF 與使用者身分
+        // 🌟 修正核心：正確啟動 LIFF 並抓取使用者真實身分
         async function initLIFF() {
             const statusEl = document.getElementById('liff-status');
             try {
-                if (LIFF_ID && !LIFF_ID.includes("2010768591-SwfwcK3q")) {
+                if (LIFF_ID && LIFF_ID.length > 5) {
                     await liff.init({ liffId: LIFF_ID });
                     if (liff.isLoggedIn()) {
                         const profile = await liff.getProfile();
-                        lineUserId = profile.userId;
+                        lineUserId = profile.userId; // 這裡會拿到以 "U" 開頭的真實 ID
                         lineDisplayName = profile.displayName || "LINE 同學";
                         statusEl.innerText = `👤 已認證：${lineDisplayName}`;
                     } else {
@@ -382,7 +382,7 @@
                 let lineNotified = false;
 
                 // 軌道 A (主要首選)：若為真實 LINE userId，透過後端 Google Apps Script 執行官方推播
-                if (GAS_WEB_APP_URL && !GAS_WEB_APP_URL.includes("請替換") && lineUserId && lineUserId.startsWith("U")) {
+                if (GAS_WEB_APP_URL && lineUserId && lineUserId.startsWith("U")) {
                     try {
                         await fetch(GAS_WEB_APP_URL, {
                             method: "POST",
