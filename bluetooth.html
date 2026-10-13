@@ -50,12 +50,13 @@
         input { 
             width: 100%; 
             padding: 14px; 
-            font-size: 16px; 
+            font-size: 18px; 
             border: 2px solid #badcfa; 
             border-radius: 8px; 
             outline: none; 
             text-align: center;
             font-weight: bold;
+            letter-spacing: 2px;
         }
         input:focus { border-color: #2b4c7e; }
         .btn { 
@@ -72,4 +73,47 @@
             transition: background 0.2s;
         }
         .btn:active { background: #1f3659; }
-        .btn:disabled { background: #b0bec5; cursor: not-allowed
+        .btn:disabled { background: #b0bec5; cursor: not-allowed; }
+        .result-box { 
+            margin-top: 15px; 
+            padding: 12px; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            text-align: center; 
+            font-size: 13px;
+            display: none; 
+            line-height: 1.5;
+            word-break: break-all;
+        }
+        .success { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+        .error { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>🎬 電影欣賞社 實時簽到</h2>
+        <p class="info" id="user-info">連線基地台中...</p>
+
+        <div class="form-group">
+            <label>請輸入 8 碼學號：</label>
+            <input type="tel" id="student-id" placeholder="例：11401011" maxlength="8">
+        </div>
+
+        <div class="form-group">
+            <label>大螢幕 4 位快閃口令：</label>
+            <input type="tel" id="otp-code" placeholder="請查看前方大螢幕" maxlength="4">
+        </div>
+
+        <button class="btn" id="submit-btn" onclick="executeCheckIn()">確認簽到</button>
+        <div class="result-box" id="result-box"></div>
+    </div>
+
+    <script>
+        // 🌟 請換成你的專屬 LIFF ID 與 Firebase 網址
+        const MY_LIFF_ID = "請替換為你的LIFF_ID"; 
+        const FIREBASE_URL = "https://movie-76596-default-rtdb.asia-southeast1.firebasedatabase.app/";
+
+        firebase.initializeApp({ databaseURL: FIREBASE_URL });
+        const db = firebase.database();
+
+        let currentLineUserId =
