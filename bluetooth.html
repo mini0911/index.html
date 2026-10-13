@@ -116,4 +116,231 @@
         firebase.initializeApp({ databaseURL: FIREBASE_URL });
         const db = firebase.database();
 
-        let currentLineUserId =
+        let currentLineUserId = "";
+
+        // 預設備用名單
+        const defaultStudents = [
+          {"id":"11401011","name":"李浩凱"},{"id":"11401014","name":"林士閎"},{"id":"11401024","name":"陳宥廷"},
+          {"id":"11401025","name":"陳柏安"},{"id":"11401026","name":"陳韋勛"},{"id":"11401027","name":"陳楷霖"},
+          {"id":"11401032","name":"劉諶叡"},{"id":"11402023","name":"許盛鈞"},{"id":"11402101","name":"林芝羽"},
+          {"id":"11402103","name":"陳姿瑜"},{"id":"11402113","name":"邱羿翰"},{"id":"11404006","name":"王子維"},
+          {"id":"11404009","name":"王鈞毅"},{"id":"11404010","name":"何俊廷"},{"id":"11404011","name":"吳彥霆"},
+          {"id":"11404029","name":"陳昱傑"},{"id":"11404110","name":"周杰陽"},{"id":"11404112","name":"林和穎"},
+          {"id":"11404113","name":"林柏安"},{"id":"11404115","name":"柯品均"},{"id":"11404117","name":"胡俊英"},
+          {"id":"11404120","name":"張維哲"},{"id":"11404124","name":"陳庭翊"},{"id":"11404126","name":"黃禹翔"},
+          {"id":"11404130","name":"鄭宇恩"},{"id":"11405011","name":"吳展旭"},{"id":"11405016","name":"林知炫"},
+          {"id":"11405110","name":"江孟哲"},{"id":"11405114","name":"李泓儀"},{"id":"11405116","name":"林弘裕"},
+          {"id":"11405120","name":"施劭儒"},{"id":"11405124","name":"陳一愷"},{"id":"11405127","name":"廖廷軒"},
+          {"id":"11406031","name":"鄭可謙"},{"id":"11406106","name":"劉軒辰"},{"id":"11406107","name":"鄭恩旻"},
+          {"id":"11406110","name":"王子豪"},{"id":"11406117","name":"林小平"},{"id":"11406122","name":"勒卡而・旮巴Lkal・Kapa"},
+          {"id":"11407022","name":"曾泓維"},{"id":"11407024","name":"黃佑恩"},{"id":"11407025","name":"黃靖捷"},
+          {"id":"11407106","name":"林宥安"},{"id":"11407107","name":"林桓安"},{"id":"11407108","name":"林泰澄"},
+          {"id":"11407118","name":"陳雋淇"},{"id":"11407121","name":"黃澤楷"},{"id":"11407124","name":"葉宥宏"},
+          {"id":"11407126","name":"蔡承勳"},{"id":"11407130","name":"蕭禎賢"},{"id":"11408006","name":"朱昱安"},
+          {"id":"11408008","name":"吳岱霖"},{"id":"11408016","name":"區少升"},{"id":"11408020","name":"陳品諺"},
+          {"id":"11408026","name":"黃稚鈞"},{"id":"11408108","name":"林肯成"},{"id":"11408121","name":"彭暐瀚"},
+          {"id":"11408122","name":"游俊恩"},{"id":"11408136","name":"魏丞宏"},{"id":"11409007","name":"周品曦"},
+          {"id":"11409021","name":"陳秉鉉"},{"id":"11409022","name":"陳冠愷"},{"id":"11409029","name":"黃鈺淳"},
+          {"id":"11409031","name":"黎家齊"},{"id":"11409104","name":"吳紘宇"},{"id":"11409108","name":"林佑勳"},
+          {"id":"11409118","name":"陳柏廷"},{"id":"11409123","name":"勤正浩"},{"id":"11409124","name":"楊峻瑋"},
+          {"id":"11409132","name":"鄭家佑"},{"id":"11410031","name":"劉威彥"},{"id":"11410119","name":"陳沅祥"},
+          {"id":"11410127","name":"楊善閔"},{"id":"11410131","name":"謝孝霆"},{"id":"11410134","name":"蘇寅"},
+          {"id":"11301003","name":"田翊新"},{"id":"11301022","name":"陳威良"},{"id":"11301025","name":"陳詠昕"},
+          {"id":"11301110","name":"林宏鈞"},{"id":"11202128","name":"游祐程"},{"id":"11302006","name":"黃晴婠"},
+          {"id":"11302011","name":"林承旻"},{"id":"11302016","name":"張華軒"},{"id":"11302018","name":"許耕源"},
+          {"id":"11302020","name":"陳冠辰"},{"id":"11302030","name":"廖梓亦"},{"id":"11304014","name":"林威融"},
+          {"id":"11304031","name":"廖澤綱"},{"id":"11304115","name":"孫廷翰"},{"id":"11305012","name":"吳庭恩"},
+          {"id":"11305029","name":"張恩杰"},{"id":"11306115","name":"李亮瑋"},{"id":"11306126","name":"詹立宇"},
+          {"id":"11307011","name":"杜頤宥"},{"id":"11307105","name":"宋宥均"},{"id":"11307118","name":"陳乙篁"},
+          {"id":"11307127","name":"楊家宏"},{"id":"11307134","name":"謝杰穎"},{"id":"11308004","name":"吳育熙"},
+          {"id":"11308011","name":"林品嶧"},{"id":"11308015","name":"洪翊倫"},{"id":"11308017","name":"張泰祥"},
+          {"id":"11308021","name":"陳宣叡"},{"id":"11308026","name":"黃文昇"},{"id":"11309108","name":"林言家"},
+          {"id":"11309109","name":"林亞佐"},{"id":"11309110","name":"林昱丞"},{"id":"11309113","name":"范宸維"},
+          {"id":"11309124","name":"黃鴻緯"},{"id":"11309129","name":"蔣承澤"},{"id":"11309130","name":"鄧明鈞"},
+          {"id":"11309131","name":"鄭至勛"},{"id":"11310113","name":"姚元博"},{"id":"11310115","name":"唐維壕"},
+          {"id":"11310120","name":"陳汝睿"},{"id":"11310125","name":"曾柏翰"},{"id":"11315004","name":"邱于哲"},
+          {"id":"11315006","name":"張偉倫"},{"id":"11315008","name":"許宸睿"},{"id":"11315012","name":"葉宇宸"},
+          {"id":"11401008","name":"吳悜瑋"},{"id":"11401012","name":"李博丞"},{"id":"11401022","name":"郭韋良"},
+          {"id":"11402005","name":"彭翊荃"},{"id":"11402012","name":"林宗德"},{"id":"11402014","name":"林羿廷"},
+          {"id":"11402016","name":"夏子峻"},{"id":"11402018","name":"張允齊"},{"id":"11402022","name":"莊博鈞"},
+          {"id":"11402105","name":"曾怡婷"},{"id":"11402114","name":"施閔傑"},{"id":"11402123","name":"黃昕亞"},
+          {"id":"11402129","name":"鄭佳侑"},{"id":"11403015","name":"林威漢"},{"id":"11403019","name":"陳威旬"},
+          {"id":"11403025","name":"蔡政祐"},{"id":"11403102","name":"白承叡"},{"id":"11403113","name":"張鈞崴"},
+          {"id":"11404111","name":"林辰祐"},{"id":"11404118","name":"高佳瑋"},{"id":"11404119","name":"張祐豪"},
+          {"id":"11405101","name":"王逸蓁"},{"id":"11405107","name":"羅苡甄"},{"id":"11405113","name":"李丞恩"},
+          {"id":"11406013","name":"杜承恩"},{"id":"11406021","name":"陳柏俊"},{"id":"11406113","name":"李武駿"},
+          {"id":"11406116","name":"周育銘"},{"id":"11406126","name":"陳宥宇"},{"id":"11406128","name":"蔡翊展"},
+          {"id":"11406131","name":"簡震"},{"id":"11406133","name":"蘇品齊"},{"id":"11407018","name":"陳宇幟"},
+          {"id":"11407029","name":"蔡承翰"},{"id":"11407112","name":"張舜傑"},{"id":"11407132","name":"簡子淇"},
+          {"id":"11408017","name":"許文駿"},{"id":"11408023","name":"曾宇謙"},{"id":"11408118","name":"陳劭恩"},
+          {"id":"11408119","name":"陳均瑋"},{"id":"11408132","name":"鄭名峰"},{"id":"11409001","name":"王彦博"},
+          {"id":"11409018","name":"張哲睿"},{"id":"11409024","name":"陳致嘉"},{"id":"11409028","name":"黃莛閎"},
+          {"id":"11409103","name":"江冠皜"},{"id":"11409105","name":"李杰恩"},{"id":"11409106","name":"李炘育"},
+          {"id":"11409107","name":"周宣瑋"},{"id":"11409120","name":"曾雋翰"},{"id":"11310029","name":"馮宇承"},
+          {"id":"11310034","name":"蔡新澤"},{"id":"11310104","name":"吳秉霖"},{"id":"11310107","name":"谷應絃"},
+          {"id":"11310110","name":"林柏安"},{"id":"11310111","name":"邱少輔"},{"id":"11310132","name":"潘廖賢"},
+          {"id":"11315001","name":"王靖宇"},{"id":"11315007","name":"梁詠翔"},{"id":"11501001","name":"余明霖"}
+        ];
+
+        let currentStudents = [...defaultStudents];
+
+        function getTodayStr() {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        async function initLIFF() {
+            try {
+                if (MY_LIFF_ID && MY_LIFF_ID !== "請替換為你的LIFF_ID") {
+                    await liff.init({ liffId: MY_LIFF_ID });
+                    if (liff.isLoggedIn()) {
+                        const profile = await liff.getProfile();
+                        currentLineUserId = profile.userId;
+                        document.getElementById('user-info').innerText = `已綁定 LINE：${profile.displayName}`;
+                    } else {
+                        liff.login();
+                    }
+                } else {
+                    useBrowserFallbackIdentity();
+                }
+            } catch (err) {
+                useBrowserFallbackIdentity();
+            }
+        }
+
+        function useBrowserFallbackIdentity() {
+            currentLineUserId = localStorage.getItem('device_uuid') || ('DEV_' + Math.random().toString(36).substr(2, 9));
+            localStorage.setItem('device_uuid', currentLineUserId);
+            document.getElementById('user-info').innerText = "已連線至點名基地台";
+        }
+
+        async function fetchLatestStudents() {
+            try {
+                const snapshot = await db.ref('movie_club_settings/rawStudentsList').once('value');
+                const raw = snapshot.val();
+                if (raw && typeof raw === 'string') {
+                    const list = [];
+                    raw.split('\n').forEach(line => {
+                        const parts = line.trim().split(/[\t,\s]+/);
+                        if (parts.length >= 2) {
+                            list.push({ id: parts[0].trim(), name: parts[1].trim() });
+                        }
+                    });
+                    if (list.length > 0) currentStudents = list;
+                }
+            } catch (e) {
+                console.warn("使用預設名單備援", e);
+            }
+        }
+
+        async function executeCheckIn() {
+            const sidInput = document.getElementById('student-id').value.trim();
+            // 自動轉換半形並移除非數字字元
+            const otpInput = document.getElementById('otp-code').value.replace(/\D/g, '').trim();
+            const btn = document.getElementById('submit-btn');
+
+            if (!sidInput || sidInput.length !== 8) {
+                showResult("⚠️ 請填寫完整的 8 位學號！", "error");
+                return;
+            }
+            if (!otpInput || otpInput.length !== 4) {
+                showResult("⚠️ 請填寫大螢幕上的 4 位口令！", "error");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "驗證中...";
+
+            await fetchLatestStudents();
+
+            // 1. 比對學號
+            const student = currentStudents.find(s => s.id === sidInput);
+            if (!student) {
+                showResult(`❌ 簽到失敗！學號 [${sidInput}] 不在名單中。`, "error");
+                btn.disabled = false;
+                btn.innerText = "確認簽到";
+                return;
+            }
+
+            // 2. 探測並驗證口令
+            try {
+                const [curSnap, prevSnap, altSnap] = await Promise.all([
+                    db.ref('current_otp_code').once('value'),
+                    db.ref('prev_otp_code').once('value'),
+                    db.ref('movie_club_rollcall/current_code').once('value')
+                ]);
+
+                // 強制純文字提取
+                const curCode = curSnap.exists() ? String(curSnap.val()).trim() : "";
+                const prevCode = prevSnap.exists() ? String(prevSnap.val()).trim() : "";
+                const altCode = altSnap.exists() ? String(altSnap.val()).trim() : "";
+
+                const validList = [curCode, prevCode, altCode].filter(c => c !== "");
+
+                // 若雲端目前沒有任何口令，代表大螢幕看板未開啟
+                if (validList.length === 0) {
+                    showResult("⚠️ 驗證失敗：前方大螢幕看板尚未開啟連線，請提醒老師開啟看板！", "error");
+                    btn.disabled = false;
+                    btn.innerText = "確認簽到";
+                    return;
+                }
+
+                // 比對驗證碼
+                if (!validList.includes(otpInput)) {
+                    showResult(`❌ 快閃口令錯誤或已失效！<br>(您輸入：${otpInput}，雲端最新：${curCode || altCode})`, "error");
+                    btn.disabled = false;
+                    btn.innerText = "確認簽到";
+                    return;
+                }
+
+                // 3. 一機一號防代簽檢測
+                const bindSnap = await db.ref(`movie_club_bindings/${currentLineUserId}`).once('value');
+                const boundId = bindSnap.val();
+                if (boundId && String(boundId).trim() !== sidInput) {
+                    showResult(`❌ 代簽失敗！這台手機已綁定學號 [${boundId}]。`, "error");
+                    btn.disabled = false;
+                    btn.innerText = "確認簽到";
+                    return;
+                } else if (!boundId) {
+                    await db.ref(`movie_club_bindings/${currentLineUserId}`).set(sidInput);
+                }
+
+                // 4. 寫入今日簽到紀錄
+                const todayStr = getTodayStr();
+                await db.ref(`movie_club_rollcall/${todayStr}/${sidInput}`).set(1);
+
+                showResult(`🎉 簽到成功！【${student.name}】已完成點名。`, "success");
+                btn.innerText = "✅ 簽到已完成";
+
+                // 自動關閉視窗
+                setTimeout(() => {
+                    if (window.liff && liff.isInClient && liff.isInClient()) {
+                        liff.closeWindow();
+                    }
+                }, 2000);
+
+            } catch (err) {
+                console.error(err);
+                showResult("⚠️ 連線異常，請確認網路環境或 Firebase 規則是否開放！", "error");
+                btn.disabled = false;
+                btn.innerText = "確認簽到";
+            }
+        }
+
+        function showResult(msg, type) {
+            const box = document.getElementById('result-box');
+            box.style.display = 'block';
+            box.className = `result-box ${type}`;
+            box.innerHTML = msg;
+        }
+
+        window.onload = () => {
+            initLIFF();
+            fetchLatestStudents();
+        };
+    </script>
+</body>
+</html>
