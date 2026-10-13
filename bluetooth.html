@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>電影欣賞社 - 實時簽到系統</title>
+    <title>電影欣賞社</title>
     <!-- Tailwind CSS for sleek responsive design -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- LINE LIFF SDK -->
@@ -114,9 +114,9 @@
 
     <script>
         // 🌟 核心參數設定（請確保此處與您的部署環境相符）
-        const LIFF_ID = "請替換為你的LIFF_ID"; 
+        const LIFF_ID = "2010768591-SwfwcK3q"; 
         const FIREBASE_DB_URL = "https://movie-76596-default-rtdb.asia-southeast1.firebasedatabase.app/";
-        const GAS_WEB_APP_URL = "請替換為你的_Google_Apps_Script_部署網址";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzf-cXjOr3neShtkf5tnMyTbOayb2xAL4FOzNnGu2Ts5Swamx1n8WHA24DO3d5x7A_H3w/exec";
 
         // 預備官方選課名單（保底備援庫）
         const defaultStudents = [
@@ -206,7 +206,7 @@
         async function initLIFF() {
             const statusEl = document.getElementById('liff-status');
             try {
-                if (LIFF_ID && !LIFF_ID.includes("請替換")) {
+                if (LIFF_ID && !LIFF_ID.includes("2010768591-SwfwcK3q")) {
                     await liff.init({ liffId: LIFF_ID });
                     if (liff.isLoggedIn()) {
                         const profile = await liff.getProfile();
