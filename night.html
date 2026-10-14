@@ -3,31 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>【杏林夜泣】超大型 5 大病區實境密室逃脫</title>
+<title>【杏林夜泣：窒息密室】實體連鎖逃脫</title>
 
-<!-- Three.js 3D 核心庫 -->
+<!-- Three.js 3D 核心 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-  body, html { width: 100%; height: 100%; background: #000; color: #eee; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  body, html { width: 100%; height: 100%; background: #000; color: #eee; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, serif; }
 
-  #game-viewport { position: relative; width: 100%; height: 100%; overflow: hidden; cursor: crosshair; }
+  #game-viewport { position: relative; width: 100%; height: 100%; overflow: hidden; }
   #three-canvas { width: 100%; height: 100%; display: block; }
 
-  /* 寫實老醫院 VHS 雜訊與暗角 */
+  /* 寫實老醫院 VHS 膠卷噪點與壓迫暗角 */
   .vignette-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: radial-gradient(circle at 50% 50%, transparent 24%, rgba(2, 6, 4, 0.78) 64%, rgba(0, 0, 0, 0.98) 96%),
-                repeating-linear-gradient(rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0, 30, 15, 0.08) 3px, rgba(0,0,0,0) 4px);
+    background: radial-gradient(circle at 50% 50%, transparent 20%, rgba(2, 6, 4, 0.82) 62%, rgba(0, 0, 0, 0.99) 96%),
+                repeating-linear-gradient(rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0, 20, 10, 0.08) 3px, rgba(0,0,0,0) 4px);
     pointer-events: none; z-index: 10;
   }
 
-  /* 驚嚇幻覺紅屏閃爍 */
-  #scare-flash {
+  /* 精神渙散幻覺層 */
+  #sanity-glitch {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(180, 0, 0, 0.4); pointer-events: none; z-index: 500;
-    display: none;
+    background: rgba(180, 0, 0, 0.25); pointer-events: none; z-index: 15;
+    display: none; mix-blend-mode: color-burn;
   }
 
   /* 準心 */
@@ -37,90 +37,82 @@
     pointer-events: none; z-index: 20; transition: all 0.15s;
   }
   .crosshair.interactable {
-    width: 26px; height: 26px; background: transparent; border: 2px solid #00ff88;
-    box-shadow: 0 0 15px rgba(0,255,136,0.6);
+    width: 28px; height: 28px; background: transparent; border: 2px solid #ff4444;
+    box-shadow: 0 0 14px rgba(255,68,68,0.7);
   }
 
   #interact-hint {
     position: absolute; top: 56%; left: 50%; transform: translate(-50%, -50%);
-    font-size: 13px; font-weight: bold; color: #00ff88; text-shadow: 0 0 8px #000;
+    font-size: 13px; font-weight: bold; color: #ff5555; text-shadow: 0 0 8px #000;
     pointer-events: none; z-index: 25; display: none; letter-spacing: 1px;
   }
 
-  /* 頂部 HUD (顯示當前病區、地圖探索度) */
+  /* 頂部 HUD (理智值 Sanity & 手電筒電量) */
   .hud-top {
     position: absolute; top: 0; left: 0; width: 100%; height: 60px;
     background: linear-gradient(180deg, rgba(2,6,4,0.96) 0%, transparent 100%);
     display: flex; justify-content: space-between; align-items: center;
     padding: 0 20px; z-index: 100; pointer-events: none;
   }
-  .stage-badge {
-    color: #00ff88; font-size: 13px; font-weight: bold; letter-spacing: 1px;
-    display: flex; align-items: center; gap: 8px; text-shadow: 0 0 8px rgba(0,255,136,0.3);
-  }
-  .pulse-dot { width: 8px; height: 8px; background: #00ff88; border-radius: 50%; box-shadow: 0 0 8px #00ff88; animation: blink 1.2s infinite; }
-  @keyframes blink { 50% { opacity: 0.2; } }
+  .status-box { display: flex; gap: 16px; align-items: center; }
+  .status-meter { font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 6px; }
+  .meter-bar { width: 90px; height: 8px; background: #222; border-radius: 4px; overflow: hidden; border: 1px solid #444; }
+  .meter-fill-sanity { width: 100%; height: 100%; background: #ff4444; transition: width 0.3s; }
+  .meter-fill-batt { width: 100%; height: 100%; background: #00ff88; transition: width 0.3s; }
 
-  .inventory-bar {
-    background: rgba(10, 20, 14, 0.85); border: 1px solid #1a3824;
-    padding: 4px 12px; border-radius: 4px; font-size: 12px; color: #e3b341;
+  /* 底部實體道具背包欄 (實體密室必備) */
+  .inventory-belt {
+    position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 10px; background: rgba(10, 16, 12, 0.92);
+    border: 2px solid #22382b; border-radius: 8px; padding: 6px 12px;
+    z-index: 100; box-shadow: 0 4px 25px rgba(0,0,0,0.9);
+  }
+  .inv-slot {
+    width: 52px; height: 52px; background: #16241c; border: 1px solid #2b4535;
+    border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+    cursor: pointer; font-size: 20px; color: #fff; transition: all 0.2s; position: relative;
+  }
+  .inv-slot.selected {
+    border-color: #ff4444; background: #2e1515; box-shadow: 0 0 12px rgba(255,68,68,0.6);
+  }
+  .inv-slot-label { font-size: 9px; color: #8fa899; margin-top: 2px; }
+
+  /* 底部對講機任務提示 */
+  .bottom-task {
+    position: absolute; bottom: 84px; left: 50%; transform: translateX(-50%);
+    background: rgba(8, 14, 10, 0.9); border: 1px solid #1a3324;
+    border-left: 4px solid #ff4444; padding: 6px 16px; font-size: 12px;
+    color: #c9d1d9; border-radius: 4px; z-index: 90; pointer-events: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.8); white-space: nowrap;
   }
 
-  /* 手機虛擬走動鍵盤 (左下角) */
-  .touch-controls {
-    position: absolute; bottom: 20px; left: 20px; z-index: 150;
-    display: grid; grid-template-columns: repeat(3, 44px); gap: 6px;
-  }
-  .touch-btn {
-    width: 44px; height: 44px; background: rgba(10, 20, 14, 0.75);
-    border: 1px solid #00ff88; border-radius: 6px; color: #fff; font-size: 15px; font-weight: bold;
-    display: flex; justify-content: center; align-items: center; cursor: pointer;
-  }
-  .touch-btn:active { background: #00ff88; color: #000; }
-
-  /* 底部對講機任務導引 */
-  .bottom-radio {
-    position: absolute; bottom: 18px; left: 175px; right: 20px;
-    background: rgba(8, 14, 10, 0.94); border: 1px solid #1a3324;
-    border-left: 4px solid #00ff88; padding: 10px 14px;
-    z-index: 100; border-radius: 4px; box-shadow: 0 4px 20px rgba(0,0,0,0.8);
-    pointer-events: none;
-  }
-  .radio-text { font-size: 12px; color: #c9d1d9; line-height: 1.4; }
-
-  /* 調查檔案彈窗 */
+  /* 道具檢視彈窗 */
   .modal-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.92); z-index: 2000;
+    background: rgba(0, 0, 0, 0.94); z-index: 2000;
     display: none; justify-content: center; align-items: center; padding: 20px;
   }
-  .clue-paper {
+  .prop-card {
     background: #e8e2d3; color: #1e1914; width: 100%; max-width: 420px;
-    border-radius: 6px; padding: 24px; box-shadow: 0 0 35px rgba(0,255,136,0.15);
+    border-radius: 6px; padding: 24px; box-shadow: 0 0 35px rgba(255,68,68,0.2);
     border: 2px solid #a39985; font-family: serif; animation: popIn 0.2s ease;
   }
   @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-  .clue-title { font-size: 16px; font-weight: bold; color: #8a1d1d; border-bottom: 1px dashed #7a664d; padding-bottom: 8px; margin-bottom: 14px; }
-  .clue-body { font-size: 13px; line-height: 1.8; margin-bottom: 20px; white-space: pre-line; }
+  .prop-title { font-size: 16px; font-weight: bold; color: #8a1d1d; border-bottom: 1px dashed #7a664d; padding-bottom: 8px; margin-bottom: 14px; }
+  .prop-body { font-size: 13px; line-height: 1.8; margin-bottom: 20px; white-space: pre-line; }
   .btn-close { width: 100%; background: #26382b; color: #00ff88; border: 1px solid #00ff88; padding: 10px 0; font-size: 13px; font-weight: bold; border-radius: 3px; cursor: pointer; }
 
-  /* 防火鐵門密碼鎖盤 */
-  .keypad-box {
-    background: #111a14; border: 2px solid #00ff88; border-radius: 8px;
-    width: 280px; padding: 22px; display: flex; flex-direction: column; align-items: center;
-    box-shadow: 0 0 35px rgba(0, 255, 136, 0.3); animation: popIn 0.2s ease;
+  /* 密碼轉盤機關彈窗 (四位生鏽旋轉號碼盤) */
+  .dial-box {
+    background: #111a14; border: 2px solid #ff4444; border-radius: 8px;
+    width: 320px; padding: 24px; display: flex; flex-direction: column; align-items: center;
+    box-shadow: 0 0 35px rgba(255, 68, 68, 0.4); animation: popIn 0.2s ease;
   }
-  .keypad-display {
-    width: 100%; height: 44px; background: #000; border: 1px solid #1f382b;
-    border-radius: 4px; color: #00ff88; font-size: 24px; font-family: monospace;
-    display: flex; justify-content: center; align-items: center; letter-spacing: 8px; margin-bottom: 16px;
-  }
-  .keypad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; margin-bottom: 16px; }
-  .num-btn {
-    background: #19241d; border: 1px solid #2a3d31; color: #c9d1d9;
-    padding: 12px 0; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer;
-  }
-  .num-btn:active { background: #00ff88; color: #000; }
+  .dial-wheels { display: flex; gap: 12px; margin: 16px 0; }
+  .dial-col { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .dial-btn { background: #1f3026; border: 1px solid #334d3d; color: #00ff88; width: 36px; height: 28px; cursor: pointer; font-weight: bold; }
+  .dial-digit { width: 36px; height: 46px; background: #000; border: 2px solid #ff4444; color: #ff4444; font-size: 26px; font-family: monospace; display: flex; justify-content: center; align-items: center; }
+  .btn-submit-lock { width: 100%; background: #7a1515; color: #fff; border: none; padding: 10px 0; font-size: 13px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top: 10px; }
 
   /* 開場視窗 */
   #start-modal {
@@ -128,12 +120,12 @@
     background: #040806; z-index: 3000; display: flex; flex-direction: column;
     justify-content: center; align-items: center; padding: 24px; text-align: center;
   }
-  #start-modal h1 { color: #00ff88; font-size: 24px; margin-bottom: 14px; letter-spacing: 2px; text-shadow: 0 0 10px rgba(0,255,136,0.5); }
-  #start-modal p { font-size: 13px; color: #8b949e; line-height: 1.8; margin-bottom: 24px; max-width: 440px; }
+  #start-modal h1 { color: #ff4444; font-size: 26px; margin-bottom: 14px; letter-spacing: 3px; text-shadow: 0 0 12px rgba(255,68,68,0.6); }
+  #start-modal p { font-size: 13px; color: #8b949e; line-height: 1.8; margin-bottom: 24px; max-width: 460px; }
   .btn-start {
-    background: #00ff88; border: none; color: #000; padding: 14px 42px;
+    background: #b62324; border: 1px solid #ff4444; color: #fff; padding: 14px 44px;
     font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer;
-    box-shadow: 0 0 20px rgba(0,255,136,0.5);
+    box-shadow: 0 0 25px rgba(255,68,68,0.5);
   }
 </style>
 </head>
@@ -141,139 +133,131 @@
 
 <div id="game-viewport">
   <div class="vignette-overlay"></div>
-  <div id="scare-flash"></div>
+  <div id="sanity-glitch"></div>
   <div class="crosshair" id="crosshair"></div>
   <div id="interact-hint">[ 點擊滑鼠 / 觸控進行調查 ]</div>
 
-  <!-- 頂部 HUD -->
+  <!-- 頂部 HUD (理智值 & 電量) -->
   <div class="hud-top">
-    <div class="stage-badge">
-      <div class="pulse-dot"></div>
-      <span id="stage-title">區域 1：杏林醫院・急診掛號大廳與長廊</span>
+    <div class="status-box">
+      <div class="status-meter">
+        <span style="color:#ff5555;">🧠 SANITY</span>
+        <div class="meter-bar"><div class="meter-fill-sanity" id="sanity-bar"></div></div>
+      </div>
+      <div class="status-meter">
+        <span style="color:#00ff88;">🔦 POWER</span>
+        <div class="meter-bar"><div class="meter-fill-batt" id="battery-bar"></div></div>
+      </div>
     </div>
-    <div class="inventory-bar" id="inv-display">道具包: 空</div>
+    <div style="font-size:12px; color:#ff4444; font-weight:bold;" id="stage-name">
+      第 1 區：急診解剖處置室
+    </div>
   </div>
 
   <div id="canvas-container" style="width: 100%; height: 100%;"></div>
 
-  <div class="touch-controls">
-    <div></div>
-    <button class="touch-btn" onpointerdown="keys.KeyW=true" onpointerup="keys.KeyW=false">▲</button>
-    <div></div>
-    <button class="touch-btn" onpointerdown="keys.KeyA=true" onpointerup="keys.KeyA=false">◄</button>
-    <button class="touch-btn" onpointerdown="keys.KeyS=true" onpointerup="keys.KeyS=false">▼</button>
-    <button class="touch-btn" onpointerdown="keys.KeyD=true" onpointerup="keys.KeyD=false">►</button>
+  <!-- 底部任務引導 -->
+  <div class="bottom-task" id="current-task">
+    當前任務：尋找工具撬開通風管道，逃出處置室
   </div>
 
-  <div class="bottom-radio">
-    <div class="radio-text" id="radio-instruction">
-      「空氣中瀰漫著濃烈的福馬林與霉味……深入長廊房間搜查病歷，前往盡頭防護門解鎖！」
+  <!-- 底部實體道具背包欄 -->
+  <div class="inventory-belt">
+    <div class="inv-slot" id="slot-0" onclick="selectItem(0)">
+      <span id="slot-icon-0">空</span>
+      <span class="inv-slot-label" id="slot-name-0">-</span>
+    </div>
+    <div class="inv-slot" id="slot-1" onclick="selectItem(1)">
+      <span id="slot-icon-1">空</span>
+      <span class="inv-slot-label" id="slot-name-1">-</span>
+    </div>
+    <div class="inv-slot" id="slot-2" onclick="selectItem(2)">
+      <span id="slot-icon-2">空</span>
+      <span class="inv-slot-label" id="slot-name-2">-</span>
+    </div>
+    <div class="inv-slot" id="slot-3" onclick="selectItem(3)">
+      <span id="slot-icon-3">空</span>
+      <span class="inv-slot-label" id="slot-name-3">-</span>
     </div>
   </div>
 
-  <div class="modal-overlay" id="clue-modal">
-    <div class="clue-paper">
-      <div class="clue-title" id="clue-title">調查病歷檔案</div>
-      <div class="clue-body" id="clue-body">檔案內容載入中...</div>
-      <button class="btn-close" onclick="closeClueModal()">放回並繼續搜查</button>
+  <!-- 道具詳情彈窗 -->
+  <div class="modal-overlay" id="prop-modal">
+    <div class="prop-card">
+      <div class="prop-title" id="prop-title">道具名稱</div>
+      <div class="prop-body" id="prop-body">詳細情報...</div>
+      <button class="btn-close" onclick="closePropModal()">收回道具包</button>
     </div>
   </div>
 
-  <div class="modal-overlay" id="keypad-modal">
-    <div class="keypad-box">
-      <div style="color: #00ff88; font-size: 12px; margin-bottom: 8px;">重型防火鐵門</div>
-      <div class="keypad-display" id="keypad-code">----</div>
-      <div class="keypad-grid">
-        <button class="num-btn" onclick="pressKey('1')">1</button>
-        <button class="num-btn" onclick="pressKey('2')">2</button>
-        <button class="num-btn" onclick="pressKey('3')">3</button>
-        <button class="num-btn" onclick="pressKey('4')">4</button>
-        <button class="num-btn" onclick="pressKey('5')">5</button>
-        <button class="num-btn" onclick="pressKey('6')">6</button>
-        <button class="num-btn" onclick="pressKey('7')">7</button>
-        <button class="num-btn" onclick="pressKey('8')">8</button>
-        <button class="num-btn" onclick="pressKey('9')">9</button>
-        <button class="num-btn" onclick="clearKeypad()">C</button>
-        <button class="num-btn" onclick="pressKey('0')">0</button>
-        <button class="num-btn" onclick="submitPasscode()" style="background:#1b4d2e; color:#00ff88;">✓</button>
+  <!-- 四位實體生鏽密碼旋轉盤 (Mechanical Lock) -->
+  <div class="modal-overlay" id="dial-modal">
+    <div class="dial-box">
+      <div style="color: #ff5555; font-size: 13px; font-weight:bold; margin-bottom: 6px;">生鏽掛鎖密碼機構</div>
+      <div style="color: #8fa899; font-size: 11px; margin-bottom: 12px;">點擊上下箭頭旋轉鎖芯號碼</div>
+      <div class="dial-wheels">
+        <div class="dial-col">
+          <button class="dial-btn" onclick="rotateDial(0, 1)">▲</button>
+          <div class="dial-digit" id="d-0">0</div>
+          <button class="dial-btn" onclick="rotateDial(0, -1)">▼</button>
+        </div>
+        <div class="dial-col">
+          <button class="dial-btn" onclick="rotateDial(1, 1)">▲</button>
+          <div class="dial-digit" id="d-1">0</div>
+          <button class="dial-btn" onclick="rotateDial(1, -1)">▼</button>
+        </div>
+        <div class="dial-col">
+          <button class="dial-btn" onclick="rotateDial(2, 1)">▲</button>
+          <div class="dial-digit" id="d-2">0</div>
+          <button class="dial-btn" onclick="rotateDial(2, -1)">▼</button>
+        </div>
+        <div class="dial-col">
+          <button class="dial-btn" onclick="rotateDial(3, 1)">▲</button>
+          <div class="dial-digit" id="d-3">0</div>
+          <button class="dial-btn" onclick="rotateDial(3, -1)">▼</button>
+        </div>
       </div>
-      <button class="btn-close" style="background:#19241d; color:#888; border-color:#333;" onclick="closeKeypad()">放棄返回</button>
+      <button class="btn-submit-lock" onclick="checkDialPasscode()">測試開鎖</button>
+      <button class="btn-close" style="margin-top:8px; background:#16241c; color:#888; border-color:#333;" onclick="closeDialModal()">退後放手</button>
     </div>
   </div>
 
+  <!-- 開場視窗 -->
   <div id="start-modal">
-    <h1>杏林夜泣：5 大病區超大密室</h1>
+    <h1>杏林夜泣：窒息密室</h1>
     <p>
-      <b>超大規模 3D 擬真廢棄醫院：</b><br>
-      涵蓋 <b>掛號長廊、重症 ICU、X光放射室、地下停屍間、院長密室</b> 5 個完全不同的獨立場景！<br>
-      使用鍵盤 <b>W / A / S / D</b> 走動，滑鼠拖曳視角，破解連鎖謎題逃出生天！
+      <b>實體密室逃脫連鎖機制：</b><br>
+      你被反鎖在杏林醫院解剖室內。門被掛鎖封死、通風口被螺絲栓住。<br>
+      搜刮抽屜、拾取道具放進<b>底部背包</b>，選中道具後對準機關交互破除連鎖謎題！<br>
+      待在黑暗中過久理智值（Sanity）會崩潰！
     </p>
-    <button class="btn-start" onclick="startGame()">踏入醫院大廳</button>
+    <button class="btn-start" onclick="startGame()">踏入窒息密室</button>
   </div>
 </div>
 
 <script>
-/* ==================== 5 大完全不同的專屬醫院病區配置 ==================== */
-const GIANT_HOSPITAL_STAGES = [
-  {
-    level: 1,
-    title: "區域 1：急診掛號大廳與長廊",
-    theme: "hallway",
-    wallColors: { top: "#b4bfb6", bottom: "#1d3324", floorA: "#1e2e24", floorB: "#14211a" },
-    clueName: "急診室初診紀錄單",
-    passcode: "404",
-    diary: "『……1991 年 4 月，重症急診室送來了一名沒有身分證明的病患。\n病床號碼被鮮血塗抹，只隱約辨識出號碼：4-0-4。\n輸入 404 解開急診隔離閘門！』"
-  },
-  {
-    level: 2,
-    title: "區域 2：重症加護病房 (ICU)",
-    theme: "icu",
-    wallColors: { top: "#a8b5ae", bottom: "#2b3d34", floorA: "#18241d", floorB: "#101a14" },
-    clueName: "心電監護急救病歷表",
-    passcode: "713",
-    diary: "『監護儀的心跳波形戛然而止……\n搶救宣告死亡時間被圈記在：07:13。\n輸入 7-1-3 解開重症隔離負壓門！』"
-  },
-  {
-    level: 3,
-    title: "區域 3：放射影像科・暗房 X 光室",
-    theme: "xray",
-    wallColors: { top: "#3a4248", bottom: "#181d22", floorA: "#0f1316", floorB: "#090c0e" },
-    clueName: "曝光過度的胸腔透視底片",
-    passcode: "909",
-    diary: "『觀片燈箱閃爍不定……透視片中的肺部夾著一把生鏽手術剪。\n底片右下角標註的病歷序號是 9-0-9。\n輸入 909 解鎖防輻射鉛門！』"
-  },
-  {
-    level: 4,
-    title: "區域 4：地下負壓停屍太平間",
-    theme: "morgue",
-    wallColors: { top: "#404040", bottom: "#222222", floorA: "#151515", floorB: "#0a0a0a" },
-    clueName: "死者腳趾金屬號碼牌",
-    passcode: "882",
-    diary: "『冰櫃伴隨巨響自行彈開了……掛牌上的字跡歪斜顫抖：\n“冷藏櫃防腐排氣閥覆寫代碼為 8-8-2”。\n輸入 882 解除排風閥逃出太平間！』"
-  },
-  {
-    level: 5,
-    title: "區域 5：院長秘密研究檔案庫",
-    theme: "office",
-    wallColors: { top: "#4a3222", bottom: "#24150c", floorA: "#1f140d", floorB: "#140c07" },
-    clueName: "衛生局停業查封公文",
-    passcode: "1993",
-    diary: "『真相終於大白……偽造病歷與不法人體試驗被揭發。\n杏林醫院於西元 1993 年正式勒令停業並永久封存！\n輸入停業年份 1993 開啟最後逃生鐵捲門！』"
-  }
-];
+/* ==================== 實體密室逃脫狀態庫 ==================== */
+let sanity = 100;
+let battery = 100;
+let inventorySlots = [null, null, null, null]; // 背包 4 格
+let selectedSlotIdx = null;
 
-let currentStageIdx = 0;
-let inventory = [];
-let passcodeBuffer = "";
+// 密室解謎進度狀態 (必須按順序破解)
+let escapeProgress = {
+  drawerUnlocked: false,    // 抽屜是否已被拉開
+  hasWire: false,           // 是否拿到生鏽鐵絲
+  ventOpened: false,        // 通風孔是否已撬開
+  hasKey: false,            // 是否拿到掛鎖黃銅鑰匙
+  mirrorCleaned: false,     // 鏡子血漬是否已抹去（露出密碼 4040）
+  dialPasscode: "4040",
+  doorUnlocked: false
+};
 
-/* ==================== 音效引擎 ==================== */
-class HospitalAudioEngine {
-  constructor() {
-    this.ctx = null;
-    this.noiseNode = null;
-    this.noiseGain = null;
-    this.isRadioPlaying = false;
-  }
+let dialValues = [0, 0, 0, 0];
+
+/* ==================== 驚悚音效引擎 (真實空靈回音) ==================== */
+class HorrorAudio {
+  constructor() { this.ctx = null; }
   init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
 
   step() {
@@ -285,236 +269,93 @@ class HospitalAudioEngine {
     o.connect(g); g.connect(this.ctx.destination);
     o.start(); o.stop(this.ctx.currentTime + 0.05);
   }
-  heartbeatFlatline() { // ICU 心電圖心跳停止長鳴
-    if (!this.ctx) return;
-    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-    o.type = "sine";
-    o.frequency.setValueAtTime(880, this.ctx.currentTime);
-    g.gain.setValueAtTime(0.2, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 1.2);
-    o.connect(g); g.connect(this.ctx.destination);
-    o.start(); o.stop(this.ctx.currentTime + 1.2);
-  }
-  drip() {
-    if (!this.ctx) return;
-    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-    o.type = "sine";
-    o.frequency.setValueAtTime(950, this.ctx.currentTime);
-    o.frequency.exponentialRampToValueAtTime(450, this.ctx.currentTime + 0.12);
-    g.gain.setValueAtTime(0.12, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.25);
-    o.connect(g); g.connect(this.ctx.destination);
-    o.start(); o.stop(this.ctx.currentTime + 0.25);
-  }
-  buzz() {
-    if (!this.ctx) return;
-    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-    o.type = "square";
-    o.frequency.setValueAtTime(120, this.ctx.currentTime);
-    g.gain.setValueAtTime(0.2, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
-    o.connect(g); g.connect(this.ctx.destination);
-    o.start(); o.stop(this.ctx.currentTime + 0.12);
-  }
-  bang() {
+  metalClank() { // 金屬碰撞聲
     if (!this.ctx) return;
     const o = this.ctx.createOscillator(), g = this.ctx.createGain();
     o.type = "sawtooth";
-    o.frequency.setValueAtTime(140, this.ctx.currentTime);
-    o.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.4);
-    g.gain.setValueAtTime(0.6, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.4);
+    o.frequency.setValueAtTime(520, this.ctx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(80, this.ctx.currentTime + 0.35);
+    g.gain.setValueAtTime(0.4, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.35);
     o.connect(g); g.connect(this.ctx.destination);
-    o.start(); o.stop(this.ctx.currentTime + 0.4);
+    o.start(); o.stop(this.ctx.currentTime + 0.35);
   }
-  wheelSqueak() {
+  heartbeat() { // 心跳喘息
     if (!this.ctx) return;
     const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-    o.type = "triangle";
-    o.frequency.setValueAtTime(750, this.ctx.currentTime);
-    o.frequency.linearRampToValueAtTime(1300, this.ctx.currentTime + 0.3);
-    g.gain.setValueAtTime(0.25, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.5);
+    o.type = "sine";
+    o.frequency.setValueAtTime(70, this.ctx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.15);
+    g.gain.setValueAtTime(0.3, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
     o.connect(g); g.connect(this.ctx.destination);
-    o.start(); o.stop(this.ctx.currentTime + 0.5);
+    o.start(); o.stop(this.ctx.currentTime + 0.15);
   }
-  doorOpen() {
+  whisper() { // 理智崩潰耳語
     if (!this.ctx) return;
-    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-    o.type = "sawtooth";
-    o.frequency.setValueAtTime(90, this.ctx.currentTime);
-    o.frequency.exponentialRampToValueAtTime(350, this.ctx.currentTime + 0.7);
-    g.gain.setValueAtTime(0.35, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.7);
-    o.connect(g); g.connect(this.ctx.destination);
-    o.start(); o.stop(this.ctx.currentTime + 0.7);
-  }
-
-  startRadioStatic() {
-    if (this.isRadioPlaying || !this.ctx) return;
-    this.isRadioPlaying = true;
-    const bufferSize = this.ctx.sampleRate * 2;
+    const bufferSize = this.ctx.sampleRate * 1.5;
     const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
     const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+    for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * 0.1;
 
-    this.noiseNode = this.ctx.createBufferSource();
-    this.noiseNode.buffer = buffer;
-    this.noiseNode.loop = true;
-
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = buffer;
     const filter = this.ctx.createBiquadFilter();
     filter.type = "bandpass";
-    filter.frequency.value = 1200;
-    filter.Q.value = 3.0;
+    filter.frequency.value = 800;
 
-    this.noiseGain = this.ctx.createGain();
-    this.noiseGain.gain.setValueAtTime(0.01, this.ctx.currentTime);
-    this.noiseGain.gain.linearRampToValueAtTime(0.18, this.ctx.currentTime + 0.5);
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0.15, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 1.5);
 
-    this.noiseNode.connect(filter);
-    filter.connect(this.noiseGain);
-    this.noiseGain.connect(this.ctx.destination);
-    this.noiseNode.start();
-  }
-
-  stopRadioStatic() {
-    if (!this.isRadioPlaying) return;
-    if (this.noiseGain) {
-      this.noiseGain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.4);
-      setTimeout(() => {
-        if (this.noiseNode) { this.noiseNode.stop(); this.noiseNode.disconnect(); }
-        this.isRadioPlaying = false;
-      }, 400);
-    }
+    noise.connect(filter);
+    filter.connect(g);
+    g.connect(this.ctx.destination);
+    noise.start();
   }
 }
-const sfx = new HospitalAudioEngine();
+const sfx = new HorrorAudio();
 
-function speakDirectorVoice(code) {
-  if (!('speechSynthesis' in window)) return;
-  window.speechSynthesis.cancel();
-  const digits = code.split("").join("……");
-  const text = `這裡是院長室……有人聽得見嗎？他們在門外……聽著……緊急逃生代碼是……${digits}……重複一次……代碼是……${digits}……快逃……`;
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = "zh-TW";
-  utter.pitch = 0.5;
-  utter.rate = 0.75;
-  utter.volume = 1.0;
-  window.speechSynthesis.speak(utter);
-}
-
-/* ==================== 5 大病區專屬貼圖生成器 ==================== */
-function createWallTextureForStage(colors) {
-  const c = document.createElement('canvas');
-  c.width = 512; c.height = 512;
-  const ctx = c.getContext('2d');
-
-  // 上半部牆壁
-  ctx.fillStyle = colors.top;
-  ctx.fillRect(0, 0, 512, 340);
-
-  // 下半部防污踢腳帶
-  ctx.fillStyle = colors.bottom;
-  ctx.fillRect(0, 340, 512, 172);
-
-  ctx.fillStyle = "#0a140d";
-  ctx.fillRect(0, 335, 512, 6);
-
-  // 霉斑水痕
-  for (let i = 0; i < 4000; i++) {
-    const x = Math.random() * 512, y = Math.random() * 512;
-    ctx.fillStyle = "rgba(10, 20, 15, 0.12)";
-    ctx.beginPath();
-    ctx.arc(x, y, Math.random() * 2.5, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  const tex = new THREE.CanvasTexture(c);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
-  tex.repeat.set(5, 1);
-  return tex;
-}
-
-function createFloorTextureForStage(colors) {
-  const c = document.createElement('canvas');
-  c.width = 512; c.height = 512;
-  const ctx = c.getContext('2d');
-
-  const tileSize = 64;
-  for (let y = 0; y < 512; y += tileSize) {
-    for (let x = 0; x < 512; x += tileSize) {
-      ctx.fillStyle = ((x + y) / tileSize) % 2 === 0 ? colors.floorA : colors.floorB;
-      ctx.fillRect(x, y, tileSize, tileSize);
-      ctx.strokeStyle = "rgba(0, 0, 0, 0.7)";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(x, y, tileSize, tileSize);
-    }
-  }
-
-  const tex = new THREE.CanvasTexture(c);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
-  tex.repeat.set(10, 10);
-  return tex;
-}
-
-/* ==================== Three.js 3D 渲染與光影系統 ==================== */
+/* ==================== Three.js 擬真密室 3D 渲染系統 ==================== */
 let scene, camera, renderer, flashlight;
-let ceilingLight1, ceilingLight2;
-let hospitalGroup = null, clueObject = null, doorObject = null, radioMesh = null;
-let wheelchairMesh = null, morgueDrawerMesh = null;
-let dustParticles = null, waterDripMesh = null;
+let roomGroup = null;
+let interactables = []; // 存放所有可點擊機關物件
 
 let yaw = 0, pitch = 0;
-let playerPos = { x: 0, y: 1.8, z: 18 }; // 超大場景起點
+let playerPos = { x: 0, y: 1.8, z: 7 };
 let keys = { KeyW: false, KeyS: false, KeyA: false, KeyD: false };
 let isInteractingLook = false, lastTouchX = 0, lastTouchY = 0;
 let headBob = 0;
-let wallColliders = [];
-
-let stageScareTriggered = false;
-let isNearRadio = false;
 
 function startGame() {
   document.getElementById('start-modal').style.display = 'none';
   sfx.init();
 
   initThreeEngine();
-  loadLargeHospitalStage(0);
+  buildEscapeChamber();
+
+  // 啟動理智與手電筒心跳定時器
+  setInterval(survivalLoop, 1000);
 }
 
 function initThreeEngine() {
   const container = document.getElementById('canvas-container');
   scene = new THREE.Scene();
 
-  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 120);
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 80);
   camera.position.set(playerPos.x, playerPos.y, playerPos.z);
 
-  // 手電筒聚光燈 (物理柔和陰影)
-  flashlight = new THREE.SpotLight(0xecfff2, 3.2, 30, Math.PI / 4.4, 0.45, 1.2);
+  // 第一人稱手電筒 (高精度陰影)
+  flashlight = new THREE.SpotLight(0xecfff2, 3.2, 24, Math.PI / 4.5, 0.45, 1.2);
   flashlight.castShadow = true;
   flashlight.shadow.mapSize.width = 1024;
   flashlight.shadow.mapSize.height = 1024;
-  flashlight.shadow.bias = -0.001;
   camera.add(flashlight);
   flashlight.position.set(0, 0, 0.2);
   flashlight.target = camera;
   scene.add(camera);
 
-  // 天花板故障長條日光燈
-  ceilingLight1 = new THREE.PointLight(0xaaffcc, 0.6, 20);
-  ceilingLight1.position.set(0, 5.2, 6);
-  scene.add(ceilingLight1);
-
-  ceilingLight2 = new THREE.PointLight(0xaaffcc, 0.6, 20);
-  ceilingLight2.position.set(0, 5.2, -8);
-  scene.add(ceilingLight2);
-
-  scene.add(new THREE.AmbientLight(0x060e0a));
-
-  buildDustParticles();
-  buildWaterDrip();
+  scene.add(new THREE.AmbientLight(0x040805));
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio);
@@ -522,9 +363,9 @@ function initThreeEngine() {
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 0.9;
   container.appendChild(renderer.domElement);
 
+  // 視角與走動監聽
   window.addEventListener('keydown', (e) => { if (keys.hasOwnProperty(e.code)) keys[e.code] = true; });
   window.addEventListener('keyup', (e) => { if (keys.hasOwnProperty(e.code)) keys[e.code] = false; });
 
@@ -553,353 +394,307 @@ function initThreeEngine() {
   animate();
 }
 
-function buildDustParticles() {
-  const particleCount = 260;
-  const geom = new THREE.BufferGeometry();
-  const positions = new Float32Array(particleCount * 3);
+/* ==================== 建立實體密室連鎖機關 ==================== */
+function buildEscapeChamber() {
+  roomGroup = new THREE.Group();
+  interactables = [];
 
-  for (let i = 0; i < particleCount * 3; i += 3) {
-    positions[i] = (Math.random() - 0.5) * 36;
-    positions[i + 1] = Math.random() * 5.5;
-    positions[i + 2] = (Math.random() - 0.5) * 44;
-  }
-  geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  dustParticles = new THREE.Points(geom, new THREE.PointsMaterial({
-    color: 0xccffdd, size: 0.06, transparent: true, opacity: 0.45
-  }));
-  scene.add(dustParticles);
-}
+  // 1. 密室老舊磁磚四壁 (寬 16m, 深 20m, 高 5.5m)
+  const wallMat = new THREE.MeshStandardMaterial({ color: 0x18241e, roughness: 0.9, side: THREE.BackSide });
+  const room = new THREE.Mesh(new THREE.BoxGeometry(16, 5.5, 20), wallMat);
+  room.position.y = 2.75;
+  room.receiveShadow = true;
+  roomGroup.add(room);
 
-function buildWaterDrip() {
-  waterDripMesh = new THREE.Mesh(
-    new THREE.SphereGeometry(0.04, 6, 6),
-    new THREE.MeshBasicMaterial({ color: 0x88ffbb })
-  );
-  waterDripMesh.position.set(-2, 5.4, 2);
-  scene.add(waterDripMesh);
-}
-
-/* ==================== ⭐ 核心：載入 5 大專屬結構病區 ==================== */
-function loadLargeHospitalStage(idx) {
-  currentStageIdx = idx;
-  const stage = GIANT_HOSPITAL_STAGES[idx];
-
-  document.getElementById('stage-title').innerText = stage.title;
-  document.getElementById('radio-instruction').innerText =
-    `「進入【${stage.title}】！探索超大病區，找出隱藏的病歷或線索，解開防護鐵門！」`;
-
-  // 重置玩家起點至超大長廊入口
-  playerPos = { x: 0, y: 1.8, z: 18 };
-  yaw = 0; pitch = 0;
-  stageScareTriggered = false;
-  isNearRadio = false;
-
-  if (hospitalGroup) scene.remove(hospitalGroup);
-  hospitalGroup = new THREE.Group();
-  wallColliders = [];
-
-  const wallTexture = createWallTextureForStage(stage.wallColors);
-  const floorTexture = createFloorTextureForStage(stage.wallColors);
-
-  // 1. 超大型外牆結構 (寬 40m, 深 48m, 高 6m)
-  const outerWall = new THREE.Mesh(
-    new THREE.BoxGeometry(40, 6, 48),
-    new THREE.MeshStandardMaterial({ map: wallTexture, roughness: 0.85, side: THREE.BackSide })
-  );
-  outerWall.position.y = 3;
-  outerWall.receiveShadow = true;
-  hospitalGroup.add(outerWall);
-
-  // 2. 超大地板
-  const floor = new THREE.Mesh(
-    new THREE.PlaneGeometry(40, 48),
-    new THREE.MeshStandardMaterial({ map: floorTexture, roughness: 0.35, metalness: 0.2 })
-  );
+  // 地板 (潮濕反光綠白瓷磚)
+  const floorMat = new THREE.MeshStandardMaterial({ color: 0x0c1611, roughness: 0.35, metalness: 0.25 });
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(16, 20), floorMat);
   floor.rotation.x = -Math.PI / 2;
   floor.receiveShadow = true;
-  hospitalGroup.add(floor);
+  roomGroup.add(floor);
 
-  // 天花板通風風管
-  buildCeilingVentilation();
+  // 2. 機關物件 A：解剖鐵桌與帶鎖抽屜 (位置 X: -4.5, Z: 0)
+  buildOperatingTable(-4.5, 0);
 
-  // 3. 根據病區主題建立獨特的 3D 結構
-  if (stage.theme === "hallway") {
-    buildHallwayTheme(wallTexture);
-  } else if (stage.theme === "icu") {
-    buildICUTheme(wallTexture);
-  } else if (stage.theme === "xray") {
-    buildXRayTheme(wallTexture);
-  } else if (stage.theme === "morgue") {
-    buildMorgueTheme(wallTexture);
-  } else if (stage.theme === "office") {
-    buildOfficeTheme(wallTexture);
-  }
+  // 3. 機關物件 B：天花板通風金屬風管與百葉蓋 (位置 X: 4.5, Y: 4.2, Z: -2)
+  buildVentilationDuct(4.5, 4.2, -2);
 
-  // 4. 重型防火安全鐵門 (位於盡頭：X: 0, Z: -23.8)
-  const doorMat = new THREE.MeshStandardMaterial({ color: 0x16221c, metalness: 0.85, roughness: 0.3 });
-  doorObject = new THREE.Mesh(new THREE.BoxGeometry(4.2, 5.2, 0.4), doorMat);
-  doorObject.position.set(0, 2.6, -23.8);
-  doorObject.castShadow = true;
-  doorObject.receiveShadow = true;
-  doorObject.userData = { type: "door", data: stage };
-  hospitalGroup.add(doorObject);
+  // 4. 機關物件 C：破裂洗手台與帶血鏡面 (位置 X: -6.5, Z: -6)
+  buildBloodMirror(-6.5, -6);
 
-  const lockPlate = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.2, 0.2), new THREE.MeshBasicMaterial({ color: 0x00ff88 }));
-  lockPlate.position.set(1.5, 0, 0.3);
-  doorObject.add(lockPlate);
+  // 5. 機關物件 D：重型厚鐵門與生鏽掛鎖 (位置 X: 0, Z: -9.8)
+  buildChamberExitDoor(0, -9.8);
 
-  scene.add(hospitalGroup);
+  scene.add(roomGroup);
 }
 
-function buildCeilingVentilation() {
-  const steelMat = new THREE.MeshStandardMaterial({ color: 0x1e2621, metalness: 0.85, roughness: 0.4 });
-  const ventDuct = new THREE.Mesh(new THREE.BoxGeometry(2.0, 1.0, 48), steelMat);
-  ventDuct.position.set(4, 5.5, 0);
-  ventDuct.castShadow = true;
-  hospitalGroup.add(ventDuct);
-}
-
-function buildWall(x, z, width, depth, tex) {
-  const wallMat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.85, metalness: 0.05 });
-  const wall = new THREE.Mesh(new THREE.BoxGeometry(width, 5.8, depth), wallMat);
-  wall.position.set(x, 2.9, z);
-  wall.castShadow = true;
-  wall.receiveShadow = true;
-  hospitalGroup.add(wall);
-
-  wallColliders.push({
-    minX: x - width / 2 - 0.7, maxX: x + width / 2 + 0.7,
-    minZ: z - depth / 2 - 0.7, maxZ: z + depth / 2 + 0.7
-  });
-}
-
-/* ==================== 5 種截然不同的主題佈局 ==================== */
-
-// 主題 1：門診大廳與候診長廊 (護理站、候診椅排)
-function buildHallwayTheme(tex) {
-  buildWall(-6, 4, 12, 0.8, tex);
-  buildWall(6, -6, 0.8, 16, tex);
-  buildWall(-8, -12, 10, 0.8, tex);
-
-  // 護理站
-  buildNurseDesk(-2, 10);
-  // 候診排椅
-  buildBenchRow(4, 14);
-  buildBenchRow(-4, 14);
-
-  // 發光病歷桌
-  buildClueDesk(-12, -16);
-}
-
-// 主題 2：重症加護病房 (兩側排列金屬病床、點滴架、心電監護儀)
-function buildICUTheme(tex) {
-  buildWall(-5, 2, 0.8, 20, tex);
-  buildWall(5, 2, 0.8, 20, tex);
-
-  // 兩側並排 ICU 病床
-  for (let z = 12; z >= -10; z -= 8) {
-    buildHospitalBed(-9, z, Math.PI / 2);
-    buildHospitalBed(9, z, -Math.PI / 2);
-    buildIVStand(-7.5, z + 1);
-  }
-
-  // 心電監護儀 (綠光跳動)
-  buildHeartMonitor(-9, 4);
-  buildClueDesk(9, -14);
-}
-
-// 主題 3：放射科 X 光室 (防輻射鉛牆隔間、輪椅、觀片燈箱)
-function buildXRayTheme(tex) {
-  buildWall(0, 6, 16, 0.8, tex);
-  buildWall(-8, -4, 0.8, 14, tex);
-  buildWall(8, -10, 10, 0.8, tex);
-
-  // 驚嚇輪椅
-  buildWheelchair(8, 2);
-
-  // 發光 X 光觀片燈箱
-  const lightBox = new THREE.Mesh(
-    new THREE.BoxGeometry(2.4, 1.4, 0.2),
-    new THREE.MeshBasicMaterial({ color: 0x99ccff })
-  );
-  lightBox.position.set(-8, 2.5, -4.5);
-  hospitalGroup.add(lightBox);
-
-  buildClueDesk(-12, -14);
-}
-
-// 主題 4：地下太平間 (不銹鋼冰櫃牆、解剖鐵床)
-function buildMorgueTheme(tex) {
-  buildWall(-6, 0, 12, 0.8, tex);
-  buildWall(6, -8, 0.8, 14, tex);
-
-  // 暴彈冰櫃排
-  buildMorgueDrawers(-12, 6);
-
-  // 中央解剖台
-  const autopsyTable = new THREE.Mesh(
-    new THREE.BoxGeometry(2.4, 0.9, 5.0),
-    new THREE.MeshStandardMaterial({ color: 0x55665f, metalness: 0.9 })
-  );
-  autopsyTable.position.set(0, 0.45, -4);
-  autopsyTable.castShadow = true;
-  hospitalGroup.add(autopsyTable);
-
-  buildClueDesk(-12, -16);
-}
-
-// 主題 5：院長秘密檔案庫 (木書架、老收音機推車)
-function buildOfficeTheme(tex) {
-  buildWall(-6, 2, 10, 0.8, tex);
-  buildWall(6, -4, 0.8, 12, tex);
-
-  // 大型檔案架
-  const shelfMat = new THREE.MeshStandardMaterial({ color: 0x24160c, roughness: 0.9 });
-  const shelf = new THREE.Mesh(new THREE.BoxGeometry(8, 4.5, 1.2), shelfMat);
-  shelf.position.set(0, 2.25, 6);
-  shelf.castShadow = true;
-  hospitalGroup.add(shelf);
-
-  // 老舊收音機推車
-  build3DRadioCart(-7, -4);
-  buildClueDesk(10, -14);
-}
-
-/* ==================== 醫療物件建模輔助函式 ==================== */
-function buildClueDesk(x, z) {
-  const desk = new THREE.Mesh(
-    new THREE.BoxGeometry(2.6, 1.2, 1.8),
-    new THREE.MeshStandardMaterial({ color: 0x1e2621, roughness: 0.8 })
-  );
-  desk.position.set(x, 0.6, z);
-  desk.castShadow = true;
-  desk.receiveShadow = true;
-  hospitalGroup.add(desk);
-
-  const book = new THREE.Mesh(
-    new THREE.BoxGeometry(0.8, 0.2, 1.1),
-    new THREE.MeshBasicMaterial({ color: 0x00ff88 })
-  );
-  book.position.set(x, 1.3, z);
-  clueObject = book;
-  clueObject.userData = { type: "clue", data: GIANT_HOSPITAL_STAGES[currentStageIdx] };
-  hospitalGroup.add(clueObject);
-
-  wallColliders.push({ minX: x - 1.6, maxX: x + 1.6, minZ: z - 1.2, maxZ: z + 1.2 });
-}
-
-function buildHeartMonitor(x, z) {
-  const cart = new THREE.Mesh(new THREE.BoxGeometry(1.2, 2.4, 1.2), new THREE.MeshStandardMaterial({ color: 0x33443a }));
-  cart.position.set(x, 1.2, z);
-  hospitalGroup.add(cart);
-
-  const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 0.6), new THREE.MeshBasicMaterial({ color: 0x00ff88 }));
-  screen.position.set(x, 1.8, z + 0.61);
-  hospitalGroup.add(screen);
-}
-
-function buildHospitalBed(x, z, rotY) {
-  const bedGroup = new THREE.Group();
-  const steelMat = new THREE.MeshStandardMaterial({ color: 0x4d5952, metalness: 0.85, roughness: 0.3 });
-  const mattressMat = new THREE.MeshStandardMaterial({ color: 0xc4cecb, roughness: 0.9 });
-
-  const frame = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.4, 4.2), steelMat);
-  frame.position.y = 0.5;
-  frame.castShadow = true;
-  bedGroup.add(frame);
-
-  const mattress = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.35, 4.0), mattressMat);
-  mattress.position.y = 0.85;
-  mattress.castShadow = true;
-  bedGroup.add(mattress);
-
-  bedGroup.position.set(x, 0, z);
-  bedGroup.rotation.y = rotY;
-  hospitalGroup.add(bedGroup);
-  wallColliders.push({ minX: x - 1.3, maxX: x + 1.3, minZ: z - 2.2, maxZ: z + 2.2 });
-}
-
-function buildIVStand(x, z) {
-  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 3.2), new THREE.MeshStandardMaterial({ color: 0x88998f, metalness: 0.9 }));
-  pole.position.set(x, 1.6, z);
-  pole.castShadow = true;
-  hospitalGroup.add(pole);
-}
-
-function buildNurseDesk(x, z) {
-  const desk = new THREE.Mesh(new THREE.BoxGeometry(6, 1.3, 1.4), new THREE.MeshStandardMaterial({ color: 0x223328, roughness: 0.8 }));
-  desk.position.set(x, 0.65, z);
-  desk.castShadow = true;
-  hospitalGroup.add(desk);
-  wallColliders.push({ minX: x - 3.2, maxX: x + 3.2, minZ: z - 0.9, maxZ: z + 0.9 });
-}
-
-function buildBenchRow(x, z) {
-  const bench = new THREE.Mesh(new THREE.BoxGeometry(4.0, 0.4, 0.8), new THREE.MeshStandardMaterial({ color: 0x192e22, roughness: 0.7 }));
-  bench.position.set(x, 0.45, z);
-  bench.castShadow = true;
-  hospitalGroup.add(bench);
-}
-
-function build3DRadioCart(x, z) {
-  const cartGroup = new THREE.Group();
-  const shelf = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.0, 1.2), new THREE.MeshStandardMaterial({ color: 0x3d4d44, metalness: 0.8 }));
-  shelf.position.y = 0.5;
-  cartGroup.add(shelf);
-
-  const radioBody = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.75, 0.6), new THREE.MeshStandardMaterial({ color: 0x3d2817, roughness: 0.85 }));
-  radioBody.position.y = 1.38;
-  cartGroup.add(radioBody);
-
-  const led = new THREE.Mesh(new THREE.SphereGeometry(0.04, 8, 8), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
-  led.position.set(0.35, 1.25, 0.31);
-  led.name = "radioLed";
-  cartGroup.add(led);
-
-  cartGroup.position.set(x, 0, z);
-  radioMesh = cartGroup;
-  hospitalGroup.add(radioMesh);
-  wallColliders.push({ minX: x - 1.0, maxX: x + 1.0, minZ: z - 0.8, maxZ: z + 0.8 });
-}
-
-function buildWheelchair(x, z) {
+// 機關 A：解剖床與抽屜
+function buildOperatingTable(x, z) {
   const group = new THREE.Group();
-  const mat = new THREE.MeshStandardMaterial({ color: 0x241818, metalness: 0.8 });
-  const seat = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.2, 1.6), mat);
-  seat.position.y = 1.0;
-  group.add(seat);
+  const steelMat = new THREE.MeshStandardMaterial({ color: 0x3d4a43, metalness: 0.9, roughness: 0.25 });
 
-  const wheelGeom = new THREE.TorusGeometry(0.8, 0.08, 8, 24);
-  const leftWheel = new THREE.Mesh(wheelGeom, mat);
-  leftWheel.position.set(-0.9, 0.8, 0);
-  leftWheel.rotation.y = Math.PI / 2;
-  const rightWheel = leftWheel.clone();
-  rightWheel.position.set(0.9, 0.8, 0);
-  group.add(leftWheel); group.add(rightWheel);
+  // 鐵床體
+  const table = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.9, 4.5), steelMat);
+  table.position.y = 0.45;
+  table.castShadow = true;
+  group.add(table);
+
+  // 床底可拉出的抽屜 (點擊搜刮鐵絲)
+  const drawer = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.4, 1.4), new THREE.MeshStandardMaterial({ color: 0x243029 }));
+  drawer.position.set(0, 0.3, 0);
+  drawer.name = "prop_drawer";
+  drawer.userData = { id: "drawer", hint: "【帶血的解剖床底抽屜】" };
+  group.add(drawer);
+  interactables.push(drawer);
 
   group.position.set(x, 0, z);
-  wheelchairMesh = group;
-  hospitalGroup.add(wheelchairMesh);
+  roomGroup.add(group);
 }
 
-function buildMorgueDrawers(x, z) {
-  const group = new THREE.Group();
-  const cabinet = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 5), new THREE.MeshStandardMaterial({ color: 0x2b3830, metalness: 0.9 }));
-  cabinet.position.y = 1.5;
-  group.add(cabinet);
+// 機關 B：通風口 (需鐵絲撬開)
+function buildVentilationDuct(x, y, z) {
+  const ductMat = new THREE.MeshStandardMaterial({ color: 0x222a25, metalness: 0.8 });
+  const duct = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 0.4), ductMat);
+  duct.position.set(x, y, z);
 
-  const drawer = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.9, 3.8), new THREE.MeshStandardMaterial({ color: 0x3d4d43, metalness: 0.9 }));
-  drawer.position.set(0, 1.5, 0);
-  morgueDrawerMesh = drawer;
-  group.add(morgueDrawerMesh);
+  // 帶螺絲的金屬百葉窗蓋
+  const grillMat = new THREE.MeshStandardMaterial({ color: 0x4d5952, metalness: 0.9 });
+  const grill = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.6, 0.1), grillMat);
+  grill.position.set(x, y, z + 0.22);
+  grill.name = "prop_vent";
+  grill.userData = { id: "vent", hint: "【高處通風管道百葉蓋】(被粗鐵絲緊緊栓住)" };
+
+  roomGroup.add(duct);
+  roomGroup.add(grill);
+  interactables.push(grill);
+}
+
+// 機關 C：帶血鏡子 (擦拭顯現密碼 4040)
+function buildBloodMirror(x, z) {
+  const group = new THREE.Group();
+
+  // 洗手台
+  const sink = new THREE.Mesh(new THREE.BoxGeometry(2, 1.2, 1.4), new THREE.MeshStandardMaterial({ color: 0xd8deda }));
+  sink.position.y = 0.6;
+  group.add(sink);
+
+  // 鏡框
+  const frame = new THREE.Mesh(new THREE.BoxGeometry(2.2, 2.6, 0.1), new THREE.MeshStandardMaterial({ color: 0x221a14 }));
+  frame.position.set(0, 2.4, -0.6);
+  group.add(frame);
+
+  // 染血鏡面
+  const mirrorMat = new THREE.MeshBasicMaterial({ color: 0x660000 }); // 未擦拭前是一片暗紅血漬
+  const mirror = new THREE.Mesh(new THREE.PlaneGeometry(1.9, 2.3), mirrorMat);
+  mirror.position.set(0, 2.4, -0.54);
+  mirror.name = "prop_mirror";
+  mirror.userData = { id: "mirror", hint: "【污濁染血的碎裂鏡面】(鏡上凝結著厚重乾涸血跡)" };
+  group.add(mirror);
+  interactables.push(mirror);
 
   group.position.set(x, 0, z);
-  hospitalGroup.add(group);
+  roomGroup.add(group);
 }
 
-/* ==================== 走動與碰撞檢測 ==================== */
+// 機關 D：重型鐵門與掛鎖
+function buildChamberExitDoor(x, z) {
+  const group = new THREE.Group();
+  const doorMat = new THREE.MeshStandardMaterial({ color: 0x16241c, metalness: 0.85 });
+  const door = new THREE.Mesh(new THREE.BoxGeometry(3.8, 5.0, 0.4), doorMat);
+  door.position.y = 2.5;
+  group.add(door);
+
+  // 生鏽鐵鍊與掛鎖機構
+  const lock = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.0, 0.4), new THREE.MeshStandardMaterial({ color: 0x8a2b2b, metalness: 0.9 }));
+  lock.position.set(1.1, 2.2, 0.35);
+  lock.name = "prop_door_lock";
+  lock.userData = { id: "door_lock", hint: "【沉重的防護鐵門掛鎖】(需要鑰匙插孔與四位旋轉密碼)" };
+  group.add(lock);
+  interactables.push(lock);
+
+  group.position.set(x, 0, z);
+  roomGroup.add(group);
+}
+
+/* ==================== ⭐ 核心：實體密室道具鏈邏輯交互 ==================== */
+function checkRaycastInteract() {
+  const raycaster = new THREE.Raycaster();
+  raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+
+  const hits = raycaster.intersectObjects(interactables, true);
+  if (hits.length === 0) return;
+
+  const hitObj = hits[0].object;
+  const dist = camera.position.distanceTo(hits[0].point);
+  if (dist > 4.5) return; // 必須靠近至 4.5 米
+
+  const targetId = hitObj.userData.id;
+  const activeItem = selectedSlotIdx !== null ? inventorySlots[selectedSlotIdx] : null;
+
+  // 1. 調查解剖台抽屜
+  if (targetId === "drawer") {
+    if (!escapeProgress.drawerUnlocked) {
+      sfx.metalClank();
+      escapeProgress.drawerUnlocked = true;
+      hitObj.position.z += 0.6; // 抽屜向外拉出動畫
+      addItemToInventory("生鏽鐵絲", "🪛", "一把從解剖床邊取下的堅硬粗鐵絲，可用來撬動卡住的螺絲或閥門。");
+      document.getElementById('current-task').innerText = "當前任務：前往高處通風口，選中【生鏽鐵絲】撬開金屬百葉窗！";
+      alert("【拉開抽屜】在滿是骨灰的抽屜深處，你找到了一把【生鏽鐵絲】！已放入底部背包欄。");
+    } else {
+      alert("抽屜已被搜刮空了，只剩下乾涸的污漬。");
+    }
+  }
+
+  // 2. 調查高處通風口 (需選中鐵絲)
+  else if (targetId === "vent") {
+    if (!escapeProgress.ventOpened) {
+      if (activeItem && activeItem.name === "生鏽鐵絲") {
+        sfx.metalClank();
+        escapeProgress.ventOpened = true;
+        hitObj.position.y -= 1.8; // 蓋子掉落
+        consumeSelectedItem();
+        addItemToInventory("黃銅鑰匙", "🗝️", "從通風管道暗格裡掉落的一把刻著 404 銘牌的沉重黃銅鑰匙。");
+        addItemToInventory("浸水抹布", "🧼", "一塊扔在風管深處的潮濕醫用紗布塊。");
+        document.getElementById('current-task').innerText = "當前任務：尋找鏡面使用【浸水抹布】擦拭暗號，再前往鐵門使用【黃銅鑰匙】！";
+        alert("【機關破解！】使用生鏽鐵絲撬開了百葉窗！從通風口掉落了【黃銅鑰匙】與一塊【浸水抹布】！已收進背包！");
+      } else {
+        alert("通風口的金屬蓋被緊緊絞死，徒手無法拆卸！需要細長堅硬的工具（請先選中背包中的工具）！");
+      }
+    } else {
+      alert("通風管道已打開，裡面沒有其他東西了。");
+    }
+  }
+
+  // 3. 調查染血鏡面 (需選中抹布)
+  else if (targetId === "mirror") {
+    if (!escapeProgress.mirrorCleaned) {
+      if (activeItem && activeItem.name === "浸水抹布") {
+        sfx.metalClank();
+        escapeProgress.mirrorCleaned = true;
+        hitObj.material.color.setHex(0x1a3328); // 鏡面被擦乾淨變暗綠
+        consumeSelectedItem();
+        alert("【擦拭鏡面】你用濕抹布用力抹去鏡面乾血，鏡子上浮現出一行刻骨血字：『生還者序號：4 - 0 - 4 - 0』！");
+        document.getElementById('current-task').innerText = "當前任務：手持【黃銅鑰匙】前往鐵門掛鎖，輸入密碼 4040 逃脫！";
+      } else {
+        alert("鏡子上覆蓋著厚厚一層暗黑血垢，看不清任何東西！需要濕抹布來擦拭！");
+      }
+    } else {
+      alert("鏡面已被擦拭乾淨，隱約映著血字：『4 0 4 0』。");
+    }
+  }
+
+  // 4. 調查出口重型鐵門掛鎖
+  else if (targetId === "door_lock") {
+    if (!escapeProgress.hasKey) {
+      if (activeItem && activeItem.name === "黃銅鑰匙") {
+        sfx.metalClank();
+        escapeProgress.hasKey = true;
+        consumeSelectedItem();
+        alert("【鑰匙插入成功！】黃銅鑰匙咔嗒一聲轉動！掛鎖上的『四位旋轉號碼盤』已彈出，可以輸入密碼！");
+        openDialModal();
+      } else {
+        alert("掛鎖鎖孔被鎖死！需要對應的鑰匙才能解鎖外殼（請選中背包裡的鑰匙）！");
+      }
+    } else {
+      openDialModal();
+    }
+  }
+}
+
+/* ==================== 實體背包系統 ==================== */
+function addItemToInventory(name, icon, desc) {
+  for (let i = 0; i < 4; i++) {
+    if (inventorySlots[i] === null) {
+      inventorySlots[i] = { name, icon, desc };
+      document.getElementById(`slot-icon-${i}`).innerText = icon;
+      document.getElementById(`slot-name-${i}`).innerText = name;
+      return;
+    }
+  }
+}
+
+function selectItem(idx) {
+  if (inventorySlots[idx] === null) return;
+
+  if (selectedSlotIdx === idx) {
+    // 再次點擊開啟道具情報
+    openPropModal(inventorySlots[idx]);
+  } else {
+    // 選取該道具
+    selectedSlotIdx = idx;
+    for (let i = 0; i < 4; i++) {
+      document.getElementById(`slot-${i}`).classList.remove('selected');
+    }
+    document.getElementById(`slot-${idx}`).classList.add('selected');
+  }
+}
+
+function consumeSelectedItem() {
+  if (selectedSlotIdx !== null) {
+    inventorySlots[selectedSlotIdx] = null;
+    document.getElementById(`slot-icon-${selectedSlotIdx}`).innerText = "空";
+    document.getElementById(`slot-name-${selectedSlotIdx}`).innerText = "-";
+    document.getElementById(`slot-${selectedSlotIdx}`).classList.remove('selected');
+    selectedSlotIdx = null;
+  }
+}
+
+function openPropModal(item) {
+  document.getElementById('prop-title').innerText = `【道具檢視：${item.name}】`;
+  document.getElementById('prop-body').innerText = item.desc;
+  document.getElementById('prop-modal').style.display = 'flex';
+}
+function closePropModal() { document.getElementById('prop-modal').style.display = 'none'; }
+
+/* ==================== 實體旋轉號碼鎖機構 ==================== */
+function openDialModal() {
+  document.getElementById('dial-modal').style.display = 'flex';
+}
+function closeDialModal() { document.getElementById('dial-modal').style.display = 'none'; }
+
+function rotateDial(colIdx, dir) {
+  sfx.step();
+  dialValues[colIdx] = (dialValues[colIdx] + dir + 10) % 10;
+  document.getElementById(`d-${colIdx}`).innerText = dialValues[colIdx];
+}
+
+function checkDialPasscode() {
+  const currentCode = dialValues.join("");
+  if (currentCode === escapeProgress.dialPasscode) {
+    sfx.metalClank();
+    closeDialModal();
+    alert("🎉【密室封印瓦解！】\n掛鎖應聲斷裂落地，沉重的防護鐵門伴隨刺耳摩擦聲緩緩推開！\n你成功活著逃出了杏林醫院第一窒息密室！");
+  } else {
+    sfx.heartbeat();
+    alert(`【開鎖失敗！】號碼盤發出清脆卡死聲，密碼 ${currentCode} 不正確！請去鏡子前確認暗號！`);
+  }
+}
+
+/* ==================== 生存與理智機制 (Sanity Drain) ==================== */
+function survivalLoop() {
+  // 手電筒電量隨時間緩慢流逝
+  if (battery > 0) {
+    battery = Math.max(0, battery - 1);
+    document.getElementById('battery-bar').style.width = `${battery}%`;
+    if (flashlight) flashlight.intensity = (battery / 100) * 3.2;
+  }
+
+  // 若電量低於 30%，周圍過黑會引發恐慌，理智值急劇下降
+  if (battery < 30) {
+    sanity = Math.max(0, sanity - 3);
+    document.getElementById('sanity-bar').style.width = `${sanity}%`;
+    document.getElementById('sanity-glitch').style.display = 'block';
+
+    if (sanity % 15 === 0) sfx.whisper();
+    if (sanity < 20) sfx.heartbeat();
+  } else {
+    document.getElementById('sanity-glitch').style.display = 'none';
+  }
+}
+
+/* ==================== 走動與視角 ==================== */
 function updateMovement() {
-  const moveSpeed = 0.12;
+  const moveSpeed = 0.11;
   let moveX = 0, moveZ = 0;
 
   if (keys.KeyW) moveZ -= 1;
@@ -912,30 +707,19 @@ function updateMovement() {
     moveX = (moveX / len) * moveSpeed;
     moveZ = (moveZ / len) * moveSpeed;
 
-    const sinYaw = Math.sin(yaw);
-    const cosYaw = Math.cos(yaw);
-
+    const sinYaw = Math.sin(yaw), cosYaw = Math.cos(yaw);
     const nextX = playerPos.x + (moveX * cosYaw + moveZ * sinYaw);
     const nextZ = playerPos.z + (-moveX * sinYaw + moveZ * cosYaw);
 
-    let canMoveX = true, canMoveZ = true;
-    for (let box of wallColliders) {
-      if (nextX >= box.minX && nextX <= box.maxX && playerPos.z >= box.minZ && playerPos.z <= box.maxZ) canMoveX = false;
-      if (playerPos.x >= box.minX && playerPos.x <= box.maxX && nextZ >= box.minZ && nextZ <= box.maxZ) canMoveZ = false;
-    }
-
-    if (nextX < -19 || nextX > 19) canMoveX = false;
-    if (nextZ < -23 || nextZ > 23) canMoveZ = false;
-
-    if (canMoveX) playerPos.x = nextX;
-    if (canMoveZ) playerPos.z = nextZ;
+    // 密室邊界
+    if (nextX >= -7 && nextX <= 7) playerPos.x = nextX;
+    if (nextZ >= -9 && nextZ <= 9) playerPos.z = nextZ;
 
     headBob += 0.18;
     camera.position.y = playerPos.y + Math.sin(headBob) * 0.05;
 
     if (Math.sin(headBob) < -0.95 && !updateMovement.stepped) {
-      sfx.step();
-      updateMovement.stepped = true;
+      sfx.step(); updateMovement.stepped = true;
     } else if (Math.sin(headBob) > 0) {
       updateMovement.stepped = false;
     }
@@ -946,225 +730,32 @@ function updateMovement() {
 
   const euler = new THREE.Euler(pitch, yaw, 0, 'YXZ');
   camera.quaternion.setFromEuler(euler);
-
-  checkHospitalEvents();
 }
 
-function checkHospitalEvents() {
-  const stage = GIANT_HOSPITAL_STAGES[currentStageIdx];
-
-  // ICU 心跳驟停驚嚇
-  if (stage.theme === "icu" && !stageScareTriggered) {
-    if (Math.hypot(-9 - playerPos.x, 4 - playerPos.z) < 5.0) {
-      stageScareTriggered = true;
-      sfx.heartbeatFlatline();
-      triggerFlash();
-    }
-  }
-
-  // 放射科輪椅暴衝
-  if (stage.theme === "xray" && !stageScareTriggered && wheelchairMesh) {
-    if (Math.hypot(wheelchairMesh.position.x - playerPos.x, wheelchairMesh.position.z - playerPos.z) < 7.5) {
-      stageScareTriggered = true;
-      sfx.wheelSqueak();
-      triggerFlash();
-      let frames = 0;
-      const timer = setInterval(() => {
-        wheelchairMesh.position.z += 0.35;
-        wheelchairMesh.rotation.y += 0.08;
-        frames++;
-        if (frames > 22) clearInterval(timer);
-      }, 25);
-    }
-  }
-
-  // 太平間抽屜暴彈
-  if (stage.theme === "morgue" && !stageScareTriggered && morgueDrawerMesh) {
-    if (Math.hypot(-12 - playerPos.x, 6 - playerPos.z) < 6.0) {
-      stageScareTriggered = true;
-      sfx.bang();
-      triggerFlash();
-      let frames = 0;
-      const timer = setInterval(() => {
-        morgueDrawerMesh.position.z += 0.25;
-        frames++;
-        if (frames > 12) clearInterval(timer);
-      }, 30);
-    }
-  }
-
-  // 院長室收音機監聽
-  if (stage.theme === "office" && radioMesh) {
-    const distRadio = Math.hypot(radioMesh.position.x - playerPos.x, radioMesh.position.z - playerPos.z);
-    if (distRadio < 4.5 && !isNearRadio) {
-      isNearRadio = true;
-      sfx.startRadioStatic();
-      speakDirectorVoice(stage.passcode);
-      document.getElementById('radio-instruction').innerText =
-        "「耳邊傳來收音機的雜訊與微弱通話聲……仔細聆聽院長留下的逃生代碼！」";
-    } else if (distRadio >= 5.5 && isNearRadio) {
-      isNearRadio = false;
-      sfx.stopRadioStatic();
-      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-    }
-  }
-}
-
-function triggerFlash() {
-  const flash = document.getElementById('scare-flash');
-  flash.style.display = 'block';
-  setTimeout(() => { flash.style.display = 'none'; }, 200);
-}
-
-function updateEnvironmentParticles() {
-  if (waterDripMesh) {
-    waterDripMesh.position.y -= 0.14;
-    if (waterDripMesh.position.y <= 0.05) {
-      waterDripMesh.position.y = 5.4;
-      sfx.drip();
-    }
-  }
-
-  if (dustParticles) {
-    const pos = dustParticles.geometry.attributes.position.array;
-    for (let i = 1; i < pos.length; i += 3) {
-      pos[i] -= 0.003;
-      if (pos[i] < 0) pos[i] = 5.5;
-    }
-    dustParticles.geometry.attributes.position.needsUpdate = true;
-  }
-}
-
-let flickerTimer = 0;
-function updateLightsFlicker() {
-  flickerTimer++;
-  if (flickerTimer % 45 === 0 && Math.random() > 0.45) {
-    sfx.buzz();
-    ceilingLight1.intensity = 0.05;
-    ceilingLight2.intensity = 0.05;
-    setTimeout(() => {
-      ceilingLight1.intensity = 1.3;
-      ceilingLight2.intensity = 1.3;
-      setTimeout(() => {
-        ceilingLight1.intensity = 0.6;
-        ceilingLight2.intensity = 0.6;
-      }, 70);
-    }, 60);
-  }
-}
-
-/* ==================== 準心交互 ==================== */
-function checkRaycastInteract() {
-  const raycaster = new THREE.Raycaster();
-  raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
-
-  const targets = [];
-  if (clueObject) targets.push(clueObject);
-  if (doorObject) targets.push(doorObject);
-
-  const hits = raycaster.intersectObjects(targets, true);
-
-  if (hits.length > 0) {
-    let hitObj = hits[0].object;
-    while (hitObj.parent && !hitObj.userData.type) hitObj = hitObj.parent;
-
-    const dist = camera.position.distanceTo(hits[0].point);
-    if (dist <= 4.8) {
-      if (hitObj.userData.type === "clue") {
-        openClueDialog(hitObj.userData.data);
-      } else if (hitObj.userData.type === "door") {
-        openKeypadDialog();
-      }
-    }
-  }
-}
-
+// 實時準心瞄準提示
 function updateInteractHint() {
   const raycaster = new THREE.Raycaster();
   raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
 
-  const targets = [];
-  if (clueObject) targets.push(clueObject);
-  if (doorObject) targets.push(doorObject);
-
-  const hits = raycaster.intersectObjects(targets, true);
+  const hits = raycaster.intersectObjects(interactables, true);
   const cross = document.getElementById('crosshair');
   const hint = document.getElementById('interact-hint');
 
-  if (hits.length > 0 && hits[0].distance <= 4.8) {
+  if (hits.length > 0 && hits[0].distance <= 4.5) {
     cross.classList.add('interactable');
     hint.style.display = 'block';
+    hint.innerText = hits[0].object.userData.hint || "[ 點擊調查 ]";
   } else {
     cross.classList.remove('interactable');
     hint.style.display = 'none';
   }
 }
 
-function openClueDialog(data) {
-  sfx.bang();
-  document.getElementById('clue-title').innerText = `【${data.clueName}】`;
-  document.getElementById('clue-body').innerText = data.diary;
-  document.getElementById('clue-modal').style.display = 'flex';
-
-  if (!inventory.includes(data.clueName)) {
-    inventory.push(data.clueName);
-    document.getElementById('inv-display').innerText = `道具包: ${inventory.join(', ')}`;
-  }
-}
-function closeClueModal() { document.getElementById('clue-modal').style.display = 'none'; }
-
-function openKeypadDialog() {
-  sfx.buzz();
-  passcodeBuffer = "";
-  document.getElementById('keypad-code').innerText = "----";
-  document.getElementById('keypad-modal').style.display = 'flex';
-}
-function closeKeypad() { document.getElementById('keypad-modal').style.display = 'none'; }
-
-function pressKey(n) {
-  sfx.buzz();
-  if (passcodeBuffer.length < 4) {
-    passcodeBuffer += n;
-    document.getElementById('keypad-code').innerText = passcodeBuffer.padEnd(4, '-');
-  }
-}
-function clearKeypad() { sfx.buzz(); passcodeBuffer = ""; document.getElementById('keypad-code').innerText = "----"; }
-
-function submitPasscode() {
-  const currentStage = GIANT_HOSPITAL_STAGES[currentStageIdx];
-  if (passcodeBuffer === currentStage.passcode) {
-    sfx.doorOpen();
-    closeKeypad();
-    alert(`🎉【閘門開啟！】防護鐵門在刺耳金屬摩擦聲中升起！成功突破【${currentStage.title}】！`);
-
-    if (currentStageIdx + 1 < GIANT_HOSPITAL_STAGES.length) {
-      loadLargeHospitalStage(currentStageIdx + 1);
-    } else {
-      alert("🏆【杏林生還者！】你已成功穿梭整座杏林綜合醫院 5 大病區，逃出生天！");
-    }
-  } else {
-    alert("【密碼錯誤！】門禁系統紅燈蜂鳴！請核對病歷或收音機中的數字代碼！");
-    clearKeypad();
-  }
-}
-
-/* ==================== 主動畫循環 ==================== */
 function animate() {
   requestAnimationFrame(animate);
 
   updateMovement();
   updateInteractHint();
-  updateLightsFlicker();
-  updateEnvironmentParticles();
-
-  if (clueObject) clueObject.rotation.y += 0.02;
-
-  if (radioMesh) {
-    const led = radioMesh.getObjectByName("radioLed");
-    if (led) {
-      led.material.color.setRGB(isNearRadio ? 1 : 0.2 + Math.sin(Date.now() * 0.005) * 0.2, 0, 0);
-    }
-  }
 
   renderer.render(scene, camera);
 }
