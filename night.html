@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>【寂靜結界】PokéGO 純真實 GPS 步數逃脫版</title>
+<title>【寂靜結界】PokéGO GPS 步數絕對同步版</title>
 
 <!-- Three.js 3D 核心庫 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -15,7 +15,6 @@
   #game-viewport { position: relative; width: 100%; height: 100%; overflow: hidden; }
   #three-canvas { width: 100%; height: 100%; display: block; }
 
-  /* 恐懼暗角與掃描線 */
   .horror-vignette {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: radial-gradient(circle at 50% 50%, transparent 45%, rgba(15, 0, 0, 0.5) 75%, rgba(0, 0, 0, 0.95) 100%),
@@ -23,43 +22,40 @@
     pointer-events: none; z-index: 10;
   }
 
-  /* 頂部 HUD (經典 GO 步數與 GPS 面板) */
+  /* 頂部 HUD (即時顯示 GPS 精度與經緯度) */
   .poke-hud-top {
-    position: absolute; top: 0; left: 0; width: 100%; height: 64px;
-    background: linear-gradient(180deg, rgba(5,6,8,0.95) 0%, transparent 100%);
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 0 16px; z-index: 100;
+    position: absolute; top: 0; left: 0; width: 100%; height: 74px;
+    background: linear-gradient(180deg, rgba(5,6,8,0.98) 0%, transparent 100%);
+    display: flex; justify-content: space-between; align-items: flex-start;
+    padding: 8px 16px; z-index: 100;
   }
   .player-card { display: flex; align-items: center; gap: 10px; }
   .player-avatar {
-    width: 42px; height: 42px; border-radius: 50%; background: #1a0808;
+    width: 44px; height: 44px; border-radius: 50%; background: #1a0808;
     border: 2px solid #ff4444; display: flex; justify-content: center; align-items: center;
-    box-shadow: 0 0 10px rgba(255, 68, 68, 0.5); font-size: 20px;
+    box-shadow: 0 0 10px rgba(255, 68, 68, 0.5); font-size: 22px;
   }
   .player-info { display: flex; flex-direction: column; gap: 2px; }
-  .player-level { font-size: 13px; font-weight: bold; color: #ff5555; letter-spacing: 0.5px; }
-  .gps-status { font-size: 10px; color: #8b949e; }
-  .hp-bar-outer {
-    width: 100px; height: 7px; background: #222; border-radius: 4px; overflow: hidden; border: 1px solid #444; margin-top: 2px;
-  }
-  .hp-bar-inner { width: 70%; height: 100%; background: linear-gradient(90deg, #ff2222, #00ff88); transition: width 0.3s; }
+  .player-level { font-size: 13px; font-weight: bold; color: #ff5555; }
+  .gps-status { font-size: 11px; color: #00ff88; font-family: monospace; }
+  .gps-detail { font-size: 10px; color: #8b949e; font-family: monospace; }
 
   .status-badges { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
   .badge {
-    background: rgba(22, 27, 34, 0.85); border: 1px solid #30363d;
+    background: rgba(22, 27, 34, 0.9); border: 1px solid #30363d;
     padding: 3px 8px; border-radius: 4px; font-size: 11px; color: #8b949e;
   }
   .badge.steps { color: #00ff88; border-color: #008844; font-weight: bold; }
 
-  /* 底部任務與解鎖按鈕 */
+  /* 底部控制列 */
   .poke-bottom-bar {
     position: absolute; bottom: 18px; left: 16px; right: 16px;
-    background: rgba(13, 17, 23, 0.92); border: 1px solid #30363d;
+    background: rgba(13, 17, 23, 0.94); border: 1px solid #30363d;
     border-left: 4px solid #ff4444; padding: 10px 14px;
     display: flex; justify-content: space-between; align-items: center;
     z-index: 100; border-radius: 4px; box-shadow: 0 4px 20px rgba(0,0,0,0.8);
   }
-  .radio-text { font-size: 12px; color: #c9d1d9; line-height: 1.4; max-width: 68%; }
+  .radio-text { font-size: 12px; color: #c9d1d9; line-height: 1.4; max-width: 65%; }
   .btn-enter-landmark {
     background: #b62324; border: 1px solid #ff4444; color: #fff;
     padding: 8px 14px; font-size: 12px; font-weight: bold; border-radius: 4px;
@@ -69,7 +65,14 @@
     background: #21262d; border-color: #444; color: #666; cursor: not-allowed; box-shadow: none;
   }
 
-  /* 警報紅光與補血跳字 */
+  /* 室內無 GPS 時的測試按鈕 (懸浮右下角) */
+  .btn-sim-walk {
+    position: absolute; right: 16px; bottom: 84px; z-index: 150;
+    background: #1f6feb; border: 1px solid #58a6ff; color: #fff;
+    padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: bold;
+    cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  }
+
   #encounter-flash {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     border: 4px solid #ff0000; box-shadow: inset 0 0 50px rgba(255, 0, 0, 0.8);
@@ -148,32 +151,33 @@
   <div id="encounter-flash"></div>
   <div class="toast-popup" id="toast-text">+35 HP 急救包</div>
 
-  <!-- 頂部 HUD -->
+  <!-- 頂部 HUD (實時 GPS 除錯與精度診斷) -->
   <div class="poke-hud-top">
     <div class="player-card">
       <div class="player-avatar">🏃</div>
       <div class="player-info">
         <span class="player-level" id="player-title">第 1 關：辛亥引渡血柱</span>
-        <span class="gps-status" id="gps-status">📡 GPS 定位中...</span>
-        <div class="hp-bar-outer">
-          <div class="hp-bar-inner" id="hp-bar" style="width: 70%;"></div>
-        </div>
+        <span class="gps-status" id="gps-status">📡 GPS 初始化中...</span>
+        <span class="gps-detail" id="gps-coords">座標: 等待訊號</span>
       </div>
     </div>
     <div class="status-badges">
       <div class="badge steps" id="steps-badge">👟 0 步</div>
-      <div class="badge" id="dist-badge">里程: 0m</div>
-      <div class="badge" id="hp-badge">HP: 70/100</div>
+      <div class="badge" id="dist-badge">里程: 0.0m</div>
+      <div class="badge" id="hp-badge">HP: 100/100</div>
     </div>
   </div>
 
   <!-- 3D 大地圖畫布容器 -->
   <div id="canvas-container" style="width: 100%; height: 100%;"></div>
 
+  <!-- 室內模擬步行開關 (無 GPS 或室內測試時使用) -->
+  <button class="btn-sim-walk" id="btn-sim-walk" onclick="toggleSimWalk()">🚶 室內測試：模擬前進</button>
+
   <!-- 底部任務與解鎖按鈕 -->
   <div class="poke-bottom-bar">
     <div class="radio-text" id="radio-instruction">
-      「已切換為純 GPS 模式！請帶著手機在現實世界踏步走動，朝禁地前進！」
+      「正在鎖定真實 GPS 訊號……請確認已允許瀏覽器定位權限！」
     </div>
     <button class="btn-enter-landmark" id="btn-enter-landmark" onclick="openEscapeRoom()" disabled>
       🔒 尚未進入結界
@@ -213,13 +217,13 @@
 
   <!-- 開場視窗 -->
   <div id="start-modal">
-    <h1>靜安怪談：純 GPS 實境行走版</h1>
+    <h1>靜安怪談：真實 GPS 驅動版</h1>
     <p>
-      <b>完全移除虛擬方向鍵：</b><br>
-      請手持手機於戶外街道行走，系統將透過 GPS <b>即時計算真實步數與位移</b>。<br>
-      每步行 <b>30 公尺</b> 路邊會掉落補給箱；接近禁地 <b>35 米</b> 即可解鎖密室！
+      <b>GPS 步數同步修復：</b><br>
+      請點擊下方按鈕並於瀏覽器彈出視窗點選<b>「允許使用精確位置」</b>。<br>
+      帶著手機在戶外踏步，人物手腳將隨著你在馬路上的真實位移同步奔跑！
     </p>
-    <button class="btn-start" onclick="initGame()">授權 GPS 並開始探索</button>
+    <button class="btn-start" onclick="initGame()">啟動 GPS 並授權</button>
   </div>
 </div>
 
@@ -231,7 +235,7 @@ const ESCAPE_STAGES = [
     title: "第 1 關：辛亥引渡血柱",
     passcode: "404",
     landmarkName: "辛亥隧道・午夜結界巨柱",
-    distOffset: { x: 25, z: -40 },
+    distOffset: { x: 20, z: -35 },
     clue: "『……祂們在天花板上爬行。\n隧道口的警示燈閃爍著 4-0-4。\n輸入 404 解除隧道鐵捲門！』"
   },
   {
@@ -239,7 +243,7 @@ const ESCAPE_STAGES = [
     title: "第 2 關：地下水宮殿・沉骨祭壇",
     passcode: "379",
     landmarkName: "地下蓄水池・百年水煞柱",
-    distOffset: { x: -30, z: -45 },
+    distOffset: { x: -25, z: -40 },
     clue: "『石柱底部刻著排水閥順序：\n第 3 號閘門、第 7 號出水口、第 9 號減壓槽。\n按順序輸入 3-7-9 解鎖抽水門。』"
   },
   {
@@ -247,7 +251,7 @@ const ESCAPE_STAGES = [
     title: "第 3 關：三芝荒土・飛碟殘骸靈塔",
     passcode: "1980",
     landmarkName: "白沙灣・廢棄飛碟屋神殿",
-    distOffset: { x: 35, z: -35 },
+    distOffset: { x: 30, z: -30 },
     clue: "『……自從切割龍身雕像後意外頻傳。\n工程委員會決議於西元 1980 年停工封閉機房。\n解除警報請輸入停工年份。』"
   },
   {
@@ -255,24 +259,23 @@ const ESCAPE_STAGES = [
     title: "第 4 關：陽明迷霧・魔神仔鎮煞碑",
     passcode: "8848",
     landmarkName: "仰德大道・下坡急彎鎮煞碑",
-    distOffset: { x: 0, z: -50 },
+    distOffset: { x: 0, z: -45 },
     clue: "『車子在這裡打了三個轉……不要相信霧裡的招手白影！\n破除鬼打牆生還代碼：8-8-4-8。』"
   }
 ];
 
 let currentStageIndex = 0;
-let playerHP = 70;
+let playerHP = 100;
 const MAX_HP = 100;
 
-// ⭐ 步數與 GPS 追蹤狀態
-let totalDistance = 0; // 總公尺數
-let totalSteps = 0;    // 總步數
+// 步數與 GPS 追蹤狀態
+let totalDistance = 0;
+let totalSteps = 0;
 let lastSupplyMeters = 0;
-const STEP_STRIDE_METERS = 0.75; // 平均一步 0.75 公尺
+const STEP_STRIDE = 0.75; // 每步 0.75 公尺
 
-let lastGPSCoord = null;
-let currentLandmarkGroup = null;
-let spawnedSupplies = [];
+let initialGPSOrigin = null; // 初始基準錨點
+let lastGPSPos = null;
 
 // Three.js 核心與角色骨骼
 let scene, camera, renderer;
@@ -281,9 +284,14 @@ let leftArm, rightArm, leftLeg, rightLeg;
 let isWalking = false, walkCycle = 0;
 
 let playerPos = { x: 0, z: 0 };
-let currentTargetCoord = { x: 25, z: -40 };
+let currentTargetCoord = { x: 20, z: -35 };
 let isWithinLandmarkRadius = false;
 let passcodeBuffer = "";
+let currentLandmarkGroup = null;
+let spawnedSupplies = [];
+
+// 模擬走動定時器
+let simWalkInterval = null;
 
 /* ==================== 音效引擎 ==================== */
 class SoundEngine {
@@ -330,62 +338,88 @@ function initGame() {
   initThreePokeMap();
   loadStageLandmark(0);
 
-  // ⭐ 啟動手機真實高精度 GPS 監聽
-  startRealGPSWatcher();
+  // 啟動高靈敏真實 GPS 追蹤
+  startGPSListener();
 }
 
-/* ==================== 真實 GPS 監聽與位移步數換算 ==================== */
-function startRealGPSWatcher() {
-  const gpsStatusEl = document.getElementById('gps-status');
+/* ==================== ⭐ 核心：高靈敏 GPS 同步引擎 ==================== */
+function startGPSListener() {
+  const statusEl = document.getElementById('gps-status');
+  const coordsEl = document.getElementById('gps-coords');
 
   if (!navigator.geolocation) {
-    gpsStatusEl.innerText = "❌ 裝置不支援 GPS";
-    alert("您的瀏覽器不支援地理位置定位功能！");
+    statusEl.innerHTML = "<span style='color:#ff4444;'>❌ 瀏覽器不支援 GPS</span>";
     return;
   }
 
-  navigator.geolocation.watchPosition(
-    (position) => {
-      const lat = position.coords.latitude;
-      const lng = position.coords.longitude;
-      const accuracy = Math.round(position.coords.accuracy);
-
-      gpsStatusEl.innerText = `📡 GPS 良好 (±${accuracy}m)`;
-
-      if (lastGPSCoord) {
-        // 計算兩次座標之間的公尺距離 (Haversine 公式)
-        const dMeters = calcHaversineMeters(lastGPSCoord.lat, lastGPSCoord.lng, lat, lng);
-
-        // 過濾 GPS 飄移微小雜訊 (位移大於 1.5 米才算走動)
-        if (dMeters >= 1.5 && dMeters < 50) {
-          // 根據經緯度差算出走動方向向量
-          const dLat = (lat - lastGPSCoord.lat) * 111000;
-          const dLng = (lng - lastGPSCoord.lng) * (111000 * Math.cos(lat * Math.PI / 180));
-
-          // 換算 3D 場景內位移 (X: 東西, Z: 南北)
-          const moveX = dLng;
-          const moveZ = -dLat;
-
-          applyRealWalkMovement(moveX, moveZ, dMeters);
-        }
-      }
-
-      lastGPSCoord = { lat, lng };
+  // 1. 先獲取一次精確定位作為原點 (Origin)
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      initialGPSOrigin = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      lastGPSPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      statusEl.innerHTML = `<span style='color:#00ff88;'>🟢 GPS 已鎖定 (±${Math.round(pos.coords.accuracy)}m)</span>`;
+      coordsEl.innerText = `${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)}`;
+      document.getElementById('radio-instruction').innerText = "「GPS 訊號已鎖定！邁開腳步走動，人物將與你在現實中的前進同步！」";
     },
     (err) => {
-      console.warn("GPS 讀取錯誤:", err);
-      gpsStatusEl.innerText = "⚠️ GPS 訊號搜尋中...";
+      handleGPSError(err);
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+  );
+
+  // 2. 持續監聽肉身走動
+  navigator.geolocation.watchPosition(
+    (pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      const acc = Math.round(pos.coords.accuracy);
+
+      statusEl.innerHTML = `<span style='color:#00ff88;'>🟢 實時同步中 (±${acc}m)</span>`;
+      coordsEl.innerText = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+
+      if (lastGPSPos) {
+        // 計算位移公尺數
+        const distMoved = getDistanceMeters(lastGPSPos.lat, lastGPSPos.lng, lat, lng);
+
+        // 只要位移大於 1.2 公尺即觸發行走同步 (過濾微震，靈敏捕捉步行)
+        if (distMoved >= 1.2) {
+          const dLat = (lat - lastGPSPos.lat) * 111000;
+          const dLng = (lng - lastGPSPos.lng) * (111000 * Math.cos(lat * Math.PI / 180));
+
+          // 3D 空間位移向量
+          applyStepMovement(dLng, -dLat, distMoved);
+          lastGPSPos = { lat, lng };
+        }
+      } else {
+        lastGPSPos = { lat, lng };
+      }
+    },
+    (err) => {
+      handleGPSError(err);
     },
     {
-      enableHighAccuracy: true, // 高精度模式
+      enableHighAccuracy: true,
       maximumAge: 1000,
-      timeout: 8000
+      timeout: 10000
     }
   );
 }
 
-// Haversine 經緯度公尺距離計算
-function calcHaversineMeters(lat1, lon1, lat2, lon2) {
+function handleGPSError(err) {
+  const statusEl = document.getElementById('gps-status');
+  console.warn("GPS 錯誤碼:", err.code, err.message);
+  if (err.code === 1) {
+    statusEl.innerHTML = "<span style='color:#ff4444;'>❌ 定位權限被拒絕 (請檢查設定)</span>";
+    alert("【定位失敗】瀏覽器未獲得定位授權！請點擊網址列旁的鎖頭或設定，允許『使用您的位置』。若為本地檔案請使用 HTTPS 或點擊右下角『模擬前進』測試！");
+  } else if (err.code === 2) {
+    statusEl.innerHTML = "<span style='color:#ffaa00;'>⚠️ 室內無 GPS 訊號 (請移至窗邊)</span>";
+  } else {
+    statusEl.innerHTML = "<span style='color:#ffaa00;'>⚠️ GPS 搜尋超時中...</span>";
+  }
+}
+
+// 經緯度公尺距離公式
+function getDistanceMeters(lat1, lon1, lat2, lon2) {
   const R = 6371e3;
   const p1 = lat1 * Math.PI / 180, p2 = lat2 * Math.PI / 180;
   const dp = (lat2 - lat1) * Math.PI / 180, dl = (lon2 - lon1) * Math.PI / 180;
@@ -393,37 +427,37 @@ function calcHaversineMeters(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// 實體走動應用於 3D 角色與步數累積
-function applyRealWalkMovement(dx, dz, deltaMeters) {
+// ⭐ 將物理位移即時套用於角色位置與步數
+function applyStepMovement(dx, dz, meters) {
   sfx.step();
 
-  // 1. 累積真實距離與步數
-  totalDistance += Math.round(deltaMeters);
-  const newSteps = Math.round(deltaMeters / STEP_STRIDE_METERS);
-  totalSteps += newSteps;
-  lastSupplyMeters += deltaMeters;
+  // 1. 步數與里程累加
+  totalDistance += meters;
+  const addSteps = Math.round(meters / STEP_STRIDE);
+  totalSteps += (addSteps > 0 ? addSteps : 1);
+  lastSupplyMeters += meters;
 
   document.getElementById('steps-badge').innerText = `👟 ${totalSteps} 步`;
-  document.getElementById('dist-badge').innerText = `里程: ${totalDistance}m`;
+  document.getElementById('dist-badge').innerText = `里程: ${totalDistance.toFixed(1)}m`;
 
-  // 2. 更新 3D 玩家位置與朝向
+  // 2. 角色位置與轉向
   playerPos.x += dx;
   playerPos.z += dz;
-  const moveHeading = Math.atan2(dx, dz); // 朝前進方向旋轉
+  const heading = Math.atan2(dx, dz);
 
   characterGroup.position.set(playerPos.x, 0, playerPos.z);
-  characterGroup.rotation.y = moveHeading;
+  characterGroup.rotation.y = heading;
 
-  // 攝影機平滑跟隨在人物身後
+  // 攝影機維持 45° 俯視跟隨
   camera.position.set(playerPos.x, 80, playerPos.z + 85);
   camera.lookAt(playerPos.x, 0, playerPos.z);
 
-  // 觸發角色肢體擺動
+  // 觸發手腳擺動動畫
   isWalking = true;
-  clearTimeout(applyRealWalkMovement.stopTimer);
-  applyRealWalkMovement.stopTimer = setTimeout(() => { isWalking = false; }, 600);
+  clearTimeout(applyStepMovement.stopTimer);
+  applyStepMovement.stopTimer = setTimeout(() => { isWalking = false; }, 800);
 
-  // 3. 走動滿 30 米掉落急救包
+  // 3. 走滿 30 米掉落急救包
   if (lastSupplyMeters >= 30) {
     lastSupplyMeters = 0;
     spawnSupplyBoxNearby();
@@ -431,6 +465,25 @@ function applyRealWalkMovement(dx, dz, deltaMeters) {
 
   // 4. 檢查與禁地結界的距離
   checkLandmarkDistance();
+}
+
+// 室內模擬走動 (每秒模擬走動 1.2 米，方便無 GPS 時測試)
+function toggleSimWalk() {
+  const btn = document.getElementById('btn-sim-walk');
+  if (simWalkInterval) {
+    clearInterval(simWalkInterval);
+    simWalkInterval = null;
+    btn.innerText = "🚶 室內測試：模擬前進";
+    btn.style.background = "#1f6feb";
+    isWalking = false;
+  } else {
+    btn.innerText = "⏹ 停止室內模擬";
+    btn.style.background = "#b62324";
+    simWalkInterval = setInterval(() => {
+      // 模擬向前方 (Z軸負向) 走動 1.2 公尺
+      applyStepMovement(0, -1.2, 1.2);
+    }, 1000);
+  }
 }
 
 /* ==================== 建立 3D 大地圖與環境 ==================== */
@@ -516,12 +569,12 @@ function buildWalkingCharacter() {
   const pantsMat = new THREE.MeshBasicMaterial({ color: 0x111622 });
   const capMat = new THREE.MeshBasicMaterial({ color: 0x00ff88 });
 
-  // 1. 軀幹
+  // 軀幹
   const torso = new THREE.Mesh(new THREE.BoxGeometry(3, 4.5, 2), coatMat);
   torso.position.y = 5.5;
   characterGroup.add(torso);
 
-  // 2. 頭部與探險頭燈
+  // 頭部與探險頭燈
   const head = new THREE.Mesh(new THREE.BoxGeometry(2.2, 2.2, 2.2), skinMat);
   head.position.y = 8.6;
   characterGroup.add(head);
@@ -534,7 +587,7 @@ function buildWalkingCharacter() {
   lightMesh.position.set(0, 9.6, 1.4);
   characterGroup.add(lightMesh);
 
-  // 3. 雙臂
+  // 雙臂
   const armGeom = new THREE.BoxGeometry(0.9, 3.8, 0.9);
   leftArm = new THREE.Mesh(armGeom, skinMat);
   leftArm.position.set(-2.1, 5.2, 0);
@@ -544,7 +597,7 @@ function buildWalkingCharacter() {
   rightArm.position.set(2.1, 5.2, 0);
   characterGroup.add(rightArm);
 
-  // 4. 雙腿
+  // 雙腿
   const legGeom = new THREE.BoxGeometry(1.1, 4.2, 1.1);
   leftLeg = new THREE.Mesh(legGeom, pantsMat);
   leftLeg.position.set(-1, 2.1, 0);
@@ -554,7 +607,7 @@ function buildWalkingCharacter() {
   rightLeg.position.set(1, 2.1, 0);
   characterGroup.add(rightLeg);
 
-  // 5. 腳底 45 米雷達感應圈
+  // 腳底 45 米雷達圈
   const ringGeom = new THREE.RingGeometry(42, 43, 48);
   const ringMat = new THREE.MeshBasicMaterial({ color: 0x00ff88, side: THREE.DoubleSide, transparent: true, opacity: 0.4 });
   radarPulseRing = new THREE.Mesh(ringGeom, ringMat);
@@ -581,7 +634,7 @@ function loadStageLandmark(stageIdx) {
   currentTargetCoord.x = playerPos.x + stage.distOffset.x;
   currentTargetCoord.z = playerPos.z + stage.distOffset.z;
 
-  // 60 米血色禁地衝天巨柱
+  // 60 米血色巨柱
   const pillarGeom = new THREE.CylinderGeometry(4, 7, 60, 16);
   const pillarMat = new THREE.MeshBasicMaterial({ color: 0x880000, wireframe: true });
   const pillarMesh = new THREE.Mesh(pillarGeom, pillarMat);
@@ -597,7 +650,7 @@ function loadStageLandmark(stageIdx) {
   haloMesh.name = "halo";
   currentLandmarkGroup.add(haloMesh);
 
-  // 35 米半徑的靈異結界封鎖光圈
+  // 35 米半徑結界封鎖光圈
   const barrierGeom = new THREE.RingGeometry(34, 35, 48);
   const barrierMat = new THREE.MeshBasicMaterial({ color: 0xff2222, side: THREE.DoubleSide, transparent: true, opacity: 0.7 });
   const barrierMesh = new THREE.Mesh(barrierGeom, barrierMat);
@@ -632,11 +685,11 @@ function checkLandmarkDistance() {
     btn.disabled = true;
     btn.innerText = `🔒 距離禁地 ${Math.round(dist)}m`;
     document.getElementById('radio-instruction').innerText =
-      `「請在現實世界繼續前行！距離【${ESCAPE_STAGES[currentStageIndex].landmarkName}】還有 ${Math.round(dist)} 公尺。」`;
+      `「請在現實世界繼續步行！距離【${ESCAPE_STAGES[currentStageIndex].landmarkName}】還有 ${Math.round(dist)} 公尺。」`;
   }
 }
 
-// 隨機在周圍掉落急救包
+// 隨機掉落急救包
 function spawnSupplyBoxNearby() {
   const angle = Math.random() * Math.PI * 2;
   const radius = 18 + Math.random() * 12;
@@ -658,7 +711,6 @@ function spawnSupplyBoxNearby() {
 
 function collectSupply(objRef) {
   playerHP = Math.min(MAX_HP, playerHP + objRef.heal);
-  document.getElementById('hp-bar').style.width = `${(playerHP / MAX_HP) * 100}%`;
   document.getElementById('hp-badge').innerText = `HP: ${playerHP}/${MAX_HP}`;
 
   const toast = document.getElementById('toast-text');
@@ -700,7 +752,6 @@ function submitPasscode() {
   } else {
     alert("【密碼錯誤！】禁地結界釋放出劇烈陰氣！受到 15 點反噬傷害！請仔細閱讀現場線索！");
     playerHP = Math.max(0, playerHP - 15);
-    document.getElementById('hp-bar').style.width = `${(playerHP / MAX_HP) * 100}%`;
     document.getElementById('hp-badge').innerText = `HP: ${playerHP}/${MAX_HP}`;
     clearKeypad();
   }
@@ -710,7 +761,6 @@ function submitPasscode() {
 function animateMap() {
   requestAnimationFrame(animateMap);
 
-  // 實體走路時手腳自然前後擺動
   if (isWalking) {
     walkCycle += 0.22;
     const swing = Math.sin(walkCycle) * 0.7;
@@ -729,19 +779,16 @@ function animateMap() {
     if (rightLeg) rightLeg.rotation.x *= 0.85;
   }
 
-  // 雷達圈脈衝
   if (radarPulseRing) {
     const pulse = 1.0 + Math.sin(Date.now() * 0.004) * 0.06;
     radarPulseRing.scale.set(pulse, pulse, 1);
   }
 
-  // 禁地巨柱頂部光環旋轉
   if (currentLandmarkGroup) {
     const halo = currentLandmarkGroup.getObjectByName("halo");
     if (halo) halo.rotation.z += 0.02;
   }
 
-  // 急救包漂浮自轉
   spawnedSupplies.forEach(item => {
     if (item.mesh) {
       item.mesh.rotation.y += 0.03;
