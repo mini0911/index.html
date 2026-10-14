@@ -3,199 +3,186 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>【寂靜結界】PokéGO GPS 步數絕對同步版</title>
+<title>【寂靜密室】第一人稱 3D 連鎖驚悚逃脫</title>
 
 <!-- Three.js 3D 核心庫 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-  body, html { width: 100%; height: 100%; background: #050608; color: #eee; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  body, html { width: 100%; height: 100%; background: #000; color: #eee; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
 
-  #game-viewport { position: relative; width: 100%; height: 100%; overflow: hidden; }
+  #game-viewport { position: relative; width: 100%; height: 100%; overflow: hidden; cursor: crosshair; }
   #three-canvas { width: 100%; height: 100%; display: block; }
 
-  .horror-vignette {
+  /* 驚悚 VHS 掃描線與手電筒暗角遮罩 */
+  .vignette-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: radial-gradient(circle at 50% 50%, transparent 45%, rgba(15, 0, 0, 0.5) 75%, rgba(0, 0, 0, 0.95) 100%),
-                repeating-linear-gradient(rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0, 20, 10, 0.12) 3px, rgba(0,0,0,0) 4px);
+    background: radial-gradient(circle at 50% 50%, transparent 35%, rgba(0,0,0,0.85) 75%, rgba(0,0,0,0.98) 100%),
+                repeating-linear-gradient(rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0, 20, 10, 0.15) 3px, rgba(0,0,0,0) 4px);
     pointer-events: none; z-index: 10;
   }
 
-  /* 頂部 HUD (即時顯示 GPS 精度與經緯度) */
-  .poke-hud-top {
-    position: absolute; top: 0; left: 0; width: 100%; height: 74px;
-    background: linear-gradient(180deg, rgba(5,6,8,0.98) 0%, transparent 100%);
-    display: flex; justify-content: space-between; align-items: flex-start;
-    padding: 8px 16px; z-index: 100;
+  /* 準心 */
+  .crosshair {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 8px; height: 8px; background: rgba(255, 255, 255, 0.6); border-radius: 50%;
+    pointer-events: none; z-index: 20; transition: all 0.2s;
   }
-  .player-card { display: flex; align-items: center; gap: 10px; }
-  .player-avatar {
-    width: 44px; height: 44px; border-radius: 50%; background: #1a0808;
-    border: 2px solid #ff4444; display: flex; justify-content: center; align-items: center;
-    box-shadow: 0 0 10px rgba(255, 68, 68, 0.5); font-size: 22px;
+  .crosshair.interactable {
+    width: 24px; height: 24px; background: transparent; border: 2px solid #ff4444;
+    box-shadow: 0 0 10px #ff0000;
   }
-  .player-info { display: flex; flex-direction: column; gap: 2px; }
-  .player-level { font-size: 13px; font-weight: bold; color: #ff5555; }
-  .gps-status { font-size: 11px; color: #00ff88; font-family: monospace; }
-  .gps-detail { font-size: 10px; color: #8b949e; font-family: monospace; }
 
-  .status-badges { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
-  .badge {
-    background: rgba(22, 27, 34, 0.9); border: 1px solid #30363d;
-    padding: 3px 8px; border-radius: 4px; font-size: 11px; color: #8b949e;
+  /* 互動提示文字 (浮在準心下方) */
+  #interact-hint {
+    position: absolute; top: 56%; left: 50%; transform: translate(-50%, -50%);
+    font-size: 13px; font-weight: bold; color: #ff5555; text-shadow: 0 0 8px #000;
+    pointer-events: none; z-index: 25; display: none; letter-spacing: 1px;
   }
-  .badge.steps { color: #00ff88; border-color: #008844; font-weight: bold; }
 
-  /* 底部控制列 */
-  .poke-bottom-bar {
-    position: absolute; bottom: 18px; left: 16px; right: 16px;
-    background: rgba(13, 17, 23, 0.94); border: 1px solid #30363d;
-    border-left: 4px solid #ff4444; padding: 10px 14px;
+  /* 頂部 HUD */
+  .hud-top {
+    position: absolute; top: 0; left: 0; width: 100%; height: 56px;
+    background: linear-gradient(180deg, rgba(5,6,8,0.95) 0%, transparent 100%);
     display: flex; justify-content: space-between; align-items: center;
+    padding: 0 20px; z-index: 100; pointer-events: none;
+  }
+  .stage-tag {
+    color: #ff4444; font-size: 14px; font-weight: bold; letter-spacing: 1px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .pulse-dot {
+    width: 8px; height: 8px; background: #ff2222; border-radius: 50%;
+    box-shadow: 0 0 8px #ff0000; animation: blink 1.2s infinite;
+  }
+  @keyframes blink { 50% { opacity: 0.3; } }
+
+  .inventory-bar {
+    background: rgba(22, 27, 34, 0.85); border: 1px solid #444;
+    padding: 5px 12px; border-radius: 4px; font-size: 12px; color: #e3b341;
+  }
+
+  /* 行動裝置走動按鈕 (支援手機觸控) */
+  .touch-controls {
+    position: absolute; bottom: 20px; left: 20px; z-index: 150;
+    display: grid; grid-template-columns: repeat(3, 46px); gap: 6px;
+  }
+  .touch-btn {
+    width: 46px; height: 46px; background: rgba(20, 24, 30, 0.75);
+    border: 1px solid #58a6ff; border-radius: 6px; color: #fff; font-size: 16px; font-weight: bold;
+    display: flex; justify-content: center; align-items: center; cursor: pointer;
+  }
+  .touch-btn:active { background: #ff4444; }
+
+  /* 底部對講機提示 */
+  .bottom-radio {
+    position: absolute; bottom: 18px; left: 180px; right: 20px;
+    background: rgba(13, 17, 23, 0.92); border: 1px solid #30363d;
+    border-left: 4px solid #ff4444; padding: 10px 14px;
     z-index: 100; border-radius: 4px; box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+    pointer-events: none;
   }
-  .radio-text { font-size: 12px; color: #c9d1d9; line-height: 1.4; max-width: 65%; }
-  .btn-enter-landmark {
-    background: #b62324; border: 1px solid #ff4444; color: #fff;
-    padding: 8px 14px; font-size: 12px; font-weight: bold; border-radius: 4px;
-    cursor: pointer; transition: 0.2s; box-shadow: 0 0 12px rgba(255, 68, 68, 0.4);
-  }
-  .btn-enter-landmark:disabled {
-    background: #21262d; border-color: #444; color: #666; cursor: not-allowed; box-shadow: none;
-  }
+  .radio-text { font-size: 12px; color: #c9d1d9; line-height: 1.4; }
 
-  /* 室內無 GPS 時的測試按鈕 (懸浮右下角) */
-  .btn-sim-walk {
-    position: absolute; right: 16px; bottom: 84px; z-index: 150;
-    background: #1f6feb; border: 1px solid #58a6ff; color: #fff;
-    padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: bold;
-    cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-  }
-
-  #encounter-flash {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    border: 4px solid #ff0000; box-shadow: inset 0 0 50px rgba(255, 0, 0, 0.8);
-    pointer-events: none; z-index: 500; display: none; animation: flashAlert 0.4s infinite alternate;
-  }
-  @keyframes flashAlert { 0% { opacity: 0.2; } 100% { opacity: 0.9; } }
-
-  .toast-popup {
-    position: absolute; top: 38%; left: 50%; transform: translate(-50%, -50%);
-    font-size: 24px; font-weight: bold; color: #00ff88; text-shadow: 0 0 12px #00ff88;
-    pointer-events: none; z-index: 600; display: none; animation: toastUp 1s forwards;
-  }
-  @keyframes toastUp {
-    0% { opacity: 0; transform: translate(-50%, 0); }
-    30% { opacity: 1; transform: translate(-50%, -20px); }
-    100% { opacity: 0; transform: translate(-50%, -50px); }
-  }
-
-  /* 密室逃脫解謎彈窗 */
+  /* ==================== 彈窗 1：調查線索紙條 ==================== */
   .modal-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0, 0, 0, 0.88); z-index: 2000;
     display: none; justify-content: center; align-items: center; padding: 20px;
   }
-  .escape-card {
-    background: #161b22; border: 2px solid #ff4444; border-radius: 8px;
-    width: 100%; max-width: 380px; padding: 22px; display: flex; flex-direction: column;
-    box-shadow: 0 0 35px rgba(255, 0, 0, 0.5); animation: popIn 0.25s ease;
+  .clue-paper {
+    background: #ebdcc0; color: #231a11; width: 100%; max-width: 380px;
+    border-radius: 6px; padding: 24px; box-shadow: 0 0 35px rgba(255,200,100,0.25);
+    border: 2px solid #bba377; font-family: serif; animation: popIn 0.2s ease;
   }
   @keyframes popIn { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-  .escape-header {
-    border-bottom: 1px dashed #7a1515; padding-bottom: 8px; margin-bottom: 14px;
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .escape-title { font-size: 15px; font-weight: bold; color: #ff5555; }
-  .clue-paper-box {
-    background: #ebdcc0; color: #231a11; border-radius: 4px; padding: 14px;
-    font-family: serif; font-size: 13px; line-height: 1.6; margin-bottom: 16px;
-    border: 1px solid #bba377; white-space: pre-line;
+  .clue-title { font-size: 16px; font-weight: bold; color: #7a1515; border-bottom: 1px dashed #7a664d; padding-bottom: 8px; margin-bottom: 14px; }
+  .clue-body { font-size: 13px; line-height: 1.8; margin-bottom: 20px; white-space: pre-line; }
+  .btn-close { width: 100%; background: #7a1515; color: #fff; border: none; padding: 10px 0; font-size: 13px; font-weight: bold; border-radius: 3px; cursor: pointer; }
+
+  /* ==================== 彈窗 2：鐵門密碼鎖盤 (Keypad) ==================== */
+  .keypad-box {
+    background: #161b22; border: 2px solid #ff4444; border-radius: 8px;
+    width: 280px; padding: 22px; display: flex; flex-direction: column; align-items: center;
+    box-shadow: 0 0 35px rgba(255, 0, 0, 0.45); animation: popIn 0.2s ease;
   }
   .keypad-display {
-    width: 100%; height: 42px; background: #000; border: 1px solid #30363d;
-    border-radius: 4px; color: #ff3333; font-size: 22px; font-family: monospace;
-    display: flex; justify-content: center; align-items: center; letter-spacing: 8px; margin-bottom: 12px;
+    width: 100%; height: 44px; background: #000; border: 1px solid #30363d;
+    border-radius: 4px; color: #ff3333; font-size: 24px; font-family: monospace;
+    display: flex; justify-content: center; align-items: center; letter-spacing: 8px; margin-bottom: 16px;
   }
-  .keypad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; margin-bottom: 14px; }
+  .keypad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; margin-bottom: 16px; }
   .num-btn {
     background: #21262d; border: 1px solid #30363d; color: #c9d1d9;
-    padding: 10px 0; font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer;
+    padding: 12px 0; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer;
   }
   .num-btn:active { background: #ff4444; color: #fff; }
-  .btn-close-escape {
-    width: 100%; background: #30363d; color: #c9d1d9; border: none; padding: 9px 0;
-    font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer;
-  }
 
   /* 開場視窗 */
   #start-modal {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: #080a0e; z-index: 3000; display: flex; flex-direction: column;
+    background: #050608; z-index: 3000; display: flex; flex-direction: column;
     justify-content: center; align-items: center; padding: 24px; text-align: center;
   }
-  #start-modal h1 { color: #ff4444; font-size: 24px; margin-bottom: 12px; letter-spacing: 2px; }
-  #start-modal p { font-size: 13px; color: #8b949e; line-height: 1.7; margin-bottom: 24px; max-width: 360px; }
+  #start-modal h1 { color: #ff4444; font-size: 24px; margin-bottom: 14px; letter-spacing: 2px; }
+  #start-modal p { font-size: 13px; color: #8b949e; line-height: 1.8; margin-bottom: 24px; max-width: 400px; }
   .btn-start {
-    background: #00ff88; border: none; color: #000; padding: 14px 36px;
+    background: #b62324; border: none; color: #fff; padding: 14px 38px;
     font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer;
-    box-shadow: 0 0 20px rgba(0,255,136,0.4);
+    box-shadow: 0 0 20px rgba(255,0,0,0.5);
   }
 </style>
 </head>
 <body>
 
 <div id="game-viewport">
-  <div class="horror-vignette"></div>
-  <div id="encounter-flash"></div>
-  <div class="toast-popup" id="toast-text">+35 HP 急救包</div>
+  <div class="vignette-overlay"></div>
+  <div class="crosshair" id="crosshair"></div>
+  <div id="interact-hint">[ 點擊滑鼠 / 螢幕 進行調查 ]</div>
 
-  <!-- 頂部 HUD (實時 GPS 除錯與精度診斷) -->
-  <div class="poke-hud-top">
-    <div class="player-card">
-      <div class="player-avatar">🏃</div>
-      <div class="player-info">
-        <span class="player-level" id="player-title">第 1 關：辛亥引渡血柱</span>
-        <span class="gps-status" id="gps-status">📡 GPS 初始化中...</span>
-        <span class="gps-detail" id="gps-coords">座標: 等待訊號</span>
-      </div>
+  <!-- 頂部 HUD -->
+  <div class="hud-top">
+    <div class="stage-tag">
+      <div class="pulse-dot"></div>
+      <span id="stage-title">第 1 間密室：廢棄停屍間・冰櫃銘牌</span>
     </div>
-    <div class="status-badges">
-      <div class="badge steps" id="steps-badge">👟 0 步</div>
-      <div class="badge" id="dist-badge">里程: 0.0m</div>
-      <div class="badge" id="hp-badge">HP: 100/100</div>
-    </div>
+    <div class="inventory-bar" id="inv-display">道具包: 空</div>
   </div>
 
-  <!-- 3D 大地圖畫布容器 -->
+  <!-- 3D 第一人稱畫布 -->
   <div id="canvas-container" style="width: 100%; height: 100%;"></div>
 
-  <!-- 室內模擬步行開關 (無 GPS 或室內測試時使用) -->
-  <button class="btn-sim-walk" id="btn-sim-walk" onclick="toggleSimWalk()">🚶 室內測試：模擬前進</button>
-
-  <!-- 底部任務與解鎖按鈕 -->
-  <div class="poke-bottom-bar">
-    <div class="radio-text" id="radio-instruction">
-      「正在鎖定真實 GPS 訊號……請確認已允許瀏覽器定位權限！」
-    </div>
-    <button class="btn-enter-landmark" id="btn-enter-landmark" onclick="openEscapeRoom()" disabled>
-      🔒 尚未進入結界
-    </button>
+  <!-- 行動裝置虛擬行走方向鍵 (左下角) -->
+  <div class="touch-controls">
+    <div></div>
+    <button class="touch-btn" onpointerdown="keys.KeyW=true" onpointerup="keys.KeyW=false">▲</button>
+    <div></div>
+    <button class="touch-btn" onpointerdown="keys.KeyA=true" onpointerup="keys.KeyA=false">◄</button>
+    <button class="touch-btn" onpointerdown="keys.KeyS=true" onpointerup="keys.KeyS=false">▼</button>
+    <button class="touch-btn" onpointerdown="keys.KeyD=true" onpointerup="keys.KeyD=false">►</button>
   </div>
 
-  <!-- 密室逃脫解謎彈窗 -->
-  <div class="modal-overlay" id="escape-modal">
-    <div class="escape-card">
-      <div class="escape-header">
-        <span class="escape-title" id="escape-title">辛亥引渡血柱・封印解除</span>
-        <span style="font-size:12px; color:#ff4444;">道館級結界</span>
-      </div>
-      <div class="clue-paper-box" id="escape-clue">
-        『……祂們在天花板上爬行。
-        隧道口的警示燈閃爍著 4-0-4。
-        輸入 404 解除隧道鐵捲門！』
-      </div>
+  <!-- 底部任務提示 -->
+  <div class="bottom-radio">
+    <div class="radio-text" id="radio-instruction">
+      「你被反鎖在陰暗的密室中……走動搜查房間，找到帶有光暈的證物，再前往鐵門解鎖！」
+    </div>
+  </div>
+
+  <!-- 調查檔案彈窗 -->
+  <div class="modal-overlay" id="clue-modal">
+    <div class="clue-paper">
+      <div class="clue-title" id="clue-title">調查證物</div>
+      <div class="clue-body" id="clue-body">內容載入中...</div>
+      <button class="btn-close" onclick="closeClueModal()">放回並繼續搜查</button>
+    </div>
+  </div>
+
+  <!-- 鐵門密碼鎖彈窗 -->
+  <div class="modal-overlay" id="keypad-modal">
+    <div class="keypad-box">
+      <div style="color: #ff5555; font-size: 12px; margin-bottom: 8px;">逃生門禁終端</div>
       <div class="keypad-display" id="keypad-code">----</div>
       <div class="keypad-grid">
         <button class="num-btn" onclick="pressKey('1')">1</button>
@@ -211,317 +198,182 @@
         <button class="num-btn" onclick="pressKey('0')">0</button>
         <button class="num-btn" onclick="submitPasscode()" style="background:#8b1111; color:#fff;">✓</button>
       </div>
-      <button class="btn-close-escape" onclick="closeEscapeRoom()">退回安全區域</button>
+      <button class="btn-close" style="background:#30363d;" onclick="closeKeypad()">放棄返回</button>
     </div>
   </div>
 
   <!-- 開場視窗 -->
   <div id="start-modal">
-    <h1>靜安怪談：真實 GPS 驅動版</h1>
+    <h1>寂靜密室：第一人稱實境版</h1>
     <p>
-      <b>GPS 步數同步修復：</b><br>
-      請點擊下方按鈕並於瀏覽器彈出視窗點選<b>「允許使用精確位置」</b>。<br>
-      帶著手機在戶外踏步，人物手腳將隨著你在馬路上的真實位移同步奔跑！
+      <b>徹底擺脫外部地圖與 GPS：</b><br>
+      化身調查員身歷其境走入 3D 密室！<br>
+      使用鍵盤 <b>W / A / S / D</b>（或左下角按鈕）走動，滑鼠拖曳視角環顧搜查，找出密碼破門逃脫！
     </p>
-    <button class="btn-start" onclick="initGame()">啟動 GPS 並授權</button>
+    <button class="btn-start" onclick="startGame()">點擊踏入密室</button>
   </div>
 </div>
 
 <script>
-/* ==================== 關卡禁地資料庫 ==================== */
+/* ==================== 5 大連鎖驚悚密室關卡庫 ==================== */
 const ESCAPE_STAGES = [
   {
     level: 1,
-    title: "第 1 關：辛亥引渡血柱",
+    title: "第 1 間密室：廢棄停屍間・冰櫃銘牌",
+    wallColor: 0x11161d, floorColor: 0x0a0c10,
+    clueName: "浸血的解剖台病歷",
+    cluePos: { x: -7, y: 1.5, z: -5 },
+    doorPos: { x: 0, y: 3, z: -11.8 },
     passcode: "404",
-    landmarkName: "辛亥隧道・午夜結界巨柱",
-    distOffset: { x: 20, z: -35 },
-    clue: "『……祂們在天花板上爬行。\n隧道口的警示燈閃爍著 4-0-4。\n輸入 404 解除隧道鐵捲門！』"
+    diary: "『……祂們在天花板上爬行。\n4 號冰櫃已被拉出，遺留著號碼牌 4-0-4。\n輸入 404 解開鐵捲門，千萬別回頭！』"
   },
   {
     level: 2,
-    title: "第 2 關：地下水宮殿・沉骨祭壇",
-    passcode: "379",
-    landmarkName: "地下蓄水池・百年水煞柱",
-    distOffset: { x: -25, z: -40 },
-    clue: "『石柱底部刻著排水閥順序：\n第 3 號閘門、第 7 號出水口、第 9 號減壓槽。\n按順序輸入 3-7-9 解鎖抽水門。』"
+    title: "第 2 間密室：血色祈禱室・倒十字架",
+    wallColor: 0x221111, floorColor: 0x140a0a,
+    clueName: "燒焦的聖經殘頁",
+    cluePos: { x: 7, y: 1.5, z: 2 },
+    doorPos: { x: 0, y: 3, z: -11.8 },
+    passcode: "666",
+    diary: "『血字在牆面蔓延……聖經第 66 卷啟示錄第七封印。\n輸入三重逆十字凶數 666 破除結界！』"
   },
   {
     level: 3,
-    title: "第 3 關：三芝荒土・飛碟殘骸靈塔",
-    passcode: "1980",
-    landmarkName: "白沙灣・廢棄飛碟屋神殿",
-    distOffset: { x: 30, z: -30 },
-    clue: "『……自從切割龍身雕像後意外頻傳。\n工程委員會決議於西元 1980 年停工封閉機房。\n解除警報請輸入停工年份。』"
+    title: "第 3 間密室：拘禁地下牢房・生鏽手銬",
+    wallColor: 0x181814, floorColor: 0x0f0f0c,
+    clueName: "獄卒遺落的記事本",
+    cluePos: { x: -6, y: 1.5, z: 6 },
+    doorPos: { x: 0, y: 3, z: -11.8 },
+    passcode: "911",
+    diary: "『獄卒在日記本的最後一頁寫著：\n緊急呼救訊號 9-1-1 是生還門禁的覆寫代碼……』"
   },
   {
     level: 4,
-    title: "第 4 關：陽明迷霧・魔神仔鎮煞碑",
-    passcode: "8848",
-    landmarkName: "仰德大道・下坡急彎鎮煞碑",
-    distOffset: { x: 0, z: -45 },
-    clue: "『車子在這裡打了三個轉……不要相信霧裡的招手白影！\n破除鬼打牆生還代碼：8-8-4-8。』"
+    title: "第 4 間密室：廢棄手術室・消毒壓力閥",
+    wallColor: 0x111c18, floorColor: 0x0a1410,
+    clueName: "化學消毒器儀表紀錄",
+    cluePos: { x: 6, y: 1.5, z: -4 },
+    doorPos: { x: 0, y: 3, z: -11.8 },
+    passcode: "728",
+    diary: "『生鏽的手術托盤刻著三道壓力數值：\n甲閥 7、乙閥 2、丙閥 8。\n輸入 7-2-8 洩壓開啟氣密門！』"
+  },
+  {
+    level: 5,
+    title: "第 5 間密室：生化禁區・最終逃生門",
+    wallColor: 0x1a1522, floorColor: 0x100c14,
+    clueName: "院長的主控密碼卡",
+    cluePos: { x: -2, y: 1.5, z: 8 },
+    doorPos: { x: 0, y: 3, z: -11.8 },
+    passcode: "2026",
+    diary: "『最後一道安全協議……\n基地封閉年份為 2026 年。\n輸入 2026 解除封鎖，重見天日！』"
   }
 ];
 
-let currentStageIndex = 0;
-let playerHP = 100;
-const MAX_HP = 100;
-
-// 步數與 GPS 追蹤狀態
-let totalDistance = 0;
-let totalSteps = 0;
-let lastSupplyMeters = 0;
-const STEP_STRIDE = 0.75; // 每步 0.75 公尺
-
-let initialGPSOrigin = null; // 初始基準錨點
-let lastGPSPos = null;
-
-// Three.js 核心與角色骨骼
-let scene, camera, renderer;
-let characterGroup, radarPulseRing;
-let leftArm, rightArm, leftLeg, rightLeg;
-let isWalking = false, walkCycle = 0;
-
-let playerPos = { x: 0, z: 0 };
-let currentTargetCoord = { x: 20, z: -35 };
-let isWithinLandmarkRadius = false;
+let currentStageIdx = 0;
+let inventory = [];
 let passcodeBuffer = "";
-let currentLandmarkGroup = null;
-let spawnedSupplies = [];
-
-// 模擬走動定時器
-let simWalkInterval = null;
 
 /* ==================== 音效引擎 ==================== */
-class SoundEngine {
+class HorrorAudio {
   constructor() { this.ctx = null; }
   init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
   step() {
     if (!this.ctx) return;
-    const osc = this.ctx.createOscillator(), g = this.ctx.createGain();
-    osc.frequency.setValueAtTime(65, this.ctx.currentTime);
-    g.gain.setValueAtTime(0.06, this.ctx.currentTime);
+    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.frequency.setValueAtTime(55, this.ctx.currentTime);
+    g.gain.setValueAtTime(0.08, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.06);
+    o.connect(g); g.connect(this.ctx.destination);
+    o.start(); o.stop(this.ctx.currentTime + 0.06);
+  }
+  click() {
+    if (!this.ctx) return;
+    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.frequency.setValueAtTime(800, this.ctx.currentTime);
+    g.gain.setValueAtTime(0.12, this.ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
-    osc.connect(g); g.connect(this.ctx.destination);
-    osc.start(); osc.stop(this.ctx.currentTime + 0.05);
+    o.connect(g); g.connect(this.ctx.destination);
+    o.start(); o.stop(this.ctx.currentTime + 0.05);
   }
-  alarm() {
+  doorOpen() {
     if (!this.ctx) return;
-    const osc = this.ctx.createOscillator(), g = this.ctx.createGain();
-    osc.type = "sawtooth";
-    osc.frequency.setValueAtTime(160, this.ctx.currentTime);
-    osc.frequency.linearRampToValueAtTime(320, this.ctx.currentTime + 0.3);
-    g.gain.setValueAtTime(0.3, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
-    osc.connect(g); g.connect(this.ctx.destination);
-    osc.start(); osc.stop(this.ctx.currentTime + 0.3);
-  }
-  unlock() {
-    if (!this.ctx) return;
-    const osc = this.ctx.createOscillator(), g = this.ctx.createGain();
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(523, this.ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(1046, this.ctx.currentTime + 0.5);
+    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.type = "sawtooth";
+    o.frequency.setValueAtTime(100, this.ctx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(450, this.ctx.currentTime + 0.6);
     g.gain.setValueAtTime(0.35, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.5);
-    osc.connect(g); g.connect(this.ctx.destination);
-    osc.start(); osc.stop(this.ctx.currentTime + 0.5);
+    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.6);
+    o.connect(g); g.connect(this.ctx.destination);
+    o.start(); o.stop(this.ctx.currentTime + 0.6);
   }
 }
-const sfx = new SoundEngine();
+const sfx = new HorrorAudio();
 
-function initGame() {
+/* ==================== Three.js 第一人稱 3D 空間 ==================== */
+let scene, camera, renderer, flashlight;
+let roomMeshGroup = null, clueObject = null, doorObject = null;
+let yaw = 0, pitch = 0; // 第一視角旋轉
+let playerPos = { x: 0, y: 1.8, z: 8 }; // 玩家眼高 1.8 米
+let keys = { KeyW: false, KeyS: false, KeyA: false, KeyD: false };
+let isInteractingLook = false, lastTouchX = 0, lastTouchY = 0;
+let headBob = 0;
+
+function startGame() {
   document.getElementById('start-modal').style.display = 'none';
   sfx.init();
 
-  initThreePokeMap();
-  loadStageLandmark(0);
-
-  // 啟動高靈敏真實 GPS 追蹤
-  startGPSListener();
+  initThreeEngine();
+  loadStageRoom(0);
 }
 
-/* ==================== ⭐ 核心：高靈敏 GPS 同步引擎 ==================== */
-function startGPSListener() {
-  const statusEl = document.getElementById('gps-status');
-  const coordsEl = document.getElementById('gps-coords');
-
-  if (!navigator.geolocation) {
-    statusEl.innerHTML = "<span style='color:#ff4444;'>❌ 瀏覽器不支援 GPS</span>";
-    return;
-  }
-
-  // 1. 先獲取一次精確定位作為原點 (Origin)
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      initialGPSOrigin = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      lastGPSPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      statusEl.innerHTML = `<span style='color:#00ff88;'>🟢 GPS 已鎖定 (±${Math.round(pos.coords.accuracy)}m)</span>`;
-      coordsEl.innerText = `${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)}`;
-      document.getElementById('radio-instruction').innerText = "「GPS 訊號已鎖定！邁開腳步走動，人物將與你在現實中的前進同步！」";
-    },
-    (err) => {
-      handleGPSError(err);
-    },
-    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-  );
-
-  // 2. 持續監聽肉身走動
-  navigator.geolocation.watchPosition(
-    (pos) => {
-      const lat = pos.coords.latitude;
-      const lng = pos.coords.longitude;
-      const acc = Math.round(pos.coords.accuracy);
-
-      statusEl.innerHTML = `<span style='color:#00ff88;'>🟢 實時同步中 (±${acc}m)</span>`;
-      coordsEl.innerText = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-
-      if (lastGPSPos) {
-        // 計算位移公尺數
-        const distMoved = getDistanceMeters(lastGPSPos.lat, lastGPSPos.lng, lat, lng);
-
-        // 只要位移大於 1.2 公尺即觸發行走同步 (過濾微震，靈敏捕捉步行)
-        if (distMoved >= 1.2) {
-          const dLat = (lat - lastGPSPos.lat) * 111000;
-          const dLng = (lng - lastGPSPos.lng) * (111000 * Math.cos(lat * Math.PI / 180));
-
-          // 3D 空間位移向量
-          applyStepMovement(dLng, -dLat, distMoved);
-          lastGPSPos = { lat, lng };
-        }
-      } else {
-        lastGPSPos = { lat, lng };
-      }
-    },
-    (err) => {
-      handleGPSError(err);
-    },
-    {
-      enableHighAccuracy: true,
-      maximumAge: 1000,
-      timeout: 10000
-    }
-  );
-}
-
-function handleGPSError(err) {
-  const statusEl = document.getElementById('gps-status');
-  console.warn("GPS 錯誤碼:", err.code, err.message);
-  if (err.code === 1) {
-    statusEl.innerHTML = "<span style='color:#ff4444;'>❌ 定位權限被拒絕 (請檢查設定)</span>";
-    alert("【定位失敗】瀏覽器未獲得定位授權！請點擊網址列旁的鎖頭或設定，允許『使用您的位置』。若為本地檔案請使用 HTTPS 或點擊右下角『模擬前進』測試！");
-  } else if (err.code === 2) {
-    statusEl.innerHTML = "<span style='color:#ffaa00;'>⚠️ 室內無 GPS 訊號 (請移至窗邊)</span>";
-  } else {
-    statusEl.innerHTML = "<span style='color:#ffaa00;'>⚠️ GPS 搜尋超時中...</span>";
-  }
-}
-
-// 經緯度公尺距離公式
-function getDistanceMeters(lat1, lon1, lat2, lon2) {
-  const R = 6371e3;
-  const p1 = lat1 * Math.PI / 180, p2 = lat2 * Math.PI / 180;
-  const dp = (lat2 - lat1) * Math.PI / 180, dl = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dp / 2) ** 2 + Math.cos(p1) * Math.cos(p2) * Math.sin(dl / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
-// ⭐ 將物理位移即時套用於角色位置與步數
-function applyStepMovement(dx, dz, meters) {
-  sfx.step();
-
-  // 1. 步數與里程累加
-  totalDistance += meters;
-  const addSteps = Math.round(meters / STEP_STRIDE);
-  totalSteps += (addSteps > 0 ? addSteps : 1);
-  lastSupplyMeters += meters;
-
-  document.getElementById('steps-badge').innerText = `👟 ${totalSteps} 步`;
-  document.getElementById('dist-badge').innerText = `里程: ${totalDistance.toFixed(1)}m`;
-
-  // 2. 角色位置與轉向
-  playerPos.x += dx;
-  playerPos.z += dz;
-  const heading = Math.atan2(dx, dz);
-
-  characterGroup.position.set(playerPos.x, 0, playerPos.z);
-  characterGroup.rotation.y = heading;
-
-  // 攝影機維持 45° 俯視跟隨
-  camera.position.set(playerPos.x, 80, playerPos.z + 85);
-  camera.lookAt(playerPos.x, 0, playerPos.z);
-
-  // 觸發手腳擺動動畫
-  isWalking = true;
-  clearTimeout(applyStepMovement.stopTimer);
-  applyStepMovement.stopTimer = setTimeout(() => { isWalking = false; }, 800);
-
-  // 3. 走滿 30 米掉落急救包
-  if (lastSupplyMeters >= 30) {
-    lastSupplyMeters = 0;
-    spawnSupplyBoxNearby();
-  }
-
-  // 4. 檢查與禁地結界的距離
-  checkLandmarkDistance();
-}
-
-// 室內模擬走動 (每秒模擬走動 1.2 米，方便無 GPS 時測試)
-function toggleSimWalk() {
-  const btn = document.getElementById('btn-sim-walk');
-  if (simWalkInterval) {
-    clearInterval(simWalkInterval);
-    simWalkInterval = null;
-    btn.innerText = "🚶 室內測試：模擬前進";
-    btn.style.background = "#1f6feb";
-    isWalking = false;
-  } else {
-    btn.innerText = "⏹ 停止室內模擬";
-    btn.style.background = "#b62324";
-    simWalkInterval = setInterval(() => {
-      // 模擬向前方 (Z軸負向) 走動 1.2 公尺
-      applyStepMovement(0, -1.2, 1.2);
-    }, 1000);
-  }
-}
-
-/* ==================== 建立 3D 大地圖與環境 ==================== */
-function initThreePokeMap() {
+function initThreeEngine() {
   const container = document.getElementById('canvas-container');
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x050608);
-  scene.fog = new THREE.FogExp2(0x050608, 0.007);
 
-  camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
-  camera.position.set(0, 80, 85);
-  camera.lookAt(0, 0, 0);
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera.position.set(playerPos.x, playerPos.y, playerPos.z);
 
-  buildDarkEnvironment();
-  buildWalkingCharacter();
+  // 第一視角專屬手電筒 (聚光燈綁在攝影機正前方)
+  flashlight = new THREE.SpotLight(0xfffaed, 2.5, 25, Math.PI / 4.5, 0.4, 1.2);
+  camera.add(flashlight);
+  flashlight.position.set(0, 0, 0.2);
+  flashlight.target = camera;
+  scene.add(camera);
+
+  // 微弱幽暗環境光
+  scene.add(new THREE.AmbientLight(0x111116));
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
   container.appendChild(renderer.domElement);
 
-  // 點擊急救包拾取判定
-  const raycaster = new THREE.Raycaster();
-  const mouse = new THREE.Vector2();
-  container.addEventListener('pointerup', (e) => {
-    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-    raycaster.setFromCamera(mouse, camera);
+  // 鍵盤移動監聽
+  window.addEventListener('keydown', (e) => { if (keys.hasOwnProperty(e.code)) keys[e.code] = true; });
+  window.addEventListener('keyup', (e) => { if (keys.hasOwnProperty(e.code)) keys[e.code] = false; });
 
-    const hitItems = [];
-    spawnedSupplies.forEach(obj => { if (obj.mesh) hitItems.push(obj.mesh); });
-    const intersects = raycaster.intersectObjects(hitItems);
+  // 滑鼠拖曳環顧視角
+  container.addEventListener('pointerdown', (e) => {
+    isInteractingLook = true;
+    lastTouchX = e.clientX;
+    lastTouchY = e.clientY;
+  });
+  window.addEventListener('pointermove', (e) => {
+    if (isInteractingLook) {
+      const dx = e.clientX - lastTouchX;
+      const dy = e.clientY - lastTouchY;
+      lastTouchX = e.clientX;
+      lastTouchY = e.clientY;
 
-    if (intersects.length > 0) {
-      const hitObj = intersects[0].object.userData.objRef;
-      collectSupply(hitObj);
+      yaw -= dx * 0.0035;
+      pitch -= dy * 0.0035;
+      pitch = Math.max(-Math.PI / 2.5, Math.min(Math.PI / 2.5, pitch));
     }
   });
+  window.addEventListener('pointerup', () => { isInteractingLook = false; });
+
+  // 點擊調查互動
+  container.addEventListener('click', checkRaycastInteract);
 
   window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -529,272 +381,236 @@ function initThreePokeMap() {
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
 
-  animateMap();
+  animate();
 }
 
-function buildDarkEnvironment() {
-  const gridHelper = new THREE.GridHelper(900, 90, 0x1f3045, 0x0f1822);
-  gridHelper.position.y = -0.5;
-  scene.add(gridHelper);
+/* ==================== 建立實體 3D 密室結構 ==================== */
+function loadStageRoom(idx) {
+  currentStageIdx = idx;
+  const stage = ESCAPE_STAGES[idx];
 
-  const roadMat = new THREE.MeshBasicMaterial({ color: 0x151c24 });
-  const mainRoadX = new THREE.Mesh(new THREE.PlaneGeometry(900, 18), roadMat);
-  mainRoadX.rotation.x = -Math.PI / 2;
-  scene.add(mainRoadX);
+  document.getElementById('stage-title').innerText = stage.title;
+  document.getElementById('radio-instruction').innerText =
+    `「進入【${stage.title}】！走動尋找散落的證物，再前往盡頭的鐵門輸入密碼！」`;
 
-  const mainRoadZ = new THREE.Mesh(new THREE.PlaneGeometry(18, 900), roadMat);
-  mainRoadZ.rotation.x = -Math.PI / 2;
-  scene.add(mainRoadZ);
+  // 重置玩家起點
+  playerPos = { x: 0, y: 1.8, z: 8 };
+  yaw = 0; pitch = 0;
 
-  // 半透明深黑建築
-  const buildingMat = new THREE.MeshBasicMaterial({
-    color: 0x0c1017, wireframe: true, transparent: true, opacity: 0.35
+  if (roomMeshGroup) scene.remove(roomMeshGroup);
+  roomMeshGroup = new THREE.Group();
+
+  // 1. 密室房間牆面 (寬 18m, 高 6m, 深 24m)
+  const roomGeom = new THREE.BoxGeometry(18, 6, 24);
+  const wallMat = new THREE.MeshStandardMaterial({
+    color: stage.wallColor, roughness: 0.9, side: THREE.BackSide
   });
-  for (let i = 0; i < 35; i++) {
-    const w = 20 + Math.random() * 25, h = 25 + Math.random() * 60, d = 20 + Math.random() * 25;
-    const bMesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), buildingMat);
-    let bx = (Math.random() - 0.5) * 500, bz = (Math.random() - 0.5) * 500;
-    if (Math.abs(bx) < 25) bx += 40;
-    if (Math.abs(bz) < 25) bz += 40;
-    bMesh.position.set(bx, h / 2, bz);
-    scene.add(bMesh);
-  }
+  const roomMesh = new THREE.Mesh(roomGeom, wallMat);
+  roomMesh.position.y = 3;
+  roomMeshGroup.add(roomMesh);
+
+  // 2. 地板與天花板
+  const floorMat = new THREE.MeshStandardMaterial({ color: stage.floorColor, roughness: 0.8 });
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(18, 24), floorMat);
+  floor.rotation.x = -Math.PI / 2;
+  roomMeshGroup.add(floor);
+
+  // 3. 散落證物台 (帶有發光金光)
+  const deskGeom = new THREE.BoxGeometry(2, 1.2, 1.5);
+  const deskMesh = new THREE.Mesh(deskGeom, new THREE.MeshStandardMaterial({ color: 0x332211 }));
+  deskMesh.position.set(stage.cluePos.x, 0.6, stage.cluePos.z);
+  roomMeshGroup.add(deskMesh);
+
+  // 發光金黃線索本
+  const bookGeom = new THREE.BoxGeometry(0.8, 0.2, 1);
+  const bookMat = new THREE.MeshBasicMaterial({ color: 0xffdd66 });
+  clueObject = new THREE.Mesh(bookGeom, bookMat);
+  clueObject.position.set(stage.cluePos.x, 1.3, stage.cluePos.z);
+  clueObject.userData = { type: "clue", data: stage };
+  roomMeshGroup.add(clueObject);
+
+  // 4. 正前方逃生鐵門 (帶有紅燈)
+  const doorGeom = new THREE.BoxGeometry(3.5, 5, 0.4);
+  const doorMat = new THREE.MeshStandardMaterial({ color: 0x1f1111, metalness: 0.8, roughness: 0.3 });
+  doorObject = new THREE.Mesh(doorGeom, doorMat);
+  doorObject.position.set(stage.doorPos.x, 2.5, stage.doorPos.z);
+  doorObject.userData = { type: "door", data: stage };
+  roomMeshGroup.add(doorObject);
+
+  // 門上的紅色密碼鎖光標
+  const lockPlate = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.2, 0.2), new THREE.MeshBasicMaterial({ color: 0xff2222 }));
+  lockPlate.position.set(1.2, 0, 0.3);
+  doorObject.add(lockPlate);
+
+  scene.add(roomMeshGroup);
 }
 
-function buildWalkingCharacter() {
-  characterGroup = new THREE.Group();
+/* ==================== 第一人稱走動與碰撞判定 ==================== */
+function updateMovement() {
+  const moveSpeed = 0.12;
+  let moveX = 0, moveZ = 0;
 
-  const coatMat = new THREE.MeshBasicMaterial({ color: 0x223344 });
-  const skinMat = new THREE.MeshBasicMaterial({ color: 0xffd1b3 });
-  const pantsMat = new THREE.MeshBasicMaterial({ color: 0x111622 });
-  const capMat = new THREE.MeshBasicMaterial({ color: 0x00ff88 });
+  if (keys.KeyW) moveZ -= 1;
+  if (keys.KeyS) moveZ += 1;
+  if (keys.KeyA) moveX -= 1;
+  if (keys.KeyD) moveX += 1;
 
-  // 軀幹
-  const torso = new THREE.Mesh(new THREE.BoxGeometry(3, 4.5, 2), coatMat);
-  torso.position.y = 5.5;
-  characterGroup.add(torso);
+  if (moveX !== 0 || moveZ !== 0) {
+    // 規一化速度向量
+    const len = Math.hypot(moveX, moveZ);
+    moveX = (moveX / len) * moveSpeed;
+    moveZ = (moveZ / len) * moveSpeed;
 
-  // 頭部與探險頭燈
-  const head = new THREE.Mesh(new THREE.BoxGeometry(2.2, 2.2, 2.2), skinMat);
-  head.position.y = 8.6;
-  characterGroup.add(head);
+    // 根據視角旋轉計算真實前進方向
+    const sinYaw = Math.sin(yaw);
+    const cosYaw = Math.cos(yaw);
 
-  const cap = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.8, 2.6), capMat);
-  cap.position.y = 9.8;
-  characterGroup.add(cap);
+    playerPos.x += moveX * cosYaw + moveZ * sinYaw;
+    playerPos.z += -moveX * sinYaw + moveZ * cosYaw;
 
-  const lightMesh = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 1), new THREE.MeshBasicMaterial({ color: 0xffffaa }));
-  lightMesh.position.set(0, 9.6, 1.4);
-  characterGroup.add(lightMesh);
+    // 限制在房間邊界內 (防止穿牆)
+    playerPos.x = Math.max(-8, Math.min(8, playerPos.x));
+    playerPos.z = Math.max(-10.5, Math.min(10.5, playerPos.z));
 
-  // 雙臂
-  const armGeom = new THREE.BoxGeometry(0.9, 3.8, 0.9);
-  leftArm = new THREE.Mesh(armGeom, skinMat);
-  leftArm.position.set(-2.1, 5.2, 0);
-  characterGroup.add(leftArm);
+    // 頭部晃動模擬真實腳步
+    headBob += 0.18;
+    camera.position.y = playerPos.y + Math.sin(headBob) * 0.05;
 
-  rightArm = new THREE.Mesh(armGeom, skinMat);
-  rightArm.position.set(2.1, 5.2, 0);
-  characterGroup.add(rightArm);
-
-  // 雙腿
-  const legGeom = new THREE.BoxGeometry(1.1, 4.2, 1.1);
-  leftLeg = new THREE.Mesh(legGeom, pantsMat);
-  leftLeg.position.set(-1, 2.1, 0);
-  characterGroup.add(leftLeg);
-
-  rightLeg = new THREE.Mesh(legGeom, pantsMat);
-  rightLeg.position.set(1, 2.1, 0);
-  characterGroup.add(rightLeg);
-
-  // 腳底 45 米雷達圈
-  const ringGeom = new THREE.RingGeometry(42, 43, 48);
-  const ringMat = new THREE.MeshBasicMaterial({ color: 0x00ff88, side: THREE.DoubleSide, transparent: true, opacity: 0.4 });
-  radarPulseRing = new THREE.Mesh(ringGeom, ringMat);
-  radarPulseRing.rotation.x = -Math.PI / 2;
-  radarPulseRing.position.y = 0.2;
-  characterGroup.add(radarPulseRing);
-
-  scene.add(characterGroup);
-}
-
-/* ==================== 靈異禁地結界標誌 ==================== */
-function loadStageLandmark(stageIdx) {
-  currentStageIndex = stageIdx;
-  const stage = ESCAPE_STAGES[stageIdx];
-
-  document.getElementById('player-title').innerText = stage.title;
-  document.getElementById('escape-title').innerText = `${stage.landmarkName}・封印解除`;
-  document.getElementById('escape-clue').innerText = stage.clue;
-
-  if (currentLandmarkGroup) scene.remove(currentLandmarkGroup);
-
-  currentLandmarkGroup = new THREE.Group();
-
-  currentTargetCoord.x = playerPos.x + stage.distOffset.x;
-  currentTargetCoord.z = playerPos.z + stage.distOffset.z;
-
-  // 60 米血色巨柱
-  const pillarGeom = new THREE.CylinderGeometry(4, 7, 60, 16);
-  const pillarMat = new THREE.MeshBasicMaterial({ color: 0x880000, wireframe: true });
-  const pillarMesh = new THREE.Mesh(pillarGeom, pillarMat);
-  pillarMesh.position.y = 30;
-  currentLandmarkGroup.add(pillarMesh);
-
-  // 頂部旋轉血光環
-  const haloGeom = new THREE.TorusGeometry(12, 1.2, 16, 48);
-  const haloMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-  const haloMesh = new THREE.Mesh(haloGeom, haloMat);
-  haloMesh.position.y = 55;
-  haloMesh.rotation.x = Math.PI / 2;
-  haloMesh.name = "halo";
-  currentLandmarkGroup.add(haloMesh);
-
-  // 35 米半徑結界封鎖光圈
-  const barrierGeom = new THREE.RingGeometry(34, 35, 48);
-  const barrierMat = new THREE.MeshBasicMaterial({ color: 0xff2222, side: THREE.DoubleSide, transparent: true, opacity: 0.7 });
-  const barrierMesh = new THREE.Mesh(barrierGeom, barrierMat);
-  barrierMesh.rotation.x = -Math.PI / 2;
-  barrierMesh.position.y = 0.3;
-  currentLandmarkGroup.add(barrierMesh);
-
-  currentLandmarkGroup.position.set(currentTargetCoord.x, 0, currentTargetCoord.z);
-  scene.add(currentLandmarkGroup);
-
-  checkLandmarkDistance();
-}
-
-function checkLandmarkDistance() {
-  const dist = Math.hypot(currentTargetCoord.x - playerPos.x, currentTargetCoord.z - playerPos.z);
-  const btn = document.getElementById('btn-enter-landmark');
-  const flash = document.getElementById('encounter-flash');
-
-  if (dist <= 35) {
-    if (!isWithinLandmarkRadius) {
-      sfx.alarm();
-      isWithinLandmarkRadius = true;
+    // 定期發出腳步聲
+    if (Math.sin(headBob) < -0.95 && !updateMovement.stepped) {
+      sfx.step();
+      updateMovement.stepped = true;
+    } else if (Math.sin(headBob) > 0) {
+      updateMovement.stepped = false;
     }
-    flash.style.display = 'block';
-    btn.disabled = false;
-    btn.innerText = "⚡ 解除禁地結界 ⚡";
-    document.getElementById('radio-instruction').innerText =
-      `「⚠️ 已真實走到【${ESCAPE_STAGES[currentStageIndex].landmarkName}】的 35 米結界內！點擊按鈕解謎！」`;
-  } else {
-    isWithinLandmarkRadius = false;
-    flash.style.display = 'none';
-    btn.disabled = true;
-    btn.innerText = `🔒 距離禁地 ${Math.round(dist)}m`;
-    document.getElementById('radio-instruction').innerText =
-      `「請在現實世界繼續步行！距離【${ESCAPE_STAGES[currentStageIndex].landmarkName}】還有 ${Math.round(dist)} 公尺。」`;
+  }
+
+  camera.position.x = playerPos.x;
+  camera.position.z = playerPos.z;
+
+  // 旋轉攝影機視角
+  const euler = new THREE.Euler(pitch, yaw, 0, 'YXZ');
+  camera.quaternion.setFromEuler(euler);
+}
+
+/* ==================== 準心視線射線判定 ==================== */
+function checkRaycastInteract() {
+  const raycaster = new THREE.Raycaster();
+  raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+
+  const targets = [];
+  if (clueObject) targets.push(clueObject);
+  if (doorObject) targets.push(doorObject);
+
+  const hits = raycaster.intersectObjects(targets, true);
+
+  if (hits.length > 0) {
+    let hitObj = hits[0].object;
+    while (hitObj.parent && !hitObj.userData.type) hitObj = hitObj.parent;
+
+    const dist = camera.position.distanceTo(hits[0].point);
+    if (dist <= 4.5) { // 必須走近至 4.5 米內才能調查
+      if (hitObj.userData.type === "clue") {
+        openClueDialog(hitObj.userData.data);
+      } else if (hitObj.userData.type === "door") {
+        openKeypadDialog();
+      }
+    }
   }
 }
 
-// 隨機掉落急救包
-function spawnSupplyBoxNearby() {
-  const angle = Math.random() * Math.PI * 2;
-  const radius = 18 + Math.random() * 12;
-  const sx = playerPos.x + Math.cos(angle) * radius;
-  const sz = playerPos.z + Math.sin(angle) * radius;
+// 實時更新準心變色與提示
+function updateInteractHint() {
+  const raycaster = new THREE.Raycaster();
+  raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
 
-  const boxGeom = new THREE.BoxGeometry(3.5, 3.5, 3.5);
-  const boxMat = new THREE.MeshBasicMaterial({ color: 0x00ff88 });
-  const mesh = new THREE.Mesh(boxGeom, boxMat);
-  mesh.position.set(sx, 2.5, sz);
+  const targets = [];
+  if (clueObject) targets.push(clueObject);
+  if (doorObject) targets.push(doorObject);
 
-  const supplyData = { id: Date.now(), heal: 35, mesh: mesh };
-  mesh.userData = { objRef: supplyData };
+  const hits = raycaster.intersectObjects(targets, true);
+  const cross = document.getElementById('crosshair');
+  const hint = document.getElementById('interact-hint');
 
-  scene.add(mesh);
-  spawnedSupplies.push(supplyData);
-  alert("【地脈共鳴！】實體走動滿 30 米！路邊掉落了【急救包】！點擊地圖上的綠色方塊拾取！");
+  if (hits.length > 0 && hits[0].distance <= 4.5) {
+    cross.classList.add('interactable');
+    hint.style.display = 'block';
+  } else {
+    cross.classList.remove('interactable');
+    hint.style.display = 'none';
+  }
 }
 
-function collectSupply(objRef) {
-  playerHP = Math.min(MAX_HP, playerHP + objRef.heal);
-  document.getElementById('hp-badge').innerText = `HP: ${playerHP}/${MAX_HP}`;
+/* ==================== 密室彈窗解謎邏輯 ==================== */
+function openClueDialog(data) {
+  sfx.click();
+  document.getElementById('clue-title').innerText = `【${data.clueName}】`;
+  document.getElementById('clue-body').innerText = data.diary;
+  document.getElementById('clue-modal').style.display = 'flex';
 
-  const toast = document.getElementById('toast-text');
-  toast.innerText = `+${objRef.heal} HP 急救包`;
-  toast.style.display = 'block';
-  setTimeout(() => { toast.style.display = 'none'; }, 1000);
-
-  scene.remove(objRef.mesh);
-  spawnedSupplies = spawnedSupplies.filter(item => item !== objRef);
+  if (!inventory.includes(data.clueName)) {
+    inventory.push(data.clueName);
+    document.getElementById('inv-display').innerText = `道具包: ${inventory.join(', ')}`;
+  }
+}
+function closeClueModal() {
+  document.getElementById('clue-modal').style.display = 'none';
 }
 
-/* ==================== 密室逃脫解謎彈窗 ==================== */
-function openEscapeRoom() {
+function openKeypadDialog() {
+  sfx.click();
   passcodeBuffer = "";
   document.getElementById('keypad-code').innerText = "----";
-  document.getElementById('escape-modal').style.display = 'flex';
+  document.getElementById('keypad-modal').style.display = 'flex';
 }
-function closeEscapeRoom() { document.getElementById('escape-modal').style.display = 'none'; }
-function pressKey(num) {
+function closeKeypad() {
+  document.getElementById('keypad-modal').style.display = 'none';
+}
+
+function pressKey(n) {
+  sfx.click();
   if (passcodeBuffer.length < 4) {
-    passcodeBuffer += num;
+    passcodeBuffer += n;
     document.getElementById('keypad-code').innerText = passcodeBuffer.padEnd(4, '-');
   }
 }
-function clearKeypad() { passcodeBuffer = ""; document.getElementById('keypad-code').innerText = "----"; }
+function clearKeypad() {
+  sfx.click();
+  passcodeBuffer = "";
+  document.getElementById('keypad-code').innerText = "----";
+}
 
 function submitPasscode() {
-  const currentStage = ESCAPE_STAGES[currentStageIndex];
+  const currentStage = ESCAPE_STAGES[currentStageIdx];
   if (passcodeBuffer === currentStage.passcode) {
-    sfx.unlock();
-    closeEscapeRoom();
-    alert(`🎉【封印破除！】你成功破解了【${currentStage.landmarkName}】！結界已被完全淨化！`);
+    sfx.doorOpen();
+    closeKeypad();
+    alert(`🎉【密室解鎖成功！】\n鐵門嘎吱作響開啟！成功逃出【${currentStage.title}】！`);
 
-    if (currentStageIndex + 1 < ESCAPE_STAGES.length) {
-      loadStageLandmark(currentStageIndex + 1);
+    // 前往下一間密室
+    if (currentStageIdx + 1 < ESCAPE_STAGES.length) {
+      loadStageRoom(currentStageIdx + 1);
     } else {
-      alert("🏆【全境生還！】你已透過肉身行走拔除大地圖上全部 4 座靈異道館禁地！生還歸來！");
+      alert("🏆【大逃殺完全生還！】你已成功連續解開全部 5 間驚悚密室，逃出生天！");
     }
   } else {
-    alert("【密碼錯誤！】禁地結界釋放出劇烈陰氣！受到 15 點反噬傷害！請仔細閱讀現場線索！");
-    playerHP = Math.max(0, playerHP - 15);
-    document.getElementById('hp-badge').innerText = `HP: ${playerHP}/${MAX_HP}`;
+    alert("【密碼錯誤！】門禁系統紅燈閃爍，請走回證物台仔細閱讀線索！");
     clearKeypad();
   }
 }
 
-/* ==================== 主動畫循環 (走路手腳關節擺動) ==================== */
-function animateMap() {
-  requestAnimationFrame(animateMap);
+/* ==================== 主動畫循環 ==================== */
+function animate() {
+  requestAnimationFrame(animate);
 
-  if (isWalking) {
-    walkCycle += 0.22;
-    const swing = Math.sin(walkCycle) * 0.7;
-    if (leftArm && rightArm) {
-      leftArm.rotation.x = swing;
-      rightArm.rotation.x = -swing;
-    }
-    if (leftLeg && rightLeg) {
-      leftLeg.rotation.x = -swing;
-      rightLeg.rotation.x = swing;
-    }
-  } else {
-    if (leftArm) leftArm.rotation.x *= 0.85;
-    if (rightArm) rightArm.rotation.x *= 0.85;
-    if (leftLeg) leftLeg.rotation.x *= 0.85;
-    if (rightLeg) rightLeg.rotation.x *= 0.85;
+  updateMovement();
+  updateInteractHint();
+
+  // 證物金黃光暈呼吸微幅旋轉
+  if (clueObject) {
+    clueObject.rotation.y += 0.02;
+    clueObject.position.y = 1.3 + Math.sin(Date.now() * 0.005) * 0.05;
   }
-
-  if (radarPulseRing) {
-    const pulse = 1.0 + Math.sin(Date.now() * 0.004) * 0.06;
-    radarPulseRing.scale.set(pulse, pulse, 1);
-  }
-
-  if (currentLandmarkGroup) {
-    const halo = currentLandmarkGroup.getObjectByName("halo");
-    if (halo) halo.rotation.z += 0.02;
-  }
-
-  spawnedSupplies.forEach(item => {
-    if (item.mesh) {
-      item.mesh.rotation.y += 0.03;
-      item.mesh.position.y = 2.5 + Math.sin(Date.now() * 0.006) * 0.5;
-    }
-  });
 
   renderer.render(scene, camera);
 }
