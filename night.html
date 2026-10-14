@@ -1,888 +1,237 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>【杏林夜泣】真實醫院常亮實境密室逃脫</title>
+"""
+《末日便利商店》(Doomsday Convenience Store) - 核心數值與經濟/拾荒模擬腳本
+包含：
+1. 動態物價波動模型（基礎價值、供需、事件驅動、噪音、玩家標價購買意向）
+2. 拾荒委託風險與回報模擬（角色屬性、裝備加成、區域難度、三元結算）
+3. 30 天營運與市場模擬主迴圈
+"""
 
-<!-- Three.js 3D 核心庫 -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+import random
+from dataclasses import dataclass
+from typing import List, Dict, Optional
 
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-  body, html { width: 100%; height: 100%; background: #0a100d; color: #eee; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+# ==========================================
+# 1. 物品與物價模型
+# ==========================================
 
-  #game-viewport { position: relative; width: 100%; height: 100%; overflow: hidden; cursor: crosshair; }
-  #three-canvas { width: 100%; height: 100%; display: block; }
+@dataclass
+class Item:
+    name: str
+    category: str      # Vital, Medical, Defense, Luxury
+    base_price: float  # P0 基準價
+    elasticity: float  # 價格敏感度 alpha (如 Vital=2.0, Luxury=0.8)
 
-  /* 輕微老醫院膠卷邊角效果 (不再黑壓壓，維持清晰明亮) */
-  .lens-overlay {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: radial-gradient(circle at 50% 50%, transparent 70%, rgba(5, 15, 10, 0.4) 100%);
-    pointer-events: none; z-index: 10;
-  }
-
-  /* 準心 */
-  .crosshair {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 6px; height: 6px; background: rgba(0, 255, 136, 0.8); border-radius: 50%;
-    pointer-events: none; z-index: 20; transition: all 0.15s;
-  }
-  .crosshair.interactable {
-    width: 28px; height: 28px; background: transparent; border: 2px solid #00ff88;
-    box-shadow: 0 0 14px rgba(0,255,136,0.8);
-  }
-
-  #interact-hint {
-    position: absolute; top: 56%; left: 50%; transform: translate(-50%, -50%);
-    font-size: 13px; font-weight: bold; color: #00ff88; text-shadow: 0 0 8px #000;
-    pointer-events: none; z-index: 25; display: none; letter-spacing: 1px;
-  }
-
-  /* 頂部 HUD */
-  .hud-top {
-    position: absolute; top: 0; left: 0; width: 100%; height: 56px;
-    background: linear-gradient(180deg, rgba(8,16,12,0.95) 0%, transparent 100%);
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 0 20px; z-index: 100; pointer-events: none;
-  }
-  .stage-badge {
-    color: #00ff88; font-size: 14px; font-weight: bold; letter-spacing: 1px;
-    display: flex; align-items: center; gap: 8px; text-shadow: 0 0 8px rgba(0,255,136,0.4);
-  }
-  .pulse-dot { width: 8px; height: 8px; background: #00ff88; border-radius: 50%; box-shadow: 0 0 8px #00ff88; animation: blink 1.2s infinite; }
-  @keyframes blink { 50% { opacity: 0.3; } }
-
-  /* 底部實體背包欄 (實體密室逃脫必備) */
-  .inventory-belt {
-    position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
-    display: flex; gap: 10px; background: rgba(14, 24, 18, 0.94);
-    border: 2px solid #224230; border-radius: 8px; padding: 6px 14px;
-    z-index: 100; box-shadow: 0 4px 25px rgba(0,0,0,0.7);
-  }
-  .inv-slot {
-    width: 54px; height: 54px; background: #16291e; border: 1px solid #2d543d;
-    border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center;
-    cursor: pointer; font-size: 22px; color: #fff; transition: all 0.2s; position: relative;
-  }
-  .inv-slot.selected {
-    border-color: #00ff88; background: #1f3d2b; box-shadow: 0 0 14px rgba(0,255,136,0.6);
-  }
-  .inv-slot-label { font-size: 9px; color: #8fa899; margin-top: 2px; }
-
-  /* 底部任務指引條 */
-  .bottom-task {
-    position: absolute; bottom: 84px; left: 50%; transform: translateX(-50%);
-    background: rgba(10, 20, 14, 0.92); border: 1px solid #1a3d28;
-    border-left: 4px solid #00ff88; padding: 6px 18px; font-size: 12px;
-    color: #c9d1d9; border-radius: 4px; z-index: 90; pointer-events: none;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.6); white-space: nowrap;
-  }
-
-  /* 行動裝置走動按鈕 (左下角) */
-  .touch-controls {
-    position: absolute; bottom: 20px; left: 20px; z-index: 150;
-    display: grid; grid-template-columns: repeat(3, 44px); gap: 6px;
-  }
-  .touch-btn {
-    width: 44px; height: 44px; background: rgba(14, 28, 20, 0.85);
-    border: 1px solid #00ff88; border-radius: 6px; color: #fff; font-size: 15px; font-weight: bold;
-    display: flex; justify-content: center; align-items: center; cursor: pointer;
-  }
-  .touch-btn:active { background: #00ff88; color: #000; }
-
-  /* 道具詳情彈窗 */
-  .modal-overlay {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.88); z-index: 2000;
-    display: none; justify-content: center; align-items: center; padding: 20px;
-  }
-  .prop-card {
-    background: #eef2ed; color: #18241c; width: 100%; max-width: 400px;
-    border-radius: 6px; padding: 24px; box-shadow: 0 0 35px rgba(0,255,136,0.2);
-    border: 2px solid #7c9485; font-family: serif; animation: popIn 0.2s ease;
-  }
-  @keyframes popIn { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-  .prop-title { font-size: 16px; font-weight: bold; color: #164024; border-bottom: 1px dashed #7a8f80; padding-bottom: 8px; margin-bottom: 14px; }
-  .prop-body { font-size: 13px; line-height: 1.8; margin-bottom: 20px; white-space: pre-line; }
-  .btn-close { width: 100%; background: #1a4028; color: #00ff88; border: 1px solid #00ff88; padding: 10px 0; font-size: 13px; font-weight: bold; border-radius: 3px; cursor: pointer; }
-
-  /* 鐵門電子密碼盤 */
-  .keypad-box {
-    background: #111a14; border: 2px solid #00ff88; border-radius: 8px;
-    width: 280px; padding: 22px; display: flex; flex-direction: column; align-items: center;
-    box-shadow: 0 0 35px rgba(0, 255, 136, 0.4); animation: popIn 0.2s ease;
-  }
-  .keypad-display {
-    width: 100%; height: 44px; background: #000; border: 1px solid #1f382b;
-    border-radius: 4px; color: #00ff88; font-size: 24px; font-family: monospace;
-    display: flex; justify-content: center; align-items: center; letter-spacing: 8px; margin-bottom: 16px;
-  }
-  .keypad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; margin-bottom: 16px; }
-  .num-btn {
-    background: #19241d; border: 1px solid #2a3d31; color: #c9d1d9;
-    padding: 12px 0; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer;
-  }
-  .num-btn:active { background: #00ff88; color: #000; }
-
-  /* 開場視窗 */
-  #start-modal {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: #06100a; z-index: 3000; display: flex; flex-direction: column;
-    justify-content: center; align-items: center; padding: 24px; text-align: center;
-  }
-  #start-modal h1 { color: #00ff88; font-size: 26px; margin-bottom: 14px; letter-spacing: 2px; text-shadow: 0 0 12px rgba(0,255,136,0.6); }
-  #start-modal p { font-size: 13px; color: #8b949e; line-height: 1.8; margin-bottom: 24px; max-width: 440px; }
-  .btn-start {
-    background: #00ff88; border: none; color: #000; padding: 14px 44px;
-    font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer;
-    box-shadow: 0 0 20px rgba(0,255,136,0.5);
-  }
-</style>
-</head>
-<body>
-
-<div id="game-viewport">
-  <div class="lens-overlay"></div>
-  <div class="crosshair" id="crosshair"></div>
-  <div id="interact-hint">[ 點擊滑鼠 / 觸控進行調查 ]</div>
-
-  <!-- 頂部 HUD -->
-  <div class="hud-top">
-    <div class="stage-badge">
-      <div class="pulse-dot"></div>
-      <span>杏林綜合醫院・急診處置室</span>
-    </div>
-    <div style="font-size: 12px; color: #8fa899;">💡 頂棚日光燈：正常運轉 (100% 照度)</div>
-  </div>
-
-  <div id="canvas-container" style="width: 100%; height: 100%;"></div>
-
-  <!-- 底部任務引導 -->
-  <div class="bottom-task" id="current-task">
-    當前任務：搜查護理站抽屜，尋找工具剪開病床止血帶
-  </div>
-
-  <!-- 實體道具背包欄 -->
-  <div class="inventory-belt">
-    <div class="inv-slot" id="slot-0" onclick="selectItem(0)">
-      <span id="slot-icon-0">空</span>
-      <span class="inv-slot-label" id="slot-name-0">-</span>
-    </div>
-    <div class="inv-slot" id="slot-1" onclick="selectItem(1)">
-      <span id="slot-icon-1">空</span>
-      <span class="inv-slot-label" id="slot-name-1">-</span>
-    </div>
-    <div class="inv-slot" id="slot-2" onclick="selectItem(2)">
-      <span id="slot-icon-2">空</span>
-      <span class="inv-slot-label" id="slot-name-2">-</span>
-    </div>
-    <div class="inv-slot" id="slot-3" onclick="selectItem(3)">
-      <span id="slot-icon-3">空</span>
-      <span class="inv-slot-label" id="slot-name-3">-</span>
-    </div>
-  </div>
-
-  <!-- 手機走動鍵盤 -->
-  <div class="touch-controls">
-    <div></div>
-    <button class="touch-btn" onpointerdown="keys.KeyW=true" onpointerup="keys.KeyW=false">▲</button>
-    <div></div>
-    <button class="touch-btn" onpointerdown="keys.KeyA=true" onpointerup="keys.KeyA=false">◄</button>
-    <button class="touch-btn" onpointerdown="keys.KeyS=true" onpointerup="keys.KeyS=false">▼</button>
-    <button class="touch-btn" onpointerdown="keys.KeyD=true" onpointerup="keys.KeyD=false">►</button>
-  </div>
-
-  <!-- 道具詳情彈窗 -->
-  <div class="modal-overlay" id="prop-modal">
-    <div class="prop-card">
-      <div class="prop-title" id="prop-title">道具名稱</div>
-      <div class="prop-body" id="prop-body">詳細情報...</div>
-      <button class="btn-close" onclick="closePropModal()">放回背包</button>
-    </div>
-  </div>
-
-  <!-- 逃生防護門密碼盤 -->
-  <div class="modal-overlay" id="keypad-modal">
-    <div class="keypad-box">
-      <div style="color: #00ff88; font-size: 12px; margin-bottom: 8px;">重型防火鐵門・門禁終端</div>
-      <div class="keypad-display" id="keypad-code">----</div>
-      <div class="keypad-grid">
-        <button class="num-btn" onclick="pressKey('1')">1</button>
-        <button class="num-btn" onclick="pressKey('2')">2</button>
-        <button class="num-btn" onclick="pressKey('3')">3</button>
-        <button class="num-btn" onclick="pressKey('4')">4</button>
-        <button class="num-btn" onclick="pressKey('5')">5</button>
-        <button class="num-btn" onclick="pressKey('6')">6</button>
-        <button class="num-btn" onclick="pressKey('7')">7</button>
-        <button class="num-btn" onclick="pressKey('8')">8</button>
-        <button class="num-btn" onclick="pressKey('9')">9</button>
-        <button class="num-btn" onclick="clearKeypad()">C</button>
-        <button class="num-btn" onclick="pressKey('0')">0</button>
-        <button class="num-btn" onclick="submitPasscode()" style="background:#1b4d2e; color:#00ff88;">✓</button>
-      </div>
-      <button class="btn-close" style="background:#19241d; color:#888; border-color:#333;" onclick="closeKeypad()">放棄返回</button>
-    </div>
-  </div>
-
-  <!-- 開場視窗 -->
-  <div id="start-modal">
-    <h1>杏林夜泣：明亮寫實醫院密室</h1>
-    <p>
-      <b>取消手電筒，全場常時明亮視野：</b><br>
-      真實還原老舊醫院的病床、護理站、點滴架、藥品櫃與 X 光燈箱。<br>
-      搜刮抽屜取得道具、放進<b>底部背包欄</b>，選中道具後與對應機關交互，一步步推敲出通關密碼！
-    </p>
-    <button class="btn-start" onclick="startGame()">踏入醫院大廳</button>
-  </div>
-</div>
-
-<script>
-/* ==================== 實體密室連鎖狀態庫 ==================== */
-let inventorySlots = [null, null, null, null];
-let selectedSlotIdx = null;
-
-let escapeProgress = {
-  drawerSearched: false, // 是否已搜刮護理站抽屜 (拿剪刀)
-  strapCut: false,       // 是否已剪開病床止血帶 (拿鑰匙)
-  cabinetUnlocked: false,// 是否已開啟藥品鐵櫃 (拿底片)
-  xrayIlluminated: false,// 是否已在觀片箱顯影 (得知密碼 3824)
-  finalPasscode: "3824"
-};
-
-let passcodeBuffer = "";
-
-/* ==================== 音效引擎 ==================== */
-class HospitalAudioEngine {
-  constructor() { this.ctx = null; }
-  init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
-
-  step() {
-    if (!this.ctx) return;
-    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-    o.frequency.setValueAtTime(45, this.ctx.currentTime);
-    g.gain.setValueAtTime(0.06, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
-    o.connect(g); g.connect(this.ctx.destination);
-    o.start(); o.stop(this.ctx.currentTime + 0.05);
-  }
-  click() {
-    if (!this.ctx) return;
-    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-    o.frequency.setValueAtTime(600, this.ctx.currentTime);
-    g.gain.setValueAtTime(0.12, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.06);
-    o.connect(g); g.connect(this.ctx.destination);
-    o.start(); o.stop(this.ctx.currentTime + 0.06);
-  }
-  metalClank() {
-    if (!this.ctx) return;
-    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-    o.type = "sawtooth";
-    o.frequency.setValueAtTime(320, this.ctx.currentTime);
-    o.frequency.exponentialRampToValueAtTime(80, this.ctx.currentTime + 0.35);
-    g.gain.setValueAtTime(0.3, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.35);
-    o.connect(g); g.connect(this.ctx.destination);
-    o.start(); o.stop(this.ctx.currentTime + 0.35);
-  }
-  doorOpen() {
-    if (!this.ctx) return;
-    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-    o.type = "sawtooth";
-    o.frequency.setValueAtTime(90, this.ctx.currentTime);
-    o.frequency.exponentialRampToValueAtTime(350, this.ctx.currentTime + 0.7);
-    g.gain.setValueAtTime(0.35, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.7);
-    o.connect(g); g.connect(this.ctx.destination);
-    o.start(); o.stop(this.ctx.currentTime + 0.7);
-  }
-}
-const sfx = new HospitalAudioEngine();
-
-/* ==================== 程序化真實老醫院 PBR 貼圖 ==================== */
-function createHospitalWallTexture() {
-  const c = document.createElement('canvas');
-  c.width = 512; c.height = 512;
-  const ctx = c.getContext('2d');
-
-  // 上半部老舊白灰牆面
-  ctx.fillStyle = "#bcc6be";
-  ctx.fillRect(0, 0, 512, 330);
-
-  // 下半部經典墨綠耐磨防污漆
-  ctx.fillStyle = "#1e3b2b";
-  ctx.fillRect(0, 330, 512, 182);
-
-  // 分界黑色金屬壓條
-  ctx.fillStyle = "#0a140e";
-  ctx.fillRect(0, 325, 512, 6);
-
-  // 斑駁粉刷噪點
-  for (let i = 0; i < 3000; i++) {
-    ctx.fillStyle = Math.random() > 0.5 ? "rgba(10, 25, 18, 0.08)" : "rgba(70, 80, 75, 0.08)";
-    ctx.beginPath();
-    ctx.arc(Math.random() * 512, Math.random() * 512, Math.random() * 2, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  const tex = new THREE.CanvasTexture(c);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
-  tex.repeat.set(5, 1);
-  return tex;
+ITEMS = {
+    "water": Item("純水", "Vital", 10.0, 2.0),
+    "food": Item("乾糧", "Vital", 15.0, 1.8),
+    "rad_pill": Item("碘片", "Medical", 40.0, 1.5),
+    "ammo_9mm": Item("9mm子彈", "Defense", 15.0, 1.2),
+    "cigarettes": Item("香菸條", "Luxury", 120.0, 0.8),
 }
 
-function createHospitalTileTexture() {
-  const c = document.createElement('canvas');
-  c.width = 512; c.height = 512;
-  const ctx = c.getContext('2d');
+@dataclass
+class MarketEvent:
+    name: str
+    affected_categories: Dict[str, float]  # 類別 -> 加成倍率
+    duration: int
 
-  const tileSize = 64;
-  for (let y = 0; y < 512; y += tileSize) {
-    for (let x = 0; x < 512; x += tileSize) {
-      ctx.fillStyle = ((x + y) / tileSize) % 2 === 0 ? "#1c2b22" : "#14211a";
-      ctx.fillRect(x, y, tileSize, tileSize);
-      ctx.strokeStyle = "rgba(5, 12, 8, 0.8)";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(x, y, tileSize, tileSize);
-    }
-  }
+EVENT_POOL = [
+    MarketEvent("酸雨風暴", {"Medical": 2.8, "Vital": 1.2}, duration=3),
+    MarketEvent("淨水器故障", {"Vital": 3.2}, duration=2),
+    MarketEvent("暴民劫掠警報", {"Defense": 2.2, "Vital": 1.1}, duration=3),
+    MarketEvent("拾荒大篷車抵達", {"Luxury": 0.6, "Defense": 0.8}, duration=1),
+    MarketEvent("避難所狂歡夜", {"Luxury": 2.5}, duration=2),
+]
 
-  const tex = new THREE.CanvasTexture(c);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
-  tex.repeat.set(10, 10);
-  return tex;
+class PriceEngine:
+    def __init__(self):
+        self.active_event: Optional[MarketEvent] = None
+        self.event_days_left: int = 0
+        self.supply_multipliers: Dict[str, float] = {k: 1.0 for k in ITEMS}
+
+    def update_daily_event(self, day: int) -> Optional[str]:
+        if self.event_days_left > 0:
+            self.event_days_left -= 1
+            if self.event_days_left == 0:
+                self.active_event = None
+                return "事件結束，市場逐漸恢復常態。"
+            return f"事件持續中：【{self.active_event.name}】（剩餘 {self.event_days_left} 天）"
+        
+        # 35% 機率觸發新事件
+        if random.random() < 0.35:
+            self.active_event = random.choice(EVENT_POOL)
+            self.event_days_left = self.active_event.duration
+            return f"★ 突發事件觸發：【{self.active_event.name}】！預計持續 {self.event_days_left} 天。"
+        return None
+
+    def calculate_market_price(self, item_key: str) -> float:
+        """計算每日市場公道價：P_t = P_0 * M_env * M_event * (1 + epsilon)"""
+        item = ITEMS[item_key]
+        m_env = self.supply_multipliers.get(item_key, 1.0)
+        
+        m_event = 1.0
+        if self.active_event and item.category in self.active_event.affected_categories:
+            m_event = self.active_event.affected_categories[item.category]
+            
+        epsilon = random.uniform(-0.08, 0.08)
+        price = item.base_price * m_env * m_event * (1 + epsilon)
+        return round(max(price, 1.0), 1)
+
+    def calculate_buy_chance(self, item_key: str, set_price: float, market_price: float) -> float:
+        """根據玩家定價與市場公道價計算顧客購買意向率"""
+        if set_price <= market_price:
+            return 1.0
+        item = ITEMS[item_key]
+        diff_ratio = (set_price - market_price) / market_price
+        penalty = item.elasticity * (diff_ratio ** 2)
+        return max(0.0, round(1.0 - penalty, 2))
+
+
+# ==========================================
+# 2. 拾荒委託系統
+# ==========================================
+
+@dataclass
+class Scavenger:
+    name: str
+    phy: int  # 體魄 1-10
+    per: int  # 感知 1-10
+    grt: int  # 膽量 1-10
+    daily_wage: float = 20.0
+    profit_cut: float = 0.20  # 抽成 20%
+    is_alive: bool = True
+    is_injured: bool = False
+
+@dataclass
+class Zone:
+    name: str
+    days: int
+    danger_coeff: float      # 基礎危險係數 D (0.0 ~ 1.0)
+    loot_range: tuple        # (min_caps, max_caps)
+    loot_items: List[str]
+
+ZONES = {
+    "supermarket": Zone("廢棄超商區", 1, 0.15, (80, 150), ["water", "food", "rad_pill"]),
+    "scrapyard": Zone("市郊廢車場", 2, 0.35, (250, 450), ["ammo_9mm", "food", "cigarettes"]),
+    "checkpoint": Zone("軍事檢查站", 2, 0.55, (600, 1000), ["ammo_9mm", "rad_pill", "cigarettes"]),
+    "biolab": Zone("生化實驗室遺跡", 3, 0.75, (1500, 2800), ["rad_pill", "ammo_9mm", "water", "cigarettes"])
 }
 
-/* ==================== Three.js 3D 渲染系統 ==================== */
-let scene, camera, renderer;
-let hospitalGroup = null;
-let interactables = [];
-let wallColliders = [];
-
-let yaw = 0, pitch = 0;
-let playerPos = { x: 0, y: 1.8, z: 8 };
-let keys = { KeyW: false, KeyS: false, KeyA: false, KeyD: false };
-let isInteractingLook = false, lastTouchX = 0, lastTouchY = 0;
-let headBob = 0;
-
-function startGame() {
-  document.getElementById('start-modal').style.display = 'none';
-  sfx.init();
-
-  initThreeEngine();
-  buildPhotorealHospital();
-}
-
-function initThreeEngine() {
-  const container = document.getElementById('canvas-container');
-  scene = new THREE.Scene();
-
-  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 80);
-  camera.position.set(playerPos.x, playerPos.y, playerPos.z);
-  scene.add(camera);
-
-  // ⭐ 全場常時明亮光照 (取消手電筒，使用均勻頂棚燈光)
-  const mainAmbient = new THREE.AmbientLight(0xdde8e0, 0.85); // 高亮度清冷環境光
-  scene.add(mainAmbient);
-
-  // 頂棚長條日光燈陣列 (Diffuse Overhead Lights)
-  const ceilingLight1 = new THREE.PointLight(0xf2fff8, 0.9, 22);
-  ceilingLight1.position.set(0, 5.2, 4);
-  scene.add(ceilingLight1);
-
-  const ceilingLight2 = new THREE.PointLight(0xf2fff8, 0.9, 22);
-  ceilingLight2.position.set(0, 5.2, -6);
-  scene.add(ceilingLight2);
-
-  renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05; // 明亮通透曝光
-  container.appendChild(renderer.domElement);
-
-  // 鍵盤與滑鼠監聽
-  window.addEventListener('keydown', (e) => { if (keys.hasOwnProperty(e.code)) keys[e.code] = true; });
-  window.addEventListener('keyup', (e) => { if (keys.hasOwnProperty(e.code)) keys[e.code] = false; });
-
-  container.addEventListener('pointerdown', (e) => {
-    isInteractingLook = true;
-    lastTouchX = e.clientX; lastTouchY = e.clientY;
-  });
-  window.addEventListener('pointermove', (e) => {
-    if (isInteractingLook) {
-      const dx = e.clientX - lastTouchX, dy = e.clientY - lastTouchY;
-      lastTouchX = e.clientX; lastTouchY = e.clientY;
-      yaw -= dx * 0.0035;
-      pitch -= dy * 0.0035;
-      pitch = Math.max(-Math.PI / 2.5, Math.min(Math.PI / 2.5, pitch));
-    }
-  });
-  window.addEventListener('pointerup', () => { isInteractingLook = false; });
-  container.addEventListener('click', checkRaycastInteract);
-
-  window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  });
-
-  animate();
-}
-
-/* ==================== 建立寫實常亮醫院 3D 模型 ==================== */
-function buildPhotorealHospital() {
-  hospitalGroup = new THREE.Group();
-  interactables = [];
-  wallColliders = [];
-
-  const wallTexture = createHospitalWallTexture();
-  const tileTexture = createHospitalTileTexture();
-
-  // 1. 大廳外牆 (寬 20m, 深 24m, 高 6m)
-  const outerWallMat = new THREE.MeshStandardMaterial({
-    map: wallTexture, roughness: 0.85, side: THREE.BackSide
-  });
-  const outerWall = new THREE.Mesh(new THREE.BoxGeometry(20, 6, 24), outerWallMat);
-  outerWall.position.y = 3;
-  hospitalGroup.add(outerWall);
-
-  // 2. 地板 (綠白磨石子地磚)
-  const floorMat = new THREE.MeshStandardMaterial({
-    map: tileTexture, roughness: 0.35, metalness: 0.2
-  });
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(20, 24), floorMat);
-  floor.rotation.x = -Math.PI / 2;
-  hospitalGroup.add(floor);
-
-  // 天花板懸掛日光燈座
-  buildCeilingFixtures();
-
-  // 3. 機關 1：護理站大理石櫃檯與抽屜 (位置 X: -5.5, Z: 4)
-  buildNurseStation(-5.5, 4);
-
-  // 4. 機關 2：急診病床與纏繞止血帶 (位置 X: 5.5, Z: 1)
-  buildHospitalBed(5.5, 1);
-
-  // 5. 機關 3：老舊藥品鋼鐵櫃 (位置 X: 7.5, Z: -7)
-  buildMedicineCabinet(7.5, -7);
-
-  // 6. 機關 4：放射科發光 X 光觀片燈箱 (位置 X: -7.5, Z: -6)
-  buildXRayViewBox(-7.5, -6);
-
-  // 7. 候診排椅與點滴架裝飾
-  buildWaitingBenches(0, 9);
-  buildIVStand(4.2, 2.2);
-
-  // 8. 終點：重型防護鐵門與密碼鎖盤 (位置 X: 0, Z: -11.8)
-  buildExitSecurityDoor(0, -11.8);
-
-  scene.add(hospitalGroup);
-}
-
-function buildCeilingFixtures() {
-  const steelMat = new THREE.MeshStandardMaterial({ color: 0x333d36, metalness: 0.8 });
-  const lampMat = new THREE.MeshBasicMaterial({ color: 0xf2fff8 });
-
-  // 燈管 1
-  const lamp1 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.15, 4.5), lampMat);
-  lamp1.position.set(0, 5.8, 4);
-  hospitalGroup.add(lamp1);
-
-  // 燈管 2
-  const lamp2 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.15, 4.5), lampMat);
-  lamp2.position.set(0, 5.8, -6);
-  hospitalGroup.add(lamp2);
-}
-
-// 機關 1：護理站與抽屜
-function buildNurseStation(x, z) {
-  const group = new THREE.Group();
-  const woodMat = new THREE.MeshStandardMaterial({ color: 0x1f3026, roughness: 0.75 });
-
-  const desk = new THREE.Mesh(new THREE.BoxGeometry(4.2, 1.25, 1.6), woodMat);
-  desk.position.y = 0.62;
-  group.add(desk);
-
-  // 壓克力取藥窗
-  const glass = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.8, 0.08), new THREE.MeshBasicMaterial({ color: 0xaaffcc, transparent: true, opacity: 0.35 }));
-  glass.position.set(0, 1.65, 0.5);
-  group.add(glass);
-
-  // 可搜刮抽屜
-  const drawer = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.35, 1.2), new THREE.MeshStandardMaterial({ color: 0x14211a }));
-  drawer.position.set(-0.8, 0.45, 0.65);
-  drawer.userData = { id: "nurse_drawer", hint: "【護理站金屬抽屜】" };
-  group.add(drawer);
-  interactables.push(drawer);
-
-  group.position.set(x, 0, z);
-  hospitalGroup.add(group);
-  wallColliders.push({ minX: x - 2.3, maxX: x + 2.3, minZ: z - 1.0, maxZ: z + 1.0 });
-}
-
-// 機關 2：病床與纏繞止血帶
-function buildHospitalBed(x, z) {
-  const group = new THREE.Group();
-  const steelMat = new THREE.MeshStandardMaterial({ color: 0x66776f, metalness: 0.85, roughness: 0.3 });
-  const matMat = new THREE.MeshStandardMaterial({ color: 0xdde5e0, roughness: 0.9 });
-
-  // 床架
-  const frame = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.4, 4.2), steelMat);
-  frame.position.y = 0.5;
-  group.add(frame);
-
-  // 床墊
-  const mattress = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.35, 4.0), matMat);
-  mattress.position.y = 0.85;
-  group.add(mattress);
-
-  // 護欄
-  const railL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.6, 3.2), steelMat);
-  railL.position.set(-1.0, 1.2, 0);
-  const railR = railL.clone();
-  railR.position.set(1.0, 1.2, 0);
-  group.add(railL); group.add(railR);
-
-  // 床頭被止血帶捆死的金屬盒 (需剪刀)
-  const box = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.4, 0.6), new THREE.MeshStandardMaterial({ color: 0x8a2020 }));
-  box.position.set(0, 1.2, -1.6);
-  box.name = "bed_box";
-  box.userData = { id: "bed_box", hint: "【被橡膠止血帶死死捆綁的床頭急救盒】" };
-  group.add(box);
-  interactables.push(box);
-
-  group.position.set(x, 0, z);
-  hospitalGroup.add(group);
-  wallColliders.push({ minX: x - 1.3, maxX: x + 1.3, minZ: z - 2.3, maxZ: z + 2.3 });
-}
-
-// 機關 3：藥品鐵櫃 (需鑰匙)
-function buildMedicineCabinet(x, z) {
-  const group = new THREE.Group();
-  const steelMat = new THREE.MeshStandardMaterial({ color: 0x3d4a43, metalness: 0.85 });
-
-  const cabinet = new THREE.Mesh(new THREE.BoxGeometry(1.6, 3.6, 1.2), steelMat);
-  cabinet.position.y = 1.8;
-  cabinet.userData = { id: "med_cabinet", hint: "【上鎖的雙開門玻璃藥品鐵櫃】" };
-  group.add(cabinet);
-  interactables.push(cabinet);
-
-  group.position.set(x, 0, z);
-  hospitalGroup.add(group);
-  wallColliders.push({ minX: x - 1.0, maxX: x + 1.0, minZ: z - 0.8, maxZ: z + 0.8 });
-}
-
-// 機關 4：X 光觀片箱 (需底片對齊)
-function buildXRayViewBox(x, z) {
-  const group = new THREE.Group();
-
-  // 桌台
-  const table = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.2, 1.4), new THREE.MeshStandardMaterial({ color: 0x1f2e24 }));
-  table.position.y = 0.6;
-  group.add(table);
-
-  // 發光燈箱
-  const lightBoxMat = new THREE.MeshBasicMaterial({ color: 0xcceeff });
-  const lightBox = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.2, 0.2), lightBoxMat);
-  lightBox.position.set(0, 1.9, 0);
-  lightBox.name = "xray_screen";
-  lightBox.userData = { id: "xray_box", hint: "【發光的醫用 X 光透視觀片燈箱】" };
-  group.add(lightBox);
-  interactables.push(lightBox);
-
-  group.position.set(x, 0, z);
-  hospitalGroup.add(group);
-  wallColliders.push({ minX: x - 1.4, maxX: x + 1.4, minZ: z - 0.9, maxZ: z + 0.9 });
-}
-
-// 點滴架
-function buildIVStand(x, z) {
-  const group = new THREE.Group();
-  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 3.2), new THREE.MeshStandardMaterial({ color: 0x77887f, metalness: 0.9 }));
-  pole.position.y = 1.6;
-  group.add(pole);
-
-  const bottle = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.45), new THREE.MeshBasicMaterial({ color: 0xccffdd, transparent: true, opacity: 0.6 }));
-  bottle.position.set(0.3, 2.7, 0);
-  group.add(bottle);
-
-  group.position.set(x, 0, z);
-  hospitalGroup.add(group);
-}
-
-// 候診排椅
-function buildWaitingBenches(x, z) {
-  const group = new THREE.Group();
-  const bench = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.4, 0.8), new THREE.MeshStandardMaterial({ color: 0x192e22, roughness: 0.7 }));
-  bench.position.y = 0.45;
-  const back = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.8, 0.15), new THREE.MeshStandardMaterial({ color: 0x192e22, roughness: 0.7 }));
-  back.position.set(0, 0.9, -0.35);
-  group.add(bench); group.add(back);
-  group.position.set(x, 0, z);
-  hospitalGroup.add(group);
-}
-
-// 終點防護鐵門
-function buildExitSecurityDoor(x, z) {
-  const group = new THREE.Group();
-  const doorMat = new THREE.MeshStandardMaterial({ color: 0x16221c, metalness: 0.85, roughness: 0.3 });
-  const door = new THREE.Mesh(new THREE.BoxGeometry(4.0, 5.0, 0.4), doorMat);
-  door.position.y = 2.5;
-  group.add(door);
-
-  const lockPlate = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.2, 0.2), new THREE.MeshBasicMaterial({ color: 0x00ff88 }));
-  lockPlate.position.set(1.4, 2.2, 0.3);
-  lockPlate.userData = { id: "exit_keypad", hint: "【安全隔離門・電子密碼盤】" };
-  group.add(lockPlate);
-  interactables.push(lockPlate);
-
-  group.position.set(x, 0, z);
-  hospitalGroup.add(group);
-}
-
-/* ==================== ⭐ 核心：實體密室道具鏈邏輯交互 ==================== */
-function checkRaycastInteract() {
-  const raycaster = new THREE.Raycaster();
-  raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
-
-  const hits = raycaster.intersectObjects(interactables, true);
-  if (hits.length === 0) return;
-
-  const hitObj = hits[0].object;
-  const dist = camera.position.distanceTo(hits[0].point);
-  if (dist > 4.5) return;
-
-  const targetId = hitObj.userData.id;
-  const activeItem = selectedSlotIdx !== null ? inventorySlots[selectedSlotIdx] : null;
-
-  // 1. 調查護理站抽屜
-  if (targetId === "nurse_drawer") {
-    if (!escapeProgress.drawerSearched) {
-      sfx.metalClank();
-      escapeProgress.drawerSearched = true;
-      hitObj.position.z += 0.5; // 拉開動畫
-      addItemToInventory("解剖剪刀", "✂️", "一把鋒利耐用的醫療手術剪刀，可用來剪斷繃帶或橡膠線纜。");
-      document.getElementById('current-task').innerText = "當前任務：前往病床床頭，選中【解剖剪刀】剪開急救盒上的止血帶！";
-      alert("【搜查抽屜】在散亂的病歷下，你找到了一把【解剖剪刀】！已收入底部背包欄。");
-    } else {
-      alert("抽屜已被搜刮空了，只剩下乾涸的紅藥水痕跡。");
-    }
-  }
-
-  // 2. 調查病床床頭急救盒 (需剪刀)
-  else if (targetId === "bed_box") {
-    if (!escapeProgress.strapCut) {
-      if (activeItem && activeItem.name === "解剖剪刀") {
-        sfx.metalClank();
-        escapeProgress.strapCut = true;
-        hitObj.material.color.setHex(0x1a4028); // 剪開變色
-        consumeSelectedItem();
-        addItemToInventory("鐵櫃鑰匙", "🗝️", "一把貼著『藥品管理科』標籤的黃銅小鑰匙。");
-        document.getElementById('current-task').innerText = "當前任務：走至牆角藥品鐵櫃，選中【鐵櫃鑰匙】插入解鎖！";
-        alert("【剪斷止血帶！】橡膠繩斷開，急救盒彈開！你從裡面拿到了【鐵櫃鑰匙】！已收進背包！");
-      } else {
-        alert("金屬盒被強韌的橡膠止血帶緊緊打結纏死，徒手無法解開！（請先選中背包中的剪刀道具）");
-      }
-    } else {
-      alert("急救盒已經被剪開打開了。");
-    }
-  }
-
-  // 3. 調查藥品鐵櫃 (需鑰匙)
-  else if (targetId === "med_cabinet") {
-    if (!escapeProgress.cabinetUnlocked) {
-      if (activeItem && activeItem.name === "鐵櫃鑰匙") {
-        sfx.metalClank();
-        escapeProgress.cabinetUnlocked = true;
-        consumeSelectedItem();
-        addItemToInventory("胸部透視片", "🩻", "一張泛黃曝光的胸腔 X 光透明底片，上面隱約有黑白骨骼光影。");
-        document.getElementById('current-task').innerText = "當前任務：走至發光的 X 光觀片箱，選中【胸部透視片】放置顯影！";
-        alert("【鐵櫃解鎖成功！】玻璃門彈開！你在藥品架深處發現了一張封存的【胸部透視片】！");
-      } else {
-        alert("藥品櫃鎖頭緊閉，內部保管著重要醫療底片，需要專用鑰匙解鎖（請選中背包裡的鑰匙）！");
-      }
-    } else {
-      alert("藥品櫃門已打開，內部藥品早已過期發黑。");
-    }
-  }
-
-  // 4. 調查 X 光燈箱 (需底片)
-  else if (targetId === "xray_box") {
-    if (!escapeProgress.xrayIlluminated) {
-      if (activeItem && activeItem.name === "胸部透視片") {
-        sfx.click();
-        escapeProgress.xrayIlluminated = true;
-        consumeSelectedItem();
-        hitObj.material.color.setHex(0x334455); // 底片貼上變暗顯影
-        document.getElementById('current-task').innerText = "當前任務：前往防護鐵門密碼盤，輸入底片顯示的密碼 3824 逃脫！";
-        alert("【底片顯影透光！】\n在強烈白光穿透下，底片右下角浮現出手寫的一串紅色醫療暗號：\n『緊急撤離密碼：3 - 8 - 2 - 4』！");
-      } else {
-        alert("觀片燈箱強光刺眼，必須將透明底片放上去才能看清內容（請選中背包中的透視片）！");
-      }
-    } else {
-      alert("X 光底片在燈箱上清晰透光，顯示著代碼：3 8 2 4。");
-    }
-  }
-
-  // 5. 調查防護門密碼盤
-  else if (targetId === "exit_keypad") {
-    openKeypadDialog();
-  }
-}
-
-/* ==================== 實體背包系統 ==================== */
-function addItemToInventory(name, icon, desc) {
-  for (let i = 0; i < 4; i++) {
-    if (inventorySlots[i] === null) {
-      inventorySlots[i] = { name, icon, desc };
-      document.getElementById(`slot-icon-${i}`).innerText = icon;
-      document.getElementById(`slot-name-${i}`).innerText = name;
-      return;
-    }
-  }
-}
-
-function selectItem(idx) {
-  if (inventorySlots[idx] === null) return;
-
-  if (selectedSlotIdx === idx) {
-    openPropModal(inventorySlots[idx]);
-  } else {
-    selectedSlotIdx = idx;
-    for (let i = 0; i < 4; i++) {
-      document.getElementById(`slot-${i}`).classList.remove('selected');
-    }
-    document.getElementById(`slot-${idx}`).classList.add('selected');
-  }
-}
-
-function consumeSelectedItem() {
-  if (selectedSlotIdx !== null) {
-    inventorySlots[selectedSlotIdx] = null;
-    document.getElementById(`slot-icon-${selectedSlotIdx}`).innerText = "空";
-    document.getElementById(`slot-name-${selectedSlotIdx}`).innerText = "-";
-    document.getElementById(`slot-${selectedSlotIdx}`).classList.remove('selected');
-    selectedSlotIdx = null;
-  }
-}
-
-function openPropModal(item) {
-  document.getElementById('prop-title').innerText = `【道具情報：${item.name}】`;
-  document.getElementById('prop-body').innerText = item.desc;
-  document.getElementById('prop-modal').style.display = 'flex';
-}
-function closePropModal() { document.getElementById('prop-modal').style.display = 'none'; }
-
-/* ==================== 密碼鎖盤邏輯 ==================== */
-function openKeypadDialog() {
-  sfx.click();
-  passcodeBuffer = "";
-  document.getElementById('keypad-code').innerText = "----";
-  document.getElementById('keypad-modal').style.display = 'flex';
-}
-function closeKeypad() { document.getElementById('keypad-modal').style.display = 'none'; }
-
-function pressKey(n) {
-  sfx.click();
-  if (passcodeBuffer.length < 4) {
-    passcodeBuffer += n;
-    document.getElementById('keypad-code').innerText = passcodeBuffer.padEnd(4, '-');
-  }
-}
-function clearKeypad() { sfx.click(); passcodeBuffer = ""; document.getElementById('keypad-code').innerText = "----"; }
-
-function submitPasscode() {
-  if (passcodeBuffer === escapeProgress.finalPasscode) {
-    sfx.doorOpen();
-    closeKeypad();
-    alert("🎉【隔離防護鐵門解鎖成功！】\n厚重的氣密鋼門發出洩壓低鳴，緩緩向兩側滑開！\n你成功破解連鎖謎題，活著逃出了杏林綜合醫院急診室！");
-  } else {
-    sfx.metalClank();
-    alert("【密碼錯誤！】門禁系統紅燈蜂鳴！請去 X 光燈箱確認底片上的紅色暗號！");
-    clearKeypad();
-  }
-}
-
-/* ==================== 走動與視角 ==================== */
-function updateMovement() {
-  const moveSpeed = 0.11;
-  let moveX = 0, moveZ = 0;
-
-  if (keys.KeyW) moveZ -= 1;
-  if (keys.KeyS) moveZ += 1;
-  if (keys.KeyA) moveX -= 1;
-  if (keys.KeyD) moveX += 1;
-
-  if (moveX !== 0 || moveZ !== 0) {
-    const len = Math.hypot(moveX, moveZ);
-    moveX = (moveX / len) * moveSpeed;
-    moveZ = (moveZ / len) * moveSpeed;
-
-    const sinYaw = Math.sin(yaw), cosYaw = Math.cos(yaw);
-    const nextX = playerPos.x + (moveX * cosYaw + moveZ * sinYaw);
-    const nextZ = playerPos.z + (-moveX * sinYaw + moveZ * cosYaw);
-
-    let canMoveX = true, canMoveZ = true;
-    for (let box of wallColliders) {
-      if (nextX >= box.minX && nextX <= box.maxX && playerPos.z >= box.minZ && playerPos.z <= box.maxZ) canMoveX = false;
-      if (playerPos.x >= box.minX && playerPos.x <= box.maxX && nextZ >= box.minZ && nextZ <= box.maxZ) canMoveZ = false;
-    }
-
-    if (nextX < -9 || nextX > 9) canMoveX = false;
-    if (nextZ < -11 || nextZ > 11) canMoveZ = false;
-
-    if (canMoveX) playerPos.x = nextX;
-    if (canMoveZ) playerPos.z = nextZ;
-
-    headBob += 0.18;
-    camera.position.y = playerPos.y + Math.sin(headBob) * 0.04;
-
-    if (Math.sin(headBob) < -0.95 && !updateMovement.stepped) {
-      sfx.step(); updateMovement.stepped = true;
-    } else if (Math.sin(headBob) > 0) {
-      updateMovement.stepped = false;
-    }
-  }
-
-  camera.position.x = playerPos.x;
-  camera.position.z = playerPos.z;
-
-  const euler = new THREE.Euler(pitch, yaw, 0, 'YXZ');
-  camera.quaternion.setFromEuler(euler);
-}
-
-function updateInteractHint() {
-  const raycaster = new THREE.Raycaster();
-  raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
-
-  const hits = raycaster.intersectObjects(interactables, true);
-  const cross = document.getElementById('crosshair');
-  const hint = document.getElementById('interact-hint');
-
-  if (hits.length > 0 && hits[0].distance <= 4.5) {
-    cross.classList.add('interactable');
-    hint.style.display = 'block';
-    hint.innerText = hits[0].object.userData.hint || "[ 點擊調查 ]";
-  } else {
-    cross.classList.remove('interactable');
-    hint.style.display = 'none';
-  }
-}
-
-function animate() {
-  requestAnimationFrame(animate);
-
-  updateMovement();
-  updateInteractHint();
-
-  renderer.render(scene, camera);
-}
-</script>
-</body>
-</html>
+class ExpeditionManager:
+    @staticmethod
+    def calculate_death_risk(scavenger: Scavenger, zone: Zone, armor_val: int = 5, has_supplies: bool = True) -> float:
+        """
+        R_death = max(5%, D - (護甲*2% + PHY*1.5% + GRT*1%))
+        缺乏補給時危險增加 20%
+        """
+        gear_bonus = (armor_val * 0.02) + (scavenger.phy * 0.015) + (scavenger.grt * 0.01)
+        supply_penalty = 0.0 if has_supplies else 0.20
+        risk = zone.danger_coeff + supply_penalty - gear_bonus
+        return round(max(0.05, min(0.95, risk)), 3)
+
+    @classmethod
+    def execute_expedition(cls, scavenger: Scavenger, zone: Zone, armor_val: int = 5, has_supplies: bool = True) -> dict:
+        death_risk = cls.calculate_death_risk(scavenger, zone, armor_val, has_supplies)
+        roll = random.random()
+
+        # 結果三元分支
+        if roll <= death_risk:
+            scavenger.is_alive = False
+            return {
+                "status": "殉職失聯",
+                "risk": death_risk,
+                "roll": round(roll, 3),
+                "loot_value": 0,
+                "loot_items": [],
+                "wage_paid": 0,
+                "net_profit": 0,
+                "msg": f"☠️ {scavenger.name} 在【{zone.name}】遭遇致命伏擊，不幸殉職，裝備與物資全部遺失！"
+            }
+        elif roll <= death_risk + 0.25:
+            scavenger.is_injured = True
+            base_loot = random.randint(*zone.loot_range) * random.uniform(0.5, 0.7)
+            chosen_item = random.choice(zone.loot_items)
+            medical_cost = 45.0
+            wage = scavenger.daily_wage * zone.days
+            net = base_loot * (1 - scavenger.profit_cut) - wage - medical_cost
+            return {
+                "status": "負傷返還",
+                "risk": death_risk,
+                "roll": round(roll, 3),
+                "loot_value": round(base_loot, 1),
+                "loot_items": [chosen_item],
+                "wage_paid": wage,
+                "medical_cost": medical_cost,
+                "net_profit": round(net, 1),
+                "msg": f"⚠️ {scavenger.name} 身負重傷逃回，丟失部分物資，帶回價值 {round(base_loot, 1)} 瓶蓋，需要治療！"
+            }
+        else:
+            base_loot = random.randint(*zone.loot_range)
+            extra_drops = random.sample(zone.loot_items, k=min(len(zone.loot_items), 1 + (scavenger.per // 4)))
+            wage = scavenger.daily_wage * zone.days
+            scav_cut = base_loot * scavenger.profit_cut
+            net = base_loot - scav_cut - wage
+            return {
+                "status": "凱旋大捷",
+                "risk": death_risk,
+                "roll": round(roll, 3),
+                "loot_value": base_loot,
+                "loot_items": extra_drops,
+                "wage_paid": wage,
+                "scav_cut": round(scav_cut, 1),
+                "net_profit": round(net, 1),
+                "msg": f"🎉 {scavenger.name} 完好無損歸來！滿載而歸，總估值 {base_loot} 瓶蓋！"
+            }
+
+
+# ==========================================
+# 3. 30 天快速模擬運算展示
+# ==========================================
+
+def run_simulation():
+    engine = PriceEngine()
+    player_caps = 300.0
+    print("=" * 65)
+    print("  🏪 《末日便利商店》30 天經濟與拾荒模擬引擎啟動")
+    print(f"  初始流動資金: {player_caps} 瓶蓋 (Caps)")
+    print("=" * 65)
+
+    team = [
+        Scavenger("老雷 (老兵)", phy=7, per=5, grt=8, daily_wage=25.0),
+        Scavenger("阿雅 (偵察兵)", phy=4, per=9, grt=6, daily_wage=22.0)
+    ]
+
+    for day in range(1, 31):
+        print(f"\n--- [第 {day:02d} 天] ---")
+        event_info = engine.update_daily_event(day)
+        if event_info:
+            print(f"📢 {event_info}")
+
+        prices = {k: engine.calculate_market_price(k) for k in ITEMS}
+        price_str = " | ".join([f"{ITEMS[k].name}: {prices[k]}C" for k in prices])
+        print(f"💰 今日牌價 -> {price_str}")
+
+        if day % 3 == 1:
+            active_scavs = [s for s in team if s.is_alive]
+            if active_scavs:
+                scav = random.choice(active_scavs)
+                target_zone = ZONES["supermarket"] if player_caps < 600 else ZONES["scrapyard"]
+                if player_caps > 1200:
+                    target_zone = ZONES["checkpoint"]
+
+                print(f"🎒 派遣隊員 [{scav.name}] 前往【{target_zone.name}】探索 ({target_zone.days}天)...")
+                res = ExpeditionManager.execute_expedition(scav, target_zone, armor_val=6, has_supplies=True)
+                print(f"   {res['msg']}")
+                print(f"   [檢定判定: 擲骰 {res['roll']} vs 死亡閾值 {res['risk']}]")
+
+                player_caps += res["net_profit"]
+                print(f"   委託淨結算收益: {res['net_profit']:+} 瓶蓋 | 當前金庫: {round(player_caps, 1)} 瓶蓋")
+            else:
+                print("❌ 所有拾荒隊員均已殉職，無法派遣！")
+
+    print("\n" + "=" * 65)
+    print(f"🏁 30 天模擬結束！最終金庫結餘: {round(player_caps, 1)} 瓶蓋")
+    print("=" * 65)
+
+if __name__ == "__main__":
+    run_simulation()
