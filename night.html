@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>【寂靜結界】相機透視與雷達追逐雙模版</title>
+<title>【寂靜結界】Mapillary 真實道路街景生還戰</title>
 
-<!-- Leaflet 開源地圖 (免 Key) -->
+<!-- Leaflet 開源地圖 -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<!-- Pannellum 360 實景引擎 (免 Key、極速渲染) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
-<script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+<!-- MapillaryJS 官方庫 -->
+<link href="https://unpkg.com/mapillary-js@4.1.2/dist/mapillary.css" rel="stylesheet" />
+<script src="https://unpkg.com/mapillary-js@4.1.2/dist/mapillary.js"></script>
 
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
@@ -45,40 +45,23 @@
   .badge.hp { color: #ff4444; border-color: #772222; font-weight: bold; }
   .badge.stalker { color: #ffaa00; border-color: #774400; font-weight: bold; }
 
-  /* 核心切換相機按鈕 */
-  .btn-camera-toggle {
-    background: #1a2230; border: 1px solid #58a6ff; color: #58a6ff;
-    padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;
-    cursor: pointer; display: flex; align-items: center; gap: 4px;
-  }
-  .btn-camera-toggle.active {
-    background: #8b1111; border-color: #ff4444; color: #fff;
-    box-shadow: 0 0 8px #ff0000;
-  }
-
-  /* ==================== 上半部：實景 / 相機共用視窗 ==================== */
-  #visual-section {
+  /* ==================== 上半部：Mapillary 真實道路街景 ==================== */
+  #street-section {
     position: relative;
     width: 100%;
-    height: 52%;
+    height: 54%;
     background: #000;
     overflow: hidden;
   }
-
-  /* 360 街景容器 */
-  #panorama-viewer {
+  #mly {
     width: 100%; height: 100%; position: absolute; top: 0; left: 0;
+    /* 恐怖夜視對比濾鏡：轉變為深沉午夜 */
+    filter: invert(90%) hue-rotate(180deg) contrast(140%) saturate(15%) brightness(65%);
+  }
+  .mapillary-attribution-container, .mapillary-sequence-container {
+    opacity: 0.15 !important;
   }
 
-  /* WebRTC 相機透視視訊層 */
-  #camera-video {
-    width: 100%; height: 100%; object-fit: cover; position: absolute;
-    top: 0; left: 0; display: none;
-    /* 相機透視專用恐怖色相過濾 */
-    filter: contrast(135%) saturate(30%) brightness(75%) hue-rotate(330deg);
-  }
-
-  /* 恐怖 VHS 掃描線與紅黑暗角 */
   .vhs-scanlines {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: radial-gradient(circle at 50% 50%, transparent 45%, rgba(20, 0, 0, 0.5) 80%, rgba(0, 0, 0, 0.9) 100%),
@@ -92,10 +75,10 @@
     border-radius: 50%; pointer-events: none; z-index: 20;
   }
 
-  /* 相機透視模式專用的漂浮惡靈 */
-  #camera-ghost {
-    position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);
-    width: 90px; height: 140px; cursor: pointer; display: none; z-index: 30;
+  /* 街景惡靈實體 */
+  #ghost-entity {
+    position: absolute; width: 110px; height: 160px;
+    transform: translate(-50%, -50%); cursor: pointer; display: none; z-index: 30;
   }
   .ghost-shadow {
     width: 100%; height: 100%;
@@ -104,7 +87,7 @@
   }
   .ghost-eyes {
     position: absolute; top: 32%; left: 50%; transform: translate(-50%, -50%);
-    display: flex; gap: 16px;
+    display: flex; gap: 18px;
   }
   .ghost-eye {
     width: 10px; height: 14px; background: #fff; border-radius: 50%;
@@ -115,19 +98,11 @@
     100% { transform: scale(1.06); opacity: 1; }
   }
 
-  /* 街景熱點樣式 */
-  .pnn-ghost-hotspot {
-    width: 70px; height: 100px;
-    background: radial-gradient(ellipse at 50% 35%, rgba(255, 0, 0, 0.95) 0%, rgba(50, 0, 0, 0.8) 55%, transparent 80%);
-    border-radius: 50%; cursor: pointer;
-    animation: ghostBlink 0.8s infinite alternate;
-  }
-
   /* ==================== 下半部：雷達地圖 ==================== */
   #map-section {
     position: relative;
     width: 100%;
-    height: 48%;
+    height: 46%;
     background: #111;
   }
   #map {
@@ -138,7 +113,7 @@
     filter: brightness(80%) contrast(110%) !important;
   }
 
-  /* 方向模擬鍵盤 */
+  /* 模擬走動鍵盤 (室內測試) */
   .sim-controls {
     position: absolute; right: 10px; top: 10px; z-index: 999;
     display: grid; grid-template-columns: repeat(3, 34px);
@@ -166,7 +141,7 @@
     padding: 6px 12px; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer;
   }
 
-  /* 怪物追上警告紅光 */
+  /* 怪物逼近警示紅光 */
   #danger-glow {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     pointer-events: none; z-index: 1500;
@@ -201,37 +176,29 @@
   <div class="hud-header">
     <div class="hud-title">
       <div class="pulse-dot"></div>
-      <span id="mode-title">街景實景模式</span>
+      <span id="title-mode">MAPILLARY 真實道路街景</span>
     </div>
     <div class="status-badges">
-      <button class="btn-camera-toggle" id="btn-toggle-cam" onclick="toggleCameraMode()">
-        📷 開啟相機透視
-      </button>
       <div class="badge hp" id="hp-badge">HP: 100/100</div>
       <div class="badge stalker" id="monster-badge">鬼魅: 50m</div>
       <div class="badge" id="step-badge">步數: 0</div>
     </div>
   </div>
 
-  <!-- 上半部：街景 / 相機透視視窗 -->
-  <div id="visual-section">
-    <!-- 360 實景視圖 -->
-    <div id="panorama-viewer"></div>
+  <!-- 上半部：Mapillary 官方真實街景視窗 -->
+  <div id="street-section">
+    <div id="mly"></div>
+    <div class="vhs-scanlines"></div>
+    <div class="crosshair"></div>
 
-    <!-- WebRTC 相機透視視訊 -->
-    <video id="camera-video" autoplay playsinline muted></video>
-
-    <!-- 相機透視模式專用的惡靈 -->
-    <div id="camera-ghost" onclick="triggerExorcism()">
+    <!-- 街景惡靈 -->
+    <div id="ghost-entity" onclick="triggerExorcism()">
       <div class="ghost-shadow"></div>
       <div class="ghost-eyes">
         <div class="ghost-eye"></div>
         <div class="ghost-eye"></div>
       </div>
     </div>
-
-    <div class="vhs-scanlines"></div>
-    <div class="crosshair"></div>
   </div>
 
   <!-- 下半部：雷達地圖 -->
@@ -251,7 +218,7 @@
     <!-- 底部面板 -->
     <div class="floating-footer">
       <div class="footer-msg" id="footer-text">
-        「點擊右上角【📷 開啟相機透視】可直接調用後置鏡頭看穿現場！」
+        「畫面上半部是 Mapillary 真實道路街景！拖曳畫面轉身尋找惡靈！」
       </div>
       <button class="btn-exorcise" onclick="triggerExorcism()">⚡ 封印驅魔 ⚡</button>
     </div>
@@ -259,17 +226,20 @@
 
   <!-- 開場授權 -->
   <div id="modal-mask">
-    <h1>靜安怪談：相機透視雙模版</h1>
+    <h1>靜安怪談：Mapillary 合併版</h1>
     <p>
-      <b>雙重視野已就緒：</b><br>
-      可在 <b>360° 虛擬街景</b> 與 <b>手機相機真實透視</b> 之間一鍵自由切換！<br>
-      下方為即時雷達地圖，注意避開 3m/s 追殺你的惡靈！
+      <b>真實道路實景已就緒：</b><br>
+      上方直接渲染 <b>Mapillary 真實道路全景</b>（非雷達站！）。<br>
+      下方為即時道路地圖，惡靈以 3m/s 在身後追擊！
     </p>
-    <button class="btn-main" onclick="initGame()">啟動生還戰</button>
+    <button class="btn-main" onclick="initGame()">進入真實街景</button>
   </div>
 </div>
 
 <script>
+// ⭐ 你的專屬 Mapillary Client Token
+const MAPILLARY_CLIENT_TOKEN = "MLY|28733254389675887|86d28fb76c4cd708f49749d1d979baf4";
+
 /* ==================== 音效引擎 ==================== */
 class SoundEngine {
   constructor() { this.ctx = null; }
@@ -312,31 +282,30 @@ class SoundEngine {
 }
 const sfx = new SoundEngine();
 
-/* ==================== 狀態與全域變數 ==================== */
+/* ==================== 狀態與變數 ==================== */
 let playerHP = 100;
 let totalSteps = 0;
-let userLat = 25.0418, userLng = 121.5436; // 台北市區預設座標
+let userLat = 25.0418, userLng = 121.5436; // 台北市區座標
 
 let map = null, userMarker = null, monsterMarker = null;
 let monsterLat = 0, monsterLng = 0;
 const MONSTER_SPEED_MPS = 3.0; // 3m/s 追趕
 let lastTime = performance.now();
 
-let pViewer = null;
-let isCameraMode = false;
-let cameraStream = null;
+let mlyViewer = null;
+let ghostBearing = 50; // 惡靈固定在街景東北方 50 度
 
 function initGame() {
   document.getElementById('modal-mask').style.display = 'none';
   sfx.init();
 
-  // 1. 初始化 360 實景街景 (Pannellum)
-  initPanorama();
-
-  // 2. 初始化下半部地圖 (Leaflet)
+  // 1. 初始化下方 Leaflet 地圖
   initLeafletMap();
 
-  // 3. 讀取真實 GPS
+  // 2. 初始化上方 Mapillary 街景
+  initMapillaryViewer();
+
+  // 3. 讀取真實 GPS 並搜尋周遭街景
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(pos => {
       userLat = pos.coords.latitude;
@@ -346,6 +315,7 @@ function initGame() {
         userMarker.setLatLng([userLat, userLng]);
         resetMonsterPosition();
       }
+      searchNearbyMapillaryImage(userLat, userLng);
     });
   }
 
@@ -354,73 +324,96 @@ function initGame() {
   requestAnimationFrame(gameLoop);
 }
 
-// 1. 上半部 360 街景初始化
-function initPanorama() {
-  pViewer = pannellum.viewer('panorama-viewer', {
-    type: 'equirectangular',
-    panorama: 'https://pannellum.org/images/alma.jpg',
-    autoLoad: true,
-    showControls: false,
-    orientationOnByDefault: true,
-    hotSpots: [
-      {
-        pitch: -3,
-        yaw: 45,
-        cssClass: 'pnn-ghost-hotspot',
-        createTooltipFunc: (div) => {
-          div.onclick = () => { triggerExorcism(); };
+// 1. 建立 Mapillary Viewer (無預先綁死 ID，避免載入失敗死黑)
+function initMapillaryViewer() {
+  const { Viewer } = mapillary;
+
+  // 延遲 100ms 確保容器 CSS 寬高計算完成
+  setTimeout(() => {
+    try {
+      mlyViewer = new Viewer({
+        accessToken: MAPILLARY_CLIENT_TOKEN,
+        container: 'mly',
+        component: {
+          cover: false,
+          direction: false,
+          sequence: false
         }
-      }
-    ]
-  });
+      });
+
+      // 監聽轉身視角事件 (POV)
+      mlyViewer.on('pov', updateGhostOverlay);
+      window.addEventListener('resize', () => {
+        mlyViewer.resize();
+        updateGhostOverlay();
+      });
+
+      // 載入預設真實市區街景 (台北市忠孝東路實景)
+      searchNearbyMapillaryImage(userLat, userLng);
+    } catch (err) {
+      console.error("Mapillary 建立失敗:", err);
+    }
+  }, 100);
 }
 
-// 2. 一鍵切換相機透視模式 (WebRTC 後置相機)
-async function toggleCameraMode() {
-  const btn = document.getElementById('btn-toggle-cam');
-  const panoEl = document.getElementById('panorama-viewer');
-  const videoEl = document.getElementById('camera-video');
-  const camGhost = document.getElementById('camera-ghost');
-  const title = document.getElementById('mode-title');
+// 2. 透過經緯度向 Mapillary Graph API 查詢周遭最近的道路街景照片
+async function searchNearbyMapillaryImage(lat, lng) {
+  const delta = 0.0025; // 搜尋半徑約 250 公尺
+  const bbox = `${lng - delta},${lat - delta},${lng + delta},${lat + delta}`;
+  const url = `https://graph.mapillary.com/images?access_token=${MAPILLARY_CLIENT_TOKEN}&fields=id,geometry&bbox=${bbox}&limit=1`;
 
-  if (!isCameraMode) {
-    // 開啟相機透視
-    try {
-      cameraStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
-      });
-      videoEl.srcObject = cameraStream;
-      videoEl.style.display = 'block';
-      panoEl.style.display = 'none';
-      camGhost.style.display = 'block';
-
-      isCameraMode = true;
-      btn.classList.add('active');
-      btn.innerText = "🌐 切換回 360 街景";
-      title.innerText = "相機即時透視模式";
-      document.getElementById('footer-text').innerText = "「相機已啟動！透過手機鏡頭觀察身邊環境，點擊惡靈進行封印！」";
-    } catch (err) {
-      alert("無法啟動相機，請確認瀏覽器相機授權（手機需在 HTTPS 環境下執行）。");
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.data && data.data.length > 0) {
+      const imgId = data.data[0].id;
+      mlyViewer.moveTo(imgId).then(() => {
+        mlyViewer.resize();
+        updateGhostOverlay();
+      }).catch(e => console.warn(e));
+    } else {
+      // 周圍暫無資料時，載入台北市區公開大路照片
+      mlyViewer.moveTo("498763468214164").then(() => {
+        mlyViewer.resize();
+        updateGhostOverlay();
+      }).catch(e => console.warn(e));
     }
-  } else {
-    // 關閉相機，切換回 360 街景
-    if (cameraStream) {
-      cameraStream.getTracks().forEach(t => t.stop());
-      cameraStream = null;
-    }
-    videoEl.style.display = 'none';
-    panoEl.style.display = 'block';
-    camGhost.style.display = 'none';
-
-    isCameraMode = false;
-    btn.classList.remove('active');
-    btn.innerText = "📷 開啟相機透視";
-    title.innerText = "街景實景模式";
-    document.getElementById('footer-text').innerText = "「已返回 360 實景街景，拖曳畫面尋找惡靈！」";
+  } catch (err) {
+    // 網路受阻時直接載入保底照片
+    mlyViewer.moveTo("498763468214164").then(() => {
+      mlyViewer.resize();
+      updateGhostOverlay();
+    }).catch(e => console.warn(e));
   }
 }
 
-// 3. 下半部 Leaflet 地圖初始化
+// 3. 視角投影運算：將惡靈準確釘在真實街道畫面上
+function updateGhostOverlay() {
+  if (!mlyViewer) return;
+
+  mlyViewer.getPointOfView().then(pov => {
+    const sec = document.getElementById('street-section');
+    const w = sec.clientWidth, h = sec.clientHeight;
+
+    let diff = ghostBearing - (pov.bearing || 0);
+    while (diff < -180) diff += 360;
+    while (diff > 180) diff -= 360;
+
+    const ghostEl = document.getElementById('ghost-entity');
+    const hFov = 75; // Mapillary 水平視野約 75 度
+
+    if (Math.abs(diff) < hFov / 2) {
+      const screenX = (w / 2) + (diff / (hFov / 2)) * (w / 2);
+      ghostEl.style.display = 'block';
+      ghostEl.style.left = `${screenX}px`;
+      ghostEl.style.top = `${h * 0.52}px`;
+    } else {
+      ghostEl.style.display = 'none';
+    }
+  }).catch(() => {});
+}
+
+// 4. 下半部 Leaflet 地圖初始化 (含強制防黑屏修復)
 function initLeafletMap() {
   map = L.map('map', { zoomControl: false, attributionControl: false }).setView([userLat, userLng], 17);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
@@ -438,7 +431,6 @@ function initLeafletMap() {
   });
   monsterMarker = L.marker([monsterLat, monsterLng], { icon: monsterIcon }).addTo(map);
 
-  // 延遲刷新尺寸防止黑屏
   setTimeout(() => { map.invalidateSize(); }, 180);
 }
 
@@ -455,7 +447,7 @@ function getDistanceMeters(lat1, lon1, lat2, lon2) {
   return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
 }
 
-// 4. 追逐 AI 主循環
+// 5. 3m/s 追逐主循環
 function gameLoop(now) {
   const dt = (now - lastTime) / 1000;
   lastTime = now;
@@ -483,7 +475,7 @@ function gameLoop(now) {
     playerHP = Math.max(0, playerHP - 30);
     document.getElementById('hp-badge').innerText = `HP: ${playerHP}/100`;
     resetMonsterPosition();
-    alert(`【遭背後撲咬！】受到 30 傷害！剩餘 HP: ${playerHP}。快邁開腳步！`);
+    alert(`【遭背後撲咬！】受到 30 傷害！剩餘 HP: ${playerHP}。快邁開腳步逃跑！`);
   }
 
   requestAnimationFrame(gameLoop);
@@ -500,8 +492,10 @@ function simMove(dLng, dLat) {
 
 function triggerExorcism() {
   sfx.chime();
-  alert("【除靈成功！】潛伏在視野中的惡靈已被徹底擊散！追殺怪已被震退！");
+  alert("【除靈成功！】潛伏在 Mapillary 街景中的惡靈已被徹底擊散！追殺怪已被震退！");
   resetMonsterPosition();
+  ghostBearing = (ghostBearing + 120 + Math.random() * 60) % 360;
+  updateGhostOverlay();
 }
 </script>
 </body>
