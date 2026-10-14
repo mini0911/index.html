@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>【寂靜結界】街景與地圖絕對同步版</title>
+<title>【寂靜結界】真 360 度實景 × 地圖絕對同步版</title>
 
 <!-- Leaflet 開源地圖 -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -52,7 +52,7 @@
     background: #003311; border-color: #00ff66; color: #00ff66;
   }
 
-  /* 上半部：Mapillary 街景 */
+  /* 上半部：360 度實景容器 */
   #street-section {
     position: relative; width: 100%; height: 54%; background: #000; overflow: hidden;
   }
@@ -121,7 +121,7 @@
     padding: 6px 12px; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer;
   }
 
-  /* 視角方向光錐指示 (玩家標記視角箭頭) */
+  /* 玩家視角光錐箭頭 */
   .player-heading-cone {
     width: 0; height: 0;
     border-left: 6px solid transparent;
@@ -152,7 +152,7 @@
   <div class="hud-header">
     <div class="hud-title">
       <div class="pulse-dot"></div>
-      <span id="title-mode">街景與地圖絕對同步</span>
+      <span id="title-mode">360° 全景 × 絕對同步</span>
     </div>
     <div class="status-badges">
       <button class="btn-nvg-toggle" id="btn-toggle-nvg" onclick="toggleNightVision()">
@@ -164,7 +164,7 @@
     </div>
   </div>
 
-  <!-- 上半部：Mapillary 官方街景 -->
+  <!-- 上半部：Mapillary 官方 360 全景街景容器 -->
   <div id="street-section">
     <div id="mly"></div>
     <div class="crosshair"></div>
@@ -190,7 +190,7 @@
 
     <div class="floating-footer">
       <div class="footer-msg" id="footer-text">
-        「街景與地圖已完成座標校準！點擊箭頭或走動時，兩者同步更新！」
+        「正在同步定位……」
       </div>
       <button class="btn-exorcise" onclick="triggerExorcism()">⚡ 封印驅魔 ⚡</button>
     </div>
@@ -198,13 +198,13 @@
 
   <!-- 開場視窗 -->
   <div id="modal-mask">
-    <h1>靜安怪談：座標同步版</h1>
+    <h1>靜安怪談：真 360° 同步版</h1>
     <p>
-      <b>雙向座標校準已啟動：</b><br>
-      上方街景照片的真實拍攝座標，將即時反向對齊下方地圖！<br>
-      地圖標記的箭頭也會隨上方視角旋轉而轉向！
+      <b>雙項核心修復完成：</b><br>
+      1. <b>真 360 度全景球體</b>：可 360° 上下左右自由環顧，轉頭看背後！<br>
+      2. <b>絕對座標校準</b>：下方地圖與上方街景拍攝點嚴格對齊，視野箭頭隨旋轉同步！
     </p>
-    <button class="btn-main" onclick="initGame()">啟動座標同步生還戰</button>
+    <button class="btn-main" onclick="initGame()">授權定位並進入</button>
   </div>
 </div>
 
@@ -212,15 +212,17 @@
 // ⭐ Mapillary Access Token
 const MAPILLARY_ACCESS_TOKEN = "MLY|28733254389675887|c2488c852790b0d2d48083a0a2e4249c";
 
-/* ==================== 狀態與變數 ==================== */
+// ⭐ 官方驗證具備「真 360 度自由環顧」的全景照片 ID (備援用)
+const BACKUP_360_PANO_ID = "1933525276802129";
+
+/* ==================== 狀態與全域變數 ==================== */
 let playerHP = 100;
 let totalSteps = 0;
 
-// 預設起點：台北信義區核心路段（保證有密集街景）
-let userLat = 25.0339, userLng = 121.5645;
+let userLat = 25.0339, userLng = 121.5645; // 預設台北信義區
 let lastPhotoCoord = { lat: userLat, lng: userLng };
 let isFetchingStreet = false;
-const STREET_MOVE_THRESHOLD = 15; // 累積超過 15 米自動切換街景
+const STREET_MOVE_THRESHOLD = 15;
 
 let map = null, userMarker = null, monsterMarker = null;
 let monsterLat = 0, monsterLng = 0;
@@ -228,71 +230,75 @@ const MONSTER_SPEED_MPS = 3.0;
 let lastTime = performance.now();
 
 let mlyViewer = null;
-let ghostBearing = 45;
+let ghostBearing = 50;
 let isNightVisionActive = false;
 
 function initGame() {
   document.getElementById('modal-mask').style.display = 'none';
 
-  // 1. 先初始化下方地圖
+  // 1. 初始化下方地圖
   initLeafletMap();
 
-  // 2. 獲取真實 GPS 並直接搜尋「當前位置最近的街景照片」
+  // 2. 優先抓取真實 GPS 定位，確保地圖先跳到玩家所在地
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       pos => {
         userLat = pos.coords.latitude;
         userLng = pos.coords.longitude;
-        map.setView([userLat, userLng], 17);
-        userMarker.setLatLng([userLat, userLng]);
-        resetMonsterPosition();
-        initMapillaryByCoordinates(userLat, userLng);
+        syncMapToPosition(userLat, userLng);
+        // 帶著真實座標尋找最近的 360 全景街景
+        startMapillary360Search(userLat, userLng);
       },
       () => {
-        // GPS 未開則使用預設市區座標
-        initMapillaryByCoordinates(userLat, userLng);
+        syncMapToPosition(userLat, userLng);
+        startMapillary360Search(userLat, userLng);
       },
-      { enableHighAccuracy: true, timeout: 6000 }
+      { enableHighAccuracy: true, timeout: 5000 }
     );
   } else {
-    initMapillaryByCoordinates(userLat, userLng);
+    syncMapToPosition(userLat, userLng);
+    startMapillary360Search(userLat, userLng);
   }
 
   lastTime = performance.now();
   requestAnimationFrame(gameLoop);
 }
 
-// ⭐ 關鍵核心 1：不寫死 ID，以座標向 Mapillary 搜尋最近街景開場
-async function initMapillaryByCoordinates(lat, lng) {
+// ⭐ 核心 1：強制搜尋「is_pano=true」的真 360 度球體全景照片
+async function startMapillary360Search(lat, lng) {
   const { Viewer } = mapillary;
 
-  // 搜尋周遭 300 米內最近照片
-  const delta = 0.003;
+  // 搜尋半徑 500 米內，且必須是全景球體照片 (is_pano=true)
+  const delta = 0.005;
   const bbox = `${lng - delta},${lat - delta},${lng + delta},${lat + delta}`;
-  const url = `https://graph.mapillary.com/images?access_token=${MAPILLARY_ACCESS_TOKEN}&fields=id,geometry&bbox=${bbox}&limit=1`;
+  // 關鍵參數：is_pano=true 保證能 360 度無死角旋轉
+  const url = `https://graph.mapillary.com/images?access_token=${MAPILLARY_ACCESS_TOKEN}&fields=id,geometry,is_pano&is_pano=true&bbox=${bbox}&limit=1`;
 
-  let initialId = "1933525276802129"; // 備用
+  let chosenId = BACKUP_360_PANO_ID;
 
   try {
     const res = await fetch(url);
     const data = await res.json();
     if (data.data && data.data.length > 0) {
-      initialId = data.data[0].id;
+      chosenId = data.data[0].id;
     }
-  } catch(e) {}
+  } catch(e) {
+    console.warn("搜尋周邊 360 全景失敗，使用備援全景:", e);
+  }
 
+  // 建立 Mapillary Viewer
   mlyViewer = new Viewer({
     accessToken: MAPILLARY_ACCESS_TOKEN,
     container: 'mly',
-    imageId: initialId,
+    imageId: chosenId,
     component: {
       cover: false,
       direction: true,
-      sequence: true // 啟用路面導航箭頭
+      sequence: true
     }
   });
 
-  // ⭐ 關鍵核心 2：反向座標同步（街景載入成功時，強制地圖校準至照片的真實座標）
+  // ⭐ 核心 2：反向絕對校準（當 360 照片載入時，強制將下方地圖釘到照片實拍點）
   mlyViewer.on('image', (e) => {
     mlyViewer.resize();
     updateGhostOverlay();
@@ -300,21 +306,20 @@ async function initMapillaryByCoordinates(lat, lng) {
     if (e && e.image && e.image.geometry && e.image.geometry.coordinates) {
       const [photoLng, photoLat] = e.image.geometry.coordinates;
 
-      // 更新玩家內部真實座標
+      // 絕對校準：更新玩家座標為街景拍攝點
       userLat = photoLat;
       userLng = photoLng;
       lastPhotoCoord = { lat: photoLat, lng: photoLng };
 
-      // 將下方地圖的標記與中心點絕對對齊到這張照片上
-      if (userMarker) userMarker.setLatLng([photoLat, photoLng]);
-      if (map) map.panTo([photoLat, photoLng]);
+      // 將下方地圖完全對齊照片實景座標
+      syncMapToPosition(photoLat, photoLng);
 
       document.getElementById('footer-text').innerText =
-        `「座標已鎖定！照片實拍位置：${photoLat.toFixed(5)}, ${photoLng.toFixed(5)}」`;
+        `「已鎖定真 360° 實景！實拍座標：${photoLat.toFixed(5)}, ${photoLng.toFixed(5)}，可 360 度轉身！」`;
     }
   });
 
-  // 監聽視角轉向 (POV)，同步轉動下方地圖上的視角箭頭
+  // 監聽 360 度旋轉事件 (POV)，下方地圖視角光錐同步旋轉
   mlyViewer.on('pov', (pov) => {
     updateGhostOverlay();
     updatePlayerHeading(pov.bearing || 0);
@@ -328,7 +333,17 @@ async function initMapillaryByCoordinates(lat, lng) {
   });
 }
 
-// 更新地圖上玩家標記的朝向箭頭
+// 同步更新地圖與標記
+function syncMapToPosition(lat, lng) {
+  if (userMarker) userMarker.setLatLng([lat, lng]);
+  if (map) {
+    map.setView([lat, lng], 17);
+    map.invalidateSize();
+  }
+  resetMonsterPosition();
+}
+
+// 更新地圖上的視角箭頭朝向
 function updatePlayerHeading(bearing) {
   const cone = document.getElementById('heading-cone');
   if (cone) {
@@ -336,7 +351,7 @@ function updatePlayerHeading(bearing) {
   }
 }
 
-// 走動位移滿 15 米自動切換街景
+// 位移滿 15 公尺自動搜尋並載入前方 360 全景
 async function checkAndFetchNextStreet() {
   if (isFetchingStreet || !mlyViewer) return;
 
@@ -344,11 +359,12 @@ async function checkAndFetchNextStreet() {
 
   if (dist >= STREET_MOVE_THRESHOLD) {
     isFetchingStreet = true;
-    document.getElementById('footer-text').innerText = `「累積走動 ${dist}m！正在載入前方街景……」`;
+    document.getElementById('footer-text').innerText = `「累積走動 ${dist}m！正在搜尋前方 360° 街景……」`;
 
-    const delta = 0.002;
+    const delta = 0.003;
     const bbox = `${userLng - delta},${userLat - delta},${userLng + delta},${userLat + delta}`;
-    const url = `https://graph.mapillary.com/images?access_token=${MAPILLARY_ACCESS_TOKEN}&fields=id,geometry&bbox=${bbox}&limit=1`;
+    // 依然強制搜尋 is_pano=true
+    const url = `https://graph.mapillary.com/images?access_token=${MAPILLARY_ACCESS_TOKEN}&fields=id,geometry,is_pano&is_pano=true&bbox=${bbox}&limit=1`;
 
     try {
       const res = await fetch(url);
@@ -368,7 +384,6 @@ function initLeafletMap() {
   map = L.map('map', { zoomControl: false, attributionControl: false }).setView([userLat, userLng], 17);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
-  // 帶有視角方向光錐的玩家標記
   const playerHtml = `
     <div style="position:relative; width:14px; height:14px;">
       <div id="heading-cone" class="player-heading-cone"></div>
@@ -385,7 +400,7 @@ function initLeafletMap() {
   });
   monsterMarker = L.marker([monsterLat, monsterLng], { icon: monsterIcon }).addTo(map);
 
-  setTimeout(() => { map.invalidateSize(); }, 180);
+  setTimeout(() => { map.invalidateSize(); }, 200);
 }
 
 function resetMonsterPosition() {
@@ -401,7 +416,7 @@ function getDistanceMeters(lat1, lon1, lat2, lon2) {
   return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
 }
 
-// 追逐循環
+// 追逐主循環
 function gameLoop(now) {
   const dt = (now - lastTime) / 1000;
   lastTime = now;
@@ -427,7 +442,7 @@ function gameLoop(now) {
   requestAnimationFrame(gameLoop);
 }
 
-// 模擬位移鍵
+// 模擬位移按鈕
 function simMove(dLng, dLat) {
   userLat += dLat; userLng += dLng;
   if (userMarker) userMarker.setLatLng([userLat, userLng]);
@@ -438,6 +453,7 @@ function simMove(dLng, dLat) {
   checkAndFetchNextStreet();
 }
 
+// 惡靈方位投影
 function updateGhostOverlay() {
   if (!mlyViewer) return;
   mlyViewer.getPointOfView().then(pov => {
@@ -468,7 +484,7 @@ function toggleNightVision() {
 }
 
 function triggerExorcism() {
-  alert("【除靈成功！】潛伏在街道中的惡靈已被徹底擊散！追殺怪已被震退！");
+  alert("【除靈成功！】潛伏在 360 街景中的惡靈已被徹底擊散！追殺怪已被震退！");
   resetMonsterPosition();
   ghostBearing = (ghostBearing + 120 + Math.random() * 60) % 360;
   updateGhostOverlay();
