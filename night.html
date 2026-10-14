@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>【寂靜結界】Mapillary 官方真實街景逃脫</title>
+<title>【寂靜結界】真實道路走動穿梭版</title>
 
 <!-- Leaflet 開源地圖 -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -45,7 +45,7 @@
   .badge.hp { color: #ff4444; border-color: #772222; font-weight: bold; }
   .badge.stalker { color: #ffaa00; border-color: #774400; font-weight: bold; }
 
-  /* ==================== 上半部：Mapillary 真實道路街景 ==================== */
+  /* ==================== 上半部：Mapillary 官方街景容器 ==================== */
   #street-section {
     position: relative;
     width: 100%;
@@ -55,11 +55,13 @@
   }
   #mly {
     width: 100%; height: 100%; position: absolute; top: 0; left: 0;
-    /* 恐怖夜視對比濾鏡 */
+    /* 恐怖夜視濾鏡：黑夜反轉、去飽和、深暗高對比 */
     filter: invert(88%) hue-rotate(180deg) contrast(140%) saturate(15%) brightness(70%);
   }
-  .mapillary-attribution-container, .mapillary-sequence-container {
-    opacity: 0.2 !important;
+
+  /* 讓路面導航箭頭更明顯 */
+  .mapillary-sequence-container {
+    opacity: 0.85 !important;
   }
 
   .vhs-scanlines {
@@ -113,7 +115,7 @@
     filter: brightness(80%) contrast(110%) !important;
   }
 
-  /* 模擬方向鍵盤 */
+  /* 模擬走動鍵盤 (每次點擊移動約 8~10 公尺) */
   .sim-controls {
     position: absolute; right: 10px; top: 10px; z-index: 999;
     display: grid; grid-template-columns: repeat(3, 34px);
@@ -176,7 +178,7 @@
   <div class="hud-header">
     <div class="hud-title">
       <div class="pulse-dot"></div>
-      <span id="title-mode">MAPILLARY 真實街景現場</span>
+      <span id="title-mode">道路實景穿梭系統</span>
     </div>
     <div class="status-badges">
       <div class="badge hp" id="hp-badge">HP: 100/100</div>
@@ -205,42 +207,42 @@
   <div id="map-section">
     <div id="map"></div>
 
-    <!-- 模擬方向鍵 -->
+    <!-- 模擬方向鍵 (每次位移約 10 公尺，連按兩下觸發 15m 自動換圖) -->
     <div class="sim-controls">
       <div></div>
-      <button class="sim-btn" onclick="simMove(0, 0.00015)">▲</button>
+      <button class="sim-btn" onclick="simMove(0, 0.00010)">▲</button>
       <div></div>
-      <button class="sim-btn" onclick="simMove(-0.00015, 0)">◄</button>
-      <button class="sim-btn" onclick="simMove(0, -0.00015)">▼</button>
-      <button class="sim-btn" onclick="simMove(0.00015, 0)">►</button>
+      <button class="sim-btn" onclick="simMove(-0.00010, 0)">◄</button>
+      <button class="sim-btn" onclick="simMove(0, -0.00010)">▼</button>
+      <button class="sim-btn" onclick="simMove(0.00010, 0)">►</button>
     </div>
 
     <!-- 底部面板 -->
     <div class="floating-footer">
       <div class="footer-msg" id="footer-text">
-        「上方是 Mapillary 真實街景，拖曳畫面尋找惡靈！下方為即時雷達地圖！」
+        「點擊地面白色箭頭前進，或走動滿 15 公尺自動切換下一張街景！」
       </div>
       <button class="btn-exorcise" onclick="triggerExorcism()">⚡ 封印驅魔 ⚡</button>
     </div>
   </div>
 
-  <!-- 開場授權 -->
+  <!-- 開場視窗 -->
   <div id="modal-mask">
-    <h1>靜安怪談：Mapillary 實境篇</h1>
+    <h1>靜安怪談：道路穿梭版</h1>
     <p>
-      <b>真實街景連線中：</b><br>
-      上方直接渲染 <b>Mapillary 真實道路街景</b>。<br>
-      下方為即時雷達地圖，注意避開 3m/s 追殺你的惡靈！
+      <b>位移即時連動機制已載入：</b><br>
+      1. <b>路面白色導航箭頭</b>：點擊直接沿街景拍攝軌跡滑行。<br>
+      2. <b>15 公尺位移自動換圖</b>：真實走動或按鍵位移超過 15 米自動切換下一張照片！
     </p>
     <button class="btn-main" onclick="initGame()">啟動街景生還戰</button>
   </div>
 </div>
 
 <script>
-// ⭐ 請將此處字串替換為你在 Access Token 欄位按 View 複製出來的金鑰 ⭐
+// ⭐ 請貼入在 Mapillary 點擊 View 複製的 Access Token ⭐
 const MAPILLARY_ACCESS_TOKEN = "MLY|28733254389675887|c2488c852790b0d2d48083a0a2e4249c";
 
-// 官方公開的全景街景照片 ID (支援 360 度環顧視角)
+// 初始預設街景照片 ID (台北市區全景)
 const DEFAULT_IMAGE_ID = "1933525276802129";
 
 /* ==================== 音效引擎 ==================== */
@@ -290,6 +292,11 @@ let playerHP = 100;
 let totalSteps = 0;
 let userLat = 25.0418, userLng = 121.5436; // 台北市區座標
 
+// ⭐ 15 公尺位移自動換圖記錄點
+let lastLoadedCoord = { lat: userLat, lng: userLng };
+let isFetchingStreet = false;
+const STREET_MOVE_THRESHOLD_METERS = 15; // 累積超過 15 公尺換圖
+
 let map = null, userMarker = null, monsterMarker = null;
 let monsterLat = 0, monsterLng = 0;
 const MONSTER_SPEED_MPS = 3.0; // 3m/s 追趕速度
@@ -305,20 +312,21 @@ function initGame() {
   // 1. 初始化下方 Leaflet 地圖
   initLeafletMap();
 
-  // 2. 初始化上方 Mapillary 街景
+  // 2. 初始化上方 Mapillary 街景 (啟用路面導航箭頭)
   initMapillaryViewer();
 
   // 3. 讀取真實 GPS
   if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(pos => {
+    navigator.geolocation.watchPosition(pos => {
       userLat = pos.coords.latitude;
       userLng = pos.coords.longitude;
       if (map && userMarker) {
         map.setView([userLat, userLng], 17);
         userMarker.setLatLng([userLat, userLng]);
-        resetMonsterPosition();
       }
-    });
+      // 每次真實 GPS 改變，檢查是否累積超過 15 公尺更換街景
+      checkAndFetchNextStreet();
+    }, null, { enableHighAccuracy: true });
   }
 
   // 4. 啟動追逐循環
@@ -326,11 +334,10 @@ function initGame() {
   requestAnimationFrame(gameLoop);
 }
 
-// 1. 建立 Mapillary Viewer
+// 1. 建立 Mapillary Viewer（開啟路面導航箭頭 sequence: true）
 function initMapillaryViewer() {
   const { Viewer } = mapillary;
 
-  // 延遲 120ms 確保容器尺寸已經由瀏覽器渲染完成
   setTimeout(() => {
     try {
       mlyViewer = new Viewer({
@@ -339,16 +346,26 @@ function initMapillaryViewer() {
         imageId: DEFAULT_IMAGE_ID,
         component: {
           cover: false,
-          direction: false,
-          sequence: false
+          direction: true,  // 啟用方向環
+          sequence: true    // ⭐ 核心：啟用路面上的導航箭頭，點擊可滑向下一張街景
         }
       });
 
-      // 監聽視角旋轉事件 (POV)
+      // 監聽視角旋轉 (POV)
       mlyViewer.on('pov', updateGhostOverlay);
-      mlyViewer.on('image', () => {
+
+      // 當玩家點擊路面箭頭成功滑向下一張照片時，同步更新雷達地圖位置
+      mlyViewer.on('image', (e) => {
         mlyViewer.resize();
         updateGhostOverlay();
+        if (e && e.image && e.image.geometry && e.image.geometry.coordinates) {
+          const [lng, lat] = e.image.geometry.coordinates;
+          userLat = lat; userLng = lng;
+          lastLoadedCoord = { lat: userLat, lng: userLng };
+          if (userMarker) userMarker.setLatLng([userLat, userLng]);
+          if (map) map.panTo([userLat, userLng]);
+          document.getElementById('footer-text').innerText = "「已沿道路箭頭滑入新街區！注意周遭動靜！」";
+        }
       });
 
       window.addEventListener('resize', () => {
@@ -358,12 +375,44 @@ function initMapillaryViewer() {
         }
       });
     } catch (err) {
-      console.error("Mapillary 初始化失敗，請檢查 Access Token 是否填寫正確:", err);
+      console.error("Mapillary 初始化失敗:", err);
     }
   }, 120);
 }
 
-// 2. 視角投影運算：將惡靈固定在街景特定角度
+// 2. ⭐ 核心：檢查位移是否超過 15 公尺，自動向 API 撈取前方新街景
+async function checkAndFetchNextStreet() {
+  if (isFetchingStreet || !mlyViewer) return;
+
+  const distMoved = getDistanceMeters(lastLoadedCoord.lat, lastLoadedCoord.lng, userLat, userLng);
+
+  if (distMoved >= STREET_MOVE_THRESHOLD_METERS) {
+    isFetchingStreet = true;
+    document.getElementById('footer-text').innerText = `「累積位移 ${distMoved}m（已達標 15m）！正在搜尋前方街景……」`;
+
+    const delta = 0.002; // 搜尋半徑約 200 米
+    const bbox = `${userLng - delta},${userLat - delta},${userLng + delta},${userLat + delta}`;
+    const url = `https://graph.mapillary.com/images?access_token=${MAPILLARY_ACCESS_TOKEN}&fields=id,geometry&bbox=${bbox}&limit=1`;
+
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.data && data.data.length > 0) {
+        const nextId = data.data[0].id;
+        // 平滑滑動至新街景照片
+        await mlyViewer.moveTo(nextId);
+        lastLoadedCoord = { lat: userLat, lng: userLng };
+        document.getElementById('footer-text').innerText = "「街景已隨行走自動更新至新道路！」";
+      }
+    } catch (e) {
+      console.warn("搜尋前方街景失敗:", e);
+    } finally {
+      isFetchingStreet = false;
+    }
+  }
+}
+
+// 3. 視角投影運算：將惡靈固定在街景特定角度
 function updateGhostOverlay() {
   if (!mlyViewer) return;
 
@@ -376,7 +425,7 @@ function updateGhostOverlay() {
     while (diff > 180) diff -= 360;
 
     const ghostEl = document.getElementById('ghost-entity');
-    const hFov = 75; // Mapillary 水平視野
+    const hFov = 75;
 
     if (Math.abs(diff) < hFov / 2) {
       const screenX = (w / 2) + (diff / (hFov / 2)) * (w / 2);
@@ -389,7 +438,7 @@ function updateGhostOverlay() {
   }).catch(() => {});
 }
 
-// 3. 下半部 Leaflet 地圖初始化
+// 4. 下半部 Leaflet 地圖初始化
 function initLeafletMap() {
   map = L.map('map', { zoomControl: false, attributionControl: false }).setView([userLat, userLng], 17);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
@@ -407,7 +456,6 @@ function initLeafletMap() {
   });
   monsterMarker = L.marker([monsterLat, monsterLng], { icon: monsterIcon }).addTo(map);
 
-  // 關鍵修復：延遲刷新地圖尺寸
   setTimeout(() => { map.invalidateSize(); }, 180);
 }
 
@@ -424,7 +472,7 @@ function getDistanceMeters(lat1, lon1, lat2, lon2) {
   return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
 }
 
-// 4. 追逐主循環
+// 5. 追逐主循環
 function gameLoop(now) {
   const dt = (now - lastTime) / 1000;
   lastTime = now;
@@ -452,12 +500,13 @@ function gameLoop(now) {
     playerHP = Math.max(0, playerHP - 30);
     document.getElementById('hp-badge').innerText = `HP: ${playerHP}/100`;
     resetMonsterPosition();
-    alert(`【遭背後撲咬！】受到 30 傷害！剩餘 HP: ${playerHP}。快邁開腳步！`);
+    alert(`【遭背後撲咬！】受到 30 傷害！剩餘 HP: ${playerHP}。快邁開腳步逃跑！`);
   }
 
   requestAnimationFrame(gameLoop);
 }
 
+// 模擬走動 (每次位移約 10 公尺)
 function simMove(dLng, dLat) {
   userLat += dLat; userLng += dLng;
   if (userMarker) userMarker.setLatLng([userLat, userLng]);
@@ -465,11 +514,14 @@ function simMove(dLng, dLat) {
   totalSteps++;
   sfx.step();
   document.getElementById('step-badge').innerText = `步數: ${totalSteps}`;
+
+  // ⭐ 點擊按鈕位移時，觸發 15 公尺檢查
+  checkAndFetchNextStreet();
 }
 
 function triggerExorcism() {
   sfx.chime();
-  alert("【除靈成功！】潛伏在 Mapillary 街景中的惡靈已被徹底擊散！追殺怪已被震退！");
+  alert("【除靈成功！】潛伏在街道中的惡靈已被擊散！追殺怪已被震退！");
   resetMonsterPosition();
   ghostBearing = (ghostBearing + 120 + Math.random() * 60) % 360;
   updateGhostOverlay();
