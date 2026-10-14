@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>【寂靜結界】PokéGO 實境恐懼生還戰</title>
+<title>【寂靜結界】PokéGO 禁地標誌・密室逃脫版</title>
 
-<!-- Three.js 核心與動畫庫 -->
+<!-- Three.js 3D 核心庫 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
 <style>
@@ -17,26 +17,24 @@
   /* 3D 遊戲世界畫布 */
   #three-canvas { width: 100%; height: 100%; display: block; }
 
-  /* 恐懼暗角與靈異掃描線 (VHS Overlay) */
+  /* 暗角與雜訊掃描線 */
   .horror-vignette {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: radial-gradient(circle at 50% 50%, transparent 50%, rgba(10, 0, 0, 0.6) 80%, rgba(0, 0, 0, 0.95) 100%),
-                repeating-linear-gradient(rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0, 20, 10, 0.15) 3px, rgba(0,0,0,0) 4px);
+    background: radial-gradient(circle at 50% 50%, transparent 45%, rgba(15, 0, 0, 0.5) 75%, rgba(0, 0, 0, 0.95) 100%),
+                repeating-linear-gradient(rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0, 20, 10, 0.12) 3px, rgba(0,0,0,0) 4px);
     pointer-events: none; z-index: 10;
   }
 
-  /* 頂部 HUD (Pokémon GO 經典玩家狀態列) */
+  /* 頂部 HUD */
   .poke-hud-top {
     position: absolute; top: 0; left: 0; width: 100%; height: 60px;
     background: linear-gradient(180deg, rgba(5,6,8,0.95) 0%, transparent 100%);
     display: flex; justify-content: space-between; align-items: center;
     padding: 0 16px; z-index: 100;
   }
-  .player-card {
-    display: flex; align-items: center; gap: 10px;
-  }
+  .player-card { display: flex; align-items: center; gap: 10px; }
   .player-avatar {
-    width: 38px; height: 38px; border-radius: 50%; background: #1a0808;
+    width: 40px; height: 40px; border-radius: 50%; background: #1a0808;
     border: 2px solid #ff4444; display: flex; justify-content: center; align-items: center;
     box-shadow: 0 0 10px rgba(255, 68, 68, 0.5); font-size: 18px;
   }
@@ -54,64 +52,46 @@
   }
   .badge.steps { color: #00ff88; border-color: #008844; }
 
-  /* 底部主功能球與任務面板 (Poké Ball Style Menu) */
+  /* 底部對講機與控制列 */
   .poke-bottom-bar {
-    position: absolute; bottom: 18px; left: 0; width: 100%;
-    display: flex; justify-content: center; align-items: center; gap: 20px;
-    z-index: 100; pointer-events: none;
+    position: absolute; bottom: 18px; left: 16px; right: 16px;
+    background: rgba(13, 17, 23, 0.92); border: 1px solid #30363d;
+    border-left: 4px solid #ff4444; padding: 10px 14px;
+    display: flex; justify-content: space-between; align-items: center;
+    z-index: 100; border-radius: 4px; box-shadow: 0 4px 20px rgba(0,0,0,0.8);
   }
-  .bottom-btn {
-    pointer-events: auto; width: 56px; height: 56px; border-radius: 50%;
-    background: #111; border: 2px solid #555; color: #fff; font-size: 20px;
-    display: flex; justify-content: center; align-items: center; cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.8); transition: all 0.2s;
+  .radio-text { font-size: 12px; color: #c9d1d9; line-height: 1.4; max-width: 68%; }
+  .btn-enter-landmark {
+    background: #b62324; border: 1px solid #ff4444; color: #fff;
+    padding: 8px 14px; font-size: 12px; font-weight: bold; border-radius: 4px;
+    cursor: pointer; transition: 0.2s; box-shadow: 0 0 12px rgba(255, 68, 68, 0.4);
   }
-  .bottom-btn.main-compass {
-    width: 68px; height: 68px; border-color: #ff3333; background: #220808;
-    box-shadow: 0 0 20px rgba(255, 50, 50, 0.5); font-size: 26px;
+  .btn-enter-landmark:disabled {
+    background: #21262d; border-color: #444; color: #666; cursor: not-allowed; box-shadow: none;
   }
-  .bottom-btn:active { transform: scale(0.92); }
 
-  /* 虛擬搖桿 (支援手機與電腦走動測試) */
+  /* 虛擬走動十字搖桿 (右側懸浮) */
   .joystick-zone {
-    position: absolute; bottom: 90px; right: 20px; z-index: 150;
-    display: grid; grid-template-columns: repeat(3, 40px); gap: 4px;
+    position: absolute; bottom: 84px; right: 16px; z-index: 150;
+    display: grid; grid-template-columns: repeat(3, 38px); gap: 4px;
   }
   .joy-btn {
-    width: 40px; height: 40px; background: rgba(18, 22, 28, 0.85);
-    border: 1px solid #444; border-radius: 6px; color: #fff; font-weight: bold;
+    width: 38px; height: 38px; background: rgba(18, 22, 28, 0.85);
+    border: 1px solid #58a6ff; border-radius: 6px; color: #fff; font-weight: bold;
     display: flex; justify-content: center; align-items: center; cursor: pointer;
   }
   .joy-btn:active { background: #ff4444; border-color: #ff2222; }
 
-  /* 靈異遭遇警報紅框 */
+  /* 禁地警報紅光 */
   #encounter-flash {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     border: 4px solid #ff0000; box-shadow: inset 0 0 50px rgba(255, 0, 0, 0.8);
     pointer-events: none; z-index: 500; display: none;
     animation: flashAlert 0.4s infinite alternate;
   }
-  @keyframes flashAlert { 0% { opacity: 0.3; } 100% { opacity: 1; } }
+  @keyframes flashAlert { 0% { opacity: 0.2; } 100% { opacity: 0.9; } }
 
-  /* 遭遇惡靈彈窗 */
-  .encounter-modal {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.88); z-index: 1000; display: none;
-    flex-direction: column; justify-content: center; align-items: center; padding: 24px; text-align: center;
-  }
-  .ghost-portrait {
-    width: 140px; height: 140px; border-radius: 50%; background: radial-gradient(circle, #ff2222 0%, #440000 70%, transparent 100%);
-    display: flex; justify-content: center; align-items: center; font-size: 64px; margin-bottom: 16px;
-    box-shadow: 0 0 35px #ff0000; animation: ghostFloat 1.2s infinite alternate;
-  }
-  @keyframes ghostFloat { 0% { transform: translateY(-8px); } 100% { transform: translateY(8px); } }
-  .btn-exorcise {
-    background: #b62324; border: 1px solid #ff4444; color: #fff; padding: 12px 32px;
-    font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer;
-    box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
-  }
-
-  /* 拾取回饋文字動畫 */
+  /* 拾取漂浮加血文字 */
   .toast-popup {
     position: absolute; top: 38%; left: 50%; transform: translate(-50%, -50%);
     font-size: 24px; font-weight: bold; color: #00ff88; text-shadow: 0 0 12px #00ff88;
@@ -121,6 +101,45 @@
     0% { opacity: 0; transform: translate(-50%, 0); }
     30% { opacity: 1; transform: translate(-50%, -20px); }
     100% { opacity: 0; transform: translate(-50%, -50px); }
+  }
+
+  /* ==================== 密室逃脫解謎彈窗 (Escape Room Dialog) ==================== */
+  .modal-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.88); z-index: 2000;
+    display: none; justify-content: center; align-items: center; padding: 20px;
+  }
+  .escape-card {
+    background: #161b22; border: 2px solid #ff4444; border-radius: 8px;
+    width: 100%; max-width: 380px; padding: 22px; display: flex; flex-direction: column;
+    box-shadow: 0 0 35px rgba(255, 0, 0, 0.5); animation: popIn 0.25s ease;
+  }
+  @keyframes popIn { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .escape-header {
+    border-bottom: 1px dashed #7a1515; padding-bottom: 8px; margin-bottom: 14px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .escape-title { font-size: 15px; font-weight: bold; color: #ff5555; }
+  .clue-paper-box {
+    background: #ebdcc0; color: #231a11; border-radius: 4px; padding: 14px;
+    font-family: serif; font-size: 13px; line-height: 1.6; margin-bottom: 16px;
+    border: 1px solid #bba377; white-space: pre-line;
+  }
+
+  .keypad-display {
+    width: 100%; height: 42px; background: #000; border: 1px solid #30363d;
+    border-radius: 4px; color: #ff3333; font-size: 22px; font-family: monospace;
+    display: flex; justify-content: center; align-items: center; letter-spacing: 8px; margin-bottom: 12px;
+  }
+  .keypad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; margin-bottom: 14px; }
+  .num-btn {
+    background: #21262d; border: 1px solid #30363d; color: #c9d1d9;
+    padding: 10px 0; font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer;
+  }
+  .num-btn:active { background: #ff4444; color: #fff; }
+  .btn-close-escape {
+    width: 100%; background: #30363d; color: #c9d1d9; border: none; padding: 9px 0;
+    font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer;
   }
 
   /* 開場視窗 */
@@ -150,7 +169,7 @@
     <div class="player-card">
       <div class="player-avatar">🕯️</div>
       <div class="player-info">
-        <span class="player-level" id="player-title">LV.1 除靈探員</span>
+        <span class="player-level" id="player-title">第 1 關：辛亥引渡血柱</span>
         <div class="hp-bar-outer">
           <div class="hp-bar-inner" id="hp-bar" style="width: 70%;"></div>
         </div>
@@ -175,36 +194,113 @@
     <button class="joy-btn" onclick="simMove(8, 0)">►</button>
   </div>
 
-  <!-- 底部經典控制面板 -->
+  <!-- 底部任務與解鎖按鈕 -->
   <div class="poke-bottom-bar">
-    <button class="bottom-btn" onclick="alert('【背包】：目前持有 3 張驅邪符、1 罐聖水。')">🎒</button>
-    <button class="bottom-btn main-compass" onclick="scanSurroundings()">👁️</button>
-    <button class="bottom-btn" onclick="recenterPlayer()">🧭</button>
+    <div class="radio-text" id="radio-instruction">
+      「遠處佇立著靈異禁地巨柱！走動接近至 35 米內解開密室封印！」
+    </div>
+    <button class="btn-enter-landmark" id="btn-enter-landmark" onclick="openEscapeRoom()" disabled>
+      🔒 尚未進入結界
+    </button>
   </div>
 
-  <!-- 惡靈正面遭遇彈窗 (Encounter Battle) -->
-  <div class="encounter-modal" id="encounter-modal">
-    <div class="ghost-portrait">👻</div>
-    <h2 style="color:#ff4444; margin-bottom: 8px;">遭遇：地縛紅衣煞！</h2>
-    <p style="font-size:13px; color:#aaa; margin-bottom: 22px; max-width: 280px;">
-      祂踏入了你的 20 米除靈光圈！怨氣正在侵蝕周圍氣場！
-    </p>
-    <button class="btn-exorcise" onclick="resolveEncounter()">⚡ 祭出太上辟邪道符 ⚡</button>
+  <!-- 密室逃脫解謎彈窗 -->
+  <div class="modal-overlay" id="escape-modal">
+    <div class="escape-card">
+      <div class="escape-header">
+        <span class="escape-title" id="escape-title">辛亥引渡血柱・封印解除</span>
+        <span style="font-size:12px; color:#ff4444;">道館級結界</span>
+      </div>
+      <div class="clue-paper-box" id="escape-clue">
+        『……祂們在天花板上爬行。
+        隧道口的警示燈閃爍著 4-0-4。
+        輸入 404 解開鐵捲門，千萬別回頭！』
+      </div>
+      <div class="keypad-display" id="keypad-code">----</div>
+      <div class="keypad-grid">
+        <button class="num-btn" onclick="pressKey('1')">1</button>
+        <button class="num-btn" onclick="pressKey('2')">2</button>
+        <button class="num-btn" onclick="pressKey('3')">3</button>
+        <button class="num-btn" onclick="pressKey('4')">4</button>
+        <button class="num-btn" onclick="pressKey('5')">5</button>
+        <button class="num-btn" onclick="pressKey('6')">6</button>
+        <button class="num-btn" onclick="pressKey('7')">7</button>
+        <button class="num-btn" onclick="pressKey('8')">8</button>
+        <button class="num-btn" onclick="pressKey('9')">9</button>
+        <button class="num-btn" onclick="clearKeypad()">C</button>
+        <button class="num-btn" onclick="pressKey('0')">0</button>
+        <button class="num-btn" onclick="submitPasscode()" style="background:#8b1111; color:#fff;">✓</button>
+      </div>
+      <button class="btn-close-escape" onclick="closeEscapeRoom()">退回地圖安全區</button>
+    </div>
   </div>
 
   <!-- 開場視窗 -->
   <div id="start-modal">
-    <h1>靜安怪談：GO 實景除靈</h1>
+    <h1>靜安怪談：禁地密室逃脫</h1>
     <p>
-      <b>全螢幕 3D 恐怖大地圖：</b><br>
-      化身調查員置身立體街道，周圍圍繞著 45 米雷達感應圈。<br>
-      走動滿 <b>30 公尺</b> 路邊會掉落補給品；隨時提防在街角出沒的惡靈！
+      <b>Pokémon GO 大地圖 × 巨型禁地道館：</b><br>
+      地圖遠方佇立著聳入雲霄的<b>「靈異禁地結界柱」</b>。<br>
+      手持手機走動（或操作搖桿）靠近至 <b>35 米內</b>，觸發密室機關解謎破關！
     </p>
-    <button class="btn-start" onclick="initGame()">進入雷達世界</button>
+    <button class="btn-start" onclick="initGame()">啟動禁地雷達</button>
   </div>
 </div>
 
 <script>
+/* ==================== 多關卡靈異禁地資料庫 ==================== */
+const ESCAPE_STAGES = [
+  {
+    level: 1,
+    title: "第 1 關：辛亥引渡血柱",
+    passcode: "404",
+    landmarkName: "辛亥隧道・午夜結界巨柱",
+    distOffset: { x: 30, z: -45 }, // 生成在前方 54 米處
+    clue: "『……祂們在天花板上爬行。\n隧道口的警示燈閃爍著 4-0-4。\n輸入 404 解除隧道鐵捲門！』"
+  },
+  {
+    level: 2,
+    title: "第 2 關：地下水宮殿・沉骨祭壇",
+    passcode: "379",
+    landmarkName: "地下蓄水池・百年水煞柱",
+    distOffset: { x: -40, z: -50 },
+    clue: "『希臘石柱底部刻著排水閥順序：\n第 3 號閘門、第 7 號出水口、第 9 號減壓槽。\n按順序輸入 3-7-9 解鎖抽水門。』"
+  },
+  {
+    level: 3,
+    title: "第 3 關：三芝荒土・飛碟殘骸靈塔",
+    passcode: "1980",
+    landmarkName: "白沙灣・廢棄飛碟屋神殿",
+    distOffset: { x: 45, z: -40 },
+    clue: "『……自從切割龍身雕像後意外頻傳。\n工程委員會決議於西元 1980 年停工封閉機房。\n解除警報請輸入停工年份。』"
+  },
+  {
+    level: 4,
+    title: "第 4 關：陽明迷霧・魔神仔鎮煞碑",
+    passcode: "8848",
+    landmarkName: "仰德大道・下坡急彎鎮煞碑",
+    distOffset: { x: 0, z: -60 },
+    clue: "『車子在這裡打了三個轉……不要相信霧裡的招手白影！\n破除鬼打牆生還代碼：8-8-4-8。』"
+  }
+];
+
+let currentStageIndex = 0;
+let playerHP = 70;
+const MAX_HP = 100;
+let totalMeters = 0;
+let lastSupplyMeters = 0;
+
+// Three.js 核心
+let scene, camera, renderer;
+let playerGroup, radarPulseRing;
+let currentLandmarkGroup = null; // 存放當前關卡的巨型禁地結界模型
+let spawnedSupplies = []; // 存放 30 米掉落物資
+
+let playerPos = { x: 0, z: 0 };
+let currentTargetCoord = { x: 30, z: -45 };
+let isWithinLandmarkRadius = false;
+let passcodeBuffer = "";
+
 /* ==================== 音效引擎 ==================== */
 class SoundEngine {
   constructor() { this.ctx = null; }
@@ -218,85 +314,55 @@ class SoundEngine {
     osc.connect(g); g.connect(this.ctx.destination);
     osc.start(); osc.stop(this.ctx.currentTime + 0.05);
   }
-  ping() {
+  alarm() {
     if (!this.ctx) return;
     const osc = this.ctx.createOscillator(), g = this.ctx.createGain();
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(587, this.ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.3);
-    g.gain.setValueAtTime(0.2, this.ctx.currentTime);
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(160, this.ctx.currentTime);
+    osc.frequency.linearRampToValueAtTime(320, this.ctx.currentTime + 0.3);
+    g.gain.setValueAtTime(0.3, this.ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
     osc.connect(g); g.connect(this.ctx.destination);
     osc.start(); osc.stop(this.ctx.currentTime + 0.3);
   }
-  roar() {
+  unlock() {
     if (!this.ctx) return;
     const osc = this.ctx.createOscillator(), g = this.ctx.createGain();
-    osc.type = "sawtooth";
-    osc.frequency.setValueAtTime(140, this.ctx.currentTime);
-    osc.frequency.linearRampToValueAtTime(320, this.ctx.currentTime + 0.3);
-    g.gain.setValueAtTime(0.4, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.4);
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(523, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1046, this.ctx.currentTime + 0.5);
+    g.gain.setValueAtTime(0.35, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.5);
     osc.connect(g); g.connect(this.ctx.destination);
-    osc.start(); osc.stop(this.ctx.currentTime + 0.4);
+    osc.start(); osc.stop(this.ctx.currentTime + 0.5);
   }
 }
 const sfx = new SoundEngine();
-
-/* ==================== 狀態與數值 ==================== */
-let playerHP = 70;
-const MAX_HP = 100;
-let totalMeters = 0;
-let lastSupplyMeters = 0; // 30 米物資累加器
-
-// Three.js 核心場景
-let scene, camera, renderer;
-let playerGroup, radarPulseRing;
-let spawnedObjects = []; // 存放地面上的急救包與惡靈
-
-// 玩家在虛擬地圖中的位置 (X, Z 坐標)
-let playerPos = { x: 0, z: 0 };
-let activeEncounter = null;
 
 function initGame() {
   document.getElementById('start-modal').style.display = 'none';
   sfx.init();
 
   initThreePokeMap();
-
-  // 若裝置有真實 GPS，同步累加走動
-  if (navigator.geolocation) {
-    let lastLat = null, lastLng = null;
-    navigator.geolocation.watchPosition(pos => {
-      if (lastLat !== null) {
-        const d = getDist(lastLat, lastLng, pos.coords.latitude, pos.coords.longitude);
-        if (d > 2) {
-          movePlayerByMeters(d);
-        }
-      }
-      lastLat = pos.coords.latitude;
-      lastLng = pos.coords.longitude;
-    }, null, { enableHighAccuracy: true });
-  }
+  loadStageLandmark(0);
 }
 
-/* ==================== 建立 Pokémon GO 3D 立體暗黑地圖 ==================== */
+/* ==================== 建立 3D 大地圖與環境 ==================== */
 function initThreePokeMap() {
   const container = document.getElementById('canvas-container');
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x07090e);
-  // 靈異深藍黑濃霧
-  scene.fog = new THREE.FogExp2(0x07090e, 0.008);
+  scene.background = new THREE.Color(0x050608);
+  scene.fog = new THREE.FogExp2(0x050608, 0.007);
 
-  // 經典 Pokémon GO 45° 俯仰透視攝影機
+  // Pokémon GO 經典 45° 俯仰攝影機
   camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
   camera.position.set(0, 85, 95);
   camera.lookAt(0, 0, 0);
 
-  // 建立陰暗立體城市地表
-  buildDarkCityEnvironment();
+  // 建立陰暗發光地表與城市街道
+  buildDarkEnvironment();
 
-  // 建立玩家化身與雷達圈
+  // 建立玩家化身與雷達感應圈
   buildPlayerAvatar();
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -304,7 +370,7 @@ function initThreePokeMap() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   container.appendChild(renderer.domElement);
 
-  // 點擊物資射線判定
+  // 點擊急救包射線判定
   const raycaster = new THREE.Raycaster();
   const mouse = new THREE.Vector2();
   container.addEventListener('pointerup', (e) => {
@@ -313,15 +379,12 @@ function initThreePokeMap() {
     raycaster.setFromCamera(mouse, camera);
 
     const hitItems = [];
-    spawnedObjects.forEach(obj => { if (obj.mesh) hitItems.push(obj.mesh); });
+    spawnedSupplies.forEach(obj => { if (obj.mesh) hitItems.push(obj.mesh); });
     const intersects = raycaster.intersectObjects(hitItems);
 
     if (intersects.length > 0) {
-      const targetMesh = intersects[0].object;
-      const data = targetMesh.userData;
-      if (data && data.type === "supply") {
-        collectSupply(data.objRef);
-      }
+      const hitObj = intersects[0].object.userData.objRef;
+      collectSupply(hitObj);
     }
   });
 
@@ -331,77 +394,53 @@ function initThreePokeMap() {
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
 
-  // 生成開場第一隻在遠處徘徊的惡靈
-  spawnRoamingGhost(30, -35);
-
   animateMap();
 }
 
-// 建立帶有恐怖發光網格的地表與半透明黑建築
-function buildDarkCityEnvironment() {
-  // 暗黑發光網格地面
-  const gridHelper = new THREE.GridHelper(800, 80, 0x1f3045, 0x0f1822);
+function buildDarkEnvironment() {
+  const gridHelper = new THREE.GridHelper(900, 90, 0x1f3045, 0x0f1822);
   gridHelper.position.y = -0.5;
   scene.add(gridHelper);
 
-  // 街道血光標線 (模擬縱橫交叉道路)
   const roadMat = new THREE.MeshBasicMaterial({ color: 0x151c24 });
-  const lineMat = new THREE.MeshBasicMaterial({ color: 0x3d1214 });
-
-  // 橫向十字主幹道
-  const mainRoadX = new THREE.Mesh(new THREE.PlaneGeometry(800, 18), roadMat);
+  const mainRoadX = new THREE.Mesh(new THREE.PlaneGeometry(900, 18), roadMat);
   mainRoadX.rotation.x = -Math.PI / 2;
   scene.add(mainRoadX);
 
-  const mainRoadZ = new THREE.Mesh(new THREE.PlaneGeometry(18, 800), roadMat);
+  const mainRoadZ = new THREE.Mesh(new THREE.PlaneGeometry(18, 900), roadMat);
   mainRoadZ.rotation.x = -Math.PI / 2;
   scene.add(mainRoadZ);
 
-  // 隨機生成周圍半透明的黑色老舊建築剪影
+  // 周圍深黑半透明建築
   const buildingMat = new THREE.MeshBasicMaterial({
-    color: 0x0c1017,
-    wireframe: true,
-    transparent: true,
-    opacity: 0.35
+    color: 0x0c1017, wireframe: true, transparent: true, opacity: 0.35
   });
-
   for (let i = 0; i < 35; i++) {
-    const w = 20 + Math.random() * 25;
-    const h = 25 + Math.random() * 60;
-    const d = 20 + Math.random() * 25;
+    const w = 20 + Math.random() * 25, h = 25 + Math.random() * 60, d = 20 + Math.random() * 25;
     const bMesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), buildingMat);
-
-    let bx = (Math.random() - 0.5) * 450;
-    let bz = (Math.random() - 0.5) * 450;
-    // 避開中央十字路口
+    let bx = (Math.random() - 0.5) * 500, bz = (Math.random() - 0.5) * 500;
     if (Math.abs(bx) < 25) bx += 40;
     if (Math.abs(bz) < 25) bz += 40;
-
     bMesh.position.set(bx, h / 2, bz);
     scene.add(bMesh);
   }
 }
 
-// 建立玩家核心化身與 Pokémon GO 經典脈衝感應圈
 function buildPlayerAvatar() {
   playerGroup = new THREE.Group();
 
-  // 1. 玩家立體化身 (白光幽靈小人)
   const bodyMat = new THREE.MeshBasicMaterial({ color: 0x00ff88 });
   const avatarMesh = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 2.5, 6, 8), bodyMat);
   avatarMesh.position.y = 3;
   playerGroup.add(avatarMesh);
 
-  // 頭部光球
   const headMesh = new THREE.Mesh(new THREE.SphereGeometry(1.8, 12, 12), new THREE.MeshBasicMaterial({ color: 0xffffff }));
   headMesh.position.y = 7;
   playerGroup.add(headMesh);
 
-  // 2. 經典 45 米雷達感應圈 (圈隨時間向外擴散)
+  // 45 米雷達光圈
   const ringGeom = new THREE.RingGeometry(42, 43, 48);
-  const ringMat = new THREE.MeshBasicMaterial({
-    color: 0x00ff88, side: THREE.DoubleSide, transparent: true, opacity: 0.4
-  });
+  const ringMat = new THREE.MeshBasicMaterial({ color: 0x00ff88, side: THREE.DoubleSide, transparent: true, opacity: 0.4 });
   radarPulseRing = new THREE.Mesh(ringGeom, ringMat);
   radarPulseRing.rotation.x = -Math.PI / 2;
   radarPulseRing.position.y = 0.2;
@@ -410,174 +449,204 @@ function buildPlayerAvatar() {
   scene.add(playerGroup);
 }
 
-/* ==================== 走動與 30 米物資掉落機制 ==================== */
+/* ==================== 靈異禁地結界標誌（道館級圖騰） ==================== */
+function loadStageLandmark(stageIdx) {
+  currentStageIndex = stageIdx;
+  const stage = ESCAPE_STAGES[stageIdx];
+
+  document.getElementById('player-title').innerText = stage.title;
+  document.getElementById('escape-title').innerText = `${stage.landmarkName}・封印解除`;
+  document.getElementById('escape-clue').innerText = stage.clue;
+
+  if (currentLandmarkGroup) scene.remove(currentLandmarkGroup);
+
+  currentLandmarkGroup = new THREE.Group();
+
+  // 計算禁地目標座標 (以玩家為基準偏移)
+  currentTargetCoord.x = playerPos.x + stage.distOffset.x;
+  currentTargetCoord.z = playerPos.z + stage.distOffset.z;
+
+  // 1. 血色衝天巨柱 (高達 60 米)
+  const pillarGeom = new THREE.CylinderGeometry(4, 7, 60, 16);
+  const pillarMat = new THREE.MeshBasicMaterial({ color: 0x880000, wireframe: true });
+  const pillarMesh = new THREE.Mesh(pillarGeom, pillarMat);
+  pillarMesh.position.y = 30;
+  currentLandmarkGroup.add(pillarMesh);
+
+  // 2. 禁地頂部血紅旋轉光環
+  const haloGeom = new THREE.TorusGeometry(12, 1.2, 16, 48);
+  const haloMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+  const haloMesh = new THREE.Mesh(haloGeom, haloMat);
+  haloMesh.position.y = 55;
+  haloMesh.rotation.x = Math.PI / 2;
+  haloMesh.name = "halo";
+  currentLandmarkGroup.add(haloMesh);
+
+  // 3. 35 米半徑的靈異結界封鎖光圈 (地面血紅圓環)
+  const barrierGeom = new THREE.RingGeometry(34, 35, 48);
+  const barrierMat = new THREE.MeshBasicMaterial({ color: 0xff2222, side: THREE.DoubleSide, transparent: true, opacity: 0.7 });
+  const barrierMesh = new THREE.Mesh(barrierGeom, barrierMat);
+  barrierMesh.rotation.x = -Math.PI / 2;
+  barrierMesh.position.y = 0.3;
+  currentLandmarkGroup.add(barrierMesh);
+
+  currentLandmarkGroup.position.set(currentTargetCoord.x, 0, currentTargetCoord.z);
+  scene.add(currentLandmarkGroup);
+
+  checkLandmarkDistance();
+}
+
+/* ==================== 走動與 30 米物資掉落 ==================== */
 function simMove(dx, dz) {
   sfx.step();
   playerPos.x += dx;
   playerPos.z += dz;
 
   const moveDist = Math.hypot(dx, dz);
-  movePlayerByMeters(moveDist);
-}
-
-function movePlayerByMeters(dist) {
-  totalMeters += Math.round(dist);
-  lastSupplyMeters += dist;
+  totalMeters += Math.round(moveDist);
+  lastSupplyMeters += moveDist;
 
   document.getElementById('steps-badge').innerText = `走動: ${totalMeters}m`;
 
-  // 平滑移動玩家化身與攝影機
   playerGroup.position.set(playerPos.x, 0, playerPos.z);
   camera.position.set(playerPos.x, 85, playerPos.z + 95);
   camera.lookAt(playerPos.x, 0, playerPos.z);
 
-  // ⭐ 每累積滿 30 公尺，在周圍馬路上動態生成急救包
+  // 每 30 米隨機掉落急救包
   if (lastSupplyMeters >= 30) {
     lastSupplyMeters = 0;
     spawnSupplyBoxNearby();
   }
 
-  // 檢查是否踏入惡靈感應半徑 (20 米內遭遇戰)
-  checkGhostEncounters();
+  // 檢查是否走入禁地結界 35 米範圍
+  checkLandmarkDistance();
 }
 
-// 隨機在玩家周遭 25 米處掉落急救包
 function spawnSupplyBoxNearby() {
   const angle = Math.random() * Math.PI * 2;
   const radius = 22 + Math.random() * 15;
   const sx = playerPos.x + Math.cos(angle) * radius;
   const sz = playerPos.z + Math.sin(angle) * radius;
 
-  // 建立立體綠色醫療箱
   const boxGeom = new THREE.BoxGeometry(4, 4, 4);
-  const boxMat = new THREE.MeshBasicMaterial({ color: 0x00ff88, wireframe: false });
+  const boxMat = new THREE.MeshBasicMaterial({ color: 0x00ff88 });
   const mesh = new THREE.Mesh(boxGeom, boxMat);
   mesh.position.set(sx, 2.5, sz);
 
-  const supplyData = {
-    id: Date.now(),
-    type: "supply",
-    heal: 35,
-    mesh: mesh
-  };
-  mesh.userData = { type: "supply", objRef: supplyData };
+  const supplyData = { id: Date.now(), heal: 35, mesh: mesh };
+  mesh.userData = { objRef: supplyData };
 
   scene.add(mesh);
-  spawnedObjects.push(supplyData);
-
-  sfx.ping();
-  alert("【地脈共鳴！】雷達感應圈內探測到被遺棄的【急救包】！點擊地圖上的綠色方塊拾取！");
+  spawnedSupplies.push(supplyData);
+  alert("【地脈共鳴！】走動滿 30 米！路邊掉落了【急救包】！點擊地圖上的綠色方塊拾取！");
 }
 
 function collectSupply(objRef) {
-  sfx.ping();
   playerHP = Math.min(MAX_HP, playerHP + objRef.heal);
-  updateHPBar();
+  document.getElementById('hp-bar').style.width = `${(playerHP / MAX_HP) * 100}%`;
+  document.getElementById('hp-badge').innerText = `HP: ${playerHP}/${MAX_HP}`;
 
-  // 彈出綠字
   const toast = document.getElementById('toast-text');
   toast.innerText = `+${objRef.heal} HP 急救包`;
   toast.style.display = 'block';
   setTimeout(() => { toast.style.display = 'none'; }, 1000);
 
   scene.remove(objRef.mesh);
-  spawnedObjects = spawnedObjects.filter(item => item !== objRef);
+  spawnedSupplies = spawnedSupplies.filter(item => item !== objRef);
 }
 
-// 生成遊蕩惡靈 (血紅發光實體)
-function spawnRoamingGhost(gx, gz) {
-  const ghostGeom = new THREE.SphereGeometry(3.5, 12, 12);
-  const ghostMat = new THREE.MeshBasicMaterial({ color: 0xff1111 });
-  const ghostMesh = new THREE.Mesh(ghostGeom, ghostMat);
-  ghostMesh.position.set(gx, 4, gz);
+// 檢查與禁地標誌的距離
+function checkLandmarkDistance() {
+  const dist = Math.hypot(currentTargetCoord.x - playerPos.x, currentTargetCoord.z - playerPos.z);
+  const btn = document.getElementById('btn-enter-landmark');
+  const flash = document.getElementById('encounter-flash');
 
-  const ghostData = {
-    type: "ghost",
-    mesh: ghostMesh,
-    x: gx, z: gz
-  };
-  scene.add(ghostMesh);
-  spawnedObjects.push(ghostData);
-}
-
-// 檢查是否觸發惡靈遭遇戰
-function checkGhostEncounters() {
-  spawnedObjects.forEach(obj => {
-    if (obj.type === "ghost") {
-      const dist = Math.hypot(obj.mesh.position.x - playerPos.x, obj.mesh.position.z - playerPos.z);
-      if (dist < 20 && !activeEncounter) {
-        triggerEncounter(obj);
-      }
+  if (dist <= 35) {
+    if (!isWithinLandmarkRadius) {
+      sfx.alarm();
+      isWithinLandmarkRadius = true;
     }
-  });
-}
-
-// 觸發 Pokémon GO 式遭遇彈窗
-function triggerEncounter(ghostObj) {
-  activeEncounter = ghostObj;
-  sfx.roar();
-  document.getElementById('encounter-flash').style.display = 'block';
-  document.getElementById('encounter-modal').style.display = 'flex';
-}
-
-function resolveEncounter() {
-  sfx.ping();
-  document.getElementById('encounter-flash').style.display = 'none';
-  document.getElementById('encounter-modal').style.display = 'none';
-
-  if (activeEncounter) {
-    scene.remove(activeEncounter.mesh);
-    spawnedObjects = spawnedObjects.filter(item => item !== activeEncounter);
-    activeEncounter = null;
+    flash.style.display = 'block';
+    btn.disabled = false;
+    btn.innerText = "⚡ 解除禁地結界 ⚡";
+    document.getElementById('radio-instruction').innerText =
+      `「⚠️ 已踏入【${ESCAPE_STAGES[currentStageIndex].landmarkName}】的 35 米結界！點擊右側按鈕進行密室逃脫解謎！」`;
+  } else {
+    isWithinLandmarkRadius = false;
+    flash.style.display = 'none';
+    btn.disabled = true;
+    btn.innerText = `🔒 距離禁地 ${Math.round(dist)}m`;
+    document.getElementById('radio-instruction').innerText =
+      `「前方的【${ESCAPE_STAGES[currentStageIndex].landmarkName}】正在散發血光！距離結界：${Math.round(dist)} 公尺。」`;
   }
-
-  alert("【除靈大成功！】紅衣煞已被符咒淨化驅散！獲得 100 點靈力經驗值！");
-
-  // 在更遠處再生成下一隻惡靈
-  const angle = Math.random() * Math.PI * 2;
-  spawnRoamingGhost(playerPos.x + Math.cos(angle) * 60, playerPos.z + Math.sin(angle) * 60);
 }
 
-function updateHPBar() {
-  document.getElementById('hp-bar').style.width = `${(playerHP / MAX_HP) * 100}%`;
-  document.getElementById('hp-badge').innerText = `HP: ${playerHP}/${MAX_HP}`;
+/* ==================== 密室逃脫解謎彈窗邏輯 ==================== */
+function openEscapeRoom() {
+  passcodeBuffer = "";
+  document.getElementById('keypad-code').innerText = "----";
+  document.getElementById('escape-modal').style.display = 'flex';
 }
 
-function scanSurroundings() {
-  sfx.ping();
-  // 放大雷達圈一瞬間
-  radarPulseRing.scale.set(1.4, 1.4, 1);
-  setTimeout(() => { radarPulseRing.scale.set(1, 1, 1); }, 400);
+function closeEscapeRoom() {
+  document.getElementById('escape-modal').style.display = 'none';
 }
 
-function recenterPlayer() {
-  camera.position.set(playerPos.x, 85, playerPos.z + 95);
-  camera.lookAt(playerPos.x, 0, playerPos.z);
+function pressKey(num) {
+  if (passcodeBuffer.length < 4) {
+    passcodeBuffer += num;
+    document.getElementById('keypad-code').innerText = passcodeBuffer.padEnd(4, '-');
+  }
 }
 
-function getDist(lat1, lon1, lat2, lon2) {
-  const R = 6371e3;
-  const p1 = lat1 * Math.PI / 180, p2 = lat2 * Math.PI / 180;
-  const dp = (lat2 - lat1) * Math.PI / 180, dl = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dp/2)**2 + Math.cos(p1)*Math.cos(p2) * Math.sin(dl/2)**2;
-  return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+function clearKeypad() {
+  passcodeBuffer = "";
+  document.getElementById('keypad-code').innerText = "----";
 }
 
-// 主渲染動畫循環
+function submitPasscode() {
+  const currentStage = ESCAPE_STAGES[currentStageIndex];
+  if (passcodeBuffer === currentStage.passcode) {
+    sfx.unlock();
+    closeEscapeRoom();
+    alert(`🎉【封印破除！】你成功破解了【${currentStage.landmarkName}】！結界已被完全淨化！`);
+
+    // 推進至下一道靈異禁地
+    if (currentStageIndex + 1 < ESCAPE_STAGES.length) {
+      loadStageLandmark(currentStageIndex + 1);
+    } else {
+      alert("🏆【全境生還！】你已成功拔除大地圖上全部 4 座靈異道館禁地！生還歸來！");
+    }
+  } else {
+    alert("【密碼錯誤！】禁地結界釋放出劇烈陰氣！受到 15 點反噬傷害！請仔細閱讀現場線索！");
+    playerHP = Math.max(0, playerHP - 15);
+    document.getElementById('hp-bar').style.width = `${(playerHP / MAX_HP) * 100}%`;
+    document.getElementById('hp-badge').innerText = `HP: ${playerHP}/${MAX_HP}`;
+    clearKeypad();
+  }
+}
+
+/* ==================== 主動畫循環 ==================== */
 function animateMap() {
   requestAnimationFrame(animateMap);
 
-  // 雷達感應圈脈衝呼吸動畫
+  // 45 米雷達感應圈脈衝
   if (radarPulseRing) {
     const pulse = 1.0 + Math.sin(Date.now() * 0.004) * 0.06;
     radarPulseRing.scale.set(pulse, pulse, 1);
   }
 
-  // 地面急救包與惡靈浮動旋轉
-  spawnedObjects.forEach(obj => {
-    if (obj.mesh) {
-      obj.mesh.rotation.y += 0.03;
-      obj.mesh.position.y = (obj.type === "ghost" ? 5 : 2.5) + Math.sin(Date.now() * 0.005) * 0.8;
+  // 靈異禁地頂部光環旋轉
+  if (currentLandmarkGroup) {
+    const halo = currentLandmarkGroup.getObjectByName("halo");
+    if (halo) halo.rotation.z += 0.02;
+  }
+
+  // 急救包自轉浮動
+  spawnedSupplies.forEach(item => {
+    if (item.mesh) {
+      item.mesh.rotation.y += 0.03;
+      item.mesh.position.y = 2.5 + Math.sin(Date.now() * 0.006) * 0.5;
     }
   });
 
