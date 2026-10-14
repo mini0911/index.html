@@ -3,21 +3,69 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>【寂靜結界】100% 開源免金鑰街景逃脫</title>
-<!-- 引入開源地圖 Leaflet -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<!-- 引入開源 360° 街景引擎 Pannellum (免 Key / 免信用卡) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
-<script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+<title>【寂靜結界】Mapillary 免費真實街景生還戰</title>
+<!-- 引入 MapillaryJS 官方開源庫 (免 Key/免卡) -->
+<link href="https://unpkg.com/mapillary-js@4.1.2/dist/mapillary.css" rel="stylesheet" />
+<script src="https://unpkg.com/mapillary-js@4.1.2/dist/mapillary.js"></script>
 
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
   body, html { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: monospace; }
 
-  #game-rig {
-    position: relative; width: 100%; height: 100%;
-    display: flex; flex-direction: column;
+  #viewport-rig {
+    position: relative; width: 100%; height: 100%; display: flex; flex-direction: column;
+  }
+
+  /* Mapillary 街景視圖容器 */
+  #mly-container {
+    flex: 1; width: 100%; height: 100%; position: relative;
+    /* 恐怖夜視濾鏡：黑夜反轉、去飽和、深暗高對比 */
+    filter: invert(90%) hue-rotate(180deg) contrast(140%) saturate(15%) brightness(65%);
+  }
+
+  /* 隱藏 Mapillary 原生覆蓋圖標，保持純粹恐懼感 */
+  .mapillary-attribution-container, .mapillary-sequence-container {
+    opacity: 0.15 !important;
+  }
+
+  /* 恐怖 VHS 掃描線與暗紅暗角 */
+  .vhs-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at 50% 50%, transparent 40%, rgba(20, 0, 0, 0.6) 80%, rgba(0, 0, 0, 0.95) 100%),
+                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%);
+    background-size: 100% 100%, 100% 4px;
+    pointer-events: none; z-index: 50;
+  }
+
+  /* 準心 */
+  .center-crosshair {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 46px; height: 46px; border: 2px dashed rgba(255, 60, 60, 0.7);
+    border-radius: 50%; pointer-events: none; z-index: 60;
+  }
+
+  /* 釘在真實道路街景上的惡靈實體 */
+  #ghost-anchor {
+    position: absolute; width: 120px; height: 180px;
+    transform: translate(-50%, -50%); pointer-events: auto;
+    cursor: pointer; display: none; z-index: 70;
+  }
+  .ghost-shadow {
+    width: 100%; height: 100%;
+    background: radial-gradient(ellipse at 50% 35%, rgba(255, 0, 0, 0.95) 0%, rgba(50, 0, 0, 0.8) 55%, transparent 80%);
+    filter: blur(4px); animation: ghostBreathe 1.2s infinite alternate;
+  }
+  .ghost-eyes {
+    position: absolute; top: 32%; left: 50%; transform: translate(-50%, -50%);
+    display: flex; gap: 20px;
+  }
+  .ghost-eye {
+    width: 12px; height: 16px; background: #fff; border-radius: 50%;
+    box-shadow: 0 0 10px #ff0000;
+  }
+  @keyframes ghostBreathe {
+    0% { transform: scale(0.95); opacity: 0.8; }
+    100% { transform: scale(1.05); opacity: 1; }
   }
 
   /* 頂部 HUD */
@@ -37,43 +85,9 @@
   }
   @keyframes blink { 50% { opacity: 0.2; } }
 
-  /* 360° 真實街景主視圖容器 */
-  #panorama-stage {
-    flex: 1; width: 100%; height: 100%; position: relative;
-    filter: invert(85%) hue-rotate(180deg) contrast(135%) saturate(20%) brightness(70%);
-  }
-
-  /* 恐怖 VHS 掃描線與暗角 */
-  .vhs-overlay {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: radial-gradient(circle at 50% 50%, transparent 40%, rgba(20, 0, 0, 0.6) 80%, rgba(0, 0, 0, 0.95) 100%),
-                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%);
-    background-size: 100% 100%, 100% 4px;
-    pointer-events: none; z-index: 50;
-  }
-
-  /* 準心 */
-  .center-crosshair {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 44px; height: 44px; border: 2px dashed rgba(255, 60, 60, 0.6);
-    border-radius: 50%; pointer-events: none; z-index: 60;
-  }
-
-  /* 左下角開源雷達小地圖 */
-  #minimap-wrapper {
-    position: absolute; bottom: 155px; left: 14px;
-    width: 110px; height: 110px; border-radius: 50%;
-    border: 2px solid #555; overflow: hidden; z-index: 100;
-    box-shadow: 0 0 15px rgba(0,0,0,0.9);
-  }
-  #map { width: 100%; height: 100%; }
-  .leaflet-tile {
-    filter: invert(100%) hue-rotate(180deg) brightness(75%) contrast(120%) !important;
-  }
-
   /* 底部面板與對講機 */
   .hud-footer {
-    height: 145px; background: rgba(13, 17, 23, 0.95);
+    height: 140px; background: rgba(13, 17, 23, 0.95);
     border-top: 2px solid #30363d; padding: 10px 14px;
     display: flex; flex-direction: column; justify-content: space-between;
     z-index: 1000;
@@ -87,50 +101,21 @@
     min-height: 44px; border-radius: 4px;
   }
   .controls { display: flex; justify-content: space-between; align-items: center; }
-  .step-info { font-size: 12px; color: #58a6ff; line-height: 1.3; }
 
   .btn-action {
     background: #b62324; border: 1px solid #e05252; color: #fff;
-    padding: 8px 14px; font-size: 12px; font-weight: bold; border-radius: 4px;
+    padding: 8px 16px; font-size: 12px; font-weight: bold; border-radius: 4px;
     cursor: pointer;
   }
-  .btn-action:disabled {
-    background: #21262d; border-color: #30363d; color: #484f58; cursor: not-allowed;
-  }
 
-  /* 室內方向模擬鍵 */
-  .sim-controls {
-    position: absolute; right: 12px; bottom: 155px; z-index: 999;
-    display: grid; grid-template-columns: repeat(3, 34px);
-    grid-template-rows: repeat(2, 34px); gap: 4px;
-  }
-  .sim-btn {
-    background: rgba(13, 17, 23, 0.85); border: 1px solid #30363d; color: #c9d1d9;
-    display: flex; justify-content: center; align-items: center;
-    cursor: pointer; border-radius: 4px; font-size: 12px;
-  }
-
-  /* Pannellum 自訂惡靈 Hotspot 樣式 */
-  .ghost-hotspot {
-    width: 60px; height: 90px;
-    background: radial-gradient(ellipse at 50% 35%, rgba(255, 0, 0, 0.9) 0%, rgba(50, 0, 0, 0.7) 60%, transparent 80%);
-    border-radius: 50%;
-    cursor: pointer;
-    animation: ghostPulse 0.8s infinite alternate;
-  }
-  @keyframes ghostPulse {
-    0% { transform: scale(0.9); filter: blur(2px); }
-    100% { transform: scale(1.1); filter: blur(4px); }
-  }
-
-  /* 開場提示視窗 */
+  /* 開場視窗 */
   #modal-mask {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: #050508; z-index: 3000; display: flex; flex-direction: column;
     justify-content: center; align-items: center; padding: 24px; text-align: center;
   }
   #modal-mask h1 { color: #ff4444; font-size: 22px; margin-bottom: 12px; }
-  #modal-mask p { font-size: 13px; color: #8b949e; line-height: 1.6; margin-bottom: 22px; max-width: 360px; }
+  #modal-mask p { font-size: 13px; color: #8b949e; line-height: 1.6; margin-bottom: 22px; max-width: 380px; }
   .btn-main {
     background: #b62324; border: none; color: #fff; padding: 12px 28px;
     font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer;
@@ -139,208 +124,170 @@
 </head>
 <body>
 
-<div id="game-rig">
+<div id="viewport-rig">
   <div class="hud-header">
     <div class="hud-title">
       <div class="pulse-dot"></div>
-      <span>免金鑰 360° 實景生還戰</span>
+      <span>MAPILLARY 真實街景靈異調查</span>
     </div>
-    <div style="font-size: 11px; color: #8b949e;">
-      HP: <span id="hp-val" style="color: #ff4444;">100</span> | 步數: <span id="step-val">0</span>
-    </div>
+    <div id="gps-status" style="font-size: 11px; color: #8b949e;">GPS: 定位中...</div>
   </div>
 
-  <!-- 360° 真實街景主舞台 (由 Pannellum 驅動) -->
-  <div id="panorama-stage"></div>
+  <!-- Mapillary 街景畫布 -->
+  <div id="mly-container"></div>
   <div class="vhs-overlay"></div>
   <div class="center-crosshair"></div>
 
-  <!-- 左下角開源雷達小地圖 -->
-  <div id="minimap-wrapper">
-    <div id="map"></div>
-  </div>
-
-  <!-- 方向模擬鍵 -->
-  <div class="sim-controls">
-    <div></div>
-    <button class="sim-btn" onclick="simMove(0, 0.00015)">▲</button>
-    <div></div>
-    <button class="sim-btn" onclick="simMove(-0.00015, 0)">◄</button>
-    <button class="sim-btn" onclick="simMove(0, -0.00015)">▼</button>
-    <button class="sim-btn" onclick="simMove(0.00015, 0)">►</button>
+  <!-- 惡靈實體 -->
+  <div id="ghost-anchor" onclick="onGhostDefeated()">
+    <div class="ghost-shadow"></div>
+    <div class="ghost-eyes">
+      <div class="ghost-eye"></div>
+      <div class="ghost-eye"></div>
+    </div>
   </div>
 
   <!-- 底部面板 -->
   <div class="hud-footer">
     <div class="radio-channel">
       <span>對講機 [CH-9] 隊長</span>
-      <span style="color: #00ff88;">街景引擎: 100% 免費開源</span>
+      <span style="color: #00ff88;">引擎: MapillaryJS (100% 免卡)</span>
     </div>
     <div class="radio-bubble" id="radio-msg">
-      「畫面顯示的是當地的 360° 真實街景！用手指滑動或轉動手機，找到躲在巷子裡的惡靈點擊封印！」
+      「正在透過真實 GPS 搜尋你身旁的道路實景……滑動畫面環顧街道尋找惡靈！」
     </div>
     <div class="controls">
-      <div class="step-info" id="status-desc">
-        距離結界: 計算中...<br>現地步數檢驗: 0 / 20 步
-      </div>
-      <button class="btn-action" id="interact-btn" disabled onclick="triggerExorcismAction()">
-        已鎖定惡靈
-      </button>
+      <div id="status-desc" style="font-size: 12px; color: #58a6ff;">街景狀態: 搜尋中...</div>
+      <button class="btn-action" onclick="onGhostDefeated()">⚡ 封印驅魔 ⚡</button>
     </div>
   </div>
 
   <!-- 開場視窗 -->
   <div id="modal-mask">
-    <h1>靜安怪談：完全免費整合版</h1>
+    <h1>靜安怪談：Mapillary 實景篇</h1>
     <p>
-      <b>免信用卡・免申請 Google API Key！</b><br>
-      結合 <b>OpenStreetMap</b> 與 <b>Pannellum 開源 360° 全景街景</b>，用真正的街景照片構建恐怖現場！
+      <b>完全免信用卡・免付費方案！</b><br>
+      本關卡調用 Meta Mapillary 開源道路全景圖資。<br>
+      點擊下方按鈕，系統將自動定位抓取你真實身處的街道！
     </p>
-    <button class="btn-main" onclick="initExperience()">直接啟動遊戲</button>
+    <button class="btn-main" onclick="startExperience()">授權 GPS 進入街道</button>
   </div>
 </div>
 
 <script>
-let viewer = null;
-let currentStage = 0;
-let userLat = 25.053, userLng = 121.606;
-let map, userMarker;
-let totalSteps = 0, zoneSteps = 0;
-const REQUIRED_STEPS = 20;
+// ⭐ 請將此處替換為你在 Mapillary 免費取得的 Client Token
+const MAPILLARY_CLIENT_TOKEN = "YMLY|28733254389675887|86d28fb76c4cd708f49749d1d979baf4";
 
-// 免費且免版權的真實街景 360° 等距長方照片（含各定點惡靈的世界角度 Pitch/Yaw）
-const STREET_SCENES = [
-  {
-    name: "第一結界：午夜巷弄鐵捲門",
-    image: "https://pannellum.org/images/alma.jpg", // 開源 360 街景全景
-    ghostPitch: -5,
-    ghostYaw: 42,
-    offset: [0.00045, 0.00035]
-  },
-  {
-    name: "第二結界：廢棄大樓廣場",
-    image: "https://pannellum.org/images/cerro-toco-0.jpg",
-    ghostPitch: 10,
-    ghostYaw: 165,
-    offset: [-0.00055, 0.00045]
-  }
-];
+// 備用街景 ID（台北市中心實景，若當前位置無街景時無縫使用）
+const BACKUP_IMAGE_ID = "498763468214164";
 
-function initExperience() {
+let mlyViewer = null;
+let currentCoords = { lat: 25.0418, lng: 121.5436 }; // 預設台北座標
+let ghostHeading = 45; // 惡靈固定在街景東北方 45 度
+
+function startExperience() {
   document.getElementById('modal-mask').style.display = 'none';
 
-  // 1. 初始化 Pannellum 開源 360° 街景視角
-  viewer = pannellum.viewer('panorama-stage', {
-    type: 'equirectangular',
-    panorama: STREET_SCENES[0].image,
-    autoLoad: true,
-    showControls: false,     // 關閉自帶按鈕，保持乾淨
-    orientationOnByDefault: true, // 自動啟用手機陀螺儀
-    hotSpots: [
-      {
-        pitch: STREET_SCENES[0].ghostPitch,
-        yaw: STREET_SCENES[0].ghostYaw,
-        cssClass: 'ghost-hotspot',
-        createTooltipFunc: (hotSpotDiv) => {
-          hotSpotDiv.onclick = () => {
-            alert("【靈體暴跌！】你直接在 360 街景中點中了惡靈核心！");
-            triggerExorcismAction();
-          };
-        }
-      }
-    ]
-  });
-
-  // 2. 初始化開源 Leaflet 小地圖
-  initMinimap();
-}
-
-function initMinimap() {
-  map = L.map('map', { zoomControl: false, attributionControl: false }).setView([userLat, userLng], 18);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-
-  const playerIcon = L.divIcon({
-    html: '<div style="width:10px;height:10px;background:#00ff88;border-radius:50%;"></div>',
-    iconSize: [10, 10], iconAnchor: [5, 5]
-  });
-  userMarker = L.marker([userLat, userLng], { icon: playerIcon }).addTo(map);
-
   if (navigator.geolocation) {
-    navigator.geolocation.watchPosition(pos => {
-      userLat = pos.coords.latitude; userLng = pos.coords.longitude;
-      userMarker.setLatLng([userLat, userLng]);
-      map.panTo([userLat, userLng]);
-      updateDistances();
-    });
-  }
-  updateDistances();
-}
-
-function simMove(dLng, dLat) {
-  userLat += dLat; userLng += dLng;
-  userMarker.setLatLng([userLat, userLng]);
-  map.panTo([userLat, userLng]);
-  totalSteps++; zoneSteps++;
-  document.getElementById('step-val').innerText = totalSteps;
-  updateDistances();
-}
-
-function getDistanceMeters(lat1, lon1, lat2, lon2) {
-  const R = 6371e3;
-  const p1 = lat1 * Math.PI / 180, p2 = lat2 * Math.PI / 180;
-  const dp = (lat2 - lat1) * Math.PI / 180, dl = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dp/2)**2 + Math.cos(p1)*Math.cos(p2) * Math.sin(dl/2)**2;
-  return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-}
-
-function updateDistances() {
-  if (currentStage >= STREET_SCENES.length) {
-    document.getElementById('radio-msg').innerText = "「所有街景結界皆已解除！脫離生還！」";
-    document.getElementById('interact-btn').disabled = true;
-    return;
-  }
-
-  const s = STREET_SCENES[currentStage];
-  const targetLat = userLat + s.offset[0];
-  const targetLng = userLng + s.offset[1];
-  const d = getDistanceMeters(userLat, userLng, targetLat, targetLng);
-
-  document.getElementById('status-desc').innerHTML =
-    `距離結界: <b>${d}m</b><br>現地步數檢驗: <b>${zoneSteps} / ${REQUIRED_STEPS}</b> 步`;
-
-  const btn = document.getElementById('interact-btn');
-  if (d <= 18 && zoneSteps >= REQUIRED_STEPS) {
-    btn.disabled = false;
-    btn.innerText = "【步數達標】轉身在街景中找出惡靈";
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        currentCoords.lat = pos.coords.latitude;
+        currentCoords.lng = pos.coords.longitude;
+        document.getElementById('gps-status').innerText =
+          `GPS: ${currentCoords.lat.toFixed(4)}, ${currentCoords.lng.toFixed(4)}`;
+        searchNearbyStreetImage(currentCoords.lat, currentCoords.lng);
+      },
+      () => {
+        document.getElementById('gps-status').innerText = "GPS: 模擬台北信義區";
+        searchNearbyStreetImage(currentCoords.lat, currentCoords.lng);
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
   } else {
-    btn.disabled = true;
-    btn.innerText = d > 18 ? `步行靠近中 (差 ${d}m)` : `現場踏步中 (差 ${REQUIRED_STEPS - zoneSteps} 步)`;
+    searchNearbyStreetImage(currentCoords.lat, currentCoords.lng);
   }
 }
 
-function triggerExorcismAction() {
-  alert(`【除靈成功！】${STREET_SCENES[currentStage].name} 的惡靈已被驅散！`);
-  currentStage++;
-  zoneSteps = 0;
+// 1. 使用 Mapillary Graph API 透過經緯度邊界盒（bbox）搜尋周圍 150m 內最近的真實道路照片
+async function searchNearbyStreetImage(lat, lng) {
+  const delta = 0.0015; // 約 150 公尺半徑
+  const bbox = `${lng - delta},${lat - delta},${lng + delta},${lat + delta}`;
+  const url = `https://graph.mapillary.com/images?access_token=${MAPILLARY_CLIENT_TOKEN}&fields=id,geometry&bbox=${bbox}&limit=1`;
 
-  if (currentStage < STREET_SCENES.length) {
-    // 平滑載入下一個真實街景 360 圖
-    viewer.loadScene({
-      type: 'equirectangular',
-      panorama: STREET_SCENES[currentStage].image,
-      hotSpots: [
-        {
-          pitch: STREET_SCENES[currentStage].ghostPitch,
-          yaw: STREET_SCENES[currentStage].ghostYaw,
-          cssClass: 'ghost-hotspot',
-          createTooltipFunc: (hotSpotDiv) => {
-            hotSpotDiv.onclick = () => { triggerExorcismAction(); };
-          }
-        }
-      ]
-    });
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (data.data && data.data.length > 0) {
+      const bestImageId = data.data[0].id;
+      loadMapillaryViewer(bestImageId, "【已成功抓取你身旁的真實道路街景！】");
+    } else {
+      // 周圍暫無資料時，優雅退回經典實景
+      loadMapillaryViewer(BACKUP_IMAGE_ID, "【周圍深巷無街景車圖資，已為你載入最近的幹道實景！】");
+    }
+  } catch (err) {
+    console.warn("API 查詢異常，切換至備用街景:", err);
+    loadMapillaryViewer(BACKUP_IMAGE_ID, "【已連線至備用街景結界！】");
   }
-  updateDistances();
+}
+
+// 2. 初始化 MapillaryJS 3D 全景瀏覽器
+function loadMapillaryViewer(imageId, hintMsg) {
+  const { Viewer } = mapillary;
+
+  mlyViewer = new Viewer({
+    accessToken: MAPILLARY_CLIENT_TOKEN,
+    container: 'mly-container',
+    imageId: imageId,
+    component: {
+      cover: false,
+      direction: false,
+      sequence: false
+    }
+  });
+
+  document.getElementById('radio-msg').innerText = hintMsg;
+  document.getElementById('status-desc').innerText = `街景 ID: ${imageId}`;
+
+  // 監聽視角旋轉（POV Changed），同步惡靈在街景畫面的座標
+  mlyViewer.on('pov', updateGhostOverlay);
+  window.addEventListener('resize', updateGhostOverlay);
+  updateGhostOverlay();
+}
+
+// 3. 視角投影運算：將世界方位角（Heading）動態投影至 2D 螢幕，釘在真實建築物上
+function updateGhostOverlay() {
+  if (!mlyViewer) return;
+
+  mlyViewer.getPointOfView().then(pov => {
+    const stage = document.getElementById('viewport-rig');
+    const w = stage.clientWidth;
+    const h = stage.clientHeight;
+
+    // 計算水平角度差並維持在 [-180, 180]
+    let diff = ghostHeading - (pov.bearing || 0);
+    while (diff < -180) diff += 360;
+    while (diff > 180) diff -= 360;
+
+    const ghostEl = document.getElementById('ghost-anchor');
+    const hFov = 75; // Mapillary 預設視野約 75 度
+
+    if (Math.abs(diff) < hFov / 2) {
+      const screenX = (w / 2) + (diff / (hFov / 2)) * (w / 2);
+      ghostEl.style.display = 'block';
+      ghostEl.style.left = `${screenX}px`;
+      ghostEl.style.top = `${h * 0.52}px`;
+    } else {
+      ghostEl.style.display = 'none';
+    }
+  });
+}
+
+function onGhostDefeated() {
+  alert("【除靈成功！】潛伏在真實道路上的惡靈已被徹底驅散！");
+  // 隨機切換惡靈方位，繼續下一輪搜查
+  ghostHeading = (ghostHeading + 120 + Math.random() * 60) % 360;
+  updateGhostOverlay();
 }
 </script>
 </body>
