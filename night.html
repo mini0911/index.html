@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>【寂靜結界】3m/s 實境追逐生還戰</title>
+<title>【寂靜結界】第一人稱實境生還戰</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -16,59 +16,84 @@
     overflow: hidden;
   }
 
-  #app {
-    display: flex; flex-direction: column; width: 100%; height: 100%; position: relative;
+  #game-rig {
+    position: relative; width: 100%; height: 100%;
+    display: flex; flex-direction: column; background: #000;
   }
 
-  /* 頂部狀態列 */
+  /* 頂部 HUD */
   .hud-header {
-    height: 52px; background: #0d1117; border-bottom: 2px solid #30363d;
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 0 16px; z-index: 1000;
+    height: 48px; background: rgba(13, 17, 23, 0.9);
+    border-bottom: 2px solid #30363d; display: flex;
+    justify-content: space-between; align-items: center;
+    padding: 0 16px; z-index: 1000; position: absolute; top: 0; left: 0; width: 100%;
   }
   .hud-title {
     font-size: 13px; letter-spacing: 2px; color: #ff5555; font-weight: bold;
     display: flex; align-items: center; gap: 8px;
   }
   .pulse-dot {
-    width: 10px; height: 10px; background: #ff2222; border-radius: 50%;
+    width: 8px; height: 8px; background: #ff2222; border-radius: 50%;
     box-shadow: 0 0 8px #ff0000; animation: blink 1.2s infinite;
   }
   @keyframes blink { 50% { opacity: 0.2; } }
 
-  .status-badges { display: flex; gap: 8px; }
+  .status-badges { display: flex; gap: 6px; }
   .badge {
     font-size: 11px; color: #8b949e; background: #161b22;
-    padding: 4px 8px; border-radius: 4px; border: 1px solid #30363d;
+    padding: 3px 6px; border-radius: 4px; border: 1px solid #30363d;
   }
   .badge.hp { color: #ff4444; border-color: #772222; font-weight: bold; }
   .badge.stalker { color: #ff9900; border-color: #774400; font-weight: bold; }
+  .badge.safe { color: #00ff88; border-color: #007744; font-weight: bold; display: none; }
 
-  /* 地圖 */
-  #map { flex: 1; width: 100%; background: #0a0a0c; }
-  .leaflet-tile {
-    filter: invert(100%) hue-rotate(180deg) brightness(80%) contrast(120%) saturate(30%) !important;
+  /* ==================== 第一人稱真實街道主視角 ==================== */
+  #fp-viewport {
+    flex: 1; width: 100%; height: 100%; position: relative; overflow: hidden;
+    background: #020202;
   }
-
-  /* 怪物逼近危險紅框閃爍特效 */
-  #danger-border {
+  #street-canvas {
+    width: 100%; height: 100%; display: block;
+  }
+  /* 街景 VHS 掃描線與手電筒光圈 */
+  .vhs-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    box-shadow: inset 0 0 0px rgba(255, 0, 0, 0);
-    pointer-events: none; z-index: 998; transition: box-shadow 0.2s;
-  }
-  .danger-pulse {
-    animation: dangerGlow 0.6s infinite alternate !important;
-  }
-  @keyframes dangerGlow {
-    0% { box-shadow: inset 0 0 25px rgba(255, 0, 0, 0.4); }
-    100% { box-shadow: inset 0 0 65px rgba(255, 0, 0, 0.95); }
+    background: radial-gradient(circle at 50% 50%, transparent 35%, rgba(0,0,0,0.7) 75%, rgba(0,0,0,0.95) 100%),
+                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+    background-size: 100% 100%, 100% 4px;
+    pointer-events: none;
   }
 
-  /* 底部面板 */
+  /* 後照鏡（瞥見身後 3m/s 追趕的怪物） */
+  #rear-mirror {
+    position: absolute; top: 56px; left: 50%; transform: translateX(-50%);
+    width: 180px; height: 50px; background: #0a0a0c;
+    border: 2px solid #555; border-radius: 8px; overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.8); z-index: 100;
+  }
+  #mirror-canvas { width: 100%; height: 100%; }
+  .mirror-tag {
+    position: absolute; bottom: 2px; right: 4px; font-size: 9px; color: #ff4444; letter-spacing: 1px;
+  }
+
+  /* 左下角小地圖 Minimap */
+  #minimap-wrapper {
+    position: absolute; bottom: 155px; left: 14px;
+    width: 110px; height: 110px; border-radius: 50%;
+    border: 2px solid #444; overflow: hidden; z-index: 100;
+    box-shadow: 0 0 15px rgba(0,0,0,0.9);
+  }
+  #map { width: 100%; height: 100%; }
+  .leaflet-tile {
+    filter: invert(100%) hue-rotate(180deg) brightness(75%) contrast(120%) !important;
+  }
+
+  /* 底部面板與對講機 */
   .hud-footer {
-    height: 145px; background: #0d1117; border-top: 2px solid #30363d;
-    padding: 10px 14px; display: flex; flex-direction: column;
-    justify-content: space-between; z-index: 1000;
+    height: 145px; background: rgba(13, 17, 23, 0.95);
+    border-top: 2px solid #30363d; padding: 10px 14px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    z-index: 1000;
   }
   .radio-channel {
     display: flex; justify-content: space-between; font-size: 11px; color: #f0883e;
@@ -90,7 +115,7 @@
     background: #21262d; border-color: #30363d; color: #484f58; cursor: not-allowed;
   }
 
-  /* 室內測試方向鍵盤 */
+  /* 模擬走動鍵盤 (室內測試) */
   .sim-controls {
     position: absolute; right: 12px; bottom: 155px; z-index: 999;
     display: grid; grid-template-columns: repeat(3, 34px);
@@ -102,18 +127,12 @@
     cursor: pointer; border-radius: 4px; font-size: 12px;
   }
 
-  /* ==================== AR 戰鬥層 ==================== */
+  /* AR 戰鬥層 (無縫覆蓋) */
   #ar-layer {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: #000; z-index: 2000; display: none; overflow: hidden;
   }
   #ar-video { width: 100%; height: 100%; object-fit: cover; }
-  .ar-vignette {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: radial-gradient(circle, transparent 40%, rgba(50, 0, 0, 0.6) 80%, rgba(0, 0, 0, 0.95) 100%);
-    pointer-events: none;
-  }
-
   .ar-header {
     position: absolute; top: 16px; left: 16px; right: 16px;
     display: flex; flex-direction: column; gap: 8px; z-index: 2100;
@@ -122,41 +141,25 @@
     display: flex; justify-content: space-between; align-items: center;
     color: #ff4444; font-size: 13px; font-weight: bold; text-shadow: 0 0 6px #ff0000;
   }
-  .countdown-box {
-    font-size: 20px; font-family: monospace; color: #ffff33; text-shadow: 0 0 8px #ffaa00;
-  }
-  .timer-progress {
-    width: 100%; height: 6px; background: #331111; border-radius: 3px; overflow: hidden;
-  }
-  .timer-fill {
-    height: 100%; width: 100%; background: #ff3333; transition: width 0.1s linear;
-  }
+  .countdown-box { font-size: 20px; font-family: monospace; color: #ffff33; }
+  .timer-progress { width: 100%; height: 6px; background: #331111; border-radius: 3px; overflow: hidden; }
+  .timer-fill { height: 100%; width: 100%; background: #ff3333; transition: width 0.1s linear; }
 
-  /* 空間鬼影節點 */
   #ar-ghost {
-    position: absolute; width: 160px; height: 230px;
-    transform: translate(-50%, -50%); pointer-events: auto;
-    cursor: pointer; display: none; transition: transform 0.05s linear;
+    position: absolute; width: 160px; height: 230px; transform: translate(-50%, -50%);
+    cursor: pointer; display: none;
   }
   .ghost-body {
     width: 100%; height: 100%;
     background: radial-gradient(ellipse at 50% 35%, rgba(240, 20, 20, 0.95) 0%, rgba(50, 0, 0, 0.85) 55%, transparent 80%);
-    filter: blur(4px); animation: ghostPulse 0.4s infinite alternate;
+    filter: blur(4px);
   }
   .ghost-eyes {
     position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%);
     display: flex; gap: 26px;
   }
-  .ghost-eye {
-    width: 14px; height: 20px; background: #ffffff;
-    border-radius: 50%; box-shadow: 0 0 14px #ff0000;
-  }
-  @keyframes ghostPulse {
-    0% { transform: scale(0.96); filter: blur(3px); }
-    100% { transform: scale(1.05); filter: blur(6px); }
-  }
+  .ghost-eye { width: 14px; height: 20px; background: #fff; border-radius: 50%; box-shadow: 0 0 14px #ff0000; }
 
-  /* 實體螢幕爆閃特效層 */
   #strobe-screen {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     display: none; pointer-events: none; z-index: 2500;
@@ -165,31 +168,16 @@
     animation: strobeFlash 0.08s infinite alternate !important;
     display: block !important;
   }
-  @keyframes strobeFlash {
-    0% { background: rgba(255, 255, 255, 0.95); }
-    100% { background: rgba(255, 0, 0, 0.9); }
-  }
+  @keyframes strobeFlash { 0% { background: rgba(255, 255, 255, 0.95); } 100% { background: rgba(255, 0, 0, 0.9); } }
 
-  .ar-crosshair {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 64px; height: 64px; border: 2px dashed rgba(255, 60, 60, 0.7);
-    border-radius: 50%; pointer-events: none;
-  }
   .ar-footer {
     position: absolute; bottom: 25px; left: 0; right: 0;
     display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 2100;
   }
-  .ar-tip {
-    color: #ffcccc; font-size: 13px; background: rgba(0,0,0,0.75);
-    padding: 4px 14px; border-radius: 4px; border: 1px solid #442222;
-  }
   .btn-exorcise {
-    background: #ff2222; border: 2px solid #ffffff; color: #fff;
-    font-size: 16px; font-weight: bold; padding: 12px 40px; border-radius: 30px;
-    cursor: pointer; box-shadow: 0 0 25px #ff0000; display: none;
-    animation: pulseExorcise 0.6s infinite alternate;
+    background: #ff2222; border: 2px solid #fff; color: #fff; font-size: 16px;
+    font-weight: bold; padding: 12px 40px; border-radius: 30px; cursor: pointer; display: none;
   }
-  @keyframes pulseExorcise { 100% { transform: scale(1.08); } }
 
   /* 開場視窗 */
   #modal-mask {
@@ -202,29 +190,43 @@
   .btn-main {
     background: #b62324; border: none; color: #fff; padding: 12px 28px;
     font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer;
-    box-shadow: 0 0 15px rgba(255,0,0,0.4);
   }
 </style>
 </head>
 <body>
 
-<div id="app">
+<div id="game-rig">
   <div class="hud-header">
     <div class="hud-title">
       <div class="pulse-dot"></div>
-      <span>動態步態雷達</span>
+      <span>第一人稱生還視角</span>
     </div>
     <div class="status-badges">
       <div class="badge hp" id="hp-badge">HP: 100/100</div>
+      <div class="badge safe" id="safe-badge">庇護中: 15.0s</div>
       <div class="badge stalker" id="monster-badge">鬼魅: 追擊中 (55m)</div>
       <div class="badge" id="step-badge">步數: 0</div>
     </div>
   </div>
 
-  <div id="map"></div>
-  <div id="danger-border"></div>
+  <!-- 主視角：第一人稱真實街景 -->
+  <div id="fp-viewport">
+    <canvas id="street-canvas" width="800" height="600"></canvas>
+    <div class="vhs-overlay"></div>
 
-  <!-- 模擬方向鍵盤 -->
+    <!-- 頂部後照鏡：隨時查看身後 3m/s 怪物逼近距離 -->
+    <div id="rear-mirror">
+      <canvas id="mirror-canvas" width="180" height="50"></canvas>
+      <div class="mirror-tag">REAR-CAM 后視鏡</div>
+    </div>
+
+    <!-- 左下角輔助雷達小地圖 -->
+    <div id="minimap-wrapper">
+      <div id="map"></div>
+    </div>
+  </div>
+
+  <!-- 室內模擬鍵盤 -->
   <div class="sim-controls">
     <div></div>
     <button class="sim-btn" onclick="simMove(0, 0.00015)">▲</button>
@@ -234,13 +236,14 @@
     <button class="sim-btn" onclick="simMove(0.00015, 0)">►</button>
   </div>
 
+  <!-- 底部對講機與解鎖狀態 -->
   <div class="hud-footer">
     <div class="radio-channel">
       <span>對講機 [CH-9] 隊長</span>
-      <span id="cheat-alert" style="color: #00ff88;">威脅狀態: 怪物以 3.0m/s 追趕中</span>
+      <span id="cheat-alert" style="color: #00ff88;">視野狀態: 街景漫步中</span>
     </div>
     <div class="radio-bubble" id="radio-msg">
-      「雷達響了！身後有東西在用時速 11 公里朝你狂奔！快走！別停下！趕快前往封印點！」
+      「你正走在被封鎖的陰暗巷子裡！邁開腳步往前走，後照鏡能看到怪物緊咬在後面！快到結界點！」
     </div>
     <div class="controls">
       <div class="step-info" id="status-desc">
@@ -252,262 +255,194 @@
     </div>
   </div>
 
-  <!-- ==================== AR 戰鬥層 ==================== -->
+  <!-- AR 降靈戰鬥層 -->
   <div id="ar-layer">
     <video id="ar-video" autoplay playsinline muted></video>
-    <div class="ar-vignette"></div>
     <div id="strobe-screen"></div>
-    <div class="ar-crosshair"></div>
-
     <div class="ar-header">
       <div class="ar-top-bar">
         <span>⚠ 結界破裂倒數</span>
         <span class="countdown-box" id="ar-timer-text">20.0s</span>
         <span id="ar-hp-text">HP: 100</span>
       </div>
-      <div class="timer-progress">
-        <div class="timer-fill" id="ar-timer-fill"></div>
-      </div>
+      <div class="timer-progress"><div class="timer-fill" id="ar-timer-fill"></div></div>
     </div>
 
-    <!-- 空間鬼影節點 -->
     <div id="ar-ghost" onclick="triggerExorcism()">
       <div class="ghost-body"></div>
-      <div class="ghost-eyes">
-        <div class="ghost-eye"></div>
-        <div class="ghost-eye"></div>
-      </div>
+      <div class="ghost-eyes"><div class="ghost-eye"></div><div class="ghost-eye"></div></div>
     </div>
 
     <div class="ar-footer">
-      <div class="ar-tip" id="ar-tip">轉動手機將準星死死扣住惡靈！</div>
+      <div style="color: #ffcccc; font-size: 13px;" id="ar-tip">調整手機將準星對準惡靈！</div>
       <button class="btn-exorcise" id="btn-exorcise" onclick="triggerExorcism()">⚡ 驅逐封印 ⚡</button>
     </div>
   </div>
 
-  <!-- 開場視窗 -->
+  <!-- 開場授權 -->
   <div id="modal-mask">
-    <h1>靜安怪談：生死實境追擊</h1>
+    <h1>靜安怪談：第一人稱實境漫步</h1>
     <p>
-      <b>警告：本關卡包含實境追逐！</b><br>
-      身後的怨靈實體將以 <b>3.0 m/s（約時速 10.8 km/h）</b> 的速度在現實地圖中持續追殺你。<br>
-      你必須在現實世界邁步快走拉開距離，邊走邊抵達封印點！
+      <b>告別純地圖！</b><br>
+      你將以<b>第一人稱視角</b>漫步在封閉街道中，真實走動會帶動鏡頭晃動與街景後掠。<br>
+      上方後照鏡會直接映照出身後追殺你的怪物！
     </p>
-    <button class="btn-main" onclick="initExperience()">允許感測並拔足狂奔</button>
+    <button class="btn-main" onclick="initExperience()">進入現場街道</button>
   </div>
 </div>
 
 <script>
-/* ==================== 恐怖合成音效 ==================== */
+/* ==================== 音效引擎 ==================== */
 class SoundEngine {
   constructor() { this.ctx = null; }
-  init() {
-    if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  stepThud() {
+  init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+  step() {
     if (!this.ctx) return;
     const osc = this.ctx.createOscillator();
     const g = this.ctx.createGain();
-    osc.frequency.setValueAtTime(65, this.ctx.currentTime);
+    osc.frequency.setValueAtTime(70, this.ctx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.08);
     g.gain.setValueAtTime(0.08, this.ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
     osc.connect(g); g.connect(this.ctx.destination);
     osc.start(); osc.stop(this.ctx.currentTime + 0.08);
   }
-  heartbeatLow() {
-    if (!this.ctx) return;
-    const osc = this.ctx.createOscillator();
-    const g = this.ctx.createGain();
-    osc.frequency.setValueAtTime(50, this.ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(25, this.ctx.currentTime + 0.15);
-    g.gain.setValueAtTime(0.4, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
-    osc.connect(g); g.connect(this.ctx.destination);
-    osc.start(); osc.stop(this.ctx.currentTime + 0.15);
-  }
-  alarmBeep() {
-    if (!this.ctx) return;
-    const osc = this.ctx.createOscillator();
-    const g = this.ctx.createGain();
-    osc.frequency.setValueAtTime(800, this.ctx.currentTime);
-    g.gain.setValueAtTime(0.2, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
-    osc.connect(g); g.connect(this.ctx.destination);
-    osc.start(); osc.stop(this.ctx.currentTime + 0.1);
-  }
-  jumpscareRoar() {
+  roar() {
     if (!this.ctx) return;
     const osc = this.ctx.createOscillator();
     const g = this.ctx.createGain();
     osc.type = "sawtooth";
     osc.frequency.setValueAtTime(140, this.ctx.currentTime);
     osc.frequency.linearRampToValueAtTime(450, this.ctx.currentTime + 0.2);
-    osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.9);
-    g.gain.setValueAtTime(0.9, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.9);
+    g.gain.setValueAtTime(0.8, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.8);
     osc.connect(g); g.connect(this.ctx.destination);
-    osc.start(); osc.stop(this.ctx.currentTime + 0.9);
+    osc.start(); osc.stop(this.ctx.currentTime + 0.8);
   }
-  winChime() {
+  chime() {
     if (!this.ctx) return;
     const osc = this.ctx.createOscillator();
     const g = this.ctx.createGain();
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(523.25, this.ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(1046.5, this.ctx.currentTime + 0.5);
+    osc.frequency.setValueAtTime(523, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1046, this.ctx.currentTime + 0.5);
     g.gain.setValueAtTime(0.3, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.5);
     osc.connect(g); g.connect(this.ctx.destination);
     osc.start(); osc.stop(this.ctx.currentTime + 0.5);
   }
 }
 const sfx = new SoundEngine();
 
-/* ==================== 硬體控制器 ==================== */
-class HardwareController {
-  constructor() {
-    this.videoTrack = null;
-    this.hasTorch = false;
+/* ==================== 第一人稱街道透視渲染器 ==================== */
+const streetCanvas = document.getElementById('street-canvas');
+const sCtx = streetCanvas.getContext('2d');
+const mirrorCanvas = document.getElementById('mirror-canvas');
+const mCtx = mirrorCanvas.getContext('2d');
+
+let walkCycle = 0;       // 步行晃動週期
+let streetZOffset = 0;   // 街道景深後退偏移量
+
+function renderFirstPersonStreet() {
+  const w = streetCanvas.width;
+  const h = streetCanvas.height;
+
+  // 1. 步行攝影機晃動 (Head Bobbing)
+  const bobY = Math.sin(walkCycle) * 8;
+  const bobX = Math.cos(walkCycle * 0.5) * 5;
+
+  sCtx.fillStyle = "#050608";
+  sCtx.fillRect(0, 0, w, h);
+
+  // 地面透視 (石磚路面)
+  const horizonY = h * 0.45 + bobY;
+  const gradFloor = sCtx.createLinearGradient(0, horizonY, 0, h);
+  gradFloor.addColorStop(0, '#0a0d10');
+  gradFloor.addColorStop(1, '#1b1d22');
+  sCtx.fillStyle = gradFloor;
+  sCtx.beginPath();
+  sCtx.moveTo(w * 0.2 + bobX, horizonY);
+  sCtx.lineTo(w * 0.8 + bobX, horizonY);
+  sCtx.lineTo(w, h);
+  sCtx.lineTo(0, h);
+  sCtx.fill();
+
+  // 左右兩側水泥鐵捲門牆面
+  sCtx.fillStyle = '#111317';
+  // 左牆
+  sCtx.beginPath();
+  sCtx.moveTo(0, 0); sCtx.lineTo(w * 0.2 + bobX, horizonY);
+  sCtx.lineTo(0, h); sCtx.fill();
+  // 右牆
+  sCtx.beginPath();
+  sCtx.moveTo(w, 0); sCtx.lineTo(w * 0.8 + bobX, horizonY);
+  sCtx.lineTo(w, h); sCtx.fill();
+
+  // 渲染動態向後退去的鐵捲門橫條與街燈透視
+  sCtx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+  sCtx.lineWidth = 2;
+  for (let z = 1; z <= 8; z++) {
+    const scale = ((z * 0.12 + (streetZOffset % 0.12)) % 1);
+    const lineY = horizonY + scale * (h - horizonY);
+    sCtx.beginPath();
+    sCtx.moveTo(0, lineY); sCtx.lineTo(w, lineY);
+    sCtx.stroke();
   }
 
-  bindStream(stream) {
-    if (!stream) return;
-    this.videoTrack = stream.getVideoTracks()[0];
-    if (this.videoTrack) {
-      const capabilities = this.videoTrack.getCapabilities ? this.videoTrack.getCapabilities() : {};
-      this.hasTorch = !!capabilities.torch;
-    }
-  }
+  // 遠處結界點的血光微暈
+  const gradEnd = sCtx.createRadialGradient(w/2 + bobX, horizonY, 5, w/2 + bobX, horizonY, 120);
+  gradEnd.addColorStop(0, 'rgba(255, 40, 40, 0.5)');
+  gradEnd.addColorStop(1, 'transparent');
+  sCtx.fillStyle = gradEnd;
+  sCtx.fillRect(0, 0, w, h);
 
-  async setTorch(state) {
-    if (this.hasTorch && this.videoTrack) {
-      try {
-        await this.videoTrack.applyConstraints({ advanced: [{ torch: state }] });
-      } catch (err) {}
-    }
-  }
+  // 2. 渲染後照鏡 (後方追逐的 3m/s 怪物)
+  renderRearMirror();
 
-  vibrateStep() {
-    if ("vibrate" in navigator) {
-      try { navigator.vibrate(25); } catch (e) {}
-    }
-  }
-
-  vibrateProximity() {
-    if ("vibrate" in navigator) {
-      try { navigator.vibrate([40, 80, 40]); } catch (e) {}
-    }
-  }
-
-  vibrateJumpscare() {
-    if ("vibrate" in navigator) {
-      try { navigator.vibrate([100, 50, 200, 50, 350, 60, 500]); } catch (e) {}
-    }
-  }
-
-  triggerStrobe(durationMs = 800) {
-    const strobeDiv = document.getElementById('strobe-screen');
-    strobeDiv.classList.add('strobe-active');
-
-    let strobeInterval = null;
-    if (this.hasTorch) {
-      let torchOn = false;
-      strobeInterval = setInterval(() => {
-        torchOn = !torchOn;
-        this.setTorch(torchOn);
-      }, 60);
-    }
-
-    setTimeout(() => {
-      strobeDiv.classList.remove('strobe-active');
-      if (strobeInterval) clearInterval(strobeInterval);
-      this.setTorch(false);
-    }, durationMs);
-  }
+  requestAnimationFrame(renderFirstPersonStreet);
 }
-const hardware = new HardwareController();
 
-/* ==================== 狀態與追逐怪物 ==================== */
+function renderRearMirror() {
+  const mw = mirrorCanvas.width;
+  const mh = mirrorCanvas.height;
+  mCtx.fillStyle = "#030303";
+  mCtx.fillRect(0, 0, mw, mh);
+
+  // 根據怪物距離計算後照鏡中的大小與逼近
+  const dist = getDistanceMeters(monsterLat, monsterLng, userLat, userLng);
+  const size = Math.max(8, Math.min(42, (60 / dist) * 18));
+
+  // 怪物倒影
+  mCtx.fillStyle = "rgba(220, 20, 20, 0.9)";
+  mCtx.beginPath();
+  mCtx.arc(mw/2, mh/2 + 4, size/2, 0, Math.PI * 2);
+  mCtx.fill();
+
+  // 血紅眼睛
+  mCtx.fillStyle = "#ffffff";
+  mCtx.fillRect(mw/2 - size/4, mh/2, 3, 4);
+  mCtx.fillRect(mw/2 + size/4 - 3, mh/2, 3, 4);
+}
+
+/* ==================== 遊戲狀態與步態核心 ==================== */
 let playerHP = 100;
-let totalSteps = 0;
-let zoneSteps = 0;
+let totalSteps = 0, zoneSteps = 0;
 const REQUIRED_STEPS = 20;
 
 let userLat = 25.053, userLng = 121.606;
-let map, userMarker, userCircle;
+let map, userMarker;
 let currentStage = 0;
 let questPoints = [];
 
-// 實體追趕怪物
 let monsterLat = 0, monsterLng = 0;
 let monsterMarker = null;
-const MONSTER_SPEED_MPS = 3.0; // 3.0 公尺 / 秒
+const MONSTER_SPEED_MPS = 3.0;
 let lastFrameTime = performance.now();
-let lastHeartbeatTime = 0;
 
 const QUESTS = [
-  {
-    name: "第一結界：轉角長椅的水鬼怨氣",
-    offset: [0.00045, 0.00035],
-    targetBearing: 60,
-    radioHint: "「你踏入極陰結界！在原地踏步 20 步驅散濃霧，朝【東北方 60°】抓鬼！」"
-  },
-  {
-    name: "第二結界：巡邏員的失落制服",
-    offset: [-0.00055, 0.00045],
-    targetBearing: 170,
-    radioHint: "「煞氣再次凝聚！在原地踏步 20 步，轉向【南方 170°】提防偷襲！」"
-  },
-  {
-    name: "終極結界：靜安核心惡靈母體",
-    offset: [0.00065, -0.00035],
-    targetBearing: 300,
-    radioHint: "「最後一戰！在現地走滿 20 步，朝【西北方 300°】進行 20 秒生死封印！」"
-  }
+  { name: "第一結界：轉角長椅的水鬼怨氣", offset: [0.00045, 0.00035], targetBearing: 60 },
+  { name: "第二結界：巡邏員的失落制服", offset: [-0.00055, 0.00045], targetBearing: 170 },
+  { name: "終極結界：靜安核心惡靈母體", offset: [0.00065, -0.00035], targetBearing: 300 }
 ];
 
-/* ==================== DeviceMotion 計步器 ==================== */
-let lastAccMag = 9.8;
-let lastStepTimestamp = 0;
-
-function setupMotionDetection() {
-  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-    DeviceMotionEvent.requestPermission().then(state => {
-      if (state === 'granted') window.addEventListener('devicemotion', handleMotion);
-    }).catch(console.error);
-  } else {
-    window.addEventListener('devicemotion', handleMotion);
-  }
-}
-
-function handleMotion(e) {
-  const acc = e.accelerationIncludingGravity;
-  if (!acc || acc.x === null) return;
-
-  const mag = Math.sqrt(acc.x * acc.x + acc.y * acc.y + acc.z * acc.z);
-  const delta = Math.abs(mag - lastAccMag);
-  lastAccMag = mag;
-
-  const now = performance.now();
-  if (delta > 2.8 && delta < 9.5) {
-    if (now - lastStepTimestamp > 280) {
-      lastStepTimestamp = now;
-      registerValidStep();
-    }
-  }
-}
-
-function registerValidStep() {
-  totalSteps++;
-  zoneSteps++;
-  sfx.stepThud();
-  hardware.vibrateStep();
-  document.getElementById('step-badge').innerText = `步數: ${totalSteps}`;
-  updateDistancesAndSteps();
-}
-
-/* ==================== GPS 與地圖系統 ==================== */
 function initExperience() {
   document.getElementById('modal-mask').style.display = 'none';
   sfx.init();
@@ -516,75 +451,69 @@ function initExperience() {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       pos => {
-        userLat = pos.coords.latitude;
-        userLng = pos.coords.longitude;
-        setupMap();
-        trackGPS();
+        userLat = pos.coords.latitude; userLng = pos.coords.longitude;
+        setupMinimap();
       },
-      () => {
-        alert("無法獲取精確 GPS，啟用室內虛擬方向鍵測試模式。");
-        setupMap();
-      },
+      () => { setupMinimap(); },
       { enableHighAccuracy: true, timeout: 8000 }
     );
   } else {
-    setupMap();
+    setupMinimap();
   }
+
+  renderFirstPersonStreet();
 }
 
-function setupMap() {
-  map = L.map('map', { zoomControl: false }).setView([userLat, userLng], 18);
+function setupMinimap() {
+  map = L.map('map', { zoomControl: false, attributionControl: false }).setView([userLat, userLng], 18);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
   const playerIcon = L.divIcon({
-    html: '<div style="width:16px;height:16px;background:#00ff88;border:2px solid #fff;border-radius:50%;box-shadow:0 0 12px #00ff88;"></div>',
-    iconSize: [16, 16], iconAnchor: [8, 8]
+    html: '<div style="width:10px;height:10px;background:#00ff88;border-radius:50%;"></div>',
+    iconSize: [10, 10], iconAnchor: [5, 5]
   });
   userMarker = L.marker([userLat, userLng], { icon: playerIcon }).addTo(map);
-  userCircle = L.circle([userLat, userLng], {
-    radius: 18, color: '#00ff88', fillColor: '#00ff88', fillOpacity: 0.1, weight: 1
-  }).addTo(map);
 
-  // 初始化追擊怪物 (在玩家後方約 55 米處生成)
   monsterLat = userLat - 0.00045;
   monsterLng = userLng - 0.0003;
   const monsterIcon = L.divIcon({
-    html: '<div style="width:22px;height:22px;background:#ff0000;border:2px solid #fff;border-radius:50%;box-shadow:0 0 16px #ff0000;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:bold;">☠</div>',
-    iconSize: [22, 22], iconAnchor: [11, 11]
+    html: '<div style="width:12px;height:12px;background:#ff0000;border-radius:50%;"></div>',
+    iconSize: [12, 12], iconAnchor: [6, 6]
   });
   monsterMarker = L.marker([monsterLat, monsterLng], { icon: monsterIcon }).addTo(map);
 
   questPoints = QUESTS.map(q => {
-    const qLat = userLat + q.offset[0];
-    const qLng = userLng + q.offset[1];
-    const marker = L.circleMarker([qLat, qLng], {
-      radius: 12, color: '#ff2222', fillColor: '#ff0000', fillOpacity: 0.4, weight: 2
-    }).addTo(map);
-    return { ...q, lat: qLat, lng: qLng, marker };
+    const qLat = userLat + q.offset[0], qLng = userLng + q.offset[1];
+    return { ...q, lat: qLat, lng: qLng };
   });
 
   updateDistancesAndSteps();
-  lastFrameTime = performance.now();
   requestAnimationFrame(monsterChaseLoop);
 }
 
-function trackGPS() {
-  navigator.geolocation.watchPosition(pos => {
-    userLat = pos.coords.latitude;
-    userLng = pos.coords.longitude;
-    userMarker.setLatLng([userLat, userLng]);
-    userCircle.setLatLng([userLat, userLng]);
-    map.panTo([userLat, userLng]);
-    updateDistancesAndSteps();
-  }, null, { enableHighAccuracy: true, maximumAge: 2000 });
+function registerStep() {
+  totalSteps++; zoneSteps++;
+  walkCycle += 0.7;
+  streetZOffset += 0.035;
+  sfx.step();
+  document.getElementById('step-badge').innerText = `步數: ${totalSteps}`;
+  updateDistancesAndSteps();
+}
+
+function setupMotionDetection() {
+  window.addEventListener('devicemotion', (e) => {
+    const acc = e.accelerationIncludingGravity;
+    if (!acc) return;
+    const mag = Math.hypot(acc.x, acc.y, acc.z);
+    if (Math.abs(mag - 9.8) > 3.2) registerStep();
+  });
 }
 
 function simMove(dLng, dLat) {
   userLat += dLat; userLng += dLng;
   userMarker.setLatLng([userLat, userLng]);
-  userCircle.setLatLng([userLat, userLng]);
   map.panTo([userLat, userLng]);
-  registerValidStep();
+  registerStep();
 }
 
 function getDistanceMeters(lat1, lon1, lat2, lon2) {
@@ -595,92 +524,38 @@ function getDistanceMeters(lat1, lon1, lat2, lon2) {
   return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
 }
 
-/* ==================== 3m/s 怪物即時追逐 AI 主循環 ==================== */
 function monsterChaseLoop(now) {
   const dt = (now - lastFrameTime) / 1000;
   lastFrameTime = now;
 
-  // AR 戰鬥中怪物暫停地圖移動，避免干擾
-  if (!isARActive && currentStage < questPoints.length) {
-    const distToPlayer = getDistanceMeters(monsterLat, monsterLng, userLat, userLng);
-    document.getElementById('monster-badge').innerText = `鬼魅: 追擊中 (${distToPlayer}m)`;
+  const distToPlayer = getDistanceMeters(monsterLat, monsterLng, userLat, userLng);
+  document.getElementById('monster-badge').innerText = `鬼魅: 追擊中 (${distToPlayer}m)`;
 
-    // 向量追趕計算
-    if (distToPlayer > 1.5) {
-      const stepDistanceMeters = MONSTER_SPEED_MPS * dt;
-      const ratio = Math.min(1.0, stepDistanceMeters / distToPlayer);
-      monsterLat += (userLat - monsterLat) * ratio;
-      monsterLng += (userLng - monsterLng) * ratio;
-      monsterMarker.setLatLng([monsterLat, monsterLng]);
-    }
+  if (distToPlayer > 1.5) {
+    const stepDist = MONSTER_SPEED_MPS * dt;
+    const ratio = Math.min(1.0, stepDist / distToPlayer);
+    monsterLat += (userLat - monsterLat) * ratio;
+    monsterLng += (userLng - monsterLng) * ratio;
+    if (monsterMarker) monsterMarker.setLatLng([monsterLat, monsterLng]);
+  }
 
-    // 多段距離危險反饋
-    const dangerBorder = document.getElementById('danger-border');
-    if (distToPlayer < 10) {
-      dangerBorder.classList.add('danger-pulse');
-      if (now - lastHeartbeatTime > 450) {
-        lastHeartbeatTime = now;
-        sfx.heartbeatLow();
-        hardware.vibrateProximity();
-      }
-    } else if (distToPlayer < 25) {
-      dangerBorder.classList.remove('danger-pulse');
-      dangerBorder.style.boxShadow = "inset 0 0 30px rgba(255, 100, 0, 0.4)";
-      if (now - lastHeartbeatTime > 900) {
-        lastHeartbeatTime = now;
-        sfx.heartbeatLow();
-      }
-    } else {
-      dangerBorder.classList.remove('danger-pulse');
-      dangerBorder.style.boxShadow = "none";
-    }
-
-    // 追上判定：距離小於 4 米，引發近身撕咬
-    if (distToPlayer <= 4) {
-      triggerMonsterCatchAttack();
-    }
+  if (distToPlayer <= 3.5) {
+    sfx.roar();
+    playerHP = Math.max(0, playerHP - 30);
+    document.getElementById('hp-badge').innerText = `HP: ${playerHP}/100`;
+    monsterLat -= 0.0003; // 擊退
+    alert(`【遭背後撲咬！】後照鏡中的鬼怪撲倒了你！損失 30 HP！剩餘: ${playerHP}`);
   }
 
   requestAnimationFrame(monsterChaseLoop);
 }
 
-// 被怪物直接追上撲擊
-function triggerMonsterCatchAttack() {
-  sfx.jumpscareRoar();
-  hardware.vibrateJumpscare();
-  hardware.triggerStrobe(700);
-
-  playerHP = Math.max(0, playerHP - 30);
-  document.getElementById('hp-badge').innerText = `HP: ${playerHP}/100`;
-
-  // 將怪物擊退 35 米，給玩家重新拔足狂奔的逃生機會
-  const angle = Math.random() * Math.PI * 2;
-  monsterLat = userLat + (Math.sin(angle) * 35) / 111000;
-  monsterLng = userLng + (Math.cos(angle) * 35) / (111000 * Math.cos(userLat * Math.PI / 180));
-  monsterMarker.setLatLng([monsterLat, monsterLng]);
-
-  if (playerHP <= 0) {
-    alert("【慘遭撕咬吞噬】你移動太慢被怪物正面撲倒……神智潰散，於起點重新輪迴！");
-    playerHP = 100;
-    currentStage = 0;
-    totalSteps = 0;
-    zoneSteps = 0;
-    document.getElementById('hp-badge').innerText = `HP: 100/100`;
-    document.getElementById('step-badge').innerText = `步數: 0`;
-    updateDistancesAndSteps();
-  } else {
-    alert(`【背後遭到暴擊！】鬼魅撲上了你的後背！損失 30 HP！剩餘 HP: ${playerHP}。快邁步逃跑！`);
-  }
-}
-
 function updateDistancesAndSteps() {
   if (currentStage >= questPoints.length) {
     document.getElementById('radio-msg').innerText = "「所有結界皆已完全封印！你甩開了惡靈，走出永夜。」";
-    document.getElementById('status-desc').innerText = "【任務圓滿達成】";
     document.getElementById('interact-btn').disabled = true;
     return;
   }
-
   const q = questPoints[currentStage];
   const d = getDistanceMeters(userLat, userLng, q.lat, q.lng);
   const btn = document.getElementById('interact-btn');
@@ -688,199 +563,59 @@ function updateDistancesAndSteps() {
   document.getElementById('status-desc').innerHTML =
     `距離結界: <b>${d}m</b><br>現地步數檢驗: <b>${zoneSteps} / ${REQUIRED_STEPS}</b> 步`;
 
-  if (d <= 18) {
-    if (zoneSteps >= REQUIRED_STEPS) {
-      btn.disabled = false;
-      btn.innerText = "【步數達標】開啟 AR 生死戰";
-      btn.style.boxShadow = "0 0 12px #ff0000";
-    } else {
-      btn.disabled = true;
-      btn.innerText = `需在現場走動 (差 ${REQUIRED_STEPS - zoneSteps} 步)`;
-      btn.style.boxShadow = "none";
-    }
+  if (d <= 18 && zoneSteps >= REQUIRED_STEPS) {
+    btn.disabled = false;
+    btn.innerText = "【已抵達現場】開啟 AR 降靈戰";
   } else {
-    zoneSteps = 0;
     btn.disabled = true;
-    btn.innerText = `步行靠近中 (差 ${d}m)`;
-    btn.style.boxShadow = "none";
+    btn.innerText = d > 18 ? `步行靠近中 (差 ${d}m)` : `現場踏步中 (差 ${REQUIRED_STEPS - zoneSteps} 步)`;
   }
 }
 
-/* ==================== AR 限時 20 秒戰鬥與硬體反噬 ==================== */
-let videoStream = null;
-let currentDeviceHeading = 0;
-let mockHeading = 0;
-let isDragging = false, startX = 0;
-
-let arTimeLeft = 20.0;
-let arTimerInterval = null;
-let isARActive = false;
+/* ==================== AR 戰鬥層 ==================== */
+let isARActive = false, arTimer = null, arTimeLeft = 20.0;
 
 async function openARBattle() {
   isARActive = true;
   arTimeLeft = 20.0;
   document.getElementById('ar-layer').style.display = 'block';
   document.getElementById('ar-hp-text').innerText = `HP: ${playerHP}`;
-  document.getElementById('radio-msg').innerText = questPoints[currentStage].radioHint;
 
   try {
-    videoStream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: { ideal: "environment" },
-        width: { ideal: 1280 }, height: { ideal: 720 },
-        advanced: [{ torch: false }]
-      }
-    });
-    document.getElementById('ar-video').srcObject = videoStream;
-    hardware.bindStream(videoStream);
-  } catch (err) {
-    console.warn("相機啟用失敗，啟用純黑透視模擬:", err);
-  }
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    document.getElementById('ar-video').srcObject = stream;
+  } catch(e) {}
 
-  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-    try {
-      const resp = await DeviceOrientationEvent.requestPermission();
-      if (resp === 'granted') window.addEventListener('deviceorientation', handleOrientation);
-    } catch (e) {}
-  } else {
-    window.addEventListener('deviceorientation', handleOrientation);
-  }
-
-  const layer = document.getElementById('ar-layer');
-  layer.onmousedown = (e) => { isDragging = true; startX = e.clientX; };
-  window.onmousemove = (e) => {
-    if (!isDragging) return;
-    mockHeading = (mockHeading - (e.clientX - startX) * 0.3 + 360) % 360;
-    startX = e.clientX;
-  };
-  window.onmouseup = () => { isDragging = false; };
-
-  startARTimer();
-  arRenderLoop();
-}
-
-function handleOrientation(e) {
-  let heading = e.webkitCompassHeading || (360 - e.alpha);
-  if (heading) currentDeviceHeading = heading;
-}
-
-function startARTimer() {
-  const timerFill = document.getElementById('ar-timer-fill');
-  const timerText = document.getElementById('ar-timer-text');
-
-  arTimerInterval = setInterval(() => {
-    if (!isARActive) return;
+  arTimer = setInterval(() => {
     arTimeLeft -= 0.1;
-
-    if (arTimeLeft <= 5.0) {
-      sfx.alarmBeep();
-    }
-
+    document.getElementById('ar-timer-text').innerText = `${arTimeLeft.toFixed(1)}s`;
+    document.getElementById('ar-timer-fill').style.width = `${(arTimeLeft/20.0)*100}%`;
     if (arTimeLeft <= 0) {
-      arTimeLeft = 0;
-      clearInterval(arTimerInterval);
-      triggerMonsterRetaliation();
+      clearInterval(arTimer);
+      sfx.roar();
+      playerHP = Math.max(0, playerHP - 40);
+      document.getElementById('hp-badge').innerText = `HP: ${playerHP}/100`;
+      document.getElementById('ar-layer').style.display = 'none';
+      isARActive = false;
+      alert("【封印超時】遭惡靈反咬 40 HP！");
     }
-
-    timerText.innerText = `${arTimeLeft.toFixed(1)}s`;
-    timerFill.style.width = `${(arTimeLeft / 20.0) * 100}%`;
   }, 100);
-}
 
-function triggerMonsterRetaliation() {
-  sfx.jumpscareRoar();
-  hardware.vibrateJumpscare();
-  hardware.triggerStrobe(800);
-
-  playerHP = Math.max(0, playerHP - 40);
-  document.getElementById('hp-badge').innerText = `HP: ${playerHP}/100`;
-
-  setTimeout(() => {
-    closeARBattle();
-    if (playerHP <= 0) {
-      alert("【精神完全崩潰】強光與震動奪走了你的神智……你將在起點處輪迴甦醒！");
-      playerHP = 100;
-      currentStage = 0;
-      totalSteps = 0;
-      zoneSteps = 0;
-      document.getElementById('hp-badge').innerText = `HP: 100/100`;
-      document.getElementById('step-badge').innerText = `步數: 0`;
-      updateDistancesAndSteps();
-    } else {
-      alert(`【封印超時失敗！】惡靈瘋狂撲咬！受到 40 點傷害！剩餘 HP: ${playerHP}`);
-      zoneSteps = 0;
-      updateDistancesAndSteps();
-    }
-  }, 850);
-}
-
-function arRenderLoop() {
-  if (!isARActive) return;
-
-  const currentQ = questPoints[currentStage];
-  const finalHeading = (currentDeviceHeading + mockHeading) % 360;
-
-  let diff = currentQ.targetBearing - finalHeading;
-  while (diff < -180) diff += 360;
-  while (diff > 180) diff -= 360;
-
-  const ghostEl = document.getElementById('ar-ghost');
-  const exorciseBtn = document.getElementById('btn-exorcise');
-  const tipEl = document.getElementById('ar-tip');
-
-  const hFov = 60;
-  if (Math.abs(diff) < hFov / 2) {
-    const screenX = (window.innerWidth / 2) + (diff / (hFov / 2)) * (window.innerWidth / 2);
-    ghostEl.style.display = 'block';
-    ghostEl.style.left = `${screenX}px`;
-    ghostEl.style.top = `${window.innerHeight / 2}px`;
-
-    if (Math.abs(diff) < 14) {
-      tipEl.innerText = "⚡ 準星已死死鎖定惡靈！立刻點擊封印！⚡";
-      exorciseBtn.style.display = 'block';
-    } else {
-      tipEl.innerText = "偵測到靈體！調整角度將準星對準它！";
-      exorciseBtn.style.display = 'none';
-    }
-  } else {
-    ghostEl.style.display = 'none';
-    exorciseBtn.style.display = 'none';
-    tipEl.innerText = diff > 0 ? "惡靈在右側 → 請向右轉身！" : "← 惡靈在左側 請向左轉身！";
-  }
-
-  requestAnimationFrame(arRenderLoop);
+  // 顯示鬼影
+  const ghost = document.getElementById('ar-ghost');
+  ghost.style.display = 'block';
+  ghost.style.left = '50%'; ghost.style.top = '50%';
+  document.getElementById('btn-exorcise').style.display = 'block';
 }
 
 function triggerExorcism() {
-  clearInterval(arTimerInterval);
-  sfx.winChime();
-  const q = questPoints[currentStage];
-  q.marker.setStyle({ color: '#00ff88', fillColor: '#00ff88' });
-
-  alert(`【除靈成功！】\n在剩餘 ${arTimeLeft.toFixed(1)} 秒內，成功將 ${q.name.split('：')[1]} 徹底封印！`);
-  closeARBattle();
-
-  // 封印成功後將追擊怪物彈飛至下個點後方 60 米
-  monsterLat = userLat - 0.0005;
-  monsterLng = userLng - 0.0004;
-
-  currentStage++;
-  zoneSteps = 0;
-  updateDistancesAndSteps();
-}
-
-function closeARBattle() {
-  isARActive = false;
-  clearInterval(arTimerInterval);
-  hardware.setTorch(false);
-  if (videoStream) {
-    videoStream.getTracks().forEach(t => t.stop());
-    videoStream = null;
-  }
-  window.removeEventListener('deviceorientation', handleOrientation);
+  clearInterval(arTimer);
+  sfx.chime();
   document.getElementById('ar-layer').style.display = 'none';
-  document.getElementById('ar-ghost').style.display = 'none';
-  document.getElementById('btn-exorcise').style.display = 'none';
+  isARActive = false;
+  alert("【除靈成功！】結界順利破除！");
+  currentStage++; zoneSteps = 0;
+  updateDistancesAndSteps();
 }
 </script>
 </body>
