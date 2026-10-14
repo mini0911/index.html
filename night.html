@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>今天也要平安下班！校安問答手遊版</title>
+  <title>今天也要平安下班！校安問答手遊版 (超萌Q版)</title>
   <style>
     * {
       box-sizing: border-box;
@@ -300,9 +300,9 @@
     <div id="modal">
       <h1 id="modal-title">校安生存戰 🎒</h1>
       <p id="modal-desc">
-        你是學務處最親切的校安老師！<br>
+        你是學務處最親切的超萌 Q 版校安老師！<br>
         在 17:00 前利用下方按鈕巡視校園，<br>
-        門口會陸續湧入許多帶著煩惱的學生，<br>
+        門口會陸續湧入許多帶著煩惱的 Q 版學生，<br>
         靠近冒問號的學生點擊【對話】排解難題，平安下班！
       </p>
       <button class="cute-btn" id="start-btn" onclick="startGame()">開始值勤 ⏰</button>
@@ -424,16 +424,18 @@
     const targetTime = 17.0 * 60;
     const timeScale = 0.55;
 
+    /* Q版主角狀態 */
     const player = {
       x: 60,
-      y: 270,
+      y: 265,
       speed: 3.5,
       san: 100,
       maxSan: 100,
       sta: 100,
       maxSta: 100,
       facing: 'right',
-      walkFrame: 0
+      walkFrame: 0,
+      blinkTimer: 100
     };
 
     let students = [];
@@ -444,7 +446,6 @@
     let moveLeft = false;
     let moveRight = false;
 
-    /* 20 道豐富現代校園真實情境題庫 */
     const questionBank = [
       {
         text: "老師！有人把我的醜照發在匿名 Threads 和 IG 告白粉專，底下好多人在笑我...",
@@ -586,7 +587,7 @@
         text: "老師，男同學們在走廊玩阿魯巴撞柱子，有人撞到頭流血而且柱子磁磚掉了...",
         options: [
           { text: "太危險了！受傷同學我馬上送醫護室，相關同學全數到學務處進行安全再教育。", san: 10, sta: -15 },
-          { text: "男生打打鬧鬧而已，去洗手台沖沖水就沒事了。", san: -20, sta: 0 },
+          { text: "男生打打鬧鬧而已，去洗手台沖沖水就沒事了。", san: -20, san: 0 },
           { text: "損壞公物！磁磚費用全班分攤，每人記警告一支！", san: -15, sta: 0 }
         ]
       },
@@ -636,16 +637,26 @@
 
       students.push({
         x: 420,
-        y: 285,
+        y: 280,
         targetX: slotX,
         state: 'entering',
-        type: Math.floor(Math.random() * 2),
+        type: Math.floor(Math.random() * 3), // 0: 雙馬尾妹妹, 1: 呆毛弟弟, 2: 圓眼鏡班長
         facing: 'left',
         walkFrame: 0,
         bounce: Math.random() * Math.PI,
         hasQuestion: false,
-        mood: null
+        mood: null,
+        blinkTimer: 60 + Math.random() * 80
       });
+    }
+
+    function shuffleArray(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
     }
 
     function openQuestion() {
@@ -654,7 +665,9 @@
       dialogText.innerText = currentQuestion.text;
       optionsContainer.innerHTML = '';
 
-      currentQuestion.options.forEach((opt, idx) => {
+      const shuffledOptions = shuffleArray(currentQuestion.options);
+
+      shuffledOptions.forEach((opt, idx) => {
         const btn = document.createElement('button');
         btn.className = 'option-btn';
         btn.innerText = `${idx + 1}. ${opt.text}`;
@@ -751,13 +764,19 @@
         return;
       }
 
+      /* 主角眨眼倒數 */
+      player.blinkTimer--;
+      if (player.blinkTimer <= 0) {
+        player.blinkTimer = 100 + Math.random() * 80;
+      }
+
       let isMoving = false;
       if (dialogBox.style.display === 'none') {
         if (moveLeft) { player.x -= player.speed; isMoving = true; }
         if (moveRight) { player.x += player.speed; isMoving = true; }
       }
 
-      if (isMoving) player.walkFrame += 0.2;
+      if (isMoving) player.walkFrame += 0.22;
       else player.walkFrame = 0;
 
       player.x = Math.max(20, Math.min(canvas.width - 70, player.x));
@@ -765,10 +784,15 @@
       for (let i = students.length - 1; i >= 0; i--) {
         const st = students[i];
 
+        st.blinkTimer--;
+        if (st.blinkTimer <= 0) {
+          st.blinkTimer = 90 + Math.random() * 70;
+        }
+
         if (st.state === 'entering') {
           st.x -= 2;
           st.facing = 'left';
-          st.walkFrame += 0.2;
+          st.walkFrame += 0.22;
           if (st.x <= st.targetX) {
             st.state = 'waiting';
             st.hasQuestion = true;
@@ -819,226 +843,333 @@
       if (feedbackTimer > 0) feedbackTimer--;
     }
 
-    function drawCuteEye(x, y, radius, lookDir = 0) {
+    /* ==========================================================
+       全新超萌「二頭身（Chibi）」Q 版人物繪製引擎
+       ========================================================== */
+
+    // 超萌果凍感大眼（支援眨眼閉眼狀態）
+    function drawChibiEye(x, y, radius, isBlinking = false, lookDir = 0) {
       ctx.save();
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(x, y, radius, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = '#3e2723';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
+      if (isBlinking) {
+        // 萌萌閉眼弧線 ( ^ )
+        ctx.strokeStyle = '#3e2723';
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        ctx.arc(x, y + 1, radius * 0.9, 1.1 * Math.PI, 1.9 * Math.PI);
+        ctx.stroke();
+      } else {
+        // 圓滾滾大眼白
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#3e2723';
+        ctx.lineWidth = 1.6;
+        ctx.stroke();
 
-      ctx.fillStyle = '#2c1810';
-      ctx.beginPath();
-      ctx.arc(x + lookDir, y, radius * 0.75, 0, Math.PI * 2);
-      ctx.fill();
+        // 雙色果凍黑棕眼珠
+        ctx.fillStyle = '#2c1810';
+        ctx.beginPath();
+        ctx.arc(x + lookDir, y, radius * 0.76, 0, Math.PI * 2);
+        ctx.fill();
 
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(x + lookDir - 1.5, y - 1.5, radius * 0.35, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(x + lookDir + 1.5, y + 1.5, radius * 0.18, 0, Math.PI * 2);
-      ctx.fill();
+        // 瞳孔底部淡色光感
+        ctx.fillStyle = '#6d4c41';
+        ctx.beginPath();
+        ctx.arc(x + lookDir, y + 1.2, radius * 0.45, 0, Math.PI);
+        ctx.fill();
+
+        // 大高光
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(x + lookDir - 1.8, y - 1.6, radius * 0.38, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 小反光
+        ctx.beginPath();
+        ctx.arc(x + lookDir + 1.5, y + 1.5, radius * 0.18, 0, Math.PI * 2);
+        ctx.fill();
+      }
       ctx.restore();
     }
 
-    function drawCuteTeacher(x, y, facing, walkFrame) {
+    // 繪製【超萌二頭身校安老師】
+    function drawCuteTeacher(x, y, facing, walkFrame, blinkTimer) {
       ctx.save();
       ctx.translate(x, y);
 
-      let bobY = Math.sin(walkFrame) * 3;
+      let isBlinking = (blinkTimer > 0 && blinkTimer <= 6);
       let dir = facing === 'right' ? 1 : -1;
 
-      ctx.fillStyle = 'rgba(120, 53, 15, 0.15)';
+      // 走路企鵝小碎步左右微傾角 (Waddle)
+      let tilt = (walkFrame !== 0) ? Math.sin(walkFrame) * 0.08 : 0;
+      let bobY = (walkFrame !== 0) ? Math.abs(Math.sin(walkFrame)) * 3 : 0;
+
+      ctx.rotate(tilt);
+
+      // 地面小陰影
+      ctx.fillStyle = 'rgba(120, 53, 15, 0.16)';
       ctx.beginPath();
-      ctx.ellipse(25, 75, 20, 6, 0, 0, Math.PI * 2);
+      ctx.ellipse(25, 76, 18, 5, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      let legOffset = Math.sin(walkFrame) * 5;
+      // 小短腿 (饅頭腳)
+      let legOffset = (walkFrame !== 0) ? Math.sin(walkFrame) * 4 : 0;
       ctx.fillStyle = '#1e293b';
       ctx.beginPath();
-      ctx.ellipse(18 + legOffset, 72, 5, 4, 0, 0, Math.PI * 2);
-      ctx.ellipse(32 - legOffset, 72, 5, 4, 0, 0, Math.PI * 2);
+      ctx.ellipse(19 + legOffset, 72, 4.5, 4, 0, 0, Math.PI * 2);
+      ctx.ellipse(31 - legOffset, 72, 4.5, 4, 0, 0, Math.PI * 2);
       ctx.fill();
 
+      // 二頭身小圓身 (深藍西服)
       ctx.fillStyle = '#3b82f6';
       ctx.beginPath();
-      ctx.roundRect(10, 36 + bobY, 30, 32, 12);
+      ctx.roundRect(14, 40 + bobY, 22, 26, 9);
       ctx.fill();
       ctx.strokeStyle = '#1e3a8a';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 1.8;
       ctx.stroke();
 
+      // 迷你黃色反光背心
       ctx.fillStyle = '#fde047';
       ctx.beginPath();
-      ctx.roundRect(11, 40 + bobY, 28, 22, 6);
+      ctx.roundRect(15, 44 + bobY, 20, 16, 5);
       ctx.fill();
       ctx.fillStyle = '#10b981';
-      ctx.fillRect(11, 48 + bobY, 28, 4);
+      ctx.fillRect(15, 50 + bobY, 20, 3.5);
 
+      // 抱在手上的迷你小板夾
       ctx.fillStyle = '#d97706';
-      ctx.fillRect(dir > 0 ? 32 : 6, 46 + bobY, 8, 12);
+      let boardX = dir > 0 ? 30 : 10;
+      ctx.fillRect(boardX, 48 + bobY, 7, 10);
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(dir > 0 ? 33 : 7, 47 + bobY, 6, 10);
+      ctx.fillRect(boardX + 1, 49 + bobY, 5, 8);
 
+      // 【超萌大圓臉】(半徑 22，極致二頭身肉肉臉)
       ctx.fillStyle = '#ffedd5';
       ctx.beginPath();
-      ctx.arc(25, 22 + bobY, 20, 0, Math.PI * 2);
+      ctx.arc(25, 23 + bobY, 21, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = '#3e2723';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 2.2;
       ctx.stroke();
 
+      // 澎澎圓短髮
       ctx.fillStyle = '#451a03';
       ctx.beginPath();
-      ctx.arc(25, 14 + bobY, 20, Math.PI, Math.PI * 2);
+      ctx.arc(25, 15 + bobY, 21, Math.PI, Math.PI * 2);
       ctx.fill();
+      // 圓潤短瀏海
       ctx.beginPath();
-      ctx.arc(18, 12 + bobY, 8, 0, Math.PI);
-      ctx.arc(30, 12 + bobY, 9, 0, Math.PI);
+      ctx.arc(17, 13 + bobY, 8.5, 0, Math.PI);
+      ctx.arc(31, 13 + bobY, 9.5, 0, Math.PI);
       ctx.fill();
 
+      // 校安小圓帽 (帶金色小警徽)
       ctx.fillStyle = '#1e3a8a';
       ctx.beginPath();
-      ctx.ellipse(25, 5 + bobY, 16, 5, 0, 0, Math.PI * 2);
+      ctx.ellipse(25, 5 + bobY, 17, 5.5, 0, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = '#f59e0b';
+      ctx.fillStyle = '#fbbf24';
       ctx.beginPath();
       ctx.arc(25, 4 + bobY, 2.5, 0, Math.PI * 2);
       ctx.fill();
 
+      // 超萌果凍大眼睛
       let lookOffset = dir * 1.5;
-      drawCuteEye(19, 21 + bobY, 4, lookOffset);
-      drawCuteEye(31, 21 + bobY, 4, lookOffset);
+      drawChibiEye(18, 22 + bobY, 4.2, isBlinking, lookOffset);
+      drawChibiEye(32, 22 + bobY, 4.2, isBlinking, lookOffset);
 
-      ctx.fillStyle = 'rgba(251, 113, 133, 0.5)';
+      // 軟萌粉紅心形感腮紅
+      ctx.fillStyle = 'rgba(251, 113, 133, 0.55)';
       ctx.beginPath();
-      ctx.arc(14, 26 + bobY, 3.5, 0, Math.PI * 2);
-      ctx.arc(36, 26 + bobY, 3.5, 0, Math.PI * 2);
+      ctx.ellipse(13, 27 + bobY, 3.8, 2.5, 0, 0, Math.PI * 2);
+      ctx.ellipse(37, 27 + bobY, 3.8, 2.5, 0, 0, Math.PI * 2);
       ctx.fill();
 
+      // 溫柔微笑
       ctx.strokeStyle = '#3e2723';
       ctx.lineWidth = 1.8;
       ctx.beginPath();
-      ctx.arc(25, 25 + bobY, 3, 0.1 * Math.PI, 0.9 * Math.PI);
+      ctx.arc(25, 27 + bobY, 2.8, 0.1 * Math.PI, 0.9 * Math.PI);
       ctx.stroke();
 
       ctx.restore();
     }
 
+    // 繪製【超萌二頭身學生（三款外觀）】
     function drawCuteStudent(st) {
       ctx.save();
       ctx.translate(st.x, st.y);
 
-      let bob = (st.state === 'waiting') ? Math.sin(st.bounce) * 2.5 : Math.sin(st.walkFrame) * 3;
+      let isBlinking = (st.blinkTimer > 0 && st.blinkTimer <= 6);
       let dir = st.facing === 'right' ? 1 : -1;
+      let bob = (st.state === 'waiting') ? Math.sin(st.bounce) * 2.5 : Math.sin(st.walkFrame) * 2.8;
+      let tilt = (st.state !== 'waiting') ? Math.sin(st.walkFrame) * 0.08 : 0;
 
-      ctx.fillStyle = 'rgba(120, 53, 15, 0.15)';
+      ctx.rotate(tilt);
+
+      // 地面小陰影
+      ctx.fillStyle = 'rgba(120, 53, 15, 0.16)';
       ctx.beginPath();
-      ctx.ellipse(20, 68, 16, 5, 0, 0, Math.PI * 2);
+      ctx.ellipse(20, 68, 15, 4.5, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      let legOffset = (st.state !== 'waiting') ? Math.sin(st.walkFrame) * 4 : 0;
+      // 小短腳
+      let legOffset = (st.state !== 'waiting') ? Math.sin(st.walkFrame) * 3.5 : 0;
       ctx.fillStyle = '#78350f';
       ctx.beginPath();
-      ctx.ellipse(14 + legOffset, 65, 4, 3, 0, 0, Math.PI * 2);
-      ctx.ellipse(26 - legOffset, 65, 4, 3, 0, 0, Math.PI * 2);
+      ctx.ellipse(15 + legOffset, 65, 3.8, 3, 0, 0, Math.PI * 2);
+      ctx.ellipse(25 - legOffset, 65, 3.8, 3, 0, 0, Math.PI * 2);
       ctx.fill();
 
+      // 背上的可愛小書包
+      ctx.fillStyle = '#ef4444';
+      let bagX = dir > 0 ? 5 : 27;
+      ctx.beginPath();
+      ctx.roundRect(bagX, 36 + bob, 7, 12, 3);
+      ctx.fill();
+
+      // 身體服裝 (二頭身小身型)
       if (st.type === 0) {
+        // 0號：水手服短裙雙馬尾妹妹
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
-        ctx.roundRect(9, 32 + bob, 22, 18, 5);
+        ctx.roundRect(11, 35 + bob, 18, 14, 4);
         ctx.fill();
         ctx.strokeStyle = '#3e2723';
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 1.4;
         ctx.stroke();
 
         ctx.fillStyle = '#1e3a8a';
         ctx.beginPath();
-        ctx.moveTo(8, 48 + bob);
-        ctx.lineTo(32, 48 + bob);
-        ctx.lineTo(34, 58 + bob);
-        ctx.lineTo(6, 58 + bob);
+        ctx.moveTo(9, 48 + bob);
+        ctx.lineTo(31, 48 + bob);
+        ctx.lineTo(33, 56 + bob);
+        ctx.lineTo(7, 56 + bob);
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = '#ef4444';
+        // 粉紅大領結
+        ctx.fillStyle = '#f43f5e';
         ctx.beginPath();
-        ctx.arc(20, 38 + bob, 3, 0, Math.PI * 2);
+        ctx.arc(20, 39 + bob, 3, 0, Math.PI * 2);
         ctx.fill();
-      } else {
+      } else if (st.type === 1) {
+        // 1號：吊帶短褲小正太
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
-        ctx.roundRect(9, 32 + bob, 22, 18, 5);
+        ctx.roundRect(11, 35 + bob, 18, 14, 4);
         ctx.fill();
         ctx.strokeStyle = '#3e2723';
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 1.4;
         ctx.stroke();
 
-        ctx.fillStyle = '#854d0e';
-        ctx.fillRect(10, 48 + bob, 20, 10);
-        ctx.strokeRect(10, 48 + bob, 20, 10);
+        ctx.fillStyle = '#b45309';
+        ctx.fillRect(12, 48 + bob, 16, 9);
+        ctx.strokeRect(12, 48 + bob, 16, 9);
+      } else {
+        // 2號：抱著書的班長
+        ctx.fillStyle = '#f8fafc';
+        ctx.beginPath();
+        ctx.roundRect(11, 35 + bob, 18, 16, 4);
+        ctx.fill();
+        ctx.strokeStyle = '#3e2723';
+        ctx.lineWidth = 1.4;
+        ctx.stroke();
+
+        // 抱在胸前的小字典
+        ctx.fillStyle = '#10b981';
+        ctx.fillRect(16, 42 + bob, 8, 10);
       }
 
+      // 【二頭身大圓頭】(半徑 18.5)
       ctx.fillStyle = '#ffedd5';
       ctx.beginPath();
-      ctx.arc(20, 20 + bob, 17, 0, Math.PI * 2);
+      ctx.arc(20, 20 + bob, 18.5, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = '#3e2723';
-      ctx.lineWidth = 1.8;
+      ctx.lineWidth = 2.0;
       ctx.stroke();
 
+      // 各式 Q 版髮型
       if (st.type === 0) {
+        // 萌萌雙馬尾
         ctx.fillStyle = '#7c2d12';
         ctx.beginPath();
-        ctx.arc(20, 14 + bob, 17, Math.PI, Math.PI * 2);
+        ctx.arc(20, 13 + bob, 18.5, Math.PI, Math.PI * 2);
         ctx.fill();
         ctx.beginPath();
-        ctx.arc(15, 12 + bob, 6, 0, Math.PI);
-        ctx.arc(25, 12 + bob, 6, 0, Math.PI);
+        ctx.arc(14, 11 + bob, 6.5, 0, Math.PI);
+        ctx.arc(26, 11 + bob, 6.5, 0, Math.PI);
         ctx.fill();
+        // 蓬鬆側馬尾
         ctx.beginPath();
-        ctx.arc(1, 18 + bob, 6, 0, Math.PI * 2);
-        ctx.arc(39, 18 + bob, 6, 0, Math.PI * 2);
+        ctx.arc(0, 17 + bob, 6.5, 0, Math.PI * 2);
+        ctx.arc(40, 17 + bob, 6.5, 0, Math.PI * 2);
         ctx.fill();
-      } else {
+      } else if (st.type === 1) {
+        // 俏皮呆毛短髮
         ctx.fillStyle = '#374151';
         ctx.beginPath();
-        ctx.arc(20, 14 + bob, 17, Math.PI, Math.PI * 2);
+        ctx.arc(20, 13 + bob, 18.5, Math.PI, Math.PI * 2);
         ctx.fill();
+        // 搖擺呆毛
+        let hairSway = Math.sin(st.bounce * 2) * 2;
         ctx.strokeStyle = '#374151';
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 3.2;
         ctx.beginPath();
-        ctx.moveTo(20, 2 + bob);
-        ctx.quadraticCurveTo(24, -8 + bob, 28, -2 + bob);
+        ctx.moveTo(20, 1 + bob);
+        ctx.quadraticCurveTo(24 + hairSway, -8 + bob, 29 + hairSway, -2 + bob);
+        ctx.stroke();
+      } else {
+        // 乖巧齊瀏海
+        ctx.fillStyle = '#1e293b';
+        ctx.beginPath();
+        ctx.arc(20, 13 + bob, 18.5, Math.PI, Math.PI * 2);
+        ctx.fill();
+        ctx.fillRect(8, 9 + bob, 24, 7);
+      }
+
+      // 果凍大眼睛
+      let eyeDir = dir * 1.5;
+      drawChibiEye(15, 21 + bob, 3.8, isBlinking, eyeDir);
+      drawChibiEye(26, 21 + bob, 3.8, isBlinking, eyeDir);
+
+      // 班長的圓圓黑框眼鏡
+      if (st.type === 2 && !isBlinking) {
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.arc(15, 21 + bob, 4.5, 0, Math.PI * 2);
+        ctx.arc(26, 21 + bob, 4.5, 0, Math.PI * 2);
+        ctx.moveTo(19.5, 21 + bob);
+        ctx.lineTo(21.5, 21 + bob);
         ctx.stroke();
       }
 
-      let eyeDir = dir * 1.5;
-      drawCuteEye(15, 20 + bob, 3.5, eyeDir);
-      drawCuteEye(25, 20 + bob, 3.5, eyeDir);
-
-      ctx.fillStyle = 'rgba(254, 202, 202, 0.7)';
+      // 萌萌腮紅
+      ctx.fillStyle = 'rgba(254, 202, 202, 0.75)';
       ctx.beginPath();
-      ctx.arc(11, 24 + bob, 3, 0, Math.PI * 2);
-      ctx.arc(29, 24 + bob, 3, 0, Math.PI * 2);
+      ctx.arc(11, 26 + bob, 3.2, 0, Math.PI * 2);
+      ctx.arc(30, 26 + bob, 3.2, 0, Math.PI * 2);
       ctx.fill();
 
+      // 小巧困惑的小嘟嘴
       ctx.fillStyle = '#ef4444';
       ctx.beginPath();
-      ctx.arc(20, 26 + bob, 2, 0, Math.PI * 2);
+      ctx.arc(20.5, 27 + bob, 2, 0, Math.PI * 2);
       ctx.fill();
 
+      // 頭頂問號浮動
       if (st.hasQuestion && st.state === 'waiting') {
-        let qBob = Math.sin(st.bounce * 1.5) * 4;
+        let qBob = Math.sin(st.bounce * 1.6) * 4;
         ctx.font = 'bold 22px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
         ctx.fillText("❓", 10, -5 + qBob);
       }
 
+      // 離開時心情特效
       if (st.state === 'leaving') {
         ctx.font = 'bold 18px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
         if (st.mood === 'happy') {
@@ -1057,6 +1188,7 @@
       ctx.fillStyle = '#fef3c7';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+      // 溫馨木質地板
       ctx.fillStyle = '#fed7aa';
       ctx.fillRect(0, 340, canvas.width, canvas.height - 340);
       ctx.strokeStyle = '#f97316';
@@ -1066,6 +1198,7 @@
       ctx.lineTo(canvas.width, 340);
       ctx.stroke();
 
+      // 出入大門
       ctx.fillStyle = '#e2e8f0';
       ctx.fillRect(360, 180, 40, 160);
       ctx.strokeStyle = '#94a3b8';
@@ -1075,6 +1208,7 @@
       ctx.font = 'bold 11px sans-serif';
       ctx.fillText("大門", 368, 205);
 
+      // 窗戶與藍天小雲朵
       ctx.fillStyle = '#bae6fd';
       ctx.beginPath();
       ctx.roundRect(170, 45, 120, 75, 10);
@@ -1090,6 +1224,7 @@
       ctx.arc(230, 75, 11, 0, Math.PI * 2);
       ctx.fill();
 
+      // 佈告欄
       ctx.fillStyle = '#fb923c';
       ctx.beginPath();
       ctx.roundRect(20, 70, 120, 85, 10);
@@ -1109,9 +1244,13 @@
       ctx.font = '11px sans-serif';
       ctx.fillText("愛心守護", 315, 120);
 
+      // 繪製 Q 版學生群
       students.forEach(st => drawCuteStudent(st));
-      drawCuteTeacher(player.x, player.y, player.facing, player.walkFrame);
 
+      // 繪製 Q 版校安老師
+      drawCuteTeacher(player.x, player.y, player.facing, player.walkFrame, player.blinkTimer);
+
+      // 提示氣泡
       if (activeStudent && dialogBox.style.display === 'none') {
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
@@ -1126,6 +1265,7 @@
         ctx.fillText("點擊 [對話] 💬", player.x - 9, player.y - 19);
       }
 
+      // 飄字
       if (feedbackTimer > 0) {
         ctx.fillStyle = feedbackText.includes("放心") ? '#059669' : '#dc2626';
         ctx.font = 'bold 15px sans-serif';
