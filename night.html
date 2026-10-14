@@ -1,237 +1,496 @@
-"""
-《末日便利商店》(Doomsday Convenience Store) - 核心數值與經濟/拾荒模擬腳本
-包含：
-1. 動態物價波動模型（基礎價值、供需、事件驅動、噪音、玩家標價購買意向）
-2. 拾荒委託風險與回報模擬（角色屬性、裝備加成、區域難度、三元結算）
-3. 30 天營運與市場模擬主迴圈
-"""
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>末日便利商店 - Doomsday Outpost</title>
+<style>
+  :root {
+    --bg-color: #0f1416;
+    --card-bg: #182024;
+    --accent-amber: #e6a13b;
+    --accent-green: #48bb78;
+    --accent-red: #e53e3e;
+    --accent-blue: #4299e1;
+    --text-primary: #e2e8f0;
+    --text-secondary: #718096;
+    --border-color: #2d3748;
+    --font-mono: 'Courier New', Courier, monospace;
+  }
 
-import random
-from dataclasses import dataclass
-from typing import List, Dict, Optional
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg-color);
+    color: var(--text-primary);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+  }
 
-# ==========================================
-# 1. 物品與物價模型
-# ==========================================
+  #app {
+    width: 100%;
+    max-width: 960px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
 
-@dataclass
-class Item:
-    name: str
-    category: str      # Vital, Medical, Defense, Luxury
-    base_price: float  # P0 基準價
-    elasticity: float  # 價格敏感度 alpha (如 Vital=2.0, Luxury=0.8)
+  /* 頂部看板 */
+  header {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .title-group h1 {
+    font-size: 1.5rem;
+    color: var(--accent-amber);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .status-badge {
+    font-size: 0.85rem;
+    background: #2a3739;
+    color: #cbd5e0;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+  .stats-bar {
+    display: flex;
+    gap: 20px;
+    font-size: 1.1rem;
+    font-family: var(--font-mono);
+  }
+  .stat-val { font-weight: bold; color: var(--accent-amber); }
 
-ITEMS = {
-    "water": Item("純水", "Vital", 10.0, 2.0),
-    "food": Item("乾糧", "Vital", 15.0, 1.8),
-    "rad_pill": Item("碘片", "Medical", 40.0, 1.5),
-    "ammo_9mm": Item("9mm子彈", "Defense", 15.0, 1.2),
-    "cigarettes": Item("香菸條", "Luxury", 120.0, 0.8),
+  /* 突發事件廣播條 */
+  .news-banner {
+    background: #272015;
+    border-left: 4px solid var(--accent-amber);
+    padding: 12px 16px;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    color: #ecc94b;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* 雙欄排版 */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 768px) {
+    .main-grid { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .panel h2 {
+    font-size: 1.1rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+    color: #a0aec0;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* 交易表格 */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  th, td {
+    padding: 8px 6px;
+    text-align: left;
+    border-bottom: 1px solid #232d32;
+  }
+  th { color: var(--text-secondary); font-weight: 500; }
+  .price-cell { font-family: var(--font-mono); font-weight: bold; }
+  .price-up { color: var(--accent-red); }
+  .price-down { color: var(--accent-green); }
+
+  .btn {
+    background: #2b3940;
+    color: #fff;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: 0.15s ease;
+  }
+  .btn:hover:not(:disabled) { background: #3b4d57; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-accent { background: #b7791f; }
+  .btn-accent:hover:not(:disabled) { background: #d69e2e; }
+  .btn-danger { background: #9b2c2c; }
+  .btn-danger:hover:not(:disabled) { background: #c53030; }
+
+  /* 拾荒者卡片 */
+  .scav-card {
+    background: #11171a;
+    border: 1px solid #243036;
+    border-radius: 6px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .scav-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .scav-stats {
+    display: flex;
+    gap: 12px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+  .scav-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  /* 終端日誌窗口 */
+  .console {
+    background: #090d0e;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px;
+    height: 180px;
+    overflow-y: auto;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+  .log-entry { margin-bottom: 4px; }
+  .log-event { color: #f6e05e; }
+  .log-success { color: #68d391; }
+  .log-danger { color: #fc8181; }
+
+  /* 底部推進按鈕 */
+  .action-footer {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .btn-large {
+    padding: 12px 24px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    background: var(--accent-amber);
+    color: #1a202c;
+  }
+  .btn-large:hover:not(:disabled) { background: #ecc94b; }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header>
+    <div class="title-group">
+      <h1>☣️ 末日便利商店</h1>
+      <span class="status-badge" id="day-badge">第 1 天 / 黎明</span>
+    </div>
+    <div class="stats-bar">
+      <div>金庫: <span class="stat-val" id="caps-val">300</span> 瓶蓋</div>
+      <div>聲望: <span class="stat-val" id="rep-val">50</span></div>
+    </div>
+  </header>
+
+  <div class="news-banner" id="news-banner">
+    📻 無線電廣播：避難所外目前無特別劇烈輻射風暴，周邊市場平穩。
+  </div>
+
+  <div class="main-grid">
+    <!-- 貨架與市價面板 -->
+    <div class="panel">
+      <h2>📦 物資交易與庫存</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>物品</th>
+            <th>市價</th>
+            <th>庫存</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="market-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- 拾荒隊員面板 -->
+    <div class="panel">
+      <h2>🎒 拾荒隊員與派遣</h2>
+      <div id="scav-list" style="display: flex; flex-direction: column; gap: 10px;"></div>
+    </div>
+  </div>
+
+  <!-- 終端日誌 -->
+  <div class="console" id="console-log">
+    <div class="log-entry">🟢 [系統] 終端機連線就緒，便利商店開始營運。點擊「結算營業」推進時間。</div>
+  </div>
+
+  <div class="action-footer">
+    <button class="btn btn-large" id="end-day-btn" onclick="nextDay()">結算營業，進入下一天 ➔</button>
+  </div>
+</div>
+
+<script>
+let gameState = {
+  day: 1,
+  caps: 300,
+  reputation: 50,
+  activeEvent: null,
+  eventDays: 0,
+  inventory: {
+    water: 5,
+    food: 5,
+    rad_pill: 1,
+    ammo_9mm: 10,
+    cigarettes: 1
+  }
+};
+
+const ITEMS = {
+  water: { name: "純水", category: "Vital", base: 10 },
+  food: { name: "乾糧罐頭", category: "Vital", base: 15 },
+  rad_pill: { name: "碘片抗輻藥", category: "Medical", base: 40 },
+  ammo_9mm: { name: "9mm子彈", category: "Defense", base: 15 },
+  cigarettes: { name: "舊時代香菸", category: "Luxury", base: 120 }
+};
+
+const EVENTS = [
+  { name: "酸雨風暴", catMulti: { Medical: 2.8, Vital: 1.2 }, duration: 3, desc: "酸雨傾瀉，抗輻射藥物與純水價格大漲！" },
+  { name: "淨水器故障", catMulti: { Vital: 3.2 }, duration: 2, desc: "避難所主淨水機損毀，純水成為極度緊缺品！" },
+  { name: "暴民襲擊預警", catMulti: { Defense: 2.2, Vital: 1.1 }, duration: 3, desc: "外圍暴民集結，居民瘋狂收購子彈備戰！" },
+  { name: "拾荒大篷車抵達", catMulti: { Luxury: 0.6, Defense: 0.8 }, duration: 2, desc: "外來商隊低價傾銷奢侈物資，市價重跌。" },
+  { name: "避難所狂歡夜", catMulti: { Luxury: 2.4 }, duration: 2, desc: "避難所發放大節日津貼，香菸等奢侈品需求暴增！" }
+];
+
+const ZONES = [
+  { id: "supermarket", name: "廢棄超商區", danger: 0.15, minLoot: 80, maxLoot: 160, drops: ["water", "food", "rad_pill"] },
+  { id: "scrapyard", name: "市郊廢車場", danger: 0.35, minLoot: 220, maxLoot: 420, drops: ["ammo_9mm", "food", "cigarettes"] },
+  { id: "checkpoint", name: "軍事檢查站", danger: 0.55, minLoot: 550, maxLoot: 950, drops: ["ammo_9mm", "rad_pill", "cigarettes"] }
+];
+
+let scavengers = [
+  { id: 1, name: "老雷 (老兵)", phy: 7, per: 5, grt: 8, wage: 25, status: "閒置", missionZone: null },
+  { id: 2, name: "阿雅 (偵察兵)", phy: 4, per: 9, grt: 6, wage: 20, status: "閒置", missionZone: null }
+];
+
+let currentPrices = {};
+
+function calcPrices() {
+  for (let key in ITEMS) {
+    let item = ITEMS[key];
+    let mult = 1.0;
+    if (gameState.activeEvent && gameState.activeEvent.catMulti[item.category]) {
+      mult = gameState.activeEvent.catMulti[item.category];
+    }
+    let noise = 1 + (Math.random() * 0.16 - 0.08);
+    currentPrices[key] = Math.round(item.base * mult * noise);
+  }
 }
 
-@dataclass
-class MarketEvent:
-    name: str
-    affected_categories: Dict[str, float]  # 類別 -> 加成倍率
-    duration: int
-
-EVENT_POOL = [
-    MarketEvent("酸雨風暴", {"Medical": 2.8, "Vital": 1.2}, duration=3),
-    MarketEvent("淨水器故障", {"Vital": 3.2}, duration=2),
-    MarketEvent("暴民劫掠警報", {"Defense": 2.2, "Vital": 1.1}, duration=3),
-    MarketEvent("拾荒大篷車抵達", {"Luxury": 0.6, "Defense": 0.8}, duration=1),
-    MarketEvent("避難所狂歡夜", {"Luxury": 2.5}, duration=2),
-]
-
-class PriceEngine:
-    def __init__(self):
-        self.active_event: Optional[MarketEvent] = None
-        self.event_days_left: int = 0
-        self.supply_multipliers: Dict[str, float] = {k: 1.0 for k in ITEMS}
-
-    def update_daily_event(self, day: int) -> Optional[str]:
-        if self.event_days_left > 0:
-            self.event_days_left -= 1
-            if self.event_days_left == 0:
-                self.active_event = None
-                return "事件結束，市場逐漸恢復常態。"
-            return f"事件持續中：【{self.active_event.name}】（剩餘 {self.event_days_left} 天）"
-        
-        # 35% 機率觸發新事件
-        if random.random() < 0.35:
-            self.active_event = random.choice(EVENT_POOL)
-            self.event_days_left = self.active_event.duration
-            return f"★ 突發事件觸發：【{self.active_event.name}】！預計持續 {self.event_days_left} 天。"
-        return None
-
-    def calculate_market_price(self, item_key: str) -> float:
-        """計算每日市場公道價：P_t = P_0 * M_env * M_event * (1 + epsilon)"""
-        item = ITEMS[item_key]
-        m_env = self.supply_multipliers.get(item_key, 1.0)
-        
-        m_event = 1.0
-        if self.active_event and item.category in self.active_event.affected_categories:
-            m_event = self.active_event.affected_categories[item.category]
-            
-        epsilon = random.uniform(-0.08, 0.08)
-        price = item.base_price * m_env * m_event * (1 + epsilon)
-        return round(max(price, 1.0), 1)
-
-    def calculate_buy_chance(self, item_key: str, set_price: float, market_price: float) -> float:
-        """根據玩家定價與市場公道價計算顧客購買意向率"""
-        if set_price <= market_price:
-            return 1.0
-        item = ITEMS[item_key]
-        diff_ratio = (set_price - market_price) / market_price
-        penalty = item.elasticity * (diff_ratio ** 2)
-        return max(0.0, round(1.0 - penalty, 2))
-
-
-# ==========================================
-# 2. 拾荒委託系統
-# ==========================================
-
-@dataclass
-class Scavenger:
-    name: str
-    phy: int  # 體魄 1-10
-    per: int  # 感知 1-10
-    grt: int  # 膽量 1-10
-    daily_wage: float = 20.0
-    profit_cut: float = 0.20  # 抽成 20%
-    is_alive: bool = True
-    is_injured: bool = False
-
-@dataclass
-class Zone:
-    name: str
-    days: int
-    danger_coeff: float      # 基礎危險係數 D (0.0 ~ 1.0)
-    loot_range: tuple        # (min_caps, max_caps)
-    loot_items: List[str]
-
-ZONES = {
-    "supermarket": Zone("廢棄超商區", 1, 0.15, (80, 150), ["water", "food", "rad_pill"]),
-    "scrapyard": Zone("市郊廢車場", 2, 0.35, (250, 450), ["ammo_9mm", "food", "cigarettes"]),
-    "checkpoint": Zone("軍事檢查站", 2, 0.55, (600, 1000), ["ammo_9mm", "rad_pill", "cigarettes"]),
-    "biolab": Zone("生化實驗室遺跡", 3, 0.75, (1500, 2800), ["rad_pill", "ammo_9mm", "water", "cigarettes"])
+function buyItem(key) {
+  let price = currentPrices[key];
+  if (gameState.caps >= price) {
+    gameState.caps -= price;
+    gameState.inventory[key] += 1;
+    log(`🛒 購入【${ITEMS[key].name}】，花費 ${price} 瓶蓋。`);
+    render();
+  }
 }
 
-class ExpeditionManager:
-    @staticmethod
-    def calculate_death_risk(scavenger: Scavenger, zone: Zone, armor_val: int = 5, has_supplies: bool = True) -> float:
-        """
-        R_death = max(5%, D - (護甲*2% + PHY*1.5% + GRT*1%))
-        缺乏補給時危險增加 20%
-        """
-        gear_bonus = (armor_val * 0.02) + (scavenger.phy * 0.015) + (scavenger.grt * 0.01)
-        supply_penalty = 0.0 if has_supplies else 0.20
-        risk = zone.danger_coeff + supply_penalty - gear_bonus
-        return round(max(0.05, min(0.95, risk)), 3)
+function sellItem(key) {
+  let price = currentPrices[key];
+  if (gameState.inventory[key] > 0) {
+    gameState.caps += price;
+    gameState.inventory[key] -= 1;
+    log(`💵 售出【${ITEMS[key].name}】，入帳 ${price} 瓶蓋。`, "log-success");
+    render();
+  }
+}
 
-    @classmethod
-    def execute_expedition(cls, scavenger: Scavenger, zone: Zone, armor_val: int = 5, has_supplies: bool = True) -> dict:
-        death_risk = cls.calculate_death_risk(scavenger, zone, armor_val, has_supplies)
-        roll = random.random()
+function sendScavenger(scavId, zoneId) {
+  let s = scavengers.find(x => x.id === scavId);
+  let z = ZONES.find(x => x.id === zoneId);
+  if (!s || !z || s.status !== "閒置") return;
 
-        # 結果三元分支
-        if roll <= death_risk:
-            scavenger.is_alive = False
-            return {
-                "status": "殉職失聯",
-                "risk": death_risk,
-                "roll": round(roll, 3),
-                "loot_value": 0,
-                "loot_items": [],
-                "wage_paid": 0,
-                "net_profit": 0,
-                "msg": f"☠️ {scavenger.name} 在【{zone.name}】遭遇致命伏擊，不幸殉職，裝備與物資全部遺失！"
-            }
-        elif roll <= death_risk + 0.25:
-            scavenger.is_injured = True
-            base_loot = random.randint(*zone.loot_range) * random.uniform(0.5, 0.7)
-            chosen_item = random.choice(zone.loot_items)
-            medical_cost = 45.0
-            wage = scavenger.daily_wage * zone.days
-            net = base_loot * (1 - scavenger.profit_cut) - wage - medical_cost
-            return {
-                "status": "負傷返還",
-                "risk": death_risk,
-                "roll": round(roll, 3),
-                "loot_value": round(base_loot, 1),
-                "loot_items": [chosen_item],
-                "wage_paid": wage,
-                "medical_cost": medical_cost,
-                "net_profit": round(net, 1),
-                "msg": f"⚠️ {scavenger.name} 身負重傷逃回，丟失部分物資，帶回價值 {round(base_loot, 1)} 瓶蓋，需要治療！"
-            }
-        else:
-            base_loot = random.randint(*zone.loot_range)
-            extra_drops = random.sample(zone.loot_items, k=min(len(zone.loot_items), 1 + (scavenger.per // 4)))
-            wage = scavenger.daily_wage * zone.days
-            scav_cut = base_loot * scavenger.profit_cut
-            net = base_loot - scav_cut - wage
-            return {
-                "status": "凱旋大捷",
-                "risk": death_risk,
-                "roll": round(roll, 3),
-                "loot_value": base_loot,
-                "loot_items": extra_drops,
-                "wage_paid": wage,
-                "scav_cut": round(scav_cut, 1),
-                "net_profit": round(net, 1),
-                "msg": f"🎉 {scavenger.name} 完好無損歸來！滿載而歸，總估值 {base_loot} 瓶蓋！"
-            }
+  s.status = "外出探索中";
+  s.missionZone = z;
+  log(`🎒 派遣 ${s.name} 前往【${z.name}】拾荒...`);
+  render();
+}
 
+function resolveScavengers() {
+  scavengers.forEach(s => {
+    if (s.status === "外出探索中" && s.missionZone) {
+      let z = s.missionZone;
+      let gearMitigation = (s.phy * 0.015) + (s.grt * 0.01);
+      let risk = Math.max(0.05, z.danger - gearMitigation);
+      let roll = Math.random();
 
-# ==========================================
-# 3. 30 天快速模擬運算展示
-# ==========================================
+      if (roll <= risk) {
+        s.status = "殉職";
+        log(`☠️ 慘報！${s.name} 在【${z.name}】遭遇致命伏擊，不幸殉職！`, "log-danger");
+      } else if (roll <= risk + 0.25) {
+        s.status = "負傷修養中";
+        let lootVal = Math.round((Math.random() * (z.maxLoot - z.minLoot) + z.minLoot) * 0.5);
+        let drop = z.drops[Math.floor(Math.random() * z.drops.length)];
+        gameState.inventory[drop] += 1;
+        let net = Math.round(lootVal - s.wage - 30);
+        gameState.caps += Math.max(0, net);
+        log(`⚠️ ${s.name} 身負重傷逃回，帶回【${ITEMS[drop].name}】與估值 ${lootVal}C，扣除工資醫藥費淨得 ${net}C。`, "log-danger");
+      } else {
+        s.status = "閒置";
+        let lootVal = Math.round(Math.random() * (z.maxLoot - z.minLoot) + z.minLoot);
+        let drop = z.drops[Math.floor(Math.random() * z.drops.length)];
+        gameState.inventory[drop] += 1;
+        let net = Math.round(lootVal * 0.8 - s.wage);
+        gameState.caps += net;
+        log(`🎉 ${s.name} 從【${z.name}】大獲全勝歸來！帶回【${ITEMS[drop].name}】，為便利店淨賺 ${net} 瓶蓋！`, "log-success");
+      }
+      s.missionZone = null;
+    } else if (s.status === "負傷修養中") {
+      s.status = "閒置";
+      log(`💊 ${s.name} 傷勢康復，已可再次出勤。`);
+    }
+  });
+}
 
-def run_simulation():
-    engine = PriceEngine()
-    player_caps = 300.0
-    print("=" * 65)
-    print("  🏪 《末日便利商店》30 天經濟與拾荒模擬引擎啟動")
-    print(f"  初始流動資金: {player_caps} 瓶蓋 (Caps)")
-    print("=" * 65)
+function nextDay() {
+  gameState.day += 1;
 
-    team = [
-        Scavenger("老雷 (老兵)", phy=7, per=5, grt=8, daily_wage=25.0),
-        Scavenger("阿雅 (偵察兵)", phy=4, per=9, grt=6, daily_wage=22.0)
-    ]
+  if (gameState.eventDays > 0) {
+    gameState.eventDays--;
+    if (gameState.eventDays === 0) {
+      log(`📻 事件【${gameState.activeEvent.name}】結束，市場供需回到基礎水平。`, "log-event");
+      gameState.activeEvent = null;
+    }
+  }
 
-    for day in range(1, 31):
-        print(f"\n--- [第 {day:02d} 天] ---")
-        event_info = engine.update_daily_event(day)
-        if event_info:
-            print(f"📢 {event_info}")
+  if (!gameState.activeEvent && Math.random() < 0.35) {
+    let ev = EVENTS[Math.floor(Math.random() * EVENTS.length)];
+    gameState.activeEvent = ev;
+    gameState.eventDays = ev.duration;
+    log(`🚨 突發廣播：【${ev.name}】持續 ${ev.duration} 天！${ev.desc}`, "log-event");
+  }
 
-        prices = {k: engine.calculate_market_price(k) for k in ITEMS}
-        price_str = " | ".join([f"{ITEMS[k].name}: {prices[k]}C" for k in prices])
-        print(f"💰 今日牌價 -> {price_str}")
+  calcPrices();
+  resolveScavengers();
 
-        if day % 3 == 1:
-            active_scavs = [s for s in team if s.is_alive]
-            if active_scavs:
-                scav = random.choice(active_scavs)
-                target_zone = ZONES["supermarket"] if player_caps < 600 else ZONES["scrapyard"]
-                if player_caps > 1200:
-                    target_zone = ZONES["checkpoint"]
+  // 每日客流自然銷售
+  for (let key in gameState.inventory) {
+    if (gameState.inventory[key] > 0 && Math.random() < 0.4) {
+      gameState.inventory[key] -= 1;
+      let income = currentPrices[key];
+      gameState.caps += income;
+      log(`🏪 常客上門買走了 1 份【${ITEMS[key].name}】，獲利 ${income} 瓶蓋。`);
+    }
+  }
 
-                print(f"🎒 派遣隊員 [{scav.name}] 前往【{target_zone.name}】探索 ({target_zone.days}天)...")
-                res = ExpeditionManager.execute_expedition(scav, target_zone, armor_val=6, has_supplies=True)
-                print(f"   {res['msg']}")
-                print(f"   [檢定判定: 擲骰 {res['roll']} vs 死亡閾值 {res['risk']}]")
+  render();
+}
 
-                player_caps += res["net_profit"]
-                print(f"   委託淨結算收益: {res['net_profit']:+} 瓶蓋 | 當前金庫: {round(player_caps, 1)} 瓶蓋")
-            else:
-                print("❌ 所有拾荒隊員均已殉職，無法派遣！")
+function log(msg, className = "") {
+  let box = document.getElementById("console-log");
+  let p = document.createElement("div");
+  p.className = `log-entry ${className}`;
+  p.innerHTML = `[第${gameState.day}天] ${msg}`;
+  box.prepend(p);
+}
 
-    print("\n" + "=" * 65)
-    print(f"🏁 30 天模擬結束！最終金庫結餘: {round(player_caps, 1)} 瓶蓋")
-    print("=" * 65)
+function render() {
+  document.getElementById("day-badge").innerText = `第 ${gameState.day} 天 / 營業中`;
+  document.getElementById("caps-val").innerText = gameState.caps;
+  document.getElementById("rep-val").innerText = gameState.reputation;
 
-if __name__ == "__main__":
-    run_simulation()
+  let banner = document.getElementById("news-banner");
+  if (gameState.activeEvent) {
+    banner.innerHTML = `🚨 <b>【${gameState.activeEvent.name}】</b> (剩餘 ${gameState.eventDays} 天) - ${gameState.activeEvent.desc}`;
+  } else {
+    banner.innerHTML = `📻 無線電廣播：避難所外目前無特別劇烈輻射風暴，周邊市場平穩。`;
+  }
+
+  let tbody = document.getElementById("market-tbody");
+  tbody.innerHTML = "";
+  for (let key in ITEMS) {
+    let item = ITEMS[key];
+    let price = currentPrices[key] || item.base;
+    let inv = gameState.inventory[key];
+    let diffClass = price > item.base ? "price-up" : (price < item.base ? "price-down" : "");
+
+    let tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><b>${item.name}</b><br><small style="color:#718096">${item.category}</small></td>
+      <td class="price-cell ${diffClass}">${price} C</td>
+      <td>${inv}</td>
+      <td>
+        <button class="btn btn-accent" onclick="buyItem('${key}')" ${gameState.caps < price ? 'disabled' : ''}>買入</button>
+        <button class="btn" onclick="sellItem('${key}')" ${inv <= 0 ? 'disabled' : ''}>賣出</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  let scavList = document.getElementById("scav-list");
+  scavList.innerHTML = "";
+  scavengers.forEach(s => {
+    let card = document.createElement("div");
+    card.className = "scav-card";
+    let statusColor = s.status === "閒置" ? "var(--accent-green)" : (s.status === "殉職" ? "var(--accent-red)" : "var(--accent-amber)");
+
+    let actionBtns = "";
+    if (s.status === "閒置") {
+      actionBtns = ZONES.map(z => 
+        `<button class="btn" onclick="sendScavenger(${s.id}, '${z.id}')">派往${z.name} (危險${Math.round(z.danger*100)}%)</button>`
+      ).join(" ");
+    } else {
+      actionBtns = `<span style="font-size:0.85rem; color:#a0aec0;">狀態：${s.status}</span>`;
+    }
+
+    card.innerHTML = `
+      <div class="scav-header">
+        <b>${s.name}</b>
+        <span style="color: ${statusColor}; font-size: 0.85rem; font-weight:bold;">[${s.status}]</span>
+      </div>
+      <div class="scav-stats">
+        <span>體魄: ${s.phy}</span>
+        <span>感知: ${s.per}</span>
+        <span>膽量: ${s.grt}</span>
+        <span>日薪: ${s.wage}C</span>
+      </div>
+      <div class="scav-actions">${actionBtns}</div>
+    `;
+    scavList.appendChild(card);
+  });
+}
+
+// 啟動遊戲
+calcPrices();
+render();
+</script>
+</body>
+</html>
