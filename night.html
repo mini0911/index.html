@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>【杏林夜泣】第一人稱 3D 實境醫院密室逃脫</title>
+<title>【杏林夜泣】高階 PBR 擬真醫院密室逃脫</title>
 
 <!-- Three.js 3D 核心庫 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -15,23 +15,30 @@
   #game-viewport { position: relative; width: 100%; height: 100%; overflow: hidden; cursor: crosshair; }
   #three-canvas { width: 100%; height: 100%; display: block; }
 
-  /* 驚悚老醫院 VHS 暗角與雜訊 */
+  /* 寫實電影感暗角、膠卷噪點與老醫院綠冷色調 */
   .vignette-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: radial-gradient(circle at 50% 50%, transparent 26%, rgba(2, 6, 4, 0.8) 68%, rgba(0, 0, 0, 0.98) 96%),
-                repeating-linear-gradient(rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0, 30, 15, 0.08) 3px, rgba(0,0,0,0) 4px);
+    background: radial-gradient(circle at 50% 50%, transparent 22%, rgba(2, 6, 4, 0.75) 60%, rgba(0, 0, 0, 0.98) 96%),
+                repeating-linear-gradient(rgba(0,0,0,0) 0px, rgba(0,0,0,0) 1px, rgba(0, 20, 10, 0.06) 2px, rgba(0,0,0,0) 3px);
     pointer-events: none; z-index: 10;
+  }
+
+  /* 突發幻覺紅屏 */
+  #scare-flash {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(180, 0, 0, 0.35); pointer-events: none; z-index: 500;
+    display: none;
   }
 
   /* 準心 */
   .crosshair {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 6px; height: 6px; background: rgba(255, 255, 255, 0.6); border-radius: 50%;
+    width: 6px; height: 6px; background: rgba(255, 255, 255, 0.7); border-radius: 50%;
     pointer-events: none; z-index: 20; transition: all 0.15s;
   }
   .crosshair.interactable {
-    width: 24px; height: 24px; background: transparent; border: 2px solid #00ff88;
-    box-shadow: 0 0 12px #00ff88;
+    width: 26px; height: 26px; background: transparent; border: 2px solid #00ff88;
+    box-shadow: 0 0 15px rgba(0,255,136,0.6);
   }
 
   #interact-hint {
@@ -59,7 +66,7 @@
     padding: 4px 12px; border-radius: 4px; font-size: 12px; color: #e3b341;
   }
 
-  /* 手機虛擬走動鍵盤 */
+  /* 手機走動按鈕 */
   .touch-controls {
     position: absolute; bottom: 20px; left: 20px; z-index: 150;
     display: grid; grid-template-columns: repeat(3, 44px); gap: 6px;
@@ -71,7 +78,7 @@
   }
   .touch-btn:active { background: #00ff88; color: #000; }
 
-  /* 底部任務對講機 */
+  /* 底部對講機提示 */
   .bottom-radio {
     position: absolute; bottom: 18px; left: 175px; right: 20px;
     background: rgba(8, 14, 10, 0.94); border: 1px solid #1a3324;
@@ -84,15 +91,15 @@
   /* 調查檔案彈窗 */
   .modal-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.9); z-index: 2000;
+    background: rgba(0, 0, 0, 0.92); z-index: 2000;
     display: none; justify-content: center; align-items: center; padding: 20px;
   }
   .clue-paper {
-    background: #e8e2d3; color: #1e1914; width: 100%; max-width: 400px;
+    background: #e8e2d3; color: #1e1914; width: 100%; max-width: 420px;
     border-radius: 6px; padding: 24px; box-shadow: 0 0 35px rgba(0,255,136,0.15);
     border: 2px solid #a39985; font-family: serif; animation: popIn 0.2s ease;
   }
-  @keyframes popIn { from { transform: scale(0.75); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
   .clue-title { font-size: 16px; font-weight: bold; color: #8a1d1d; border-bottom: 1px dashed #7a664d; padding-bottom: 8px; margin-bottom: 14px; }
   .clue-body { font-size: 13px; line-height: 1.8; margin-bottom: 20px; white-space: pre-line; }
   .btn-close { width: 100%; background: #26382b; color: #00ff88; border: 1px solid #00ff88; padding: 10px 0; font-size: 13px; font-weight: bold; border-radius: 3px; cursor: pointer; }
@@ -134,6 +141,7 @@
 
 <div id="game-viewport">
   <div class="vignette-overlay"></div>
+  <div id="scare-flash"></div>
   <div class="crosshair" id="crosshair"></div>
   <div id="interact-hint">[ 點擊滑鼠 / 觸控進行調查 ]</div>
 
@@ -141,7 +149,7 @@
   <div class="hud-top">
     <div class="stage-badge">
       <div class="pulse-dot"></div>
-      <span id="stage-title">區域 1：杏林醫院・門診大廳與候診長廊</span>
+      <span id="stage-title">區域 1：杏林綜合醫院・門診掛號長廊</span>
     </div>
     <div class="inventory-bar" id="inv-display">道具包: 空</div>
   </div>
@@ -159,7 +167,7 @@
 
   <div class="bottom-radio">
     <div class="radio-text" id="radio-instruction">
-      「空氣中瀰漫著濃烈的消毒水與霉味……搜查病房裡的病歷或走近收音機聽取語音，前往盡頭防護門解鎖！」
+      「空氣中充滿潮濕霉斑與福馬林氣味……尋找護理站與推車上的病歷，或走近老舊收音機聽取求救訊號！」
     </div>
   </div>
 
@@ -173,7 +181,7 @@
 
   <div class="modal-overlay" id="keypad-modal">
     <div class="keypad-box">
-      <div style="color: #00ff88; font-size: 12px; margin-bottom: 8px;">通道重型防護門</div>
+      <div style="color: #00ff88; font-size: 12px; margin-bottom: 8px;">重型防火鐵門</div>
       <div class="keypad-display" id="keypad-code">----</div>
       <div class="keypad-grid">
         <button class="num-btn" onclick="pressKey('1')">1</button>
@@ -194,22 +202,22 @@
   </div>
 
   <div id="start-modal">
-    <h1>杏林夜泣：3D 寫實醫院逃脫</h1>
+    <h1>杏林夜泣：PBR 擬真密室</h1>
     <p>
-      <b>真實 3D 醫院建築結構：</b><br>
-      包含病床、點滴架、天花板通風管、排椅、老舊木紋收音機與日光燈爆閃。<br>
-      使用鍵盤 <b>W / A / S / D</b> 走動，滑鼠拖曳視角，深入四個病區解開醫院封閉真相！
+      <b>真實物理渲染（PBR）老醫院環境：</b><br>
+      包含動態水滴反光、懸浮空氣塵埃、老舊破損綠白瓷磚、手電筒即時柔和陰影。<br>
+      使用鍵盤 <b>W / A / S / D</b> 走動，滑鼠拖曳視角，解開四個病區的封存謎題！
     </p>
-    <button class="btn-start" onclick="startGame()">踏入醫院長廊</button>
+    <button class="btn-start" onclick="startGame()">踏入醫院大廳</button>
   </div>
 </div>
 
 <script>
-/* ==================== 4 大醫院關卡資料庫 ==================== */
+/* ==================== 4 大真實醫院關卡資料庫 ==================== */
 const HOSPITAL_STAGES = [
   {
     level: 1,
-    title: "區域 1：杏林醫院・門診大廳與候診長廊",
+    title: "區域 1：杏林綜合醫院・門診掛號長廊",
     clueName: "急診室初診紀錄單",
     passcode: "404",
     diary: "『……1991 年 4 月，重症急診室送來了一名沒有身分證明的病患。\n病床號碼被鮮血塗抹，只隱約辨識出號碼：4-0-4。\n輸入 404 解開急診隔離閘門！』"
@@ -241,7 +249,7 @@ let currentStageIdx = 0;
 let inventory = [];
 let passcodeBuffer = "";
 
-/* ==================== 音效引擎 (含收音機白噪音) ==================== */
+/* ==================== 音效引擎 ==================== */
 class HospitalAudioEngine {
   constructor() {
     this.ctx = null;
@@ -259,6 +267,17 @@ class HospitalAudioEngine {
     g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
     o.connect(g); g.connect(this.ctx.destination);
     o.start(); o.stop(this.ctx.currentTime + 0.05);
+  }
+  drip() { // 空靈水滴聲
+    if (!this.ctx) return;
+    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.type = "sine";
+    o.frequency.setValueAtTime(950, this.ctx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(450, this.ctx.currentTime + 0.12);
+    g.gain.setValueAtTime(0.12, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.25);
+    o.connect(g); g.connect(this.ctx.destination);
+    o.start(); o.stop(this.ctx.currentTime + 0.25);
   }
   buzz() {
     if (!this.ctx) return;
@@ -280,6 +299,17 @@ class HospitalAudioEngine {
     g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.4);
     o.connect(g); g.connect(this.ctx.destination);
     o.start(); o.stop(this.ctx.currentTime + 0.4);
+  }
+  wheelSqueak() {
+    if (!this.ctx) return;
+    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.type = "triangle";
+    o.frequency.setValueAtTime(750, this.ctx.currentTime);
+    o.frequency.linearRampToValueAtTime(1300, this.ctx.currentTime + 0.3);
+    g.gain.setValueAtTime(0.25, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.5);
+    o.connect(g); g.connect(this.ctx.destination);
+    o.start(); o.stop(this.ctx.currentTime + 0.5);
   }
   doorOpen() {
     if (!this.ctx) return;
@@ -333,7 +363,6 @@ class HospitalAudioEngine {
 }
 const sfx = new HospitalAudioEngine();
 
-/* ==================== 院長求救語音合成 (Web Speech API) ==================== */
 function speakDirectorVoice(code) {
   if (!('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();
@@ -347,16 +376,95 @@ function speakDirectorVoice(code) {
   window.speechSynthesis.speak(utter);
 }
 
-/* ==================== Three.js 3D 空間與第一人稱控制器 ==================== */
+/* ==================== ⭐ 核心：程序化高解析老舊 PBR 貼圖生成器 ==================== */
+function createHospitalWallTexture() {
+  const c = document.createElement('canvas');
+  c.width = 512; c.height = 512;
+  const ctx = c.getContext('2d');
+
+  // 上半部泛黃老舊白牆
+  ctx.fillStyle = "#b4bfb6";
+  ctx.fillRect(0, 0, 512, 340);
+
+  // 下半部深綠色防污踢腳帶 (台灣老醫院經典特色)
+  ctx.fillStyle = "#1d3324";
+  ctx.fillRect(0, 340, 512, 172);
+
+  // 分界黑色裝飾線
+  ctx.fillStyle = "#0a140d";
+  ctx.fillRect(0, 335, 512, 6);
+
+  // 霉斑與水痕噪點
+  for (let i = 0; i < 4500; i++) {
+    const x = Math.random() * 512, y = Math.random() * 512;
+    const r = Math.random() * 2.5;
+    ctx.fillStyle = Math.random() > 0.5 ? "rgba(20, 35, 25, 0.15)" : "rgba(80, 70, 50, 0.12)";
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(4, 1);
+  return tex;
+}
+
+function createHospitalTileTexture() {
+  const c = document.createElement('canvas');
+  c.width = 512; c.height = 512;
+  const ctx = c.getContext('2d');
+
+  // 老舊綠白磨石子棋盤磚
+  const tileSize = 64;
+  for (let y = 0; y < 512; y += tileSize) {
+    for (let x = 0; x < 512; x += tileSize) {
+      ctx.fillStyle = ((x + y) / tileSize) % 2 === 0 ? "#1e2e24" : "#14211a";
+      ctx.fillRect(x, y, tileSize, tileSize);
+      // 磚縫黑邊
+      ctx.strokeStyle = "rgba(5, 10, 7, 0.8)";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, tileSize, tileSize);
+    }
+  }
+
+  // 隨機反光水漬污斑
+  for (let i = 0; i < 15; i++) {
+    const rx = Math.random() * 512, ry = Math.random() * 512;
+    const rad = 25 + Math.random() * 45;
+    const grad = ctx.createRadialGradient(rx, ry, 5, rx, ry, rad);
+    grad.addColorStop(0, "rgba(8, 14, 10, 0.7)");
+    grad.addColorStop(1, "transparent");
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(rx, ry, rad, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(8, 8);
+  return tex;
+}
+
+/* ==================== Three.js 3D 渲染與光影系統 ==================== */
 let scene, camera, renderer, flashlight;
 let ceilingLight1, ceilingLight2;
 let hospitalGroup = null, clueObject = null, doorObject = null, radioMesh = null;
+let wheelchairMesh = null, morgueDrawerMesh = null;
+let dustParticles = null, waterDripMesh = null;
+
 let yaw = 0, pitch = 0;
 let playerPos = { x: 0, y: 1.8, z: 13 };
 let keys = { KeyW: false, KeyS: false, KeyA: false, KeyD: false };
 let isInteractingLook = false, lastTouchX = 0, lastTouchY = 0;
 let headBob = 0;
 let wallColliders = [];
+
+let wheelchairScared = false;
+let morgueScared = false;
 let isNearRadio = false;
 
 function startGame() {
@@ -374,27 +482,41 @@ function initThreeEngine() {
   camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
   camera.position.set(playerPos.x, playerPos.y, playerPos.z);
 
-  // 第一人稱醫用冷光手電筒
-  flashlight = new THREE.SpotLight(0xecfff2, 2.6, 24, Math.PI / 4.6, 0.4, 1.2);
+  // ⭐ 手電筒聚光燈（開啟物理柔和陰影 Cast Shadows）
+  flashlight = new THREE.SpotLight(0xecfff2, 3.2, 26, Math.PI / 4.4, 0.45, 1.2);
+  flashlight.castShadow = true;
+  flashlight.shadow.mapSize.width = 1024;
+  flashlight.shadow.mapSize.height = 1024;
+  flashlight.shadow.bias = -0.001;
   camera.add(flashlight);
   flashlight.position.set(0, 0, 0.2);
   flashlight.target = camera;
   scene.add(camera);
 
-  // 天花板故障長條日光燈
-  ceilingLight1 = new THREE.PointLight(0xaaffcc, 0.7, 16);
+  // 故障天花板長條日光燈
+  ceilingLight1 = new THREE.PointLight(0xaaffcc, 0.6, 16);
   ceilingLight1.position.set(0, 5.2, 5);
   scene.add(ceilingLight1);
 
-  ceilingLight2 = new THREE.PointLight(0xaaffcc, 0.7, 16);
+  ceilingLight2 = new THREE.PointLight(0xaaffcc, 0.6, 16);
   ceilingLight2.position.set(0, 5.2, -6);
   scene.add(ceilingLight2);
 
   scene.add(new THREE.AmbientLight(0x060e0a));
 
+  // ⭐ 懸浮空氣灰塵粒子
+  buildDustParticles();
+
+  // ⭐ 天花板水滴模型
+  buildWaterDrip();
+
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap; // 柔和陰影
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; // 電影感色調映射
+  renderer.toneMappingExposure = 0.9;
   container.appendChild(renderer.domElement);
 
   window.addEventListener('keydown', (e) => { if (keys.hasOwnProperty(e.code)) keys[e.code] = true; });
@@ -425,7 +547,36 @@ function initThreeEngine() {
   animate();
 }
 
-/* ==================== ⭐ 核心：真實 3D 醫院建築與醫療物件建模 ==================== */
+// 懸浮塵埃粒子
+function buildDustParticles() {
+  const particleCount = 200;
+  const geom = new THREE.BufferGeometry();
+  const positions = new Float32Array(particleCount * 3);
+
+  for (let i = 0; i < particleCount * 3; i += 3) {
+    positions[i] = (Math.random() - 0.5) * 25;
+    positions[i + 1] = Math.random() * 5.5;
+    positions[i + 2] = (Math.random() - 0.5) * 25;
+  }
+  geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+  const mat = new THREE.PointsMaterial({
+    color: 0xccffdd, size: 0.06, transparent: true, opacity: 0.45
+  });
+  dustParticles = new THREE.Points(geom, mat);
+  scene.add(dustParticles);
+}
+
+// 水滴模型
+function buildWaterDrip() {
+  const geom = new THREE.SphereGeometry(0.04, 6, 6);
+  const mat = new THREE.MeshBasicMaterial({ color: 0x88ffbb });
+  waterDripMesh = new THREE.Mesh(geom, mat);
+  waterDripMesh.position.set(-2, 5.4, 2);
+  scene.add(waterDripMesh);
+}
+
+/* ==================== 建立 PBR 寫實醫院場景 ==================== */
 function load3DHospitalStage(idx) {
   currentStageIdx = idx;
   const stage = HOSPITAL_STAGES[idx];
@@ -436,56 +587,69 @@ function load3DHospitalStage(idx) {
 
   playerPos = { x: 0, y: 1.8, z: 13 };
   yaw = 0; pitch = 0;
+  wheelchairScared = false;
+  morgueScared = false;
   isNearRadio = false;
 
   if (hospitalGroup) scene.remove(hospitalGroup);
   hospitalGroup = new THREE.Group();
   wallColliders = [];
 
-  // 1. 經典老醫院下綠上白防污牆面 (寬 32m, 深 32m, 高 6m)
-  const outerWall = new THREE.Mesh(
-    new THREE.BoxGeometry(32, 6, 32),
-    new THREE.MeshStandardMaterial({ color: 0x142019, roughness: 0.9, side: THREE.BackSide })
-  );
+  const wallTexture = createHospitalWallTexture();
+  const tileTexture = createHospitalTileTexture();
+
+  // 1. PBR 醫院外牆（接收陰影）
+  const outerWallMat = new THREE.MeshStandardMaterial({
+    map: wallTexture, roughness: 0.85, metalness: 0.05, side: THREE.BackSide
+  });
+  const outerWall = new THREE.Mesh(new THREE.BoxGeometry(32, 6, 32), outerWallMat);
   outerWall.position.y = 3;
+  outerWall.receiveShadow = true;
   hospitalGroup.add(outerWall);
 
-  // 2. 潮濕綠白磨石子地磚
-  const floor = new THREE.Mesh(
-    new THREE.PlaneGeometry(32, 32),
-    new THREE.MeshStandardMaterial({ color: 0x0c1611, roughness: 0.85 })
-  );
+  // 2. PBR 潮濕綠白磨石子地磚（帶水漬高光反光）
+  const floorMat = new THREE.MeshStandardMaterial({
+    map: tileTexture, roughness: 0.35, metalness: 0.2
+  });
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(32, 32), floorMat);
   floor.rotation.x = -Math.PI / 2;
+  floor.receiveShadow = true;
   hospitalGroup.add(floor);
 
-  // 3. 天花板水泥橫樑與通風金屬風管
-  buildCeilingVentilation();
+  // 3. 通風金屬風管與天花板燈座
+  buildCeilingDetails();
 
-  // 4. 醫院走廊隔間牆 (帶有房門開口)
-  build3DHospitalWalls();
+  // 4. 醫院走廊隔間牆
+  build3DHospitalWalls(wallTexture);
 
-  // 5. 3D 醫院病床 (Gurney Bed)
+  // 5. 病床（投射柔和陰影）
   buildHospitalBed(-6.5, 3.5, 0);
   buildHospitalBed(6.5, -4.5, Math.PI / 6);
 
-  // 6. 3D 不銹鋼點滴架 (IV Drip Stands)
+  // 6. 不銹鋼點滴架
   buildIVStand(-5.2, 4.2);
   buildIVStand(5.5, -3.2);
 
-  // 7. 3D 候診排椅 (Waiting Benches)
+  // 7. 候診排椅
   build3DWaitingBenches(2.5, 10.5);
   build3DWaitingBenches(-2.5, 10.5);
 
-  // 8. 護理站辦公桌 (帶抽屜與病歷)
+  // 8. 護理站辦公桌與發光病歷
   buildNurseCounter(-10, -10);
 
-  // 9. 3D 復古木紋收音機 (放置於病房推車上：X: -6.5, Z: -2.5)
+  // 9. 醫療小推車上的復古木紋收音機
   build3DRadioCart(-6.5, -2.5);
 
-  // 10. 重型通道防護鐵門 (走廊盡頭：X: 0, Z: -15.8)
-  const doorMat = new THREE.MeshStandardMaterial({ color: 0x16221c, metalness: 0.85, roughness: 0.25 });
+  // 10. 生鏽輪椅與太平間冰櫃
+  buildWheelchair(6, 2);
+  buildMorgueDrawers(-10, 5);
+
+  // 11. 重型防火安全鐵門
+  const doorMat = new THREE.MeshStandardMaterial({ color: 0x16221c, metalness: 0.85, roughness: 0.3 });
   doorObject = new THREE.Mesh(new THREE.BoxGeometry(4, 5, 0.4), doorMat);
   doorObject.position.set(0, 2.5, -15.8);
+  doorObject.castShadow = true;
+  doorObject.receiveShadow = true;
   doorObject.userData = { type: "door", data: stage };
   hospitalGroup.add(doorObject);
 
@@ -496,14 +660,13 @@ function load3DHospitalStage(idx) {
   scene.add(hospitalGroup);
 }
 
-// 天花板通風金屬方管與日光燈座
-function buildCeilingVentilation() {
-  const steelMat = new THREE.MeshStandardMaterial({ color: 0x222a26, metalness: 0.8 });
-  const ventDuct = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.8, 32), steelMat);
+function buildCeilingDetails() {
+  const steelMat = new THREE.MeshStandardMaterial({ color: 0x1e2621, metalness: 0.85, roughness: 0.4 });
+  const ventDuct = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.9, 32), steelMat);
   ventDuct.position.set(3, 5.5, 0);
+  ventDuct.castShadow = true;
   hospitalGroup.add(ventDuct);
 
-  // 懸掛式日光燈座
   const lampMat = new THREE.MeshBasicMaterial({ color: 0xaaffcc });
   const lamp1 = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.15, 3), lampMat);
   lamp1.position.set(0, 5.4, 5);
@@ -514,25 +677,21 @@ function buildCeilingVentilation() {
   hospitalGroup.add(lamp2);
 }
 
-// 建立帶有房門走廊的 3D 醫院內牆
-function build3DHospitalWalls() {
-  // 左側長廊牆 (留出門口)
-  buildWallSegment(-4, 2, 8, 0.8);
-  buildWallSegment(-4, 9, 4, 0.8);
-
-  // 右側病房隔間牆
-  buildWallSegment(4, -3, 0.8, 12);
-  buildWallSegment(4, 8, 0.8, 6);
-
-  // 橫向隔斷
-  buildWallSegment(-8, -8, 8, 0.8);
-  buildWallSegment(8, 5, 8, 0.8);
+function build3DHospitalWalls(tex) {
+  buildWallSegment(-4, 2, 8, 0.8, tex);
+  buildWallSegment(-4, 9, 4, 0.8, tex);
+  buildWallSegment(4, -3, 0.8, 12, tex);
+  buildWallSegment(4, 8, 0.8, 6, tex);
+  buildWallSegment(-8, -8, 8, 0.8, tex);
+  buildWallSegment(8, 5, 8, 0.8, tex);
 }
 
-function buildWallSegment(x, z, width, depth) {
-  const wallMat = new THREE.MeshStandardMaterial({ color: 0x111c16, roughness: 0.95 });
+function buildWallSegment(x, z, width, depth, tex) {
+  const wallMat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.85, metalness: 0.05 });
   const wall = new THREE.Mesh(new THREE.BoxGeometry(width, 5.8, depth), wallMat);
   wall.position.set(x, 2.9, z);
+  wall.castShadow = true;
+  wall.receiveShadow = true;
   hospitalGroup.add(wall);
 
   wallColliders.push({
@@ -541,27 +700,27 @@ function buildWallSegment(x, z, width, depth) {
   });
 }
 
-// 3D 醫院病床 (Gurney Bed)
 function buildHospitalBed(x, z, rotY) {
   const bedGroup = new THREE.Group();
-  const steelMat = new THREE.MeshStandardMaterial({ color: 0x55665f, metalness: 0.85 });
-  const mattressMat = new THREE.MeshStandardMaterial({ color: 0xd8e2dc, roughness: 0.9 });
+  const steelMat = new THREE.MeshStandardMaterial({ color: 0x4d5952, metalness: 0.85, roughness: 0.3 });
+  const mattressMat = new THREE.MeshStandardMaterial({ color: 0xc4cecb, roughness: 0.9 });
 
-  // 底座輪子支架
   const frame = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.4, 4.2), steelMat);
   frame.position.y = 0.5;
+  frame.castShadow = true;
   bedGroup.add(frame);
 
-  // 床墊
   const mattress = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.35, 4.0), mattressMat);
   mattress.position.y = 0.85;
+  mattress.castShadow = true;
   bedGroup.add(mattress);
 
-  // 兩側金屬護欄
   const railL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.6, 3.2), steelMat);
   railL.position.set(-1.0, 1.2, 0);
+  railL.castShadow = true;
   const railR = railL.clone();
   railR.position.set(1.0, 1.2, 0);
+  railR.castShadow = true;
   bedGroup.add(railL); bedGroup.add(railR);
 
   bedGroup.position.set(x, 0, z);
@@ -570,21 +729,15 @@ function buildHospitalBed(x, z, rotY) {
   wallColliders.push({ minX: x - 1.3, maxX: x + 1.3, minZ: z - 2.2, maxZ: z + 2.2 });
 }
 
-// 3D 不銹鋼點滴架
 function buildIVStand(x, z) {
   const standGroup = new THREE.Group();
-  const steelMat = new THREE.MeshStandardMaterial({ color: 0x88998f, metalness: 0.9 });
+  const steelMat = new THREE.MeshStandardMaterial({ color: 0x77887f, metalness: 0.9 });
 
   const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 3.2), steelMat);
   pole.position.y = 1.6;
+  pole.castShadow = true;
   standGroup.add(pole);
 
-  // 頂部掛鉤
-  const hook = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.05, 0.05), steelMat);
-  hook.position.y = 3.1;
-  standGroup.add(hook);
-
-  // 吊瓶
   const bottle = new THREE.Mesh(
     new THREE.CylinderGeometry(0.12, 0.12, 0.45),
     new THREE.MeshBasicMaterial({ color: 0xccffdd, transparent: true, opacity: 0.55 })
@@ -596,27 +749,27 @@ function buildIVStand(x, z) {
   hospitalGroup.add(standGroup);
 }
 
-// 3D 候診排椅
 function build3DWaitingBenches(x, z) {
   const group = new THREE.Group();
   const mat = new THREE.MeshStandardMaterial({ color: 0x192e22, roughness: 0.7 });
   const bench = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.4, 0.8), mat);
   bench.position.y = 0.45;
+  bench.castShadow = true;
   const back = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.8, 0.15), mat);
   back.position.set(0, 0.9, -0.35);
+  back.castShadow = true;
   group.add(bench); group.add(back);
   group.position.set(x, 0, z);
   hospitalGroup.add(group);
 }
 
-// 護理站辦公桌與發光病歷
 function buildNurseCounter(x, z) {
-  const group = new THREE.Group();
   const desk = new THREE.Mesh(new THREE.BoxGeometry(3.6, 1.2, 2.0), new THREE.MeshStandardMaterial({ color: 0x1c2b22, roughness: 0.8 }));
   desk.position.set(x, 0.6, z);
+  desk.castShadow = true;
+  desk.receiveShadow = true;
   hospitalGroup.add(desk);
 
-  // 發光病歷
   const book = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.2, 1.1), new THREE.MeshBasicMaterial({ color: 0x00ff88 }));
   book.position.set(x, 1.3, z);
   clueObject = book;
@@ -626,25 +779,24 @@ function buildNurseCounter(x, z) {
   wallColliders.push({ minX: x - 2.0, maxX: x + 2.0, minZ: z - 1.2, maxZ: z + 1.2 });
 }
 
-// 3D 醫療推車上的木紋收音機
 function build3DRadioCart(x, z) {
   const cartGroup = new THREE.Group();
-  const steelMat = new THREE.MeshStandardMaterial({ color: 0x44554c, metalness: 0.8 });
+  const steelMat = new THREE.MeshStandardMaterial({ color: 0x3d4d44, metalness: 0.8 });
 
-  // 醫療雙層小推車
   const shelf = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.0, 1.2), steelMat);
   shelf.position.y = 0.5;
+  shelf.castShadow = true;
+  shelf.receiveShadow = true;
   cartGroup.add(shelf);
 
-  // 木紋老收音機
   const radioBody = new THREE.Mesh(
     new THREE.BoxGeometry(1.2, 0.75, 0.6),
     new THREE.MeshStandardMaterial({ color: 0x3d2817, roughness: 0.85 })
   );
   radioBody.position.y = 1.38;
+  radioBody.castShadow = true;
   cartGroup.add(radioBody);
 
-  // 收音機電源紅燈
   const led = new THREE.Mesh(new THREE.SphereGeometry(0.04, 8, 8), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
   led.position.set(0.35, 1.25, 0.31);
   led.name = "radioLed";
@@ -654,6 +806,51 @@ function build3DRadioCart(x, z) {
   radioMesh = cartGroup;
   hospitalGroup.add(radioMesh);
   wallColliders.push({ minX: x - 1.0, maxX: x + 1.0, minZ: z - 0.8, maxZ: z + 0.8 });
+}
+
+function buildWheelchair(x, z) {
+  const group = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({ color: 0x241818, metalness: 0.8 });
+  const seat = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.2, 1.6), mat);
+  seat.position.y = 1.0;
+  seat.castShadow = true;
+  const back = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.8, 0.2), mat);
+  back.position.set(0, 1.9, -0.7);
+  back.castShadow = true;
+  group.add(seat); group.add(back);
+
+  const wheelGeom = new THREE.TorusGeometry(0.8, 0.08, 8, 24);
+  const leftWheel = new THREE.Mesh(wheelGeom, mat);
+  leftWheel.position.set(-0.9, 0.8, 0);
+  leftWheel.rotation.y = Math.PI / 2;
+  leftWheel.castShadow = true;
+  const rightWheel = leftWheel.clone();
+  rightWheel.position.set(0.9, 0.8, 0);
+  rightWheel.castShadow = true;
+  group.add(leftWheel); group.add(rightWheel);
+
+  group.position.set(x, 0, z);
+  wheelchairMesh = group;
+  hospitalGroup.add(wheelchairMesh);
+}
+
+function buildMorgueDrawers(x, z) {
+  const group = new THREE.Group();
+  const steelMat = new THREE.MeshStandardMaterial({ color: 0x2b3830, metalness: 0.9, roughness: 0.2 });
+  const cabinet = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 5), steelMat);
+  cabinet.position.y = 1.5;
+  cabinet.castShadow = true;
+  cabinet.receiveShadow = true;
+  group.add(cabinet);
+
+  const drawer = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.9, 3.8), new THREE.MeshStandardMaterial({ color: 0x3d4d43, metalness: 0.9 }));
+  drawer.position.set(0, 1.5, 0);
+  drawer.castShadow = true;
+  morgueDrawerMesh = drawer;
+  group.add(morgueDrawerMesh);
+
+  group.position.set(x, 0, z);
+  hospitalGroup.add(group);
 }
 
 /* ==================== 走動與碰撞檢測 ==================== */
@@ -709,8 +906,38 @@ function updateMovement() {
   checkHospitalEvents();
 }
 
-/* ==================== 收音機距離監聽 ==================== */
 function checkHospitalEvents() {
+  if (!wheelchairScared && wheelchairMesh) {
+    const distToChair = Math.hypot(wheelchairMesh.position.x - playerPos.x, wheelchairMesh.position.z - playerPos.z);
+    if (distToChair < 7.5) {
+      wheelchairScared = true;
+      sfx.wheelSqueak();
+      triggerFlash();
+      let frames = 0;
+      const timer = setInterval(() => {
+        wheelchairMesh.position.z += 0.35;
+        wheelchairMesh.rotation.y += 0.08;
+        frames++;
+        if (frames > 22) clearInterval(timer);
+      }, 25);
+    }
+  }
+
+  if (!morgueScared && morgueDrawerMesh) {
+    const distToMorgue = Math.hypot(-10 - playerPos.x, 5 - playerPos.z);
+    if (distToMorgue < 6.0) {
+      morgueScared = true;
+      sfx.bang();
+      triggerFlash();
+      let frames = 0;
+      const timer = setInterval(() => {
+        morgueDrawerMesh.position.z += 0.25;
+        frames++;
+        if (frames > 12) clearInterval(timer);
+      }, 30);
+    }
+  }
+
   if (radioMesh) {
     const distRadio = Math.hypot(radioMesh.position.x - playerPos.x, radioMesh.position.z - playerPos.z);
     if (distRadio < 4.5 && !isNearRadio) {
@@ -727,6 +954,34 @@ function checkHospitalEvents() {
   }
 }
 
+function triggerFlash() {
+  const flash = document.getElementById('scare-flash');
+  flash.style.display = 'block';
+  setTimeout(() => { flash.style.display = 'none'; }, 200);
+}
+
+/* ==================== 水滴動態與灰塵漂浮動畫 ==================== */
+function updateEnvironmentParticles() {
+  // 水滴落下
+  if (waterDripMesh) {
+    waterDripMesh.position.y -= 0.14;
+    if (waterDripMesh.position.y <= 0.05) {
+      waterDripMesh.position.y = 5.4;
+      sfx.drip();
+    }
+  }
+
+  // 灰塵浮動
+  if (dustParticles) {
+    const pos = dustParticles.geometry.attributes.position.array;
+    for (let i = 1; i < pos.length; i += 3) {
+      pos[i] -= 0.003;
+      if (pos[i] < 0) pos[i] = 5.5;
+    }
+    dustParticles.geometry.attributes.position.needsUpdate = true;
+  }
+}
+
 /* ==================== 天花板日光燈短路爆閃 ==================== */
 let flickerTimer = 0;
 function updateLightsFlicker() {
@@ -739,8 +994,8 @@ function updateLightsFlicker() {
       ceilingLight1.intensity = 1.3;
       ceilingLight2.intensity = 1.3;
       setTimeout(() => {
-        ceilingLight1.intensity = 0.7;
-        ceilingLight2.intensity = 0.7;
+        ceilingLight1.intensity = 0.6;
+        ceilingLight2.intensity = 0.6;
       }, 70);
     }, 60);
   }
@@ -793,7 +1048,6 @@ function updateInteractHint() {
   }
 }
 
-/* ==================== 彈窗機制 ==================== */
 function openClueDialog(data) {
   sfx.bang();
   document.getElementById('clue-title').innerText = `【${data.clueName}】`;
@@ -849,6 +1103,7 @@ function animate() {
   updateMovement();
   updateInteractHint();
   updateLightsFlicker();
+  updateEnvironmentParticles();
 
   if (clueObject) clueObject.rotation.y += 0.02;
 
