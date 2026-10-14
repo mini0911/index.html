@@ -2,8 +2,8 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, orientation=landscape">
-<title>星穹遺落 - 橫向動作手遊 (Starfall Mobile ARPG)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>星穹遺落 - 橫向手遊 (大地圖與傳送切換版)</title>
 <style>
   * {
     box-sizing: border-box;
@@ -35,24 +35,24 @@
     display: block;
     width: 100%;
     height: 100%;
-    object-fit: cover;
   }
 
+  /* HUD 介面層 */
   .hud-layer {
     position: absolute;
     inset: 0;
     pointer-events: none;
   }
 
-  /* 左上角角色與切換職業按鈕 */
+  /* 左上角角色狀態欄 */
   .player-status-badge {
     position: absolute;
     top: 10px;
-    left: 14px;
-    background: rgba(15, 22, 30, 0.88);
+    left: 12px;
+    background: rgba(15, 22, 30, 0.9);
     border: 2px solid #3c4f64;
     border-radius: 28px;
-    padding: 6px 12px 6px 8px;
+    padding: 5px 12px 5px 8px;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -61,26 +61,26 @@
     cursor: pointer;
   }
   .avatar-circle {
-    width: 44px;
-    height: 44px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
     background: #253342;
     border: 2px solid #f6ad55;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 1.6rem;
+    font-size: 1.5rem;
   }
   .bars-col {
     display: flex;
     flex-direction: column;
     gap: 3px;
-    min-width: 130px;
+    min-width: 120px;
   }
   .status-name-row {
     display: flex;
     justify-content: space-between;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: bold;
     color: #edf2f7;
   }
@@ -96,12 +96,12 @@
   .fill-mp { width: 100%; height: 100%; background: linear-gradient(90deg, #3182ce, #63b3ed); transition: width 0.1s; }
   .fill-exp { width: 0%; height: 100%; background: linear-gradient(90deg, #38a169, #68d391); transition: width 0.1s; }
 
-  /* 右上角地圖名與 MiniMap */
+  /* 右上角地圖資訊與大世界地圖展開按鈕 */
   .minimap-panel {
     position: absolute;
     top: 10px;
-    right: 14px;
-    background: rgba(15, 22, 30, 0.88);
+    right: 12px;
+    background: rgba(15, 22, 30, 0.9);
     border: 2px solid #3c4f64;
     border-radius: 10px;
     padding: 6px 8px;
@@ -109,29 +109,37 @@
     flex-direction: column;
     align-items: center;
     pointer-events: auto;
+    gap: 4px;
   }
-  .map-title {
-    font-size: 0.75rem;
-    font-weight: bold;
+  .map-header-btn {
+    background: #2b394a;
+    border: 1px solid #f6ad55;
     color: #f6ad55;
-    margin-bottom: 4px;
+    font-size: 0.72rem;
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 12px;
+    cursor: pointer;
     display: flex;
     align-items: center;
     gap: 4px;
+    transition: 0.15s;
   }
+  .map-header-btn:hover { background: #3b4d63; }
   #minimap-canvas {
-    width: 90px;
-    height: 60px;
+    width: 96px;
+    height: 64px;
     background: #0b1015;
     border-radius: 4px;
     border: 1px solid #2b3a4a;
+    display: block;
   }
 
   /* 左下角虛擬搖桿 */
   .joystick-zone {
     position: absolute;
-    bottom: 20px;
-    left: 20px;
+    bottom: 16px;
+    left: 16px;
     width: 140px;
     height: 140px;
     pointer-events: auto;
@@ -162,19 +170,19 @@
     transition: transform 0.04s ease-out;
   }
 
-  /* 右下角技能按鍵 */
+  /* 右下角技能與動作鍵盤 */
   .actions-cluster {
     position: absolute;
-    bottom: 20px;
-    right: 20px;
+    bottom: 16px;
+    right: 16px;
     width: 190px;
     height: 190px;
     pointer-events: auto;
   }
   .btn-attack {
     position: absolute;
-    right: 8px;
-    bottom: 8px;
+    right: 6px;
+    bottom: 6px;
     width: 76px;
     height: 76px;
     border-radius: 50%;
@@ -218,7 +226,7 @@
   .btn-skill-3 { bottom: 20px; left: 10px; border-color: #68d391; }
   .btn-potion  { top: 0px; left: 100px; border-color: #e53e3e; width: 40px; height: 40px; font-size: 1rem; }
 
-  /* 換職彈窗 */
+  /* 彈窗：世界地圖導航面板 */
   .modal-overlay {
     position: absolute;
     inset: 0;
@@ -230,17 +238,51 @@
     pointer-events: auto;
   }
   .modal-overlay.active { display: flex; }
-  .class-box {
+  .modal-box {
     background: #17212b;
     border: 2px solid #4a5d6e;
-    border-radius: 12px;
+    border-radius: 14px;
     width: 90%;
-    max-width: 580px;
+    max-width: 620px;
+    max-height: 85vh;
+    overflow-y: auto;
     padding: 16px 20px;
     display: flex;
     flex-direction: column;
     gap: 12px;
   }
+
+  .world-map-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .map-card {
+    background: #10171e;
+    border: 2px solid #2d3b4a;
+    border-radius: 10px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    cursor: pointer;
+    transition: 0.15s;
+  }
+  .map-card:hover, .map-card.current {
+    border-color: #f6ad55;
+    background: #1a2736;
+  }
+  .map-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    font-size: 0.85rem;
+    color: #f6ad55;
+  }
+  .map-card-desc { font-size: 0.72rem; color: #a0aec0; line-height: 1.4; }
+  .map-card-mobs { font-size: 0.7rem; color: #cbd5e0; }
+
   .class-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -259,20 +301,16 @@
     gap: 4px;
     transition: 0.15s;
   }
-  .class-card.selected {
-    border-color: #f6ad55;
-    background: #1e2d3b;
-  }
+  .class-card.selected { border-color: #f6ad55; background: #1e2d3b; }
   .class-card h4 { font-size: 0.75rem; color: #fff; }
   .class-card p { font-size: 0.6rem; color: #a0aec0; }
 
-  /* 地圖切換通知橫幅 */
   #map-alert-banner {
     position: absolute;
     top: 60px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.75);
+    background: rgba(0, 0, 0, 0.8);
     border: 1px solid #f6ad55;
     color: #f6ad55;
     font-size: 1rem;
@@ -282,25 +320,6 @@
     pointer-events: none;
     opacity: 0;
     transition: opacity 0.4s ease;
-  }
-
-  /* 橫向提示 */
-  #rotate-hint {
-    display: none;
-    position: absolute;
-    inset: 0;
-    background: #0d131a;
-    z-index: 9999;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    color: #f6ad55;
-    font-size: 1.2rem;
-    text-align: center;
-    padding: 20px;
-  }
-  @media screen and (orientation: portrait) {
-    #rotate-hint { display: flex; }
   }
 </style>
 </head>
@@ -324,8 +343,11 @@
     </div>
 
     <div class="minimap-panel">
-      <div class="map-title" id="hud-map-title">📍 晨曦平原</div>
-      <canvas id="minimap-canvas" width="90" height="60"></canvas>
+      <button class="map-header-btn" onclick="openWorldMapModal()">
+        <span id="hud-map-title">📍 晨曦平原</span>
+        <span style="font-size:0.65rem; color:#cbd5e0;">[切換地圖]</span>
+      </button>
+      <canvas id="minimap-canvas" width="96" height="64"></canvas>
     </div>
 
     <div id="map-alert-banner">已進入全新區域！</div>
@@ -355,20 +377,26 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="world-map-modal">
+    <div class="modal-box">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="color:#f6ad55; font-size:1.1rem;">🗺️ 大世界地圖 - 區域導航與快速傳送</h3>
+        <button style="background:none; border:none; color:#a0aec0; font-size:1.3rem; cursor:pointer;" onclick="closeWorldMapModal()">✕</button>
+      </div>
+      <p style="font-size:0.75rem; color:#a0aec0;">點擊任意區域即可即時傳送抵達，每個區域擁有獨特地貌、生態與專屬魔物：</p>
+      <div class="world-map-grid" id="world-map-grid"></div>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="class-modal">
-    <div class="class-box">
+    <div class="modal-box">
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <h3 style="color:#f6ad55; font-size:1.1rem;">🏛️ 英雄神殿 - 自由切換職業專精</h3>
-        <button style="background:none; border:none; color:#a0aec0; font-size:1.2rem; cursor:pointer;" onclick="closeClassModal()">✕</button>
+        <button style="background:none; border:none; color:#a0aec0; font-size:1.3rem; cursor:pointer;" onclick="closeClassModal()">✕</button>
       </div>
       <p style="font-size:0.75rem; color:#a0aec0;">切換職業將即時替換專屬技能樹、普攻型態與屬性偏向：</p>
       <div class="class-grid" id="class-grid"></div>
     </div>
-  </div>
-
-  <div id="rotate-hint">
-    <div style="font-size:3rem; margin-bottom:12px;">📱 ➔ 🔄</div>
-    <div>請將手機翻轉至<b>橫向模式 (Landscape)</b><br>解鎖開闊冒險視野！</div>
   </div>
 </div>
 
@@ -382,8 +410,8 @@ const WORLD_WIDTH = 2400;
 const WORLD_HEIGHT = 1600;
 
 function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  canvas.width = window.innerWidth || 800;
+  canvas.height = window.innerHeight || 600;
 }
 window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
@@ -401,9 +429,9 @@ const CLASSES = [
     hpMod: 1.3,
     mpMod: 0.8,
     skills: [
-      { id: "whirlwind", name: "旋風", icon: "🌀", mp: 15, desc: "旋轉巨劍造成 360 度範圍連斬" },
-      { id: "slam", name: "裂地", icon: "💥", mp: 18, desc: "高躍劈地擊退並重擊前方魔物" },
-      { id: "rage", name: "飲血", icon: "🩸", mp: 20, desc: "爆發狂暴，回復生命並短暫提速" }
+      { id: "whirlwind", name: "旋風", icon: "🌀", mp: 15 },
+      { id: "slam", name: "裂地", icon: "💥", mp: 18 },
+      { id: "rage", name: "飲血", icon: "🩸", mp: 20 }
     ]
   },
   {
@@ -416,9 +444,9 @@ const CLASSES = [
     hpMod: 0.85,
     mpMod: 1.4,
     skills: [
-      { id: "missiles", name: "飛彈", icon: "✨", mp: 16, desc: "多枚追蹤奧術飛彈齊射" },
-      { id: "vortex", name: "黑洞", icon: "🌀", mp: 24, desc: "凝聚時空重力旋渦牽引撕扯敵群" },
-      { id: "blink", name: "折躍", icon: "⚡", mp: 15, desc: "向面朝方向瞬間衝刺並震暈周遭" }
+      { id: "missiles", name: "飛彈", icon: "✨", mp: 16 },
+      { id: "vortex", name: "黑洞", icon: "🌀", mp: 24 },
+      { id: "blink", name: "折躍", icon: "⚡", mp: 15 }
     ]
   },
   {
@@ -431,9 +459,9 @@ const CLASSES = [
     hpMod: 1.0,
     mpMod: 1.0,
     skills: [
-      { id: "rain", name: "箭雨", icon: "🌧️", mp: 18, desc: "向前方召喚密集箭矢覆蓋轟炸" },
-      { id: "snipe", name: "穿刺", icon: "🎯", mp: 16, desc: "聚能射出貫穿直線魔物的重箭" },
-      { id: "tumble", name: "騰躍", icon: "💨", mp: 10, desc: "迅速後撤拉開安全距離" }
+      { id: "rain", name: "箭雨", icon: "🌧️", mp: 18 },
+      { id: "snipe", name: "穿刺", icon: "🎯", mp: 16 },
+      { id: "tumble", name: "騰躍", icon: "💨", mp: 10 }
     ]
   },
   {
@@ -446,9 +474,9 @@ const CLASSES = [
     hpMod: 1.4,
     mpMod: 1.1,
     skills: [
-      { id: "shield", name: "盾衝", icon: "🛡️", mp: 15, desc: "持盾前衝撞飛沿途魔物" },
-      { id: "hammer", name: "審判", icon: "🔨", mp: 22, desc: "天降審判巨錘砸出範圍聖光" },
-      { id: "grace", name: "恩典", icon: "💚", mp: 20, desc: "聖輝治癒自己大量生命" }
+      { id: "shield", name: "盾衝", icon: "🛡️", mp: 15 },
+      { id: "hammer", name: "審判", icon: "🔨", mp: 22 },
+      { id: "grace", name: "恩典", icon: "💚", mp: 20 }
     ]
   },
   {
@@ -461,9 +489,9 @@ const CLASSES = [
     hpMod: 0.9,
     mpMod: 0.9,
     skills: [
-      { id: "shadowstep", name: "影步", icon: "👤", mp: 14, desc: "瞬移至最近目標身後造成暴擊" },
-      { id: "poison", name: "毒刃", icon: "☠️", mp: 18, desc: "散射 5 把淬毒飛刀" },
-      { id: "smoke", name: "煙幕", icon: "🌫️", mp: 12, desc: "原地丟下煙霧彈致盲並隱蔽" }
+      { id: "shadowstep", name: "影步", icon: "👤", mp: 14 },
+      { id: "poison", name: "毒刃", icon: "☠️", mp: 18 },
+      { id: "smoke", name: "煙幕", icon: "🌫️", mp: 12 }
     ]
   }
 ];
@@ -474,69 +502,73 @@ const MAP_DATABASE = [
   {
     id: 0,
     name: "晨曦平原",
-    bgFloor: "#386641",
-    tileGrid: "rgba(40, 75, 48, 0.45)",
-    decorColor: "#2d6a4f",
+    bgFloor: "#2f5936",
+    tileGrid: "rgba(35, 70, 42, 0.45)",
+    decorColor: "#1b4332",
     decorType: "tree",
     lakeColor: "#2b6cb0",
+    desc: "微風拂過的綠意平原，點綴著清澈的水池與古老遺跡柱。",
     mobPool: [
-      { name: "草地軟泥怪", sprite: "🟢", hp: 110, exp: 25, zeny: 12, atk: 7, color: "#48bb78", size: 20 },
-      { name: "草原幼狼", sprite: "🐺", hp: 180, exp: 40, zeny: 20, atk: 14, color: "#ecc94b", size: 24 }
+      { name: "草地軟泥怪", sprite: "🟢", hp: 120, exp: 25, zeny: 12, atk: 7, color: "#48bb78", size: 20 },
+      { name: "草原幼狼", sprite: "🐺", hp: 190, exp: 40, zeny: 20, atk: 14, color: "#ecc94b", size: 24 }
     ],
     portals: [
-      { x: 2250, y: 800, toMap: 1, toX: 180, toY: 800, name: "通往【熾熱熔岩洞】" },
-      { x: 1200, y: 1480, toMap: 2, toX: 1200, toY: 180, name: "通往【迷霧低語幽林】" }
+      { x: 2250, y: 800, toMap: 1, toX: 180, toY: 800, name: "熾熱熔岩洞窟" },
+      { x: 1200, y: 1480, toMap: 2, toX: 1200, toY: 180, name: "迷霧低語幽林" }
     ]
   },
   {
     id: 1,
     name: "熾熱熔岩洞窟",
-    bgFloor: "#2b1810",
-    tileGrid: "rgba(120, 45, 20, 0.35)",
+    bgFloor: "#2b140d",
+    tileGrid: "rgba(120, 45, 20, 0.4)",
     decorColor: "#742a2a",
     decorType: "rock",
     lakeColor: "#c53030",
+    desc: "地底火舌湧動的赤紅焦土，遍佈灼熱滾燙的岩漿池與烈焰精靈。",
     mobPool: [
-      { name: "烈焰蜥蜴", sprite: "🦎", hp: 350, exp: 90, zeny: 55, atk: 26, color: "#ed8936", size: 26 },
-      { name: "熔火魔人", sprite: "👹", hp: 800, exp: 220, zeny: 140, atk: 45, color: "#e53e3e", size: 34 }
+      { name: "烈焰蜥蜴", sprite: "🦎", hp: 360, exp: 90, zeny: 55, atk: 26, color: "#ed8936", size: 26 },
+      { name: "熔火魔人", sprite: "👹", hp: 820, exp: 220, zeny: 140, atk: 45, color: "#e53e3e", size: 34 }
     ],
     portals: [
-      { x: 120, y: 800, toMap: 0, toX: 2180, toY: 800, name: "返回【晨曦平原】" },
-      { x: 1200, y: 1480, toMap: 3, toX: 1200, toY: 180, name: "通往【霜凍冰原要塞】" }
+      { x: 120, y: 800, toMap: 0, toX: 2180, toY: 800, name: "晨曦平原" },
+      { x: 1200, y: 1480, toMap: 3, toX: 1200, toY: 180, name: "霜凍冰原要塞" }
     ]
   },
   {
     id: 2,
     name: "迷霧低語幽林",
-    bgFloor: "#161b26",
-    tileGrid: "rgba(75, 55, 120, 0.35)",
+    bgFloor: "#151a24",
+    tileGrid: "rgba(80, 55, 120, 0.4)",
     decorColor: "#44337a",
     decorType: "mushroom",
-    lakeColor: "#4c51bf",
+    lakeColor: "#553c9a",
+    desc: "被永夜迷霧籠罩的古老樹海，閃爍著神秘的螢光孢子與暗影猛獸。",
     mobPool: [
       { name: "螢光毒蕈怪", sprite: "🍄", hp: 320, exp: 80, zeny: 50, atk: 22, color: "#9f7aea", size: 24 },
-      { name: "暗影幽豹", sprite: "🐆", hp: 480, exp: 130, zeny: 80, atk: 34, color: "#805ad5", size: 28 }
+      { name: "暗影幽豹", sprite: "🐆", hp: 490, exp: 130, zeny: 80, atk: 34, color: "#805ad5", size: 28 }
     ],
     portals: [
-      { x: 1200, y: 120, toMap: 0, toX: 1200, toY: 1400, name: "返回【晨曦平原】" },
-      { x: 2250, y: 800, toMap: 3, toX: 180, toY: 800, name: "通往【霜凍冰原要塞】" }
+      { x: 1200, y: 120, toMap: 0, toX: 1200, toY: 1400, name: "晨曦平原" },
+      { x: 2250, y: 800, toMap: 3, toX: 180, toY: 800, name: "霜凍冰原要塞" }
     ]
   },
   {
     id: 3,
     name: "霜凍冰原要塞",
-    bgFloor: "#1a2c3a",
-    tileGrid: "rgba(100, 160, 210, 0.3)",
-    decorColor: "#63b3ed",
+    bgFloor: "#1c2e3d",
+    tileGrid: "rgba(100, 160, 215, 0.35)",
+    decorColor: "#4299e1",
     decorType: "ice_pillar",
     lakeColor: "#90cdf4",
+    desc: "極地終年飄雪的冰晶高原，盤踞著巨大的極地雪怪與遠古霜翼龍。",
     mobPool: [
-      { name: "極地雪怪", sprite: "❄️", hp: 650, exp: 190, zeny: 110, atk: 40, color: "#bee3f8", size: 30 },
-      { name: "霜翼巨龍 (領主)", sprite: "🐉", hp: 2200, exp: 680, zeny: 420, atk: 68, color: "#3182ce", size: 42 }
+      { name: "極地雪怪", sprite: "❄️", hp: 680, exp: 190, zeny: 110, atk: 40, color: "#bee3f8", size: 30 },
+      { name: "霜翼巨龍 (領主)", sprite: "🐉", hp: 2400, exp: 700, zeny: 450, atk: 68, color: "#3182ce", size: 44 }
     ],
     portals: [
-      { x: 1200, y: 120, toMap: 1, toX: 1200, toY: 1400, name: "通往【熾熱熔岩洞窟】" },
-      { x: 120, y: 800, toMap: 2, toX: 2180, toY: 800, name: "通往【迷霧低語幽林】" }
+      { x: 1200, y: 120, toMap: 1, toX: 1200, toY: 1400, name: "熾熱熔岩洞窟" },
+      { x: 120, y: 800, toMap: 2, toX: 2180, toY: 800, name: "迷霧低語幽林" }
     ]
   }
 ];
@@ -552,8 +584,7 @@ function generateMapObjects() {
     sceneDecorations.push({
       x: Math.random() * (WORLD_WIDTH - 200) + 100,
       y: Math.random() * (WORLD_HEIGHT - 200) + 100,
-      r: 28 + Math.random() * 16,
-      type: currentMap.decorType
+      r: 28 + Math.random() * 16
     });
   }
   sceneLakes = [
@@ -609,7 +640,6 @@ populateMonsters(16);
 
 const projectiles = [];
 const floatingTexts = [];
-
 function addFloatingText(x, y, text, color = "#fff", fontSize = 18) {
   floatingTexts.push({ x, y, text, color, fontSize, alpha: 1.0, life: 36 });
 }
@@ -715,9 +745,10 @@ function damageMonster(m, dmg, color, prefix = "") {
 function triggerNormalAttack() {
   player.attackAnimTimer = 10;
   let hit = false;
-  let range = currentClass.id === "ranger" || currentClass.id === "mage" ? 280 : 90;
+  let isRanged = currentClass.id === "ranger" || currentClass.id === "mage";
+  let range = isRanged ? 280 : 95;
 
-  if (range > 100) {
+  if (isRanged) {
     let target = findNearestMonster(range);
     if (target) {
       projectiles.push({
@@ -814,9 +845,7 @@ function castSkill(slotIdx) {
     });
   } else if (skill.id === "snipe") {
     let t = findNearestMonster(420);
-    if (t) {
-      damageMonster(t, Math.round(getAtk() * 3.2), "#f6e05e", "穿刺狙擊🎯");
-    }
+    if (t) damageMonster(t, Math.round(getAtk() * 3.2), "#f6e05e", "穿刺狙擊🎯");
   } else if (skill.id === "tumble") {
     player.x -= player.facing * 150;
   } else if (skill.id === "shield") {
@@ -863,24 +892,28 @@ function castPotion() {
   }
 }
 
+function switchMapTo(targetMapId, targetX = 1000, targetY = 800) {
+  currentMapIndex = targetMapId;
+  currentMap = MAP_DATABASE[currentMapIndex];
+  player.x = targetX;
+  player.y = targetY;
+
+  generateMapObjects();
+  populateMonsters(16);
+
+  let banner = document.getElementById("map-alert-banner");
+  banner.innerText = `🌌 抵達【${currentMap.name}】！`;
+  banner.style.opacity = 1;
+  setTimeout(() => banner.style.opacity = 0, 2200);
+
+  document.getElementById("hud-map-title").innerText = `📍 ${currentMap.name}`;
+}
+
 function checkPortals() {
   for (let p of currentMap.portals) {
     let dist = Math.hypot(p.x - player.x, p.y - player.y);
     if (dist < 50) {
-      currentMapIndex = p.toMap;
-      currentMap = MAP_DATABASE[currentMapIndex];
-      player.x = p.toX;
-      player.y = p.toY;
-
-      generateMapObjects();
-      populateMonsters(16);
-
-      let banner = document.getElementById("map-alert-banner");
-      banner.innerText = `🌌 抵達【${currentMap.name}】！`;
-      banner.style.opacity = 1;
-      setTimeout(() => banner.style.opacity = 0, 2200);
-
-      document.getElementById("hud-map-title").innerText = `📍 ${currentMap.name}`;
+      switchMapTo(p.toMap, p.toX, p.toY);
       break;
     }
   }
@@ -1007,7 +1040,7 @@ function render() {
     ctx.fillText("🌀 傳送陣", p.x, p.y - 42);
     ctx.font = "11px system-ui";
     ctx.fillStyle = "#e2e8f0";
-    ctx.fillText(p.name, p.x, p.y - 26);
+    ctx.fillText(`➔ ${p.name}`, p.x, p.y - 26);
   }
 
   for (let m of monsters) {
@@ -1107,7 +1140,7 @@ function renderMiniMap() {
 
   for (let p of currentMap.portals) {
     miniCtx.fillStyle = "#b794f4";
-    miniCtx.fillRect(p.x * scaleX - 2, p.y * scaleY - 2, 4, 4);
+    miniCtx.fillRect(p.x * scaleX - 2, p.y * scaleY - 2, 5, 5);
   }
 
   for (let m of monsters) {
@@ -1142,6 +1175,34 @@ function updateHUD() {
     document.getElementById(`skill-${i+1}-icon`).innerText = sk.icon;
     document.getElementById(`skill-${i+1}-name`).innerText = sk.name;
   }
+}
+
+function openWorldMapModal() {
+  const grid = document.getElementById("world-map-grid");
+  grid.innerHTML = "";
+  MAP_DATABASE.forEach(m => {
+    let isCur = m.id === currentMapIndex;
+    let card = document.createElement("div");
+    card.className = `map-card ${isCur ? 'current' : ''}`;
+    card.onclick = () => {
+      switchMapTo(m.id);
+      closeWorldMapModal();
+    };
+    card.innerHTML = `
+      <div class="map-card-head">
+        <span>📍 ${m.name}</span>
+        <span style="font-size:0.7rem; color:${isCur ? '#f6ad55' : '#68d391'};">${isCur ? '當前所在' : '點擊傳送 ➔'}</span>
+      </div>
+      <div class="map-card-desc">${m.desc}</div>
+      <div class="map-card-mobs">魔物生態：${m.mobPool.map(x => x.sprite + ' ' + x.name).join('、')}</div>
+    `;
+    grid.appendChild(card);
+  });
+  document.getElementById("world-map-modal").classList.add("active");
+}
+
+function closeWorldMapModal() {
+  document.getElementById("world-map-modal").classList.remove("active");
 }
 
 function openClassModal() {
