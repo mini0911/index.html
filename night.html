@@ -3,29 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>【寂靜結界】360° 真實廢墟實景生還戰</title>
-<!-- 載入 Leaflet 地圖與 Three.js 3D/全景庫 -->
+<title>【寂靜結界】100% 開源免金鑰街景逃脫</title>
+<!-- 引入開源地圖 Leaflet -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- 引入開源 360° 街景引擎 Pannellum (免 Key / 免信用卡) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
+<script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
 
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-  body, html {
-    width: 100%; height: 100%;
-    background: #050508; color: #eee;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", monospace;
-    overflow: hidden;
-  }
+  body, html { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: monospace; }
 
   #game-rig {
     position: relative; width: 100%; height: 100%;
-    display: flex; flex-direction: column; background: #000;
+    display: flex; flex-direction: column;
   }
 
-  /* 頂部 HUD 狀態列 */
+  /* 頂部 HUD */
   .hud-header {
-    height: 48px; background: rgba(13, 17, 23, 0.85);
+    height: 48px; background: rgba(13, 17, 23, 0.9);
     border-bottom: 2px solid #30363d; display: flex;
     justify-content: space-between; align-items: center;
     padding: 0 16px; z-index: 1000; position: absolute; top: 0; left: 0; width: 100%;
@@ -40,25 +37,16 @@
   }
   @keyframes blink { 50% { opacity: 0.2; } }
 
-  .status-badges { display: flex; gap: 6px; }
-  .badge {
-    font-size: 11px; color: #8b949e; background: #161b22;
-    padding: 3px 6px; border-radius: 4px; border: 1px solid #30363d;
+  /* 360° 真實街景主視圖容器 */
+  #panorama-stage {
+    flex: 1; width: 100%; height: 100%; position: relative;
+    filter: invert(85%) hue-rotate(180deg) contrast(135%) saturate(20%) brightness(70%);
   }
-  .badge.hp { color: #ff4444; border-color: #772222; font-weight: bold; }
-  .badge.stalker { color: #ff9900; border-color: #774400; font-weight: bold; }
 
-  /* 360° 全景主視圖容器 */
-  #panorama-container {
-    flex: 1; width: 100%; height: 100%; position: relative; overflow: hidden;
-    cursor: grab;
-  }
-  #panorama-container:active { cursor: grabbing; }
-
-  /* 視角掃描線與恐怖暗角 */
+  /* 恐怖 VHS 掃描線與暗角 */
   .vhs-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: radial-gradient(circle at 50% 50%, transparent 40%, rgba(0,0,0,0.6) 80%, rgba(0,0,0,0.95) 100%),
+    background: radial-gradient(circle at 50% 50%, transparent 40%, rgba(20, 0, 0, 0.6) 80%, rgba(0, 0, 0, 0.95) 100%),
                 linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%);
     background-size: 100% 100%, 100% 4px;
     pointer-events: none; z-index: 50;
@@ -67,27 +55,15 @@
   /* 準心 */
   .center-crosshair {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 48px; height: 48px; border: 2px dashed rgba(255, 60, 60, 0.6);
+    width: 44px; height: 44px; border: 2px dashed rgba(255, 60, 60, 0.6);
     border-radius: 50%; pointer-events: none; z-index: 60;
   }
 
-  /* 頂部後照鏡：查看身後 3m/s 怪物逼近 */
-  #rear-mirror {
-    position: absolute; top: 54px; left: 50%; transform: translateX(-50%);
-    width: 180px; height: 50px; background: #0a0a0c;
-    border: 2px solid #555; border-radius: 8px; overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.8); z-index: 100;
-  }
-  #mirror-canvas { width: 100%; height: 100%; }
-  .mirror-tag {
-    position: absolute; bottom: 2px; right: 4px; font-size: 9px; color: #ff4444; letter-spacing: 1px;
-  }
-
-  /* 左下角小地圖 Minimap */
+  /* 左下角開源雷達小地圖 */
   #minimap-wrapper {
     position: absolute; bottom: 155px; left: 14px;
     width: 110px; height: 110px; border-radius: 50%;
-    border: 2px solid #444; overflow: hidden; z-index: 100;
+    border: 2px solid #555; overflow: hidden; z-index: 100;
     box-shadow: 0 0 15px rgba(0,0,0,0.9);
   }
   #map { width: 100%; height: 100%; }
@@ -95,14 +71,7 @@
     filter: invert(100%) hue-rotate(180deg) brightness(75%) contrast(120%) !important;
   }
 
-  /* 自訂全景圖上傳快捷按鈕 */
-  .custom-upload-btn {
-    position: absolute; top: 54px; right: 14px; z-index: 100;
-    background: rgba(22, 27, 34, 0.85); border: 1px solid #30363d; color: #58a6ff;
-    padding: 6px 10px; font-size: 11px; border-radius: 4px; cursor: pointer;
-  }
-
-  /* 底部對講機與控制列 */
+  /* 底部面板與對講機 */
   .hud-footer {
     height: 145px; background: rgba(13, 17, 23, 0.95);
     border-top: 2px solid #30363d; padding: 10px 14px;
@@ -123,13 +92,13 @@
   .btn-action {
     background: #b62324; border: 1px solid #e05252; color: #fff;
     padding: 8px 14px; font-size: 12px; font-weight: bold; border-radius: 4px;
-    cursor: pointer; transition: 0.2s;
+    cursor: pointer;
   }
   .btn-action:disabled {
     background: #21262d; border-color: #30363d; color: #484f58; cursor: not-allowed;
   }
 
-  /* 模擬走動鍵盤 (室內測試) */
+  /* 室內方向模擬鍵 */
   .sim-controls {
     position: absolute; right: 12px; bottom: 155px; z-index: 999;
     display: grid; grid-template-columns: repeat(3, 34px);
@@ -141,13 +110,26 @@
     cursor: pointer; border-radius: 4px; font-size: 12px;
   }
 
+  /* Pannellum 自訂惡靈 Hotspot 樣式 */
+  .ghost-hotspot {
+    width: 60px; height: 90px;
+    background: radial-gradient(ellipse at 50% 35%, rgba(255, 0, 0, 0.9) 0%, rgba(50, 0, 0, 0.7) 60%, transparent 80%);
+    border-radius: 50%;
+    cursor: pointer;
+    animation: ghostPulse 0.8s infinite alternate;
+  }
+  @keyframes ghostPulse {
+    0% { transform: scale(0.9); filter: blur(2px); }
+    100% { transform: scale(1.1); filter: blur(4px); }
+  }
+
   /* 開場提示視窗 */
   #modal-mask {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: #050508; z-index: 3000; display: flex; flex-direction: column;
     justify-content: center; align-items: center; padding: 24px; text-align: center;
   }
-  #modal-mask h1 { color: #ff4444; font-size: 24px; margin-bottom: 12px; }
+  #modal-mask h1 { color: #ff4444; font-size: 22px; margin-bottom: 12px; }
   #modal-mask p { font-size: 13px; color: #8b949e; line-height: 1.6; margin-bottom: 22px; max-width: 360px; }
   .btn-main {
     background: #b62324; border: none; color: #fff; padding: 12px 28px;
@@ -161,39 +143,24 @@
   <div class="hud-header">
     <div class="hud-title">
       <div class="pulse-dot"></div>
-      <span>360° 實景廢墟全景</span>
+      <span>免金鑰 360° 實景生還戰</span>
     </div>
-    <div class="status-badges">
-      <div class="badge hp" id="hp-badge">HP: 100/100</div>
-      <div class="badge stalker" id="monster-badge">鬼魅: 追擊中 (55m)</div>
-      <div class="badge" id="step-badge">步數: 0</div>
+    <div style="font-size: 11px; color: #8b949e;">
+      HP: <span id="hp-val" style="color: #ff4444;">100</span> | 步數: <span id="step-val">0</span>
     </div>
   </div>
 
-  <!-- 360° 全景主舞台 -->
-  <div id="panorama-container">
-    <div class="vhs-overlay"></div>
-    <div class="center-crosshair"></div>
+  <!-- 360° 真實街景主舞台 (由 Pannellum 驅動) -->
+  <div id="panorama-stage"></div>
+  <div class="vhs-overlay"></div>
+  <div class="center-crosshair"></div>
 
-    <!-- 後照鏡：查看 3m/s 追趕的惡靈 -->
-    <div id="rear-mirror">
-      <canvas id="mirror-canvas" width="180" height="50"></canvas>
-      <div class="mirror-tag">REAR-CAM 後視鏡</div>
-    </div>
-
-    <!-- 左下角戰術雷達小地圖 -->
-    <div id="minimap-wrapper">
-      <div id="map"></div>
-    </div>
-
-    <!-- 自訂 360 全景圖片按鈕 -->
-    <label class="custom-upload-btn">
-      📁 載入自訂全景
-      <input type="file" id="pano-file-input" accept="image/*" style="display:none;" onchange="loadCustomPanorama(event)">
-    </label>
+  <!-- 左下角開源雷達小地圖 -->
+  <div id="minimap-wrapper">
+    <div id="map"></div>
   </div>
 
-  <!-- 模擬方向鍵盤 -->
+  <!-- 方向模擬鍵 -->
   <div class="sim-controls">
     <div></div>
     <button class="sim-btn" onclick="simMove(0, 0.00015)">▲</button>
@@ -207,289 +174,88 @@
   <div class="hud-footer">
     <div class="radio-channel">
       <span>對講機 [CH-9] 隊長</span>
-      <span id="cheat-alert" style="color: #00ff88;">視角: 360° 環顧自由檢視</span>
+      <span style="color: #00ff88;">街景引擎: 100% 免費開源</span>
     </div>
     <div class="radio-bubble" id="radio-msg">
-      「你已置身於廢棄大樓與暗巷交界！拖曳螢幕或轉動手機環顧四周，找到紅色結界符號！」
+      「畫面顯示的是當地的 360° 真實街景！用手指滑動或轉動手機，找到躲在巷子裡的惡靈點擊封印！」
     </div>
     <div class="controls">
       <div class="step-info" id="status-desc">
         距離結界: 計算中...<br>現地步數檢驗: 0 / 20 步
       </div>
       <button class="btn-action" id="interact-btn" disabled onclick="triggerExorcismAction()">
-        ⚡ 驅逐封印惡靈 ⚡
+        已鎖定惡靈
       </button>
     </div>
   </div>
 
   <!-- 開場視窗 -->
   <div id="modal-mask">
-    <h1>靜安怪談：360° 實景廢墟戰</h1>
+    <h1>靜安怪談：完全免費整合版</h1>
     <p>
-      <b>全景模式升級：</b><br>
-      主畫面全面替換為 <b>真實 360° 等距長方投影廢墟全景</b>。<br>
-      你可以在實體走動的同時，滑動螢幕或旋轉手機 360 度仔細搜查廢墟角落！
+      <b>免信用卡・免申請 Google API Key！</b><br>
+      結合 <b>OpenStreetMap</b> 與 <b>Pannellum 開源 360° 全景街景</b>，用真正的街景照片構建恐怖現場！
     </p>
-    <button class="btn-main" onclick="initExperience()">進入 360° 實景廢墟</button>
+    <button class="btn-main" onclick="initExperience()">直接啟動遊戲</button>
   </div>
 </div>
 
 <script>
-/* ==================== 音效引擎 ==================== */
-class SoundEngine {
-  constructor() { this.ctx = null; }
-  init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
-  step() {
-    if (!this.ctx) return;
-    const osc = this.ctx.createOscillator();
-    const g = this.ctx.createGain();
-    osc.frequency.setValueAtTime(65, this.ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.08);
-    g.gain.setValueAtTime(0.08, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
-    osc.connect(g); g.connect(this.ctx.destination);
-    osc.start(); osc.stop(this.ctx.currentTime + 0.08);
-  }
-  roar() {
-    if (!this.ctx) return;
-    const osc = this.ctx.createOscillator();
-    const g = this.ctx.createGain();
-    osc.type = "sawtooth";
-    osc.frequency.setValueAtTime(140, this.ctx.currentTime);
-    osc.frequency.linearRampToValueAtTime(450, this.ctx.currentTime + 0.2);
-    g.gain.setValueAtTime(0.8, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.8);
-    osc.connect(g); g.connect(this.ctx.destination);
-    osc.start(); osc.stop(this.ctx.currentTime + 0.8);
-  }
-  chime() {
-    if (!this.ctx) return;
-    const osc = this.ctx.createOscillator();
-    const g = this.ctx.createGain();
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(523, this.ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(1046, this.ctx.currentTime + 0.5);
-    g.gain.setValueAtTime(0.3, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.5);
-    osc.connect(g); g.connect(this.ctx.destination);
-    osc.start(); osc.stop(this.ctx.currentTime + 0.5);
-  }
-}
-const sfx = new SoundEngine();
-
-/* ==================== Three.js 360° 全景球體引擎 ==================== */
-let scene, camera, renderer, sphereMesh, ghostSprite;
-let lon = 0, lat = 0, phi = 0, theta = 0;
-let isUserInteracting = false, onPointerDownPointerX = 0, onPointerDownPointerY = 0, onPointerDownLon = 0, onPointerDownLat = 0;
-
-// 預設三個定點的 360° 等距長方投影圖（Equirectangular 廢墟街景）
-const DEFAULT_PANORAMAS = [
-  "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=2000&q=80", // 昏暗廢墟廊道
-  "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=2000&q=80", // 破舊水泥殘垣
-  "https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=2000&q=80"  // 午夜暗巷天台
-];
-
-function initPanorama() {
-  const container = document.getElementById('panorama-container');
-  scene = new THREE.Scene();
-  camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 1, 1100);
-  camera.target = new THREE.Vector3(0, 0, 0);
-
-  // 建立 360 球體 (半徑 500，反轉法向量朝內)
-  const geometry = new THREE.SphereGeometry(500, 60, 40);
-  geometry.scale(-1, 1, 1);
-
-  // 載入第一個結界的 360 圖
-  const texture = new THREE.TextureLoader().load(DEFAULT_PANORAMAS[0]);
-  const material = new THREE.MeshBasicMaterial({ map: texture });
-  sphereMesh = new THREE.Mesh(geometry, material);
-  scene.add(sphereMesh);
-
-  // 在 3D 空間中佈置漂浮惡靈 Sprite
-  const canvasMap = createGhostCanvasTexture();
-  const ghostMaterial = new THREE.SpriteMaterial({ map: canvasMap, transparent: true, opacity: 0.9 });
-  ghostSprite = new THREE.Sprite(ghostMaterial);
-  ghostSprite.scale.set(60, 90, 1);
-  // 固定在特定 3D 方位 (半徑 350)
-  ghostSprite.position.set(240, 20, -250);
-  scene.add(ghostSprite);
-
-  renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setSize(container.clientWidth, container.clientHeight);
-  container.appendChild(renderer.domElement);
-
-  // 觸控與滑鼠拖曳視角
-  container.addEventListener('pointerdown', onPointerDown);
-  document.addEventListener('pointermove', onPointerMove);
-  document.addEventListener('pointerup', onPointerUp);
-  window.addEventListener('resize', onWindowResize);
-
-  // 手機陀螺儀環顧
-  window.addEventListener('deviceorientation', handleOrientation);
-
-  animatePanorama();
-}
-
-function createGhostCanvasTexture() {
-  const c = document.createElement('canvas');
-  c.width = 128; c.height = 180;
-  const ctx = c.getContext('2d');
-  const grad = ctx.createRadialGradient(64, 70, 5, 64, 70, 60);
-  grad.addColorStop(0, 'rgba(255, 30, 30, 0.95)');
-  grad.addColorStop(0.7, 'rgba(50, 0, 0, 0.7)');
-  grad.addColorStop(1, 'transparent');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, 128, 180);
-  // 白眼
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(45, 60, 8, 14);
-  ctx.fillRect(75, 60, 8, 14);
-  return new THREE.CanvasTexture(c);
-}
-
-function onPointerDown(event) {
-  isUserInteracting = true;
-  onPointerDownPointerX = event.clientX;
-  onPointerDownPointerY = event.clientY;
-  onPointerDownLon = lon;
-  onPointerDownLat = lat;
-}
-
-function onPointerMove(event) {
-  if (isUserInteracting) {
-    lon = (onPointerDownPointerX - event.clientX) * 0.15 + onPointerDownLon;
-    lat = (event.clientY - onPointerDownPointerY) * 0.15 + onPointerDownLat;
-  }
-}
-
-function onPointerUp() { isUserInteracting = false; }
-
-function handleOrientation(e) {
-  if (e.alpha !== null && !isUserInteracting) {
-    // 陀螺儀動態改變朝向角度
-    lon = 360 - e.alpha;
-    lat = Math.max(-85, Math.min(85, e.beta - 90));
-  }
-}
-
-function onWindowResize() {
-  const container = document.getElementById('panorama-container');
-  camera.aspect = container.clientWidth / container.clientHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(container.clientWidth, container.clientHeight);
-}
-
-function animatePanorama() {
-  requestAnimationFrame(animatePanorama);
-
-  lat = Math.max(-85, Math.min(85, lat));
-  phi = THREE.MathUtils.degToRad(90 - lat);
-  theta = THREE.MathUtils.degToRad(lon);
-
-  camera.target.x = 500 * Math.sin(phi) * Math.cos(theta);
-  camera.target.y = 500 * Math.cos(phi);
-  camera.target.z = 500 * Math.sin(phi) * Math.sin(theta);
-  camera.lookAt(camera.target);
-
-  // 鬼影微弱上下飄浮呼吸動畫
-  if (ghostSprite) {
-    ghostSprite.position.y = 20 + Math.sin(Date.now() * 0.003) * 8;
-  }
-
-  renderer.render(scene, camera);
-  renderRearMirror();
-}
-
-// 支援玩家上傳自訂 360 全景照片
-function loadCustomPanorama(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    new THREE.TextureLoader().load(e.target.result, function(newTexture) {
-      sphereMesh.material.map = newTexture;
-      sphereMesh.material.needsUpdate = true;
-      document.getElementById('radio-msg').innerText = "「自訂 360° 實景照片載入成功！仔細環顧每個死角！」";
-    });
-  };
-  reader.readAsDataURL(file);
-}
-
-// 切換當前定點的 360 度場景
-function switchStagePanorama(stageIndex) {
-  const url = DEFAULT_PANORAMAS[stageIndex % DEFAULT_PANORAMAS.length];
-  new THREE.TextureLoader().load(url, function(newTexture) {
-    sphereMesh.material.map = newTexture;
-    sphereMesh.material.needsUpdate = true;
-  });
-}
-
-/* ==================== 頂部後照鏡 (查看身後追逐怪) ==================== */
-const mirrorCanvas = document.getElementById('mirror-canvas');
-const mCtx = mirrorCanvas.getContext('2d');
-
-function renderRearMirror() {
-  const mw = mirrorCanvas.width;
-  const mh = mirrorCanvas.height;
-  mCtx.fillStyle = "#030303";
-  mCtx.fillRect(0, 0, mw, mh);
-
-  const dist = getDistanceMeters(monsterLat, monsterLng, userLat, userLng);
-  const size = Math.max(8, Math.min(42, (60 / dist) * 18));
-
-  mCtx.fillStyle = "rgba(220, 20, 20, 0.9)";
-  mCtx.beginPath();
-  mCtx.arc(mw/2, mh/2 + 4, size/2, 0, Math.PI * 2);
-  mCtx.fill();
-
-  mCtx.fillStyle = "#ffffff";
-  mCtx.fillRect(mw/2 - size/4, mh/2, 3, 4);
-  mCtx.fillRect(mw/2 + size/4 - 3, mh/2, 3, 4);
-}
-
-/* ==================== 遊戲狀態與步態核心 ==================== */
-let playerHP = 100;
+let viewer = null;
+let currentStage = 0;
+let userLat = 25.053, userLng = 121.606;
+let map, userMarker;
 let totalSteps = 0, zoneSteps = 0;
 const REQUIRED_STEPS = 20;
 
-let userLat = 25.053, userLng = 121.606;
-let map, userMarker;
-let currentStage = 0;
-let questPoints = [];
-
-let monsterLat = 0, monsterLng = 0;
-let monsterMarker = null;
-const MONSTER_SPEED_MPS = 3.0;
-let lastFrameTime = performance.now();
-
-const QUESTS = [
-  { name: "第一結界：404 廢棄大廳", offset: [0.00045, 0.00035] },
-  { name: "第二結界：巡邏員的血跡走廊", offset: [-0.00055, 0.00045] },
-  { name: "終極結界：靜安天台神壇", offset: [0.00065, -0.00035] }
+// 免費且免版權的真實街景 360° 等距長方照片（含各定點惡靈的世界角度 Pitch/Yaw）
+const STREET_SCENES = [
+  {
+    name: "第一結界：午夜巷弄鐵捲門",
+    image: "https://pannellum.org/images/alma.jpg", // 開源 360 街景全景
+    ghostPitch: -5,
+    ghostYaw: 42,
+    offset: [0.00045, 0.00035]
+  },
+  {
+    name: "第二結界：廢棄大樓廣場",
+    image: "https://pannellum.org/images/cerro-toco-0.jpg",
+    ghostPitch: 10,
+    ghostYaw: 165,
+    offset: [-0.00055, 0.00045]
+  }
 ];
 
 function initExperience() {
   document.getElementById('modal-mask').style.display = 'none';
-  sfx.init();
-  setupMotionDetection();
-  initPanorama();
 
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        userLat = pos.coords.latitude; userLng = pos.coords.longitude;
-        setupMinimap();
-      },
-      () => { setupMinimap(); },
-      { enableHighAccuracy: true, timeout: 8000 }
-    );
-  } else {
-    setupMinimap();
-  }
+  // 1. 初始化 Pannellum 開源 360° 街景視角
+  viewer = pannellum.viewer('panorama-stage', {
+    type: 'equirectangular',
+    panorama: STREET_SCENES[0].image,
+    autoLoad: true,
+    showControls: false,     // 關閉自帶按鈕，保持乾淨
+    orientationOnByDefault: true, // 自動啟用手機陀螺儀
+    hotSpots: [
+      {
+        pitch: STREET_SCENES[0].ghostPitch,
+        yaw: STREET_SCENES[0].ghostYaw,
+        cssClass: 'ghost-hotspot',
+        createTooltipFunc: (hotSpotDiv) => {
+          hotSpotDiv.onclick = () => {
+            alert("【靈體暴跌！】你直接在 360 街景中點中了惡靈核心！");
+            triggerExorcismAction();
+          };
+        }
+      }
+    ]
+  });
+
+  // 2. 初始化開源 Leaflet 小地圖
+  initMinimap();
 }
 
-function setupMinimap() {
+function initMinimap() {
   map = L.map('map', { zoomControl: false, attributionControl: false }).setView([userLat, userLng], 18);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
@@ -499,44 +265,24 @@ function setupMinimap() {
   });
   userMarker = L.marker([userLat, userLng], { icon: playerIcon }).addTo(map);
 
-  monsterLat = userLat - 0.00045;
-  monsterLng = userLng - 0.0003;
-  const monsterIcon = L.divIcon({
-    html: '<div style="width:12px;height:12px;background:#ff0000;border-radius:50%;"></div>',
-    iconSize: [12, 12], iconAnchor: [6, 6]
-  });
-  monsterMarker = L.marker([monsterLat, monsterLng], { icon: monsterIcon }).addTo(map);
-
-  questPoints = QUESTS.map(q => {
-    const qLat = userLat + q.offset[0], qLng = userLng + q.offset[1];
-    return { ...q, lat: qLat, lng: qLng };
-  });
-
-  updateDistancesAndSteps();
-  requestAnimationFrame(monsterChaseLoop);
-}
-
-function registerStep() {
-  totalSteps++; zoneSteps++;
-  sfx.step();
-  document.getElementById('step-badge').innerText = `步數: ${totalSteps}`;
-  updateDistancesAndSteps();
-}
-
-function setupMotionDetection() {
-  window.addEventListener('devicemotion', (e) => {
-    const acc = e.accelerationIncludingGravity;
-    if (!acc) return;
-    const mag = Math.hypot(acc.x, acc.y, acc.z);
-    if (Math.abs(mag - 9.8) > 3.2) registerStep();
-  });
+  if (navigator.geolocation) {
+    navigator.geolocation.watchPosition(pos => {
+      userLat = pos.coords.latitude; userLng = pos.coords.longitude;
+      userMarker.setLatLng([userLat, userLng]);
+      map.panTo([userLat, userLng]);
+      updateDistances();
+    });
+  }
+  updateDistances();
 }
 
 function simMove(dLng, dLat) {
   userLat += dLat; userLng += dLng;
   userMarker.setLatLng([userLat, userLng]);
   map.panTo([userLat, userLng]);
-  registerStep();
+  totalSteps++; zoneSteps++;
+  document.getElementById('step-val').innerText = totalSteps;
+  updateDistances();
 }
 
 function getDistanceMeters(lat1, lon1, lat2, lon2) {
@@ -547,48 +293,25 @@ function getDistanceMeters(lat1, lon1, lat2, lon2) {
   return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
 }
 
-function monsterChaseLoop(now) {
-  const dt = (now - lastFrameTime) / 1000;
-  lastFrameTime = now;
-
-  const distToPlayer = getDistanceMeters(monsterLat, monsterLng, userLat, userLng);
-  document.getElementById('monster-badge').innerText = `鬼魅: 追擊中 (${distToPlayer}m)`;
-
-  if (distToPlayer > 1.5) {
-    const stepDist = MONSTER_SPEED_MPS * dt;
-    const ratio = Math.min(1.0, stepDist / distToPlayer);
-    monsterLat += (userLat - monsterLat) * ratio;
-    monsterLng += (userLng - monsterLng) * ratio;
-    if (monsterMarker) monsterMarker.setLatLng([monsterLat, monsterLng]);
-  }
-
-  if (distToPlayer <= 3.5) {
-    sfx.roar();
-    playerHP = Math.max(0, playerHP - 30);
-    document.getElementById('hp-badge').innerText = `HP: ${playerHP}/100`;
-    monsterLat -= 0.0003;
-    alert(`【遭背後撲咬！】後照鏡中的鬼怪撲倒了你！損失 30 HP！剩餘: ${playerHP}`);
-  }
-
-  requestAnimationFrame(monsterChaseLoop);
-}
-
-function updateDistancesAndSteps() {
-  if (currentStage >= questPoints.length) {
-    document.getElementById('radio-msg').innerText = "「所有結界皆已完全封印！你甩開了惡靈，走出永夜。」";
+function updateDistances() {
+  if (currentStage >= STREET_SCENES.length) {
+    document.getElementById('radio-msg').innerText = "「所有街景結界皆已解除！脫離生還！」";
     document.getElementById('interact-btn').disabled = true;
     return;
   }
-  const q = questPoints[currentStage];
-  const d = getDistanceMeters(userLat, userLng, q.lat, q.lng);
-  const btn = document.getElementById('interact-btn');
+
+  const s = STREET_SCENES[currentStage];
+  const targetLat = userLat + s.offset[0];
+  const targetLng = userLng + s.offset[1];
+  const d = getDistanceMeters(userLat, userLng, targetLat, targetLng);
 
   document.getElementById('status-desc').innerHTML =
     `距離結界: <b>${d}m</b><br>現地步數檢驗: <b>${zoneSteps} / ${REQUIRED_STEPS}</b> 步`;
 
+  const btn = document.getElementById('interact-btn');
   if (d <= 18 && zoneSteps >= REQUIRED_STEPS) {
     btn.disabled = false;
-    btn.innerText = "【已抵達現場】驅逐封印惡靈";
+    btn.innerText = "【步數達標】轉身在街景中找出惡靈";
   } else {
     btn.disabled = true;
     btn.innerText = d > 18 ? `步行靠近中 (差 ${d}m)` : `現場踏步中 (差 ${REQUIRED_STEPS - zoneSteps} 步)`;
@@ -596,13 +319,28 @@ function updateDistancesAndSteps() {
 }
 
 function triggerExorcismAction() {
-  sfx.chime();
-  alert(`【除靈成功！】\n你以精神意念將徘徊在 360° 廢墟中的 ${questPoints[currentStage].name} 徹底驅逐！`);
+  alert(`【除靈成功！】${STREET_SCENES[currentStage].name} 的惡靈已被驅散！`);
   currentStage++;
   zoneSteps = 0;
-  // 切換至下個場景的 360° 廢墟全景圖
-  switchStagePanorama(currentStage);
-  updateDistancesAndSteps();
+
+  if (currentStage < STREET_SCENES.length) {
+    // 平滑載入下一個真實街景 360 圖
+    viewer.loadScene({
+      type: 'equirectangular',
+      panorama: STREET_SCENES[currentStage].image,
+      hotSpots: [
+        {
+          pitch: STREET_SCENES[currentStage].ghostPitch,
+          yaw: STREET_SCENES[currentStage].ghostYaw,
+          cssClass: 'ghost-hotspot',
+          createTooltipFunc: (hotSpotDiv) => {
+            hotSpotDiv.onclick = () => { triggerExorcismAction(); };
+          }
+        }
+      ]
+    });
+  }
+  updateDistances();
 }
 </script>
 </body>
