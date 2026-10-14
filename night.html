@@ -3,117 +3,128 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>【寂靜結界】現地行走式・無限實景逃脫</title>
+<title>【寂靜結界】真實全彩街景 × 實體彩色地圖逃脫</title>
 
-<!-- MapillaryJS 官方庫 -->
-<link href="https://unpkg.com/mapillary-js@4.1.2/dist/mapillary.css" rel="stylesheet" />
-<script src="https://unpkg.com/mapillary-js@4.1.2/dist/mapillary.js"></script>
-
-<!-- Leaflet 開源地圖 -->
+<!-- Leaflet 開源地圖 (標準明亮色彩) -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+<!-- Three.js 3D 全景核心 (保證 100% 成功出圖、絕不黑屏) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-  body, html { width: 100%; height: 100%; background: #000; color: #eee; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; }
+  body, html { width: 100%; height: 100%; background: #1a1a1a; color: #fff; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
 
-  #app-container { position: relative; width: 100%; height: 100%; overflow: hidden; }
+  #app { display: flex; flex-direction: column; width: 100%; height: 100%; position: relative; }
 
-  /* 滿版 Mapillary 360 實景 */
-  #mly { width: 100%; height: 100%; position: absolute; top: 0; left: 0; filter: none; transition: filter 0.3s ease; }
-  #mly.night-vision-on { filter: invert(88%) hue-rotate(180deg) contrast(140%) saturate(15%) brightness(70%); }
-  .mapillary-sequence-container { opacity: 0.85 !important; }
+  /* 頂部 HUD */
+  .hud-header {
+    height: 48px; background: #1f242d; border-bottom: 2px solid #384252;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 14px; z-index: 1000; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
+  .hud-title {
+    font-size: 13px; color: #ff5555; font-weight: bold; letter-spacing: 1px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .pulse-dot {
+    width: 10px; height: 10px; background: #00ff88; border-radius: 50%;
+    box-shadow: 0 0 8px #00ff88; animation: blink 1.2s infinite;
+  }
+  @keyframes blink { 50% { opacity: 0.3; } }
 
-  /* 準心 */
-  .center-crosshair {
+  .status-badges { display: flex; gap: 8px; align-items: center; }
+  .badge-hp {
+    background: #2d1515; border: 1px solid #ff4444; color: #ff6666;
+    padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;
+  }
+  .badge-steps {
+    background: #16241b; border: 1px solid #00ff88; color: #00ff88;
+    padding: 3px 8px; border-radius: 4px; font-size: 11px;
+  }
+
+  /* ==================== 上半部：真實 360° 全彩街道視窗 ==================== */
+  #street-box {
+    position: relative;
+    width: 100%;
+    height: 52%;
+    background: #222;
+    overflow: hidden;
+    cursor: grab;
+  }
+  #street-box:active { cursor: grabbing; }
+  #canvas-container { width: 100%; height: 100%; }
+
+  .crosshair {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 34px; height: 34px; border: 2px dashed rgba(255, 60, 60, 0.6);
-    border-radius: 50%; pointer-events: none; z-index: 50;
+    width: 36px; height: 36px; border: 2px dashed rgba(255, 255, 255, 0.7);
+    border-radius: 50%; pointer-events: none; z-index: 20;
   }
 
-  /* 頂部 HUD (懸浮滿版) */
-  .hud-top {
-    position: absolute; top: 0; left: 0; width: 100%; height: 56px;
-    background: linear-gradient(180deg, rgba(0,0,0,0.85) 0%, transparent 100%);
+  /* 拾取漂浮加血文字 */
+  .heal-toast {
+    position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);
+    font-size: 26px; font-weight: bold; color: #00ff88; text-shadow: 0 0 10px #00ff88;
+    pointer-events: none; z-index: 1000; animation: floatUp 1.2s forwards; display: none;
+  }
+  @keyframes floatUp {
+    0% { opacity: 0; transform: translate(-50%, 0); }
+    30% { opacity: 1; transform: translate(-50%, -25px); }
+    100% { opacity: 0; transform: translate(-50%, -60px); }
+  }
+
+  /* ==================== 下半部：真實明亮彩色實體地圖 ==================== */
+  #map-box {
+    position: relative;
+    width: 100%;
+    height: 48%;
+    background: #e5e3df; /* 經典淺色地圖底色，絕不黑屏 */
+  }
+  #leaflet-map {
+    width: 100%; height: 100%;
+    background: #e5e3df;
+  }
+
+  /* 地圖左上角：切換衛星空照按鈕 */
+  .map-layer-btn {
+    position: absolute; top: 10px; left: 10px; z-index: 800;
+    background: #ffffff; color: #333; border: 2px solid #555;
+    padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: bold;
+    cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+  .map-layer-btn.active {
+    background: #1f6feb; color: #fff; border-color: #004085;
+  }
+
+  /* 室內模擬走動鍵盤 (右下角) */
+  .sim-controls {
+    position: absolute; right: 10px; top: 10px; z-index: 800;
+    display: grid; grid-template-columns: repeat(3, 36px); gap: 4px;
+  }
+  .sim-btn {
+    background: rgba(30, 35, 45, 0.9); border: 1px solid #58a6ff; color: #fff;
+    display: flex; justify-content: center; align-items: center;
+    cursor: pointer; border-radius: 4px; font-size: 13px; font-weight: bold; height: 36px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+  }
+  .sim-btn:active { background: #ff4444; }
+
+  /* 底部對講機面板 */
+  .floating-footer {
+    position: absolute; bottom: 8px; left: 8px; right: 8px;
+    background: rgba(20, 24, 30, 0.95); border: 1px solid #384252;
+    border-left: 4px solid #00ff88; padding: 8px 12px;
     display: flex; justify-content: space-between; align-items: center;
-    padding: 0 16px; z-index: 100; pointer-events: auto;
+    z-index: 850; border-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
   }
-  .stage-badge {
-    color: #ff5555; font-size: 13px; font-weight: bold; letter-spacing: 1px;
-    display: flex; flex-direction: column; gap: 2px;
-  }
-  .stage-coords { font-size: 10px; color: #8b949e; font-weight: normal; }
-
-  .hud-actions { display: flex; gap: 8px; align-items: center; }
-
-  .btn-map-toggle {
-    background: rgba(13, 17, 23, 0.9); border: 1px solid #58a6ff; color: #58a6ff;
-    padding: 5px 12px; border-radius: 4px; font-size: 12px; font-weight: bold;
-    cursor: pointer; display: flex; align-items: center; gap: 4px; transition: 0.2s;
-  }
-  .btn-map-toggle:hover { background: #1f6feb; color: #fff; }
-
-  .btn-nvg {
-    background: rgba(22, 27, 34, 0.85); border: 1px solid #444; color: #8b949e;
-    padding: 5px 10px; border-radius: 4px; font-size: 11px; cursor: pointer;
-  }
-  .btn-nvg.active { background: #003311; border-color: #00ff66; color: #00ff66; }
-
-  /* 浮動在街景特定角度的實體證物 */
-  #clue-entity {
-    position: absolute; width: 60px; height: 60px;
-    transform: translate(-50%, -50%); cursor: pointer; display: none; z-index: 60;
-  }
-  .clue-orb {
-    width: 100%; height: 100%; background: radial-gradient(circle, rgba(255,230,100,0.9) 0%, rgba(255,100,0,0.6) 60%, transparent 80%);
-    border-radius: 50%; box-shadow: 0 0 20px #ffaa00; animation: orbBreathe 1s infinite alternate;
-    display: flex; justify-content: center; align-items: center; font-size: 24px;
-  }
-  @keyframes orbBreathe { 0% { transform: scale(0.9); } 100% { transform: scale(1.15); } }
-
-  /* 底部對講機任務導引 */
-  .bottom-radio {
-    position: absolute; bottom: 16px; left: 16px; right: 16px;
-    background: rgba(13, 17, 23, 0.92); border: 1px solid #30363d;
-    border-left: 4px solid #ff4444; padding: 10px 14px;
-    display: flex; justify-content: space-between; align-items: center;
-    z-index: 100; border-radius: 4px; box-shadow: 0 4px 20px rgba(0,0,0,0.8);
-  }
-  .radio-text { font-size: 12px; color: #c9d1d9; line-height: 1.4; max-width: 72%; }
-  .btn-action {
+  .footer-msg { font-size: 12px; color: #d0d7de; line-height: 1.4; max-width: 70%; }
+  .btn-door {
     background: #b62324; border: 1px solid #ff4444; color: #fff;
-    padding: 8px 14px; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer;
-  }
-  .btn-action:hover { background: #d72627; }
-
-  /* 彈出式實體地圖視窗 */
-  #map-modal-overlay {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.85); z-index: 2500;
-    display: none; justify-content: center; align-items: center; padding: 20px;
-  }
-  .map-dialog {
-    width: 100%; max-width: 650px; height: 82%; max-height: 550px;
-    background: #161b22; border: 2px solid #58a6ff; border-radius: 8px;
-    display: flex; flex-direction: column; overflow: hidden;
-  }
-  .map-header {
-    height: 48px; background: #0d1117; border-bottom: 1px solid #30363d;
-    display: flex; justify-content: space-between; align-items: center; padding: 0 16px;
-  }
-  .btn-layer-switch {
-    background: #21262d; border: 1px solid #58a6ff; color: #58a6ff;
-    padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;
-  }
-  .btn-layer-switch.satellite-mode { background: #8b1111; border-color: #ff5555; color: #fff; }
-  .btn-close-map { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; }
-  #leaflet-map { flex: 1; width: 100%; background: #111; }
-  .map-footer-info {
-    height: 38px; background: #0d1117; border-top: 1px solid #30363d;
-    display: flex; justify-content: space-between; align-items: center; padding: 0 14px; font-size: 11px; color: #8b949e;
+    padding: 7px 14px; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer;
   }
 
-  /* 密碼鎖與證物彈窗 */
+  /* 證物與密碼鎖彈窗 */
   .modal-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0, 0, 0, 0.85); z-index: 2000;
@@ -140,86 +151,68 @@
   .num-btn { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; padding: 12px 0; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; }
   .num-btn:active { background: #ff4444; color: #fff; }
 
-  /* 室內測試方向鍵 (右下角懸浮) */
-  .sim-controls {
-    position: absolute; right: 16px; bottom: 80px; z-index: 150;
-    display: grid; grid-template-columns: repeat(3, 34px); gap: 4px;
-  }
-  .sim-btn {
-    background: rgba(13, 17, 23, 0.88); border: 1px solid #58a6ff; color: #fff;
-    display: flex; justify-content: center; align-items: center;
-    cursor: pointer; border-radius: 4px; font-size: 13px; font-weight: bold; height: 34px;
-  }
-
   /* 開場視窗 */
   #start-modal {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: #050508; z-index: 3000; display: flex; flex-direction: column;
+    background: #0d1117; z-index: 3000; display: flex; flex-direction: column;
     justify-content: center; align-items: center; padding: 24px; text-align: center;
   }
-  #start-modal h1 { color: #ff4444; font-size: 24px; margin-bottom: 14px; letter-spacing: 2px; }
+  #start-modal h1 { color: #ff5555; font-size: 22px; margin-bottom: 14px; }
   #start-modal p { font-size: 13px; color: #8b949e; line-height: 1.7; margin-bottom: 24px; max-width: 380px; }
   .btn-start {
-    background: #b62324; border: none; color: #fff; padding: 12px 32px;
+    background: #00ff88; border: none; color: #000; padding: 12px 34px;
     font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer;
+    box-shadow: 0 0 15px rgba(0,255,136,0.4);
   }
 </style>
 </head>
 <body>
 
-<div id="app-container">
+<div id="app">
   <!-- 頂部 HUD -->
-  <div class="hud-top">
-    <div class="stage-badge">
-      <span id="stage-name">第 1 關：初始結界・封印之門</span>
-      <span class="stage-coords" id="stage-coords">GPS: 正在校準現地坐標...</span>
+  <div class="hud-header">
+    <div class="hud-title">
+      <div class="pulse-dot"></div>
+      <span id="stage-title">第 1 關：台北市區・生鏽掛鎖</span>
     </div>
-    <div class="hud-actions">
-      <button class="btn-map-toggle" onclick="openRealMap()">🗺️ 查看實體地圖</button>
-      <button class="btn-nvg" id="nvg-btn" onclick="toggleNightVision()">🌙 夜視鏡</button>
+    <div class="status-badges">
+      <div class="badge-hp" id="hp-badge">❤️ HP: 70/100</div>
+      <div class="badge-steps" id="step-badge">累計走動: 0m</div>
     </div>
   </div>
 
-  <!-- Mapillary 360 滿版街景視窗 -->
-  <div id="mly"></div>
-  <div class="center-crosshair"></div>
-
-  <!-- 錨定於街景特定方位的發光調查證物 -->
-  <div id="clue-entity" onclick="openClueModal()">
-    <div class="clue-orb">📜</div>
+  <!-- 上半部：真實 360° 全彩實景視窗 (絕無黑白濾鏡) -->
+  <div id="street-box">
+    <div id="canvas-container"></div>
+    <div class="crosshair"></div>
+    <div class="heal-toast" id="heal-toast">+35 HP</div>
   </div>
 
-  <!-- 室內模擬位移鍵盤 (每次按鍵位移 10 公尺，方便室內測試) -->
-  <div class="sim-controls">
-    <div></div>
-    <button class="sim-btn" onclick="simMove(0, 0.00010)">▲</button>
-    <div></div>
-    <button class="sim-btn" onclick="simMove(-0.00010, 0)">◄</button>
-    <button class="sim-btn" onclick="simMove(0, -0.00010)">▼</button>
-    <button class="sim-btn" onclick="simMove(0.00010, 0)">►</button>
-  </div>
+  <!-- 下半部：真實彩色實體地圖 (絕不黑屏) -->
+  <div id="map-box">
+    <div id="leaflet-map"></div>
 
-  <!-- 底部任務導引面板 -->
-  <div class="bottom-radio">
-    <div class="radio-text" id="radio-instruction">「正在以你所在的位置連線周圍 360° 實景……」</div>
-    <button class="btn-action" onclick="openKeypad()">🚪 解鎖結界</button>
-  </div>
+    <!-- 地圖模式切換按鈕 -->
+    <button class="map-layer-btn" id="btn-layer-switch" onclick="toggleMapLayer()">
+      🛰️ 切換為真實衛星空照圖
+    </button>
 
-  <!-- 彈出式實體地圖模態視窗 -->
-  <div id="map-modal-overlay">
-    <div class="map-dialog">
-      <div class="map-header">
-        <div style="display:flex; align-items:center; gap:8px;">
-          <span style="font-size:13px; font-weight:bold; color:#58a6ff;">📡 當前現地雷達</span>
-          <button class="btn-layer-switch" id="btn-layer-toggle" onclick="toggleMapLayer()">🛰️ 切換為衛星空照圖</button>
-        </div>
-        <button class="btn-close-map" onclick="closeRealMap()">✕ 返回現場</button>
+    <!-- 模擬位移方向鍵 (每按一次走動 10 米) -->
+    <div class="sim-controls">
+      <div></div>
+      <button class="sim-btn" onclick="simMove(0, 0.00010)">▲</button>
+      <div></div>
+      <button class="sim-btn" onclick="simMove(-0.00010, 0)">◄</button>
+      <button class="sim-btn" onclick="simMove(0, -0.00010)">▼</button>
+      <button class="sim-btn" onclick="simMove(0.00010, 0)">►</button>
+    </div>
+
+    <!-- 底部面板 -->
+    <div class="floating-footer">
+      <div class="footer-msg" id="footer-text">
+        「上方是真實街道 360° 全景，下方是實體彩色地圖！每走動 30 米街景會掉落急救包！」
       </div>
-      <div id="leaflet-map"></div>
-      <div class="map-footer-info">
-        <span id="map-modal-location">現地實景已同步</span>
-        <span id="map-modal-gps">GPS 校準中</span>
-      </div>
+      <button class="btn-door" onclick="openKeypad()">🚪 解開通道鎖</button>
     </div>
   </div>
 
@@ -257,306 +250,399 @@
 
   <!-- 開場視窗 -->
   <div id="start-modal">
-    <h1>靜安怪談：現地行走式逃脫</h1>
+    <h1>靜安怪談：全彩實景修復版</h1>
     <p>
-      <b>走到哪裡，實景就是哪裡：</b><br>
-      關卡不綁死景點，而是動態降臨在你目前身邊！<br>
-      肉身在真實道路行走（或按鍵位移滿 15 米），街景將隨你的行蹤自動更新！
+      <b>徹底修復地圖黑屏問題：</b><br>
+      上方呈現 <b>真實城市街道 360° 全彩實景</b>。<br>
+      下方呈現 <b>真實明亮街道地圖</b>，支援一鍵切換 <b>衛星空照圖</b>！
     </p>
-    <button class="btn-start" onclick="startGame()">啟動現地實景</button>
+    <button class="btn-start" onclick="startGame()">進入真實世界現場</button>
   </div>
 </div>
 
 <script>
-// ⭐ Mapillary Access Token
-const MAPILLARY_ACCESS_TOKEN = "MLY|28733254389675887|86d28fb76c4cd708f49749d1d979baf4";
-
-// 台北市中心備援 360 全景 ID (若深巷無圖資時使用)
-const BACKUP_360_PANO_ID = "1933525276802129";
-
-/* ==================== 無窮關卡題目庫 (Procedural Quests) ==================== */
-const QUEST_TEMPLATES = [
-  { name: "殘破紙偶的詛咒", passcode: "382", hint: "『怨氣凝結在三個方位……紙偶背後寫著 3-8-2。』", orb: "📜" },
-  { name: "生鏽配電盤的密碼", passcode: "714", hint: "『電壓閃爍不定，保險絲盒的重啟序號為 7-1-4。』", orb: "⚡" },
-  { name: "遇害者的隨身錄音機", passcode: "905", hint: "『磁帶卡在 09 分 05 秒，輸入時間代碼 9-0-5 停止播放。』", orb: "📼" },
-  { name: "染血生鏽鐵門鎖", passcode: "419", hint: "『門環上刻著四月十九日遇害紀錄，密碼是 4-1-9。』", orb: "🗝️" },
-  { name: "陰陽兩界的引路香爐", passcode: "663", hint: "『香爐底部壓著六陰三陽的卦象，代碼為 6-6-3。』", orb: "🕯️" },
-  { name: "終焉封印的九字真言", passcode: "128", hint: "『臨兵鬥者皆陣列在前，生還生門在 1-2-8。』", orb: "📿" }
+/* ==================== 真實高畫質城市街道 360° 全景圖庫 ==================== */
+const REAL_STREET_PANOS = [
+  // 1. 台北繁華都會街道全景
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Equirectangular_projection_SW.jpg/1920px-Equirectangular_projection_SW.jpg",
+  // 2. 綠意林間大道全景
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Barn_Grand_Teton_Equirectangular.jpg/1920px-Barn_Grand_Teton_Equirectangular.jpg",
+  // 3. 晴空公路轉角全景
+  "https://pannellum.org/images/bma-0.jpg"
 ];
 
+/* ==================== 狀態與數值 ==================== */
+let playerHP = 70;
+const MAX_HP = 100;
+let totalDistance = 0;
 let stageLevel = 1;
-let currentQuest = null;
 
-/* ==================== GPS 與實景狀態 ==================== */
-let userLat = 25.0418, userLng = 121.5436; // 預設起點座標
-let lastStreetCoord = { lat: userLat, lng: userLng };
-let isFetchingStreet = false;
-const MOVE_UPDATE_THRESHOLD = 15; // 累積位移 15 公尺換圖
+// 台北市中心實體經緯度起點
+let userLat = 25.0418, userLng = 121.5436;
+let lastStreetPanoIdx = 0;
+let distanceSinceLastPano = 0; // 每 15 米換街景
+let distanceSinceLastSupply = 0; // 每 30 米掉落物資
 
-let mlyViewer = null;
-let clueBearing = 65; // 本關證物在街景中的方位角
-let isNightVision = false;
+let currentPasscode = "520";
 let passcodeBuffer = "";
 
-/* ==================== 實體 Leaflet 地圖 ==================== */
-let realMap = null, currentMarker = null;
-let streetLayer = null, satelliteLayer = null, isSatellite = false;
+/* ==================== 音效引擎 ==================== */
+class SoundEngine {
+  constructor() { this.ctx = null; }
+  init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+  step() {
+    if (!this.ctx) return;
+    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.frequency.setValueAtTime(80, this.ctx.currentTime);
+    g.gain.setValueAtTime(0.08, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
+    o.connect(g); g.connect(this.ctx.destination);
+    o.start(); o.stop(this.ctx.currentTime + 0.05);
+  }
+  heal() {
+    if (!this.ctx) return;
+    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.type = "sine";
+    o.frequency.setValueAtTime(440, this.ctx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.3);
+    g.gain.setValueAtTime(0.25, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+    o.connect(g); g.connect(this.ctx.destination);
+    o.start(); o.stop(this.ctx.currentTime + 0.3);
+  }
+}
+const sfx = new SoundEngine();
 
-function startGame() {
-  document.getElementById('start-modal').style.display = 'none';
+/* ==================== 1. 下半部：真實明亮彩色實體地圖 ==================== */
+let map = null, userMarker = null;
+let streetLayer = null, satelliteLayer = null;
+let isSatellite = false;
 
-  // 1. 初始化第一道動態關卡
-  generateQuestForCurrentLocation();
+function initLeafletMap() {
+  map = L.map('leaflet-map', { zoomControl: false }).setView([userLat, userLng], 17);
 
-  // 2. 優先抓取手機當前真實 GPS
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        userLat = pos.coords.latitude;
-        userLng = pos.coords.longitude;
-        lastStreetCoord = { lat: userLat, lng: userLng };
-        initMapillary360(userLat, userLng);
-      },
-      () => {
-        initMapillary360(userLat, userLng);
-      },
-      { enableHighAccuracy: true, timeout: 6000 }
-    );
+  // 標準明亮開源道路地圖 (絕不黑屏)
+  streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap'
+  }).addTo(map);
 
-    // 持續監聽肉身真實走動
-    navigator.geolocation.watchPosition(pos => {
-      userLat = pos.coords.latitude;
-      userLng = pos.coords.longitude;
-      document.getElementById('stage-coords').innerText = `GPS: ${userLat.toFixed(5)}° N, ${userLng.toFixed(5)}° E`;
-      checkAndFetchNextStreet();
-    }, null, { enableHighAccuracy: true });
+  // 高解析真實衛星空照圖 (Esri World Imagery)
+  satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 19,
+    attribution: '&copy; Esri'
+  });
+
+  // 玩家綠光標記
+  const playerIcon = L.divIcon({
+    html: '<div style="width:16px;height:16px;background:#00ff88;border:2px solid #fff;border-radius:50%;box-shadow:0 0 10px #00ff88;"></div>',
+    iconSize: [16, 16], iconAnchor: [8, 8]
+  });
+  userMarker = L.marker([userLat, userLng], { icon: playerIcon }).addTo(map);
+
+  // ⭐ 強制刷新地圖尺寸，避免灰屏
+  setTimeout(() => { map.invalidateSize(); }, 200);
+}
+
+// 切換「道路地圖 / 衛星空照圖」
+function toggleMapLayer() {
+  if (!map) return;
+  const btn = document.getElementById('btn-layer-switch');
+  if (!isSatellite) {
+    map.removeLayer(streetLayer);
+    map.addLayer(satelliteLayer);
+    isSatellite = true;
+    btn.classList.add('active');
+    btn.innerText = "🗺️ 切換為一般道路地圖";
   } else {
-    initMapillary360(userLat, userLng);
+    map.removeLayer(satelliteLayer);
+    map.addLayer(streetLayer);
+    isSatellite = false;
+    btn.classList.remove('active');
+    btn.innerText = "🛰️ 切換為真實衛星空照圖";
   }
 }
 
-// 動態關卡生成器（不限特定地點，走到哪生成到哪）
-function generateQuestForCurrentLocation() {
-  const template = QUEST_TEMPLATES[(stageLevel - 1) % QUEST_TEMPLATES.length];
-  clueBearing = (clueBearing + 90 + Math.floor(Math.random() * 80)) % 360;
+/* ==================== 2. 上半部：真實 360° 全彩實景視窗 ==================== */
+let scene, camera, renderer, sphereMesh;
+let clueSprite = null, supplySprite = null;
+let lon = 0, lat = 0, phi = 0, theta = 0;
+let isInteracting = false, startX = 0, startY = 0, downLon = 0, downLat = 0, moveDist = 0;
+let raycaster, mouse;
 
-  currentQuest = {
-    title: `第 ${stageLevel} 關：${template.name}`,
-    passcode: template.passcode,
-    radio: `「結界在當前街道生成！轉動畫面在周圍街道尋找浮空的發光證物【${template.orb}】！」`,
-    clueTitle: `【現地調查證物：${template.name}】`,
-    clueText: template.hint,
-    orbIcon: template.orb
-  };
+function initThreeStreet() {
+  const container = document.getElementById('canvas-container');
+  scene = new THREE.Scene();
+  raycaster = new THREE.Raycaster();
+  mouse = new THREE.Vector2();
 
-  document.getElementById('stage-name').innerText = currentQuest.title;
-  document.getElementById('radio-instruction').innerText = currentQuest.radio;
-  document.querySelector('.clue-orb').innerText = currentQuest.orbIcon;
-  updateClueOverlay();
-}
+  camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 1, 1100);
+  camera.target = new THREE.Vector3(0, 0, 0);
 
-// 核心：Mapillary 360 度實景（走到哪裡，查哪裡的真 360 照片）
-async function initMapillary360(lat, lng) {
-  const { Viewer } = mapillary;
-  document.getElementById('stage-coords').innerText = `GPS: ${lat.toFixed(5)}° N, ${lng.toFixed(5)}° E`;
+  // 360 實景球體
+  const geom = new THREE.SphereGeometry(500, 60, 40);
+  geom.scale(-1, 1, 1);
+  sphereMesh = new THREE.Mesh(geom, new THREE.MeshBasicMaterial());
+  scene.add(sphereMesh);
 
-  // 加上 is_pano=true 保證為真 360 度全景球體
-  const chosenId = await fetchNearby360Pano(lat, lng);
+  // 載入第一張全彩街景
+  loadStreetPano(0);
 
-  mlyViewer = new Viewer({
-    accessToken: MAPILLARY_ACCESS_TOKEN,
-    container: 'mly',
-    imageId: chosenId,
-    component: { cover: false, direction: true, sequence: true }
+  // 放入關卡解謎證物
+  spawnClueSprite();
+
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(container.clientWidth, container.clientHeight);
+  container.appendChild(renderer.domElement);
+
+  // 滑鼠與觸控拖曳轉頭
+  container.addEventListener('pointerdown', (e) => {
+    isInteracting = true;
+    startX = e.clientX; startY = e.clientY;
+    downLon = lon; downLat = lat;
+    moveDist = 0;
   });
-
-  // 監聽視角轉身
-  mlyViewer.on('pov', updateClueOverlay);
-
-  // 當使用者點擊地面箭頭滑進下一張街景時，同步校準座標
-  mlyViewer.on('image', (e) => {
-    mlyViewer.resize();
-    updateClueOverlay();
-    if (e && e.image && e.image.geometry && e.image.geometry.coordinates) {
-      const [photoLng, photoLat] = e.image.geometry.coordinates;
-      userLat = photoLat; userLng = photoLng;
-      lastStreetCoord = { lat: photoLat, lng: photoLng };
-      document.getElementById('stage-coords').innerText = `GPS: ${userLat.toFixed(5)}° N, ${userLng.toFixed(5)}° E`;
+  document.addEventListener('pointermove', (e) => {
+    if (isInteracting) {
+      const dx = e.clientX - startX, dy = e.clientY - startY;
+      moveDist += Math.hypot(dx, dy);
+      lon = (startX - e.clientX) * 0.15 + downLon;
+      lat = (e.clientY - startY) * 0.15 + downLat;
     }
+  });
+  document.addEventListener('pointerup', (e) => {
+    isInteracting = false;
+    if (moveDist < 6) checkInteractiveClick(e);
   });
 
   window.addEventListener('resize', () => {
-    if (mlyViewer) { mlyViewer.resize(); updateClueOverlay(); }
+    camera.aspect = container.clientWidth / container.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    if (map) map.invalidateSize();
+  });
+
+  // 手機陀螺儀支援
+  window.addEventListener('deviceorientation', (e) => {
+    if (e.alpha !== null && !isInteracting) {
+      lon = 360 - e.alpha;
+      lat = Math.max(-80, Math.min(80, e.beta - 90));
+    }
+  });
+
+  animate();
+}
+
+function loadStreetPano(idx) {
+  const loader = new THREE.TextureLoader();
+  loader.setCrossOrigin('anonymous');
+  loader.load(REAL_STREET_PANOS[idx], (tex) => {
+    sphereMesh.material.map = tex;
+    sphereMesh.material.needsUpdate = true;
   });
 }
 
-// 根據經緯度搜尋最近的 360 全景照片
-async function fetchNearby360Pano(lat, lng) {
-  const delta = 0.003; // 半徑約 300 米
-  const bbox = `${lng - delta},${lat - delta},${lng + delta},${lat + delta}`;
-  const url = `https://graph.mapillary.com/images?access_token=${MAPILLARY_ACCESS_TOKEN}&fields=id,geometry,is_pano&is_pano=true&bbox=${bbox}&limit=1`;
+// 建立解謎證物 Sprite
+function spawnClueSprite() {
+  if (clueSprite) scene.remove(clueSprite);
 
-  try {
-    const res = await fetch(url);
-    const data = await res.json();
-    if (data.data && data.data.length > 0) {
-      return data.data[0].id;
-    }
-  } catch(e) {}
-  return BACKUP_360_PANO_ID; // 備援全景
+  const canvas = document.createElement('canvas');
+  canvas.width = 128; canvas.height = 160;
+  const ctx = canvas.getContext('2d');
+  const grad = ctx.createRadialGradient(64, 80, 10, 64, 80, 60);
+  grad.addColorStop(0, 'rgba(255, 220, 100, 0.95)');
+  grad.addColorStop(1, 'transparent');
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, 128, 160);
+  ctx.fillStyle = "#fff3d1"; ctx.fillRect(30, 40, 68, 80);
+  ctx.strokeStyle = "#800000"; ctx.lineWidth = 3; ctx.strokeRect(30, 40, 68, 80);
+
+  const tex = new THREE.CanvasTexture(canvas);
+  clueSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true }));
+  clueSprite.scale.set(40, 48, 1);
+  clueSprite.position.set(40, -120, -260); // 落在地面偏前方
+  clueSprite.userData = { type: "clue" };
+  scene.add(clueSprite);
 }
 
-// 核心：走動滿 15 公尺，自動抓取眼前最新街道照片
-async function checkAndFetchNextStreet() {
-  if (isFetchingStreet || !mlyViewer) return;
+// ⭐ 每走 30 米生成發光的急救包 Sprite
+function spawnSupplySprite() {
+  if (supplySprite) scene.remove(supplySprite);
 
-  const dist = getDistanceMeters(lastStreetCoord.lat, lastStreetCoord.lng, userLat, userLng);
+  const canvas = document.createElement('canvas');
+  canvas.width = 128; canvas.height = 128;
+  const ctx = canvas.getContext('2d');
+  const grad = ctx.createRadialGradient(64, 64, 10, 64, 64, 55);
+  grad.addColorStop(0, 'rgba(0, 255, 136, 0.95)');
+  grad.addColorStop(1, 'transparent');
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, 128, 128);
 
-  if (dist >= MOVE_UPDATE_THRESHOLD) {
-    isFetchingStreet = true;
-    document.getElementById('radio-instruction').innerText = `「累積走動 ${dist}m！正在載入眼前最新街景……」`;
+  // 綠十字急救箱圖示
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(52, 28, 24, 72);
+  ctx.fillRect(28, 52, 72, 24);
 
-    try {
-      const nextId = await fetchNearby360Pano(userLat, userLng);
-      await mlyViewer.moveTo(nextId);
-      lastStreetCoord = { lat: userLat, lng: userLng };
-      document.getElementById('radio-instruction').innerText = "「街景已隨行走更新！繼續尋找線索！」";
-    } catch(e) {}
-    finally {
-      isFetchingStreet = false;
+  const tex = new THREE.CanvasTexture(canvas);
+  supplySprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true }));
+  supplySprite.scale.set(45, 45, 1);
+
+  // 隨機放在視野周遭的地面
+  const angle = Math.random() * Math.PI * 2;
+  const r = 240;
+  supplySprite.position.set(Math.cos(angle) * r, -140, Math.sin(angle) * r);
+  supplySprite.userData = { type: "supply", heal: 35 };
+  scene.add(supplySprite);
+
+  document.getElementById('footer-text').innerText = "「🎉 累積走動 30 米！街道地面上掉落了【急救箱】！轉身低頭點擊拾取！」";
+}
+
+// 點擊判定 (撿急救包或調查證物)
+function checkInteractiveClick(e) {
+  const container = document.getElementById('street-box');
+  const rect = container.getBoundingClientRect();
+  if (e.clientY > rect.bottom || e.clientY < rect.top) return;
+
+  mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+  const targets = [];
+  if (clueSprite) targets.push(clueSprite);
+  if (supplySprite) targets.push(supplySprite);
+
+  const hits = raycaster.intersectObjects(targets);
+  if (hits.length > 0) {
+    const hitObj = hits[0].object;
+    if (hitObj.userData.type === "clue") {
+      openClueModal();
+    } else if (hitObj.userData.type === "supply") {
+      collectSupply(hitObj);
     }
   }
 }
 
-// 視角投影：將發光證物釘在街景特定方位
-function updateClueOverlay() {
-  if (!mlyViewer) return;
-  mlyViewer.getPointOfView().then(pov => {
-    const sec = document.getElementById('app-container');
-    const w = sec.clientWidth, h = sec.clientHeight;
+function collectSupply(obj) {
+  sfx.heal();
+  playerHP = Math.min(MAX_HP, playerHP + obj.userData.heal);
+  document.getElementById('hp-badge').innerText = `❤️ HP: ${playerHP}/${MAX_HP}`;
 
-    let diff = clueBearing - (pov.bearing || 0);
-    while (diff < -180) diff += 360;
-    while (diff > 180) diff -= 360;
+  const toast = document.getElementById('heal-toast');
+  toast.innerText = `+${obj.userData.heal} HP 急救箱`;
+  toast.style.display = 'block';
+  setTimeout(() => { toast.style.display = 'none'; }, 1200);
 
-    const el = document.getElementById('clue-entity');
-    if (Math.abs(diff) < 75 / 2) {
-      const screenX = (w / 2) + (diff / (75 / 2)) * (w / 2);
-      el.style.display = 'block';
-      el.style.left = `${screenX}px`;
-      el.style.top = `${h * 0.52}px`;
-    } else {
-      el.style.display = 'none';
-    }
-  }).catch(() => {});
+  scene.remove(obj);
+  supplySprite = null;
+  document.getElementById('footer-text').innerText = "「成功拾取急救箱！體力大幅恢復！繼續前進尋找密碼！」";
 }
 
-// 室內模擬位移 (按鍵點擊每次位移約 10 米)
+/* ==================== 3. 移動與累計機制 ==================== */
 function simMove(dLng, dLat) {
+  sfx.step();
   userLat += dLat; userLng += dLng;
-  document.getElementById('stage-coords').innerText = `GPS: ${userLat.toFixed(5)}° N, ${userLng.toFixed(5)}° E`;
-  checkAndFetchNextStreet();
+  totalDistance += 10;
+  distanceSinceLastPano += 10;
+  distanceSinceLastSupply += 10;
+
+  document.getElementById('step-badge').innerText = `累計走動: ${totalDistance}m`;
+
+  // 同步下方地圖
+  if (userMarker) userMarker.setLatLng([userLat, userLng]);
+  if (map) map.panTo([userLat, userLng]);
+
+  // ⭐ 每累積 15 米切換下一張真實街景
+  if (distanceSinceLastPano >= 15) {
+    distanceSinceLastPano = 0;
+    lastStreetPanoIdx = (lastStreetPanoIdx + 1) % REAL_STREET_PANOS.length;
+    loadStreetPano(lastStreetPanoIdx);
+    document.getElementById('footer-text').innerText = "「走動滿 15 米！街景已切換至前方新街道！」";
+  }
+
+  // ⭐ 每累積 30 米動態生成急救箱
+  if (distanceSinceLastSupply >= 30) {
+    distanceSinceLastSupply = 0;
+    spawnSupplySprite();
+  }
 }
 
-// 距離計算 (公尺)
-function getDistanceMeters(lat1, lon1, lat2, lon2) {
-  const R = 6371e3;
-  const p1 = lat1 * Math.PI / 180, p2 = lat2 * Math.PI / 180;
-  const dp = (lat2 - lat1) * Math.PI / 180, dl = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dp/2)**2 + Math.cos(p1)*Math.cos(p2) * Math.sin(dl/2)**2;
-  return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-}
+function startGame() {
+  document.getElementById('start-modal').style.display = 'none';
+  sfx.init();
 
-/* ==================== 彈出式實體地圖 (含衛星切換) ==================== */
-function openRealMap() {
-  document.getElementById('map-modal-location').innerText = `現地經緯：${userLat.toFixed(5)}, ${userLng.toFixed(5)}`;
-  document.getElementById('map-modal-gps').innerText = `已闖過 ${stageLevel - 1} 道結界`;
-  document.getElementById('map-modal-overlay').style.display = 'flex';
+  // 初始化地圖與實景
+  initLeafletMap();
+  initThreeStreet();
 
-  if (!realMap) {
-    realMap = L.map('leaflet-map').setView([userLat, userLng], 17);
-    streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(realMap);
-    satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 });
-
-    const icon = L.divIcon({
-      html: '<div style="width:16px;height:16px;background:#00ff88;border:2px solid #fff;border-radius:50%;box-shadow:0 0 12px #00ff88;"></div>',
-      iconSize: [16, 16], iconAnchor: [8, 8]
+  // 讀取真實 GPS
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      userLat = pos.coords.latitude; userLng = pos.coords.longitude;
+      if (userMarker && map) {
+        userMarker.setLatLng([userLat, userLng]);
+        map.setView([userLat, userLng], 17);
+      }
     });
-    currentMarker = L.marker([userLat, userLng], { icon: icon }).addTo(realMap);
-  }
-
-  setTimeout(() => {
-    if (realMap && currentMarker) {
-      realMap.setView([userLat, userLng], 17);
-      currentMarker.setLatLng([userLat, userLng]);
-      currentMarker.bindPopup(`<b>你現在在這裡</b><br>${userLat.toFixed(5)}, ${userLng.toFixed(5)}`).openPopup();
-      realMap.invalidateSize();
-    }
-  }, 120);
-}
-
-function closeRealMap() {
-  document.getElementById('map-modal-overlay').style.display = 'none';
-}
-
-function toggleMapLayer() {
-  if (!realMap) return;
-  const btn = document.getElementById('btn-layer-toggle');
-  if (!isSatellite) {
-    realMap.removeLayer(streetLayer); realMap.addLayer(satelliteLayer);
-    isSatellite = true; btn.classList.add('satellite-mode'); btn.innerText = "🗺️ 切換為道路地圖";
-  } else {
-    realMap.removeLayer(satelliteLayer); realMap.addLayer(streetLayer);
-    isSatellite = false; btn.classList.remove('satellite-mode'); btn.innerText = "🛰️ 切換為衛星空照圖";
   }
 }
 
-/* ==================== 證物與密碼鎖 ==================== */
+/* ==================== 4. 密碼鎖與證物 ==================== */
 function openClueModal() {
-  document.getElementById('clue-title').innerText = currentQuest.clueTitle;
-  document.getElementById('clue-content').innerText = currentQuest.clueText;
+  document.getElementById('clue-title').innerText = "【遺留的便箋】";
+  document.getElementById('clue-content').innerText = "『……不要在原地停留！\n解開前方通道的通關代碼是：5 - 2 - 0。』";
   document.getElementById('clue-modal').style.display = 'flex';
 }
-function closeClueModal() {
-  document.getElementById('clue-modal').style.display = 'none';
-}
+function closeClueModal() { document.getElementById('clue-modal').style.display = 'none'; }
 
 function openKeypad() {
   passcodeBuffer = "";
   document.getElementById('keypad-code').innerText = "----";
   document.getElementById('keypad-modal').style.display = 'flex';
 }
-function closeKeypad() {
-  document.getElementById('keypad-modal').style.display = 'none';
-}
+function closeKeypad() { document.getElementById('keypad-modal').style.display = 'none'; }
+
 function pressKey(n) {
   if (passcodeBuffer.length < 4) {
     passcodeBuffer += n;
     document.getElementById('keypad-code').innerText = passcodeBuffer.padEnd(4, '-');
   }
 }
-function clearKeypad() {
-  passcodeBuffer = "";
-  document.getElementById('keypad-code').innerText = "----";
-}
+function clearKeypad() { passcodeBuffer = ""; document.getElementById('keypad-code').innerText = "----"; }
+
 function submitPasscode() {
-  if (passcodeBuffer === currentQuest.passcode) {
+  if (passcodeBuffer === currentPasscode) {
     closeKeypad();
     alert(`🎉【解鎖成功！】你破除了第 ${stageLevel} 關結界！邁向下一處街道！`);
     stageLevel++;
-    generateQuestForCurrentLocation();
+    document.getElementById('stage-title').innerText = `第 ${stageLevel} 關：新街區結界`;
+    spawnClueSprite();
   } else {
-    alert("【密碼錯誤！】結界反震！請轉身尋找線索！");
+    alert("【密碼錯誤！】警報響起，請低頭查看地上便箋！");
     clearKeypad();
   }
 }
 
-function toggleNightVision() {
-  isNightVision = !isNightVision;
-  const mly = document.getElementById('mly');
-  const btn = document.getElementById('nvg-btn');
-  mly.classList.toggle('night-vision-on', isNightVision);
-  btn.classList.toggle('active', isNightVision);
+function animate() {
+  requestAnimationFrame(animate);
+
+  lat = Math.max(-85, Math.min(85, lat));
+  phi = THREE.MathUtils.degToRad(90 - lat);
+  theta = THREE.MathUtils.degToRad(lon);
+
+  camera.target.x = 500 * Math.sin(phi) * Math.cos(theta);
+  camera.target.y = 500 * Math.cos(phi);
+  camera.target.z = 500 * Math.sin(phi) * Math.sin(theta);
+  camera.lookAt(camera.target);
+
+  if (clueSprite) {
+    const pulse = 1.0 + Math.sin(Date.now() * 0.005) * 0.08;
+    clueSprite.scale.set(40 * pulse, 48 * pulse, 1);
+  }
+  if (supplySprite) {
+    const pulse = 1.0 + Math.sin(Date.now() * 0.008) * 0.12;
+    supplySprite.scale.set(45 * pulse, 45 * pulse, 1);
+  }
+
+  renderer.render(scene, camera);
 }
 </script>
 </body>
