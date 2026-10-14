@@ -1,1253 +1,531 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>星穹遺落 - 橫向手遊 (大地圖與傳送切換版)</title>
-<style>
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    user-select: none;
-    -webkit-user-select: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-  body, html {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: #06090d;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  }
-
-  #game-wrapper {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #000;
-  }
-
-  #canvas {
-    display: block;
-    width: 100%;
-    height: 100%;
-  }
-
-  /* HUD 介面層 */
-  .hud-layer {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-  }
-
-  /* 左上角角色狀態欄 */
-  .player-status-badge {
-    position: absolute;
-    top: 10px;
-    left: 12px;
-    background: rgba(15, 22, 30, 0.9);
-    border: 2px solid #3c4f64;
-    border-radius: 28px;
-    padding: 5px 12px 5px 8px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.7);
-    pointer-events: auto;
-    cursor: pointer;
-  }
-  .avatar-circle {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    background: #253342;
-    border: 2px solid #f6ad55;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 1.5rem;
-  }
-  .bars-col {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    min-width: 120px;
-  }
-  .status-name-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.72rem;
-    font-weight: bold;
-    color: #edf2f7;
-  }
-  .hud-bar {
-    height: 6px;
-    background: #0c1218;
-    border-radius: 3px;
-    overflow: hidden;
-    position: relative;
-    border: 1px solid #233140;
-  }
-  .fill-hp { width: 100%; height: 100%; background: linear-gradient(90deg, #e53e3e, #fc8181); transition: width 0.1s; }
-  .fill-mp { width: 100%; height: 100%; background: linear-gradient(90deg, #3182ce, #63b3ed); transition: width 0.1s; }
-  .fill-exp { width: 0%; height: 100%; background: linear-gradient(90deg, #38a169, #68d391); transition: width 0.1s; }
-
-  /* 右上角地圖資訊與大世界地圖展開按鈕 */
-  .minimap-panel {
-    position: absolute;
-    top: 10px;
-    right: 12px;
-    background: rgba(15, 22, 30, 0.9);
-    border: 2px solid #3c4f64;
-    border-radius: 10px;
-    padding: 6px 8px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    pointer-events: auto;
-    gap: 4px;
-  }
-  .map-header-btn {
-    background: #2b394a;
-    border: 1px solid #f6ad55;
-    color: #f6ad55;
-    font-size: 0.72rem;
-    font-weight: bold;
-    padding: 3px 8px;
-    border-radius: 12px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    transition: 0.15s;
-  }
-  .map-header-btn:hover { background: #3b4d63; }
-  #minimap-canvas {
-    width: 96px;
-    height: 64px;
-    background: #0b1015;
-    border-radius: 4px;
-    border: 1px solid #2b3a4a;
-    display: block;
-  }
-
-  /* 左下角虛擬搖桿 */
-  .joystick-zone {
-    position: absolute;
-    bottom: 16px;
-    left: 16px;
-    width: 140px;
-    height: 140px;
-    pointer-events: auto;
-    touch-action: none;
-  }
-  .joystick-base {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.08);
-    border: 2px dashed rgba(255, 255, 255, 0.25);
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .joystick-stick {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: radial-gradient(circle, #4299e1 0%, #2b6cb0 100%);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-    border: 2px solid #bee3f8;
-    position: absolute;
-    top: 35px;
-    left: 35px;
-    pointer-events: none;
-    transition: transform 0.04s ease-out;
-  }
-
-  /* 右下角技能與動作鍵盤 */
-  .actions-cluster {
-    position: absolute;
-    bottom: 16px;
-    right: 16px;
-    width: 190px;
-    height: 190px;
-    pointer-events: auto;
-  }
-  .btn-attack {
-    position: absolute;
-    right: 6px;
-    bottom: 6px;
-    width: 76px;
-    height: 76px;
-    border-radius: 50%;
-    background: radial-gradient(circle, #dd6b20 0%, #9c4221 100%);
-    border: 3px solid #fbd38d;
-    box-shadow: 0 6px 14px rgba(221, 107, 32, 0.45);
-    color: #fff;
-    font-size: 2rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-  }
-  .btn-attack:active { transform: scale(0.92); }
-
-  .skill-btn {
-    position: absolute;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: radial-gradient(circle, #2b3948 0%, #17212b 100%);
-    border: 2px solid #63b3ed;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-size: 1.15rem;
-    cursor: pointer;
-  }
-  .skill-btn:active { transform: scale(0.92); }
-  .skill-btn span:last-child {
-    font-size: 0.55rem;
-    color: #90cdf4;
-    font-weight: bold;
-    margin-top: -2px;
-  }
-
-  .btn-skill-1 { top: 10px; right: 25px; border-color: #f6ad55; }
-  .btn-skill-2 { top: 45px; left: 35px; border-color: #fc8181; }
-  .btn-skill-3 { bottom: 20px; left: 10px; border-color: #68d391; }
-  .btn-potion  { top: 0px; left: 100px; border-color: #e53e3e; width: 40px; height: 40px; font-size: 1rem; }
-
-  /* 彈窗：世界地圖導航面板 */
-  .modal-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.85);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    pointer-events: auto;
-  }
-  .modal-overlay.active { display: flex; }
-  .modal-box {
-    background: #17212b;
-    border: 2px solid #4a5d6e;
-    border-radius: 14px;
-    width: 90%;
-    max-width: 620px;
-    max-height: 85vh;
-    overflow-y: auto;
-    padding: 16px 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .world-map-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-  }
-  .map-card {
-    background: #10171e;
-    border: 2px solid #2d3b4a;
-    border-radius: 10px;
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    cursor: pointer;
-    transition: 0.15s;
-  }
-  .map-card:hover, .map-card.current {
-    border-color: #f6ad55;
-    background: #1a2736;
-  }
-  .map-card-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: bold;
-    font-size: 0.85rem;
-    color: #f6ad55;
-  }
-  .map-card-desc { font-size: 0.72rem; color: #a0aec0; line-height: 1.4; }
-  .map-card-mobs { font-size: 0.7rem; color: #cbd5e0; }
-
-  .class-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 8px;
-  }
-  .class-card {
-    background: #10171e;
-    border: 1px solid #2d3b4a;
-    border-radius: 8px;
-    padding: 10px 6px;
-    text-align: center;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    transition: 0.15s;
-  }
-  .class-card.selected { border-color: #f6ad55; background: #1e2d3b; }
-  .class-card h4 { font-size: 0.75rem; color: #fff; }
-  .class-card p { font-size: 0.6rem; color: #a0aec0; }
-
-  #map-alert-banner {
-    position: absolute;
-    top: 60px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.8);
-    border: 1px solid #f6ad55;
-    color: #f6ad55;
-    font-size: 1rem;
-    font-weight: bold;
-    padding: 8px 24px;
-    border-radius: 20px;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.4s ease;
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>校安生存戰：今天也要平安下班！</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+    body {
+      background-color: #1a1a1a;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    #game-container {
+      position: relative;
+      border: 4px solid #f59e0b;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      background: #334155;
+    }
+    canvas {
+      display: block;
+      background: #1e293b;
+    }
+    #ui-overlay {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      justify-content: space-between;
+      pointer-events: none;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px #000;
+    }
+    .status-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 220px;
+    }
+    .bar-container {
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid #64748b;
+      border-radius: 4px;
+      height: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      width: 100%;
+      transition: width 0.1s linear;
+    }
+    #san-bar { background: #ef4444; }
+    #sta-bar { background: #10b981; }
+    .bar-label {
+      position: absolute;
+      top: 0;
+      left: 6px;
+      font-size: 11px;
+      line-height: 18px;
+      color: #fff;
+    }
+    #clock-box {
+      background: rgba(15, 23, 42, 0.85);
+      border: 2px solid #f59e0b;
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 20px;
+      color: #fbbf24;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #controls-hint {
+      position: absolute;
+      bottom: 8px;
+      left: 12px;
+      font-size: 12px;
+      color: #94a3b8;
+      pointer-events: none;
+    }
+    #modal {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+    #modal h1 {
+      font-size: 32px;
+      margin-bottom: 12px;
+      color: #f59e0b;
+    }
+    #modal p {
+      font-size: 15px;
+      margin-bottom: 24px;
+      color: #cbd5e1;
+      text-align: center;
+      line-height: 1.6;
+    }
+    button {
+      padding: 10px 24px;
+      font-size: 16px;
+      font-weight: bold;
+      background: #f59e0b;
+      color: #1e293b;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #fbbf24;
+    }
+  </style>
 </head>
 <body>
 
-<div id="game-wrapper">
-  <canvas id="canvas"></canvas>
+  <div id="game-container">
+    <canvas id="gameCanvas" width="800" height="500"></canvas>
 
-  <div class="hud-layer">
-    <div class="player-status-badge" onclick="openClassModal()">
-      <div class="avatar-circle" id="hud-avatar">⚔️</div>
-      <div class="bars-col">
-        <div class="status-name-row">
-          <span id="hud-job">破滅狂戰士 Lv.<span id="hud-lv">1</span></span>
-          <span style="color:#68d391;" id="hud-hp-txt">100%</span>
+    <div id="ui-overlay">
+      <div class="status-group">
+        <div class="bar-container">
+          <div id="san-bar" class="bar-fill"></div>
+          <span class="bar-label">理智值 (SAN)</span>
         </div>
-        <div class="hud-bar"><div class="fill-hp" id="hud-hp-bar"></div></div>
-        <div class="hud-bar"><div class="fill-mp" id="hud-mp-bar"></div></div>
-        <div class="hud-bar"><div class="fill-exp" id="hud-exp-bar"></div></div>
+        <div class="bar-container">
+          <div id="sta-bar" class="bar-fill"></div>
+          <span class="bar-label">耐力 (STA)</span>
+        </div>
+      </div>
+
+      <div id="clock-box">
+        <span style="font-size: 11px; color: #94a3b8;">離下班還剩</span>
+        <span id="time-display">16:30</span>
       </div>
     </div>
 
-    <div class="minimap-panel">
-      <button class="map-header-btn" onclick="openWorldMapModal()">
-        <span id="hud-map-title">📍 晨曦平原</span>
-        <span style="font-size:0.65rem; color:#cbd5e0;">[切換地圖]</span>
-      </button>
-      <canvas id="minimap-canvas" width="96" height="64"></canvas>
+    <div id="controls-hint">
+      [W/A/S/D 或 方向鍵] 移動 | [Shift] 衝刺 | [J 或 空白鍵] 大聲公驅散 | [K] 反光背心護盾
     </div>
 
-    <div id="map-alert-banner">已進入全新區域！</div>
-
-    <div class="joystick-zone" id="joystick-zone">
-      <div class="joystick-base">
-        <div class="joystick-stick" id="joystick-stick"></div>
-      </div>
-    </div>
-
-    <div class="actions-cluster">
-      <div class="skill-btn btn-potion" onclick="castPotion()">
-        <span>🧪</span><span id="hud-potions">x15</span>
-      </div>
-      <div class="skill-btn btn-skill-1" id="slot-skill-1" onclick="castSkill(1)">
-        <span id="skill-1-icon">🌀</span><span id="skill-1-name">旋風</span>
-      </div>
-      <div class="skill-btn btn-skill-2" id="slot-skill-2" onclick="castSkill(2)">
-        <span id="skill-2-icon">💥</span><span id="skill-2-name">裂地</span>
-      </div>
-      <div class="skill-btn btn-skill-3" id="slot-skill-3" onclick="castSkill(3)">
-        <span id="skill-3-icon">🩸</span><span id="skill-3-name">飲血</span>
-      </div>
-      <div class="btn-attack" onclick="triggerNormalAttack()">
-        <span>⚔️</span>
-      </div>
+    <div id="modal">
+      <h1 id="modal-title">今天也要平安下班！</h1>
+      <p id="modal-desc">
+        你是學務處的值勤校安人員。<br>
+        堅持到 17:00 準時打卡下班！<br>
+        閃避學生衝突、公文追殺與投訴音波，保護你岌岌可危的理智值。
+      </p>
+      <button id="start-btn" onclick="startGame()">開始值勤</button>
     </div>
   </div>
 
-  <div class="modal-overlay" id="world-map-modal">
-    <div class="modal-box">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h3 style="color:#f6ad55; font-size:1.1rem;">🗺️ 大世界地圖 - 區域導航與快速傳送</h3>
-        <button style="background:none; border:none; color:#a0aec0; font-size:1.3rem; cursor:pointer;" onclick="closeWorldMapModal()">✕</button>
-      </div>
-      <p style="font-size:0.75rem; color:#a0aec0;">點擊任意區域即可即時傳送抵達，每個區域擁有獨特地貌、生態與專屬魔物：</p>
-      <div class="world-map-grid" id="world-map-grid"></div>
-    </div>
-  </div>
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
 
-  <div class="modal-overlay" id="class-modal">
-    <div class="modal-box">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h3 style="color:#f6ad55; font-size:1.1rem;">🏛️ 英雄神殿 - 自由切換職業專精</h3>
-        <button style="background:none; border:none; color:#a0aec0; font-size:1.3rem; cursor:pointer;" onclick="closeClassModal()">✕</button>
-      </div>
-      <p style="font-size:0.75rem; color:#a0aec0;">切換職業將即時替換專屬技能樹、普攻型態與屬性偏向：</p>
-      <div class="class-grid" id="class-grid"></div>
-    </div>
-  </div>
-</div>
+    const sanBar = document.getElementById('san-bar');
+    const staBar = document.getElementById('sta-bar');
+    const timeDisplay = document.getElementById('time-display');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalDesc = document.getElementById('modal-desc');
+    const startBtn = document.getElementById('start-btn');
 
-<script>
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-const miniCanvas = document.getElementById("minimap-canvas");
-const miniCtx = miniCanvas.getContext("2d");
+    let isPlaying = false;
+    let gameTime = 16.5 * 60; // 16:30 in minutes
+    const targetTime = 17.0 * 60; // 17:00 in minutes
+    let timeScale = 0.5; // Game speed: 30 in-game minutes takes ~60 seconds
 
-const WORLD_WIDTH = 2400;
-const WORLD_HEIGHT = 1600;
+    // Player state
+    const player = {
+      x: 400,
+      y: 250,
+      radius: 16,
+      speed: 3.5,
+      sprintMultiplier: 1.7,
+      san: 100,
+      maxSan: 100,
+      sta: 100,
+      maxSta: 100,
+      shieldActive: false,
+      shieldTimer: 0,
+      shieldCooldown: 0,
+      megaphoneCooldown: 0
+    };
 
-function resizeCanvas() {
-  canvas.width = window.innerWidth || 800;
-  canvas.height = window.innerHeight || 600;
-}
-window.addEventListener("resize", resizeCanvas);
-resizeCanvas();
+    const keys = {};
+    let enemies = [];
+    let waves = [];
+    let floatingTexts = [];
 
-const camera = { x: 0, y: 0 };
-
-const CLASSES = [
-  {
-    id: "berserker",
-    name: "破滅狂戰士",
-    avatar: "⚔️",
-    desc: "近戰巨劍旋風、高生命、吸血狂暴",
-    baseAtk: 45,
-    baseMatk: 15,
-    hpMod: 1.3,
-    mpMod: 0.8,
-    skills: [
-      { id: "whirlwind", name: "旋風", icon: "🌀", mp: 15 },
-      { id: "slam", name: "裂地", icon: "💥", mp: 18 },
-      { id: "rage", name: "飲血", icon: "🩸", mp: 20 }
-    ]
-  },
-  {
-    id: "mage",
-    name: "秘術時空師",
-    avatar: "🔮",
-    desc: "遠程奧術飛彈、黑洞聚怪、空間折躍",
-    baseAtk: 20,
-    baseMatk: 58,
-    hpMod: 0.85,
-    mpMod: 1.4,
-    skills: [
-      { id: "missiles", name: "飛彈", icon: "✨", mp: 16 },
-      { id: "vortex", name: "黑洞", icon: "🌀", mp: 24 },
-      { id: "blink", name: "折躍", icon: "⚡", mp: 15 }
-    ]
-  },
-  {
-    id: "ranger",
-    name: "幻影遊俠",
-    avatar: "🏹",
-    desc: "遠程散射箭雨、精準穿刺、極速後撤",
-    baseAtk: 40,
-    baseMatk: 25,
-    hpMod: 1.0,
-    mpMod: 1.0,
-    skills: [
-      { id: "rain", name: "箭雨", icon: "🌧️", mp: 18 },
-      { id: "snipe", name: "穿刺", icon: "🎯", mp: 16 },
-      { id: "tumble", name: "騰躍", icon: "💨", mp: 10 }
-    ]
-  },
-  {
-    id: "paladin",
-    name: "聖堂懲戒騎",
-    avatar: "🛡️",
-    desc: "聖盾猛擊衝撞、審判之錘、神聖恩典",
-    baseAtk: 36,
-    baseMatk: 35,
-    hpMod: 1.4,
-    mpMod: 1.1,
-    skills: [
-      { id: "shield", name: "盾衝", icon: "🛡️", mp: 15 },
-      { id: "hammer", name: "審判", icon: "🔨", mp: 22 },
-      { id: "grace", name: "恩典", icon: "💚", mp: 20 }
-    ]
-  },
-  {
-    id: "assassin",
-    name: "暗影弒魂者",
-    avatar: "🗡️",
-    desc: "瞬移背刺、毒刃漫天、高暴擊靈巧",
-    baseAtk: 48,
-    baseMatk: 20,
-    hpMod: 0.9,
-    mpMod: 0.9,
-    skills: [
-      { id: "shadowstep", name: "影步", icon: "👤", mp: 14 },
-      { id: "poison", name: "毒刃", icon: "☠️", mp: 18 },
-      { id: "smoke", name: "煙幕", icon: "🌫️", mp: 12 }
-    ]
-  }
-];
-
-let currentClass = CLASSES[0];
-
-const MAP_DATABASE = [
-  {
-    id: 0,
-    name: "晨曦平原",
-    bgFloor: "#2f5936",
-    tileGrid: "rgba(35, 70, 42, 0.45)",
-    decorColor: "#1b4332",
-    decorType: "tree",
-    lakeColor: "#2b6cb0",
-    desc: "微風拂過的綠意平原，點綴著清澈的水池與古老遺跡柱。",
-    mobPool: [
-      { name: "草地軟泥怪", sprite: "🟢", hp: 120, exp: 25, zeny: 12, atk: 7, color: "#48bb78", size: 20 },
-      { name: "草原幼狼", sprite: "🐺", hp: 190, exp: 40, zeny: 20, atk: 14, color: "#ecc94b", size: 24 }
-    ],
-    portals: [
-      { x: 2250, y: 800, toMap: 1, toX: 180, toY: 800, name: "熾熱熔岩洞窟" },
-      { x: 1200, y: 1480, toMap: 2, toX: 1200, toY: 180, name: "迷霧低語幽林" }
-    ]
-  },
-  {
-    id: 1,
-    name: "熾熱熔岩洞窟",
-    bgFloor: "#2b140d",
-    tileGrid: "rgba(120, 45, 20, 0.4)",
-    decorColor: "#742a2a",
-    decorType: "rock",
-    lakeColor: "#c53030",
-    desc: "地底火舌湧動的赤紅焦土，遍佈灼熱滾燙的岩漿池與烈焰精靈。",
-    mobPool: [
-      { name: "烈焰蜥蜴", sprite: "🦎", hp: 360, exp: 90, zeny: 55, atk: 26, color: "#ed8936", size: 26 },
-      { name: "熔火魔人", sprite: "👹", hp: 820, exp: 220, zeny: 140, atk: 45, color: "#e53e3e", size: 34 }
-    ],
-    portals: [
-      { x: 120, y: 800, toMap: 0, toX: 2180, toY: 800, name: "晨曦平原" },
-      { x: 1200, y: 1480, toMap: 3, toX: 1200, toY: 180, name: "霜凍冰原要塞" }
-    ]
-  },
-  {
-    id: 2,
-    name: "迷霧低語幽林",
-    bgFloor: "#151a24",
-    tileGrid: "rgba(80, 55, 120, 0.4)",
-    decorColor: "#44337a",
-    decorType: "mushroom",
-    lakeColor: "#553c9a",
-    desc: "被永夜迷霧籠罩的古老樹海，閃爍著神秘的螢光孢子與暗影猛獸。",
-    mobPool: [
-      { name: "螢光毒蕈怪", sprite: "🍄", hp: 320, exp: 80, zeny: 50, atk: 22, color: "#9f7aea", size: 24 },
-      { name: "暗影幽豹", sprite: "🐆", hp: 490, exp: 130, zeny: 80, atk: 34, color: "#805ad5", size: 28 }
-    ],
-    portals: [
-      { x: 1200, y: 120, toMap: 0, toX: 1200, toY: 1400, name: "晨曦平原" },
-      { x: 2250, y: 800, toMap: 3, toX: 180, toY: 800, name: "霜凍冰原要塞" }
-    ]
-  },
-  {
-    id: 3,
-    name: "霜凍冰原要塞",
-    bgFloor: "#1c2e3d",
-    tileGrid: "rgba(100, 160, 215, 0.35)",
-    decorColor: "#4299e1",
-    decorType: "ice_pillar",
-    lakeColor: "#90cdf4",
-    desc: "極地終年飄雪的冰晶高原，盤踞著巨大的極地雪怪與遠古霜翼龍。",
-    mobPool: [
-      { name: "極地雪怪", sprite: "❄️", hp: 680, exp: 190, zeny: 110, atk: 40, color: "#bee3f8", size: 30 },
-      { name: "霜翼巨龍 (領主)", sprite: "🐉", hp: 2400, exp: 700, zeny: 450, atk: 68, color: "#3182ce", size: 44 }
-    ],
-    portals: [
-      { x: 1200, y: 120, toMap: 1, toX: 1200, toY: 1400, name: "熾熱熔岩洞窟" },
-      { x: 120, y: 800, toMap: 2, toX: 2180, toY: 800, name: "迷霧低語幽林" }
-    ]
-  }
-];
-
-let currentMapIndex = 0;
-let currentMap = MAP_DATABASE[0];
-
-let sceneDecorations = [];
-let sceneLakes = [];
-function generateMapObjects() {
-  sceneDecorations = [];
-  for (let i = 0; i < 40; i++) {
-    sceneDecorations.push({
-      x: Math.random() * (WORLD_WIDTH - 200) + 100,
-      y: Math.random() * (WORLD_HEIGHT - 200) + 100,
-      r: 28 + Math.random() * 16
+    window.addEventListener('keydown', e => {
+      keys[e.key.toLowerCase()] = true;
+      if (e.key === ' ' || e.key.toLowerCase() === 'j') {
+        useMegaphone();
+      }
+      if (e.key.toLowerCase() === 'k') {
+        useShield();
+      }
     });
-  }
-  sceneLakes = [
-    { x: 600, y: 550, rx: 150, ry: 100 },
-    { x: 1750, y: 1100, rx: 170, ry: 110 }
-  ];
-}
-generateMapObjects();
 
-const player = {
-  x: 1000,
-  y: 800,
-  radius: 20,
-  speed: 4.8,
-  facing: 1,
-  isMoving: false,
-  vx: 0,
-  vy: 0,
-  lv: 1,
-  hp: 240,
-  maxHp: 240,
-  mp: 100,
-  maxMp: 100,
-  exp: 0,
-  maxExp: 100,
-  zeny: 200,
-  potions: 15,
-  attackAnimTimer: 0
-};
-
-function getAtk() { return Math.round(currentClass.baseAtk + player.lv * 4); }
-function getMatk() { return Math.round(currentClass.baseMatk + player.lv * 5); }
-
-const monsters = [];
-function populateMonsters(count = 15) {
-  monsters.length = 0;
-  for (let i = 0; i < count; i++) {
-    let t = currentMap.mobPool[Math.floor(Math.random() * currentMap.mobPool.length)];
-    monsters.push({
-      x: Math.random() * (WORLD_WIDTH - 240) + 120,
-      y: Math.random() * (WORLD_HEIGHT - 240) + 120,
-      type: t,
-      hp: t.hp,
-      maxHp: t.hp,
-      vx: (Math.random() - 0.5) * 1.5,
-      vy: (Math.random() - 0.5) * 1.5,
-      changeDirTimer: Math.random() * 60,
-      hitFlash: 0
+    window.addEventListener('keyup', e => {
+      keys[e.key.toLowerCase()] = false;
     });
-  }
-}
-populateMonsters(16);
 
-const projectiles = [];
-const floatingTexts = [];
-function addFloatingText(x, y, text, color = "#fff", fontSize = 18) {
-  floatingTexts.push({ x, y, text, color, fontSize, alpha: 1.0, life: 36 });
-}
-
-const joystickZone = document.getElementById("joystick-zone");
-const joystickStick = document.getElementById("joystick-stick");
-let isDraggingJoy = false;
-let joyCenter = { x: 0, y: 0 };
-let joyVector = { x: 0, y: 0 };
-
-joystickZone.addEventListener("pointerdown", (e) => {
-  isDraggingJoy = true;
-  const rect = joystickZone.getBoundingClientRect();
-  joyCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-  handleJoystickMove(e.clientX, e.clientY);
-});
-window.addEventListener("pointermove", (e) => {
-  if (isDraggingJoy) handleJoystickMove(e.clientX, e.clientY);
-});
-window.addEventListener("pointerup", () => {
-  if (isDraggingJoy) {
-    isDraggingJoy = false;
-    joyVector = { x: 0, y: 0 };
-    joystickStick.style.transform = `translate(0px, 0px)`;
-  }
-});
-
-function handleJoystickMove(clientX, clientY) {
-  const dx = clientX - joyCenter.x;
-  const dy = clientY - joyCenter.y;
-  const dist = Math.hypot(dx, dy);
-  const maxR = 45;
-  if (dist === 0) {
-    joyVector = { x: 0, y: 0 };
-    return;
-  }
-  const clampedDist = Math.min(dist, maxR);
-  const angle = Math.atan2(dy, dx);
-  const stickX = Math.cos(angle) * clampedDist;
-  const stickY = Math.sin(angle) * clampedDist;
-  joystickStick.style.transform = `translate(${stickX}px, ${stickY}px)`;
-  joyVector = { x: stickX / maxR, y: stickY / maxR };
-}
-
-const keys = {};
-window.addEventListener("keydown", (e) => keys[e.key.toLowerCase()] = true);
-window.addEventListener("keyup", (e) => keys[e.key.toLowerCase()] = false);
-
-function findNearestMonster(range = 380) {
-  let nearest = null;
-  let minDist = range;
-  for (let m of monsters) {
-    let d = Math.hypot(m.x - player.x, m.y - player.y);
-    if (d < minDist) {
-      minDist = d;
-      nearest = m;
-    }
-  }
-  return nearest;
-}
-
-function damageMonster(m, dmg, color, prefix = "") {
-  m.hp -= dmg;
-  m.hitFlash = 6;
-  addFloatingText(m.x, m.y - 25, `${prefix ? prefix + ' ' : ''}-${dmg}`, color, 18);
-
-  if (m.hp <= 0) {
-    player.exp += m.type.exp;
-    player.zeny += m.type.zeny;
-    addFloatingText(m.x, m.y - 45, `+${m.type.exp} EXP`, "#68d391", 15);
-
-    if (player.exp >= player.maxExp) {
-      player.exp -= player.maxExp;
-      player.lv += 1;
-      player.maxExp = Math.round(player.maxExp * 1.45);
-      player.maxHp = Math.round(player.maxHp * 1.15);
-      player.maxMp = Math.round(player.maxMp * 1.12);
-      player.hp = player.maxHp;
-      player.mp = player.maxMp;
-      addFloatingText(player.x, player.y - 65, "🌟 LEVEL UP! 🌟", "#f6e05e", 24);
-    }
-
-    const idx = monsters.indexOf(m);
-    if (idx !== -1) monsters.splice(idx, 1);
-    setTimeout(() => {
-      let t = currentMap.mobPool[Math.floor(Math.random() * currentMap.mobPool.length)];
-      monsters.push({
-        x: Math.random() * (WORLD_WIDTH - 240) + 120,
-        y: Math.random() * (WORLD_HEIGHT - 240) + 120,
-        type: t,
-        hp: t.hp,
-        maxHp: t.hp,
-        vx: (Math.random() - 0.5) * 1.5,
-        vy: (Math.random() - 0.5) * 1.5,
-        changeDirTimer: 60,
-        hitFlash: 0
-      });
-    }, 2000);
-  }
-  updateHUD();
-}
-
-function triggerNormalAttack() {
-  player.attackAnimTimer = 10;
-  let hit = false;
-  let isRanged = currentClass.id === "ranger" || currentClass.id === "mage";
-  let range = isRanged ? 280 : 95;
-
-  if (isRanged) {
-    let target = findNearestMonster(range);
-    if (target) {
-      projectiles.push({
+    function useMegaphone() {
+      if (!isPlaying || player.megaphoneCooldown > 0) return;
+      player.megaphoneCooldown = 90; // frames (~1.5s)
+      waves.push({
         x: player.x,
         y: player.y,
-        tx: target.x,
-        ty: target.y,
-        speed: 14,
-        damage: getAtk(),
-        color: currentClass.id === "mage" ? "#805ad5" : "#ecc94b",
-        target: target
+        radius: 10,
+        maxRadius: 130,
+        color: 'rgba(56, 189, 248, 0.6)'
       });
-      hit = true;
-    }
-  } else {
-    for (let m of monsters) {
-      let d = Math.hypot(m.x - player.x, m.y - player.y);
-      if (d < 95) {
-        let isCrit = Math.random() < 0.28;
-        let dmg = isCrit ? Math.round(getAtk() * 1.6) : getAtk();
-        damageMonster(m, dmg, isCrit ? "#f8e71c" : "#fff", isCrit ? "CRIT!" : "");
-        hit = true;
-      }
-    }
-  }
-  if (!hit) addFloatingText(player.x + player.facing * 30, player.y - 20, "唰！", "#cbd5e0", 14);
-}
 
-function castSkill(slotIdx) {
-  let skill = currentClass.skills[slotIdx - 1];
-  if (!skill) return;
-
-  if (player.mp < skill.mp) {
-    addFloatingText(player.x, player.y - 40, "MP不足!", "#63b3ed", 14);
-    return;
-  }
-  player.mp -= skill.mp;
-  addFloatingText(player.x, player.y - 50, `${skill.icon} ${skill.name}!!`, "#f6ad55", 18);
-
-  if (skill.id === "whirlwind") {
-    player.attackAnimTimer = 16;
-    monsters.forEach(m => {
-      if (Math.hypot(m.x - player.x, m.y - player.y) < 160) {
-        damageMonster(m, Math.round(getAtk() * 1.8), "#f6ad55", "旋風🌪️");
-      }
-    });
-  } else if (skill.id === "slam") {
-    let t = findNearestMonster(150);
-    if (t) {
-      damageMonster(t, Math.round(getAtk() * 2.8), "#fc8181", "裂地💥");
-      let angle = Math.atan2(t.y - player.y, t.x - player.x);
-      t.x += Math.cos(angle) * 70;
-      t.y += Math.sin(angle) * 70;
-    }
-  } else if (skill.id === "rage") {
-    let heal = Math.round(player.maxHp * 0.35);
-    player.hp = Math.min(player.maxHp, player.hp + heal);
-    addFloatingText(player.x, player.y - 30, `+${heal} 狂暴吸血!`, "#fc8181", 18);
-  } else if (skill.id === "missiles") {
-    let t = findNearestMonster(400);
-    if (t) {
-      for (let i = 0; i < 4; i++) {
-        setTimeout(() => {
-          if (t && t.hp > 0) {
-            projectiles.push({
-              x: player.x, y: player.y - 20,
-              tx: t.x, ty: t.y,
-              speed: 12, damage: Math.round(getMatk() * 0.8),
-              color: "#9f7aea", target: t
-            });
-          }
-        }, i * 90);
-      }
-    }
-  } else if (skill.id === "vortex") {
-    let t = findNearestMonster(350);
-    if (t) {
-      monsters.forEach(m => {
-        if (Math.hypot(m.x - t.x, m.y - t.y) < 200) {
-          m.x = t.x + (Math.random() - 0.5) * 30;
-          m.y = t.y + (Math.random() - 0.5) * 30;
-          damageMonster(m, Math.round(getMatk() * 1.5), "#b794f4", "重力坍縮🌀");
+      // Knock back & neutralize nearby enemies
+      enemies.forEach(en => {
+        let dx = en.x - player.x;
+        let dy = en.y - player.y;
+        let dist = Math.hypot(dx, dy);
+        if (dist < 130) {
+          en.vx = (dx / dist) * 7;
+          en.vy = (dy / dist) * 7;
+          en.stun = 60;
+          addFloatText("大聲公喝止!", en.x, en.y, '#38bdf8');
         }
       });
     }
-  } else if (skill.id === "blink") {
-    player.x += player.facing * 180;
-    addFloatingText(player.x, player.y - 20, "折躍衝刺⚡", "#63b3ed", 16);
-  } else if (skill.id === "rain") {
-    monsters.forEach(m => {
-      if (Math.hypot(m.x - (player.x + player.facing * 140), m.y - player.y) < 180) {
-        damageMonster(m, Math.round(getAtk() * 2.2), "#f6e05e", "箭雨🌧️");
+
+    function useShield() {
+      if (!isPlaying || player.shieldCooldown > 0 || player.shieldActive) return;
+      player.shieldActive = true;
+      player.shieldTimer = 180; // 3 seconds
+      player.shieldCooldown = 400; // ~6.6 seconds cooldown
+      addFloatText("反光背心護盾!", player.x, player.y - 20, '#fbbf24');
+    }
+
+    function addFloatText(text, x, y, color = '#fff') {
+      floatingTexts.push({ text, x, y, alpha: 1.0, color });
+    }
+
+    function spawnEnemy() {
+      if (!isPlaying) return;
+      const side = Math.floor(Math.random() * 4);
+      let x, y;
+      if (side === 0) { x = Math.random() * canvas.width; y = -20; }
+      else if (side === 1) { x = canvas.width + 20; y = Math.random() * canvas.height; }
+      else if (side === 2) { x = Math.random() * canvas.width; y = canvas.height + 20; }
+      else { x = -20; y = Math.random() * canvas.height; }
+
+      // 3 types: 0 = 追逐奔跑學生, 1 = 突發公文夾, 2 = 陳情音波怪
+      const type = Math.floor(Math.random() * 3);
+      enemies.push({
+        x, y,
+        type,
+        radius: type === 1 ? 12 : 15,
+        speed: type === 0 ? 3.0 : (type === 1 ? 2.0 : 1.5),
+        vx: 0,
+        vy: 0,
+        stun: 0
+      });
+    }
+
+    function startGame() {
+      modal.style.display = 'none';
+      isPlaying = true;
+      gameTime = 16.5 * 60;
+      player.san = 100;
+      player.sta = 100;
+      player.x = canvas.width / 2;
+      player.y = canvas.height / 2;
+      enemies = [];
+      waves = [];
+      floatingTexts = [];
+    }
+
+    function gameOver(win) {
+      isPlaying = false;
+      modal.style.display = 'flex';
+      if (win) {
+        modalTitle.innerText = "🎉 順利平安下班！";
+        modalTitle.style.color = "#10b981";
+        modalDesc.innerHTML = "17:00 打卡鐘聲響起！<br>你成功擋下所有突發事件，守護住了最後的理智值！";
+        startBtn.innerText = "再值勤一次";
+      } else {
+        modalTitle.innerText = "💀 理智斷線（心力交瘁）";
+        modalTitle.style.color = "#ef4444";
+        modalDesc.innerHTML = "你的 SAN 值歸零了...<br>公文、咆哮與突發狀況壓垮了防線，今天被迫留在學務處加班填寫報告。";
+        startBtn.innerText = "重整心情重新開始";
       }
-    });
-  } else if (skill.id === "snipe") {
-    let t = findNearestMonster(420);
-    if (t) damageMonster(t, Math.round(getAtk() * 3.2), "#f6e05e", "穿刺狙擊🎯");
-  } else if (skill.id === "tumble") {
-    player.x -= player.facing * 150;
-  } else if (skill.id === "shield") {
-    player.x += player.facing * 120;
-    monsters.forEach(m => {
-      if (Math.hypot(m.x - player.x, m.y - player.y) < 110) {
-        damageMonster(m, Math.round(getAtk() * 1.8), "#63b3ed", "盾擊💥");
+    }
+
+    let spawnCounter = 0;
+
+    function update() {
+      if (!isPlaying) return;
+
+      // Time progression
+      gameTime += (1 / 60) * timeScale;
+      let hours = Math.floor(gameTime / 60);
+      let minutes = Math.floor(gameTime % 60);
+      timeDisplay.innerText = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+
+      if (gameTime >= targetTime) {
+        gameOver(true);
+        return;
       }
-    });
-  } else if (skill.id === "hammer") {
-    let t = findNearestMonster(250);
-    if (t) damageMonster(t, Math.round((getAtk() + getMatk()) * 1.6), "#f6ad55", "神聖審判🔨");
-  } else if (skill.id === "grace") {
-    let heal = Math.round(getMatk() * 1.8 + 60);
-    player.hp = Math.min(player.maxHp, player.hp + heal);
-    addFloatingText(player.x, player.y - 30, `+${heal} 恩典治癒💚`, "#68d391", 20);
-  } else if (skill.id === "shadowstep") {
-    let t = findNearestMonster(350);
-    if (t) {
-      player.x = t.x - player.facing * 35;
-      player.y = t.y;
-      damageMonster(t, Math.round(getAtk() * 3.5), "#f8e71c", "背刺致命💥");
-    }
-  } else if (skill.id === "poison") {
-    for (let m of monsters) {
-      if (Math.hypot(m.x - player.x, m.y - player.y) < 160) {
-        damageMonster(m, Math.round(getAtk() * 1.4), "#48bb78", "毒刃☠️");
+
+      // Movement & Sprint
+      let dx = 0;
+      let dy = 0;
+      if (keys['w'] || keys['arrowup']) dy -= 1;
+      if (keys['s'] || keys['arrowdown']) dy += 1;
+      if (keys['a'] || keys['arrowleft']) dx -= 1;
+      if (keys['d'] || keys['arrowright']) dx += 1;
+
+      let isSprinting = (keys['shift'] && player.sta > 0 && (dx !== 0 || dy !== 0));
+      let currentSpeed = player.speed * (isSprinting ? player.sprintMultiplier : 1.0);
+
+      if (isSprinting) {
+        player.sta = Math.max(0, player.sta - 0.5);
+      } else {
+        player.sta = Math.min(player.maxSta, player.sta + 0.25);
       }
+
+      if (dx !== 0 && dy !== 0) {
+        dx *= 0.7071;
+        dy *= 0.7071;
+      }
+
+      player.x += dx * currentSpeed;
+      player.y += dy * currentSpeed;
+
+      // Keep in canvas
+      player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x));
+      player.y = Math.max(player.radius, Math.min(canvas.height - player.radius, player.y));
+
+      // Cooldowns
+      if (player.megaphoneCooldown > 0) player.megaphoneCooldown--;
+      if (player.shieldCooldown > 0) player.shieldCooldown--;
+      if (player.shieldActive) {
+        player.shieldTimer--;
+        if (player.shieldTimer <= 0) player.shieldActive = false;
+      }
+
+      // Spawn enemies
+      spawnCounter++;
+      if (spawnCounter > 70) {
+        spawnEnemy();
+        spawnCounter = 0;
+      }
+
+      // Update waves
+      for (let i = waves.length - 1; i >= 0; i--) {
+        waves[i].radius += 5;
+        if (waves[i].radius > waves[i].maxRadius) {
+          waves.splice(i, 1);
+        }
+      }
+
+      // Update enemies
+      for (let i = enemies.length - 1; i >= 0; i--) {
+        const en = enemies[i];
+
+        if (en.stun > 0) {
+          en.stun--;
+          en.x += en.vx;
+          en.y += en.vy;
+          en.vx *= 0.9;
+          en.vy *= 0.9;
+          continue;
+        }
+
+        let ex = player.x - en.x;
+        let ey = player.y - en.y;
+        let dist = Math.hypot(ex, ey);
+
+        if (dist > 0) {
+          en.x += (ex / dist) * en.speed;
+          en.y += (ey / dist) * en.speed;
+        }
+
+        // Collision with player
+        if (dist < player.radius + en.radius) {
+          if (player.shieldActive) {
+            // Shield repels
+            en.vx = -(ex / dist) * 8;
+            en.vy = -(ey / dist) * 8;
+            en.stun = 40;
+            addFloatText("護盾格擋!", player.x, player.y, '#fbbf24');
+          } else {
+            // Take SAN damage
+            let dmg = en.type === 0 ? 12 : (en.type === 1 ? 18 : 22);
+            player.san = Math.max(0, player.san - dmg);
+            let labels = ["違規衝突 -", "急件公文 -", "投訴咆哮 -"];
+            addFloatText(`${labels[en.type]}${dmg}`, player.x, player.y - 10, '#ef4444');
+            enemies.splice(i, 1);
+
+            if (player.san <= 0) {
+              gameOver(false);
+              return;
+            }
+          }
+        }
+      }
+
+      // Update UI Bars
+      sanBar.style.width = `${(player.san / player.maxSan) * 100}%`;
+      staBar.style.width = `${(player.sta / player.maxSta) * 100}%`;
     }
-  } else if (skill.id === "smoke") {
-    addFloatingText(player.x, player.y - 30, "煙霧遁形🌫️", "#a0aec0", 16);
-  }
 
-  updateHUD();
-}
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-function castPotion() {
-  if (player.potions > 0) {
-    player.potions--;
-    player.hp = Math.min(player.maxHp, player.hp + 90);
-    player.mp = Math.min(player.maxMp, player.mp + 40);
-    addFloatingText(player.x, player.y - 40, "+90 HP / +40 MP 🧪", "#fc8181", 16);
-    updateHUD();
-  }
-}
+      // Floor grid / Campus tiles
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < canvas.width; x += 40) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+      }
+      for (let y = 0; y < canvas.height; y += 40) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
 
-function switchMapTo(targetMapId, targetX = 1000, targetY = 800) {
-  currentMapIndex = targetMapId;
-  currentMap = MAP_DATABASE[currentMapIndex];
-  player.x = targetX;
-  player.y = targetY;
+      // Render Megaphone sound waves
+      waves.forEach(w => {
+        ctx.strokeStyle = w.color;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(w.x, w.y, w.radius, 0, Math.PI * 2);
+        ctx.stroke();
+      });
 
-  generateMapObjects();
-  populateMonsters(16);
+      // Render enemies
+      enemies.forEach(en => {
+        ctx.beginPath();
+        ctx.arc(en.x, en.y, en.radius, 0, Math.PI * 2);
+        if (en.type === 0) {
+          ctx.fillStyle = '#f97316'; // 學生: 橘色
+          ctx.fill();
+          ctx.fillStyle = '#fff';
+          ctx.font = '10px sans-serif';
+          ctx.fillText("學生", en.x - 10, en.y + 3);
+        } else if (en.type === 1) {
+          ctx.fillStyle = '#ef4444'; // 公文: 紅色方塊感
+          ctx.fill();
+          ctx.fillStyle = '#fff';
+          ctx.font = '10px sans-serif';
+          ctx.fillText("公文", en.x - 10, en.y + 3);
+        } else {
+          ctx.fillStyle = '#a855f7'; // 家長咆哮: 紫色
+          ctx.fill();
+          ctx.fillStyle = '#fff';
+          ctx.font = '10px sans-serif';
+          ctx.fillText("投訴", en.x - 10, en.y + 3);
+        }
+      });
 
-  let banner = document.getElementById("map-alert-banner");
-  banner.innerText = `🌌 抵達【${currentMap.name}】！`;
-  banner.style.opacity = 1;
-  setTimeout(() => banner.style.opacity = 0, 2200);
+      // Render Player
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+      ctx.fillStyle = '#3b82f6'; // 校安人員: 藍色
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#60a5fa';
+      ctx.stroke();
 
-  document.getElementById("hud-map-title").innerText = `📍 ${currentMap.name}`;
-}
+      // Shield visual
+      if (player.shieldActive) {
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.radius + 8, 0, Math.PI * 2);
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      }
+      ctx.restore();
 
-function checkPortals() {
-  for (let p of currentMap.portals) {
-    let dist = Math.hypot(p.x - player.x, p.y - player.y);
-    if (dist < 50) {
-      switchMapTo(p.toMap, p.toX, p.toY);
-      break;
+      // Render Floating Texts
+      for (let i = floatingTexts.length - 1; i >= 0; i--) {
+        let ft = floatingTexts[i];
+        ctx.fillStyle = ft.color;
+        ctx.globalAlpha = ft.alpha;
+        ctx.font = 'bold 12px sans-serif';
+        ctx.fillText(ft.text, ft.x - 20, ft.y);
+        ft.y -= 0.8;
+        ft.alpha -= 0.02;
+        if (ft.alpha <= 0) {
+          floatingTexts.splice(i, 1);
+        }
+      }
+      ctx.globalAlpha = 1.0;
     }
-  }
-}
 
-function update() {
-  let mx = joyVector.x;
-  let my = joyVector.y;
-
-  if (keys['w'] || keys['arrowup']) my -= 1;
-  if (keys['s'] || keys['arrowdown']) my += 1;
-  if (keys['a'] || keys['arrowleft']) mx -= 1;
-  if (keys['d'] || keys['arrowright']) mx += 1;
-
-  let len = Math.hypot(mx, my);
-  if (len > 0) {
-    player.vx = (mx / len) * player.speed;
-    player.vy = (my / len) * player.speed;
-    player.x += player.vx;
-    player.y += player.vy;
-    player.facing = player.vx > 0 ? 1 : -1;
-    player.isMoving = true;
-  } else {
-    player.isMoving = false;
-  }
-
-  player.x = Math.max(player.radius, Math.min(WORLD_WIDTH - player.radius, player.x));
-  player.y = Math.max(player.radius, Math.min(WORLD_HEIGHT - player.radius, player.y));
-
-  checkPortals();
-
-  camera.x = player.x - canvas.width / 2;
-  camera.y = player.y - canvas.height / 2;
-  camera.x = Math.max(0, Math.min(WORLD_WIDTH - canvas.width, camera.x));
-  camera.y = Math.max(0, Math.min(WORLD_HEIGHT - canvas.height, camera.y));
-
-  for (let m of monsters) {
-    if (m.hitFlash > 0) m.hitFlash--;
-    m.changeDirTimer--;
-    if (m.changeDirTimer <= 0) {
-      m.changeDirTimer = 60 + Math.random() * 80;
-      let angle = Math.random() * Math.PI * 2;
-      m.vx = Math.cos(angle) * 1.4;
-      m.vy = Math.sin(angle) * 1.4;
+    function gameLoop() {
+      update();
+      render();
+      requestAnimationFrame(gameLoop);
     }
-    m.x += m.vx;
-    m.y += m.vy;
-    if (m.x < 50 || m.x > WORLD_WIDTH - 50) m.vx *= -1;
-    if (m.y < 50 || m.y > WORLD_HEIGHT - 50) m.vy *= -1;
-  }
 
-  for (let i = projectiles.length - 1; i >= 0; i--) {
-    let p = projectiles[i];
-    let dx = p.target.x - p.x;
-    let dy = p.target.y - p.y;
-    let dist = Math.hypot(dx, dy);
-
-    if (dist < 18 || p.target.hp <= 0) {
-      damageMonster(p.target, p.damage, p.color);
-      projectiles.splice(i, 1);
-    } else {
-      p.x += (dx / dist) * p.speed;
-      p.y += (dy / dist) * p.speed;
-    }
-  }
-
-  for (let i = floatingTexts.length - 1; i >= 0; i--) {
-    let ft = floatingTexts[i];
-    ft.y -= 1.0;
-    ft.life--;
-    ft.alpha = ft.life / 36;
-    if (ft.life <= 0) floatingTexts.splice(i, 1);
-  }
-
-  if (player.attackAnimTimer > 0) player.attackAnimTimer--;
-}
-
-function render() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.save();
-  ctx.translate(-camera.x, -camera.y);
-
-  ctx.fillStyle = currentMap.bgFloor;
-  ctx.fillRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
-
-  ctx.strokeStyle = currentMap.tileGrid;
-  ctx.lineWidth = 1;
-  const TILE = 80;
-  for (let x = 0; x < WORLD_WIDTH; x += TILE) {
-    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, WORLD_HEIGHT); ctx.stroke();
-  }
-  for (let y = 0; y < WORLD_HEIGHT; y += TILE) {
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(WORLD_WIDTH, y); ctx.stroke();
-  }
-
-  for (let l of sceneLakes) {
-    ctx.fillStyle = currentMap.lakeColor;
-    ctx.beginPath();
-    ctx.ellipse(l.x, l.y, l.rx, l.ry, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = "rgba(255,255,255,0.2)";
-    ctx.lineWidth = 3;
-    ctx.stroke();
-  }
-
-  for (let p of currentMap.portals) {
-    let pulse = 28 + Math.sin(Date.now() * 0.005) * 5;
-    ctx.fillStyle = "rgba(159, 122, 234, 0.35)";
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, pulse + 10, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = "rgba(183, 148, 244, 0.7)";
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, pulse, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = "#e9d8fd";
-    ctx.lineWidth = 3;
-    ctx.stroke();
-
-    ctx.font = "bold 13px system-ui";
-    ctx.fillStyle = "#f6ad55";
-    ctx.textAlign = "center";
-    ctx.fillText("🌀 傳送陣", p.x, p.y - 42);
-    ctx.font = "11px system-ui";
-    ctx.fillStyle = "#e2e8f0";
-    ctx.fillText(`➔ ${p.name}`, p.x, p.y - 26);
-  }
-
-  for (let m of monsters) {
-    ctx.fillStyle = m.hitFlash > 0 ? "#ffffff" : m.type.color;
-    ctx.beginPath();
-    ctx.arc(m.x, m.y, m.type.size, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = "#1a202c";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    ctx.font = `${m.type.size * 1.1}px system-ui`;
-    ctx.textAlign = "center";
-    ctx.fillText(m.type.sprite, m.x, m.y + (m.type.size * 0.35));
-
-    let hpW = 42;
-    let r = Math.max(0, m.hp / m.maxHp);
-    ctx.fillStyle = "rgba(0,0,0,0.6)";
-    ctx.fillRect(m.x - hpW / 2, m.y - m.type.size - 13, hpW, 5);
-    ctx.fillStyle = "#e53e3e";
-    ctx.fillRect(m.x - hpW / 2, m.y - m.type.size - 13, hpW * r, 5);
-
-    ctx.font = "11px system-ui";
-    ctx.fillStyle = "#fff";
-    ctx.fillText(m.type.name, m.x, m.y - m.type.size - 16);
-  }
-
-  if (player.attackAnimTimer > 0) {
-    ctx.strokeStyle = "#f6e05e";
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    let startA = player.facing > 0 ? -Math.PI / 3 : (2 * Math.PI) / 3;
-    let endA = player.facing > 0 ? Math.PI / 3 : (4 * Math.PI) / 3;
-    ctx.arc(player.x, player.y, 60, startA, endA);
-    ctx.stroke();
-  }
-
-  ctx.fillStyle = "rgba(0,0,0,0.3)";
-  ctx.beginPath();
-  ctx.ellipse(player.x, player.y + 16, 18, 8, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = "#3182ce";
-  ctx.beginPath();
-  ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = "#bee3f8";
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  ctx.font = "26px system-ui";
-  ctx.textAlign = "center";
-  ctx.fillText(currentClass.avatar, player.x, player.y + 8);
-
-  ctx.font = "bold 12px system-ui";
-  ctx.fillStyle = "#f6ad55";
-  ctx.fillText(`${currentClass.name} (Lv.${player.lv})`, player.x, player.y - 28);
-
-  for (let d of sceneDecorations) {
-    ctx.fillStyle = currentMap.decorColor;
-    ctx.beginPath();
-    ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  for (let p of projectiles) {
-    ctx.fillStyle = p.color;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  for (let ft of floatingTexts) {
-    ctx.save();
-    ctx.globalAlpha = ft.alpha;
-    ctx.font = `bold ${ft.fontSize}px 'Arial Black', Impact, sans-serif`;
-    ctx.fillStyle = ft.color;
-    ctx.textAlign = "center";
-    ctx.shadowColor = "#000";
-    ctx.shadowBlur = 4;
-    ctx.fillText(ft.text, ft.x, ft.y);
-    ctx.restore();
-  }
-
-  ctx.restore();
-
-  renderMiniMap();
-}
-
-function renderMiniMap() {
-  miniCtx.clearRect(0, 0, miniCanvas.width, miniCanvas.height);
-  miniCtx.fillStyle = currentMap.bgFloor;
-  miniCtx.fillRect(0, 0, miniCanvas.width, miniCanvas.height);
-
-  let scaleX = miniCanvas.width / WORLD_WIDTH;
-  let scaleY = miniCanvas.height / WORLD_HEIGHT;
-
-  for (let p of currentMap.portals) {
-    miniCtx.fillStyle = "#b794f4";
-    miniCtx.fillRect(p.x * scaleX - 2, p.y * scaleY - 2, 5, 5);
-  }
-
-  for (let m of monsters) {
-    miniCtx.fillStyle = "#e53e3e";
-    miniCtx.fillRect(m.x * scaleX - 1, m.y * scaleY - 1, 3, 3);
-  }
-
-  miniCtx.fillStyle = "#48bb78";
-  miniCtx.beginPath();
-  miniCtx.arc(player.x * scaleX, player.y * scaleY, 3, 0, Math.PI * 2);
-  miniCtx.fill();
-}
-
-function updateHUD() {
-  document.getElementById("hud-avatar").innerText = currentClass.avatar;
-  document.getElementById("hud-job").innerText = `${currentClass.name} Lv.${player.lv}`;
-  document.getElementById("hud-lv").innerText = player.lv;
-  document.getElementById("hud-potions").innerText = `x${player.potions}`;
-
-  let hpPct = (player.hp / player.maxHp) * 100;
-  document.getElementById("hud-hp-bar").style.width = `${hpPct}%`;
-  document.getElementById("hud-hp-txt").innerText = `${Math.round(hpPct)}%`;
-
-  let mpPct = (player.mp / player.maxMp) * 100;
-  document.getElementById("hud-mp-bar").style.width = `${mpPct}%`;
-
-  let expPct = (player.exp / player.maxExp) * 100;
-  document.getElementById("hud-exp-bar").style.width = `${expPct}%`;
-
-  for (let i = 0; i < 3; i++) {
-    let sk = currentClass.skills[i];
-    document.getElementById(`skill-${i+1}-icon`).innerText = sk.icon;
-    document.getElementById(`skill-${i+1}-name`).innerText = sk.name;
-  }
-}
-
-function openWorldMapModal() {
-  const grid = document.getElementById("world-map-grid");
-  grid.innerHTML = "";
-  MAP_DATABASE.forEach(m => {
-    let isCur = m.id === currentMapIndex;
-    let card = document.createElement("div");
-    card.className = `map-card ${isCur ? 'current' : ''}`;
-    card.onclick = () => {
-      switchMapTo(m.id);
-      closeWorldMapModal();
-    };
-    card.innerHTML = `
-      <div class="map-card-head">
-        <span>📍 ${m.name}</span>
-        <span style="font-size:0.7rem; color:${isCur ? '#f6ad55' : '#68d391'};">${isCur ? '當前所在' : '點擊傳送 ➔'}</span>
-      </div>
-      <div class="map-card-desc">${m.desc}</div>
-      <div class="map-card-mobs">魔物生態：${m.mobPool.map(x => x.sprite + ' ' + x.name).join('、')}</div>
-    `;
-    grid.appendChild(card);
-  });
-  document.getElementById("world-map-modal").classList.add("active");
-}
-
-function closeWorldMapModal() {
-  document.getElementById("world-map-modal").classList.remove("active");
-}
-
-function openClassModal() {
-  const grid = document.getElementById("class-grid");
-  grid.innerHTML = "";
-  CLASSES.forEach(c => {
-    let card = document.createElement("div");
-    card.className = `class-card ${c.id === currentClass.id ? 'selected' : ''}`;
-    card.onclick = () => selectClass(c.id);
-    card.innerHTML = `
-      <div style="font-size:1.8rem;">${c.avatar}</div>
-      <h4>${c.name}</h4>
-      <p>${c.desc}</p>
-    `;
-    grid.appendChild(card);
-  });
-  document.getElementById("class-modal").classList.add("active");
-}
-
-function closeClassModal() {
-  document.getElementById("class-modal").classList.remove("active");
-}
-
-function selectClass(classId) {
-  let target = CLASSES.find(c => c.id === classId);
-  if (target) {
-    currentClass = target;
-    player.maxHp = Math.round(240 * target.hpMod);
-    player.maxMp = Math.round(100 * target.mpMod);
-    player.hp = player.maxHp;
-    player.mp = player.maxMp;
-    addFloatingText(player.x, player.y - 60, `轉職為【${target.name}】！`, "#f6ad55", 22);
-    updateHUD();
-    closeClassModal();
-  }
-}
-
-function gameLoop() {
-  update();
-  render();
-  requestAnimationFrame(gameLoop);
-}
-
-updateHUD();
-requestAnimationFrame(gameLoop);
-</script>
+    requestAnimationFrame(gameLoop);
+  </script>
 </body>
 </html>
