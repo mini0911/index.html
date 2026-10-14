@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>【寂靜死囚】第一人稱複雜迷宮驚悚逃脫</title>
+<title>【杏林夜泣】第一人稱心理驚悚醫院密室逃脫</title>
 
 <!-- Three.js 3D 核心庫 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -15,58 +15,57 @@
   #game-viewport { position: relative; width: 100%; height: 100%; overflow: hidden; cursor: crosshair; }
   #three-canvas { width: 100%; height: 100%; display: block; }
 
-  /* 驚悚極致暗角與血光濾鏡 */
-  .horror-vignette {
+  /* 驚悚老舊醫院 VHS 暗角與雜訊 */
+  .vignette-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: radial-gradient(circle at 50% 50%, transparent 20%, rgba(5,0,0,0.85) 60%, rgba(0,0,0,0.99) 95%),
-                repeating-linear-gradient(rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(20, 0, 0, 0.18) 3px, rgba(0,0,0,0) 4px);
+    background: radial-gradient(circle at 50% 50%, transparent 25%, rgba(0, 10, 5, 0.75) 65%, rgba(0, 0, 0, 0.98) 95%),
+                repeating-linear-gradient(rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0, 30, 15, 0.12) 3px, rgba(0,0,0,0) 4px);
     pointer-events: none; z-index: 10;
   }
+
+  /* 驚嚇紅屏閃爍層 */
+  #scare-flash {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255, 0, 0, 0.45); pointer-events: none; z-index: 500;
+    display: none; animation: scareGlitch 0.2s infinite alternate;
+  }
+  @keyframes scareGlitch { 0% { opacity: 0.1; } 100% { opacity: 0.9; } }
 
   /* 準心 */
   .crosshair {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 6px; height: 6px; background: rgba(255, 255, 255, 0.7); border-radius: 50%;
+    width: 6px; height: 6px; background: rgba(255, 255, 255, 0.6); border-radius: 50%;
     pointer-events: none; z-index: 20; transition: all 0.15s;
   }
   .crosshair.interactable {
-    width: 22px; height: 22px; background: transparent; border: 2px solid #ff3333;
-    box-shadow: 0 0 10px #ff0000;
+    width: 24px; height: 24px; background: transparent; border: 2px solid #ff4444;
+    box-shadow: 0 0 12px #ff0000;
   }
 
   #interact-hint {
     position: absolute; top: 56%; left: 50%; transform: translate(-50%, -50%);
-    font-size: 13px; font-weight: bold; color: #ff4444; text-shadow: 0 0 8px #000;
+    font-size: 13px; font-weight: bold; color: #ff5555; text-shadow: 0 0 8px #000;
     pointer-events: none; z-index: 25; display: none; letter-spacing: 1px;
   }
 
-  /* 頂部 HUD (生命條、手電筒電量、關卡進度) */
+  /* 頂部 HUD */
   .hud-top {
-    position: absolute; top: 0; left: 0; width: 100%; height: 64px;
-    background: linear-gradient(180deg, rgba(5,6,8,0.98) 0%, transparent 100%);
+    position: absolute; top: 0; left: 0; width: 100%; height: 56px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.95) 0%, transparent 100%);
     display: flex; justify-content: space-between; align-items: center;
     padding: 0 20px; z-index: 100; pointer-events: none;
   }
-  .player-status-box { display: flex; flex-direction: column; gap: 4px; }
-  .bar-container { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: bold; }
-  .bar-outer { width: 100px; height: 7px; background: #222; border-radius: 3px; overflow: hidden; border: 1px solid #444; }
-  .bar-inner-hp { width: 100%; height: 100%; background: #ff2222; transition: width 0.2s; }
-  .bar-inner-battery { width: 100%; height: 100%; background: #00ff88; transition: width 0.2s; }
-
   .stage-badge {
-    color: #ff5555; font-size: 13px; font-weight: bold; letter-spacing: 1px;
-    display: flex; align-items: center; gap: 6px;
+    color: #00ff88; font-size: 13px; font-weight: bold; letter-spacing: 1px;
+    display: flex; align-items: center; gap: 8px; text-shadow: 0 0 8px rgba(0,255,136,0.4);
   }
-  .pulse-dot { width: 8px; height: 8px; background: #ff2222; border-radius: 50%; box-shadow: 0 0 8px #ff0000; animation: blink 1.2s infinite; }
-  @keyframes blink { 50% { opacity: 0.2; } }
+  .pulse-dot { width: 8px; height: 8px; background: #00ff88; border-radius: 50%; box-shadow: 0 0 8px #00ff88; animation: blink 1.2s infinite; }
+  @keyframes blink { 50% { opacity: 0.3; } }
 
-  /* 恐慌警報紅框 (遇鬼瀕死) */
-  #danger-border {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    border: 5px solid #ff0000; box-shadow: inset 0 0 60px rgba(255, 0, 0, 0.9);
-    pointer-events: none; z-index: 800; display: none; animation: dangerPulse 0.35s infinite alternate;
+  .inventory-bar {
+    background: rgba(13, 20, 16, 0.85); border: 1px solid #1f402c;
+    padding: 4px 12px; border-radius: 4px; font-size: 12px; color: #e3b341;
   }
-  @keyframes dangerPulse { 0% { opacity: 0.3; } 100% { opacity: 1; } }
 
   /* 行動裝置走動按鈕 */
   .touch-controls {
@@ -74,95 +73,86 @@
     display: grid; grid-template-columns: repeat(3, 44px); gap: 6px;
   }
   .touch-btn {
-    width: 44px; height: 44px; background: rgba(20, 24, 30, 0.75);
-    border: 1px solid #ff4444; border-radius: 6px; color: #fff; font-size: 15px; font-weight: bold;
+    width: 44px; height: 44px; background: rgba(13, 24, 18, 0.75);
+    border: 1px solid #00ff88; border-radius: 6px; color: #fff; font-size: 15px; font-weight: bold;
     display: flex; justify-content: center; align-items: center; cursor: pointer;
   }
-  .touch-btn:active { background: #b62324; }
+  .touch-btn:active { background: #00ff88; color: #000; }
 
-  /* 底部對講機任務導引 */
+  /* 底部對講機任務提示 */
   .bottom-radio {
     position: absolute; bottom: 18px; left: 175px; right: 20px;
-    background: rgba(13, 17, 23, 0.94); border: 1px solid #30363d;
-    border-left: 4px solid #ff4444; padding: 10px 14px;
+    background: rgba(10, 15, 12, 0.94); border: 1px solid #1f382b;
+    border-left: 4px solid #00ff88; padding: 10px 14px;
     z-index: 100; border-radius: 4px; box-shadow: 0 4px 20px rgba(0,0,0,0.8);
     pointer-events: none;
   }
   .radio-text { font-size: 12px; color: #c9d1d9; line-height: 1.4; }
 
-  /* ==================== 彈窗 1：調查檔案彈窗 ==================== */
+  /* ==================== 彈窗 1：病歷調查紙條 ==================== */
   .modal-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0, 0, 0, 0.9); z-index: 2000;
     display: none; justify-content: center; align-items: center; padding: 20px;
   }
   .clue-paper {
-    background: #ebdcc0; color: #231a11; width: 100%; max-width: 380px;
-    border-radius: 6px; padding: 22px; box-shadow: 0 0 35px rgba(255,200,100,0.25);
-    border: 2px solid #bba377; font-family: serif; animation: popIn 0.2s ease;
+    background: #e8e2d3; color: #1e1914; width: 100%; max-width: 400px;
+    border-radius: 6px; padding: 24px; box-shadow: 0 0 35px rgba(0,255,136,0.15);
+    border: 2px solid #a39985; font-family: serif; animation: popIn 0.2s ease;
   }
   @keyframes popIn { from { transform: scale(0.75); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-  .clue-title { font-size: 16px; font-weight: bold; color: #7a1515; border-bottom: 1px dashed #7a664d; padding-bottom: 8px; margin-bottom: 12px; }
-  .clue-body { font-size: 13px; line-height: 1.8; margin-bottom: 18px; white-space: pre-line; }
-  .btn-close { width: 100%; background: #7a1515; color: #fff; border: none; padding: 10px 0; font-size: 13px; font-weight: bold; border-radius: 3px; cursor: pointer; }
+  .clue-title { font-size: 16px; font-weight: bold; color: #8a1d1d; border-bottom: 1px dashed #7a664d; padding-bottom: 8px; margin-bottom: 14px; }
+  .clue-body { font-size: 13px; line-height: 1.8; margin-bottom: 20px; white-space: pre-line; }
+  .btn-close { width: 100%; background: #26382b; color: #00ff88; border: 1px solid #00ff88; padding: 10px 0; font-size: 13px; font-weight: bold; border-radius: 3px; cursor: pointer; }
 
-  /* ==================== 彈窗 2：鐵門密碼鎖盤 ==================== */
+  /* ==================== 彈窗 2：鐵捲門電子密碼盤 ==================== */
   .keypad-box {
-    background: #161b22; border: 2px solid #ff4444; border-radius: 8px;
-    width: 280px; padding: 20px; display: flex; flex-direction: column; align-items: center;
-    box-shadow: 0 0 35px rgba(255, 0, 0, 0.5); animation: popIn 0.2s ease;
+    background: #111a14; border: 2px solid #00ff88; border-radius: 8px;
+    width: 280px; padding: 22px; display: flex; flex-direction: column; align-items: center;
+    box-shadow: 0 0 35px rgba(0, 255, 136, 0.3); animation: popIn 0.2s ease;
   }
   .keypad-display {
-    width: 100%; height: 44px; background: #000; border: 1px solid #30363d;
-    border-radius: 4px; color: #ff3333; font-size: 24px; font-family: monospace;
+    width: 100%; height: 44px; background: #000; border: 1px solid #1f382b;
+    border-radius: 4px; color: #00ff88; font-size: 24px; font-family: monospace;
     display: flex; justify-content: center; align-items: center; letter-spacing: 8px; margin-bottom: 16px;
   }
   .keypad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; margin-bottom: 16px; }
   .num-btn {
-    background: #21262d; border: 1px solid #30363d; color: #c9d1d9;
+    background: #19241d; border: 1px solid #2a3d31; color: #c9d1d9;
     padding: 12px 0; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer;
   }
-  .num-btn:active { background: #ff4444; color: #fff; }
+  .num-btn:active { background: #00ff88; color: #000; }
 
   /* 開場視窗 */
   #start-modal {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: #050508; z-index: 3000; display: flex; flex-direction: column;
+    background: #040806; z-index: 3000; display: flex; flex-direction: column;
     justify-content: center; align-items: center; padding: 24px; text-align: center;
   }
-  #start-modal h1 { color: #ff4444; font-size: 24px; margin-bottom: 14px; letter-spacing: 2px; }
+  #start-modal h1 { color: #00ff88; font-size: 24px; margin-bottom: 14px; letter-spacing: 2px; text-shadow: 0 0 10px rgba(0,255,136,0.5); }
   #start-modal p { font-size: 13px; color: #8b949e; line-height: 1.8; margin-bottom: 24px; max-width: 420px; }
   .btn-start {
-    background: #b62324; border: none; color: #fff; padding: 14px 38px;
+    background: #00ff88; border: none; color: #000; padding: 14px 40px;
     font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer;
-    box-shadow: 0 0 20px rgba(255,0,0,0.6);
+    box-shadow: 0 0 20px rgba(0,255,136,0.5);
   }
 </style>
 </head>
 <body>
 
 <div id="game-viewport">
-  <div class="horror-vignette"></div>
-  <div id="danger-border"></div>
+  <div class="vignette-overlay"></div>
+  <div id="scare-flash"></div>
   <div class="crosshair" id="crosshair"></div>
   <div id="interact-hint">[ 點擊滑鼠 / 觸控進行調查 ]</div>
 
-  <!-- 頂部 HUD (健康值與手電筒電量) -->
+  <!-- 頂部 HUD -->
   <div class="hud-top">
-    <div class="player-status-box">
-      <div class="bar-container">
-        <span style="color:#ff5555;">❤️ HP</span>
-        <div class="bar-outer"><div class="bar-inner-hp" id="hp-bar"></div></div>
-      </div>
-      <div class="bar-container">
-        <span style="color:#00ff88;">🔦 電量</span>
-        <div class="bar-outer"><div class="bar-inner-battery" id="battery-bar"></div></div>
-      </div>
-    </div>
     <div class="stage-badge">
       <div class="pulse-dot"></div>
-      <span id="stage-title">區域 1：廢棄停屍迴廊・多隔間迷宮</span>
+      <span id="stage-title">區域 1：杏林醫院・急診候診長廊</span>
     </div>
+    <div class="inventory-bar" id="inv-display">道具包: 空</div>
   </div>
 
   <!-- 3D 畫布容器 -->
@@ -181,23 +171,23 @@
   <!-- 底部任務提示 -->
   <div class="bottom-radio">
     <div class="radio-text" id="radio-instruction">
-      「密室內有巡邏惡靈！保持警惕，在迷宮隔間中搜刮【手電筒電池】與【密碼檔案】，再前往鐵門逃脫！」
+      「你踏入了荒廢已久的杏林醫院……四周充滿異響。請走動深入隔間尋找病歷線索與開門密碼！」
     </div>
   </div>
 
-  <!-- 檔案彈窗 -->
+  <!-- 調查檔案彈窗 -->
   <div class="modal-overlay" id="clue-modal">
     <div class="clue-paper">
       <div class="clue-title" id="clue-title">調查證物</div>
-      <div class="clue-body" id="clue-body">內容載入中...</div>
-      <button class="btn-close" onclick="closeClueModal()">放回並繼續隱匿前進</button>
+      <div class="clue-body" id="clue-body">檔案內容載入中...</div>
+      <button class="btn-close" onclick="closeClueModal()">放回並繼續前進</button>
     </div>
   </div>
 
   <!-- 密碼鎖彈窗 -->
   <div class="modal-overlay" id="keypad-modal">
     <div class="keypad-box">
-      <div style="color: #ff5555; font-size: 12px; margin-bottom: 8px;">通道重型防護門</div>
+      <div style="color: #00ff88; font-size: 12px; margin-bottom: 8px;">通道重型防護門</div>
       <div class="keypad-display" id="keypad-code">----</div>
       <div class="keypad-grid">
         <button class="num-btn" onclick="pressKey('1')">1</button>
@@ -211,151 +201,145 @@
         <button class="num-btn" onclick="pressKey('9')">9</button>
         <button class="num-btn" onclick="clearKeypad()">C</button>
         <button class="num-btn" onclick="pressKey('0')">0</button>
-        <button class="num-btn" onclick="submitPasscode()" style="background:#8b1111; color:#fff;">✓</button>
+        <button class="num-btn" onclick="submitPasscode()" style="background:#1b4d2e; color:#00ff88;">✓</button>
       </div>
-      <button class="btn-close" style="background:#30363d;" onclick="closeKeypad()">放棄返回</button>
+      <button class="btn-close" style="background:#19241d; color:#888; border-color:#333;" onclick="closeKeypad()">放棄返回</button>
     </div>
   </div>
 
   <!-- 開場視窗 -->
   <div id="start-modal">
-    <h1>寂靜死囚：深淵迷宮版</h1>
+    <h1>杏林夜泣：本格醫院逃脫</h1>
     <p>
-      <b>真實多隔間迷宮 × 怨靈巡邏追殺：</b><br>
-      密室被拆解為多個互相連通的拐角陰暗房間。<br>
-      手電筒電量會逐漸耗盡，在暗處尋找電池補充；注意聽腳步聲，別被巡邏惡靈抓到！
+      <b>真實還原杏林綜合醫院驚悚氛圍：</b><br>
+      無怪物追殺，聚焦於<b>突發驚嚇（自動滑行輪椅、日光燈短路狂閃、冷藏櫃暴彈）</b>。<br>
+      使用鍵盤 <b>W / A / S / D</b> 走動，滑鼠拖曳視角，深入四個病區解開醫院停業的真相！
     </p>
-    <button class="btn-start" onclick="startGame()">踏入深淵密室</button>
+    <button class="btn-start" onclick="startGame()">踏入醫院大廳</button>
   </div>
 </div>
 
 <script>
-/* ==================== 5 大連鎖複雜區域關卡庫 ==================== */
-const COMPLEX_STAGES = [
+/* ==================== 4 大杏林醫院連鎖病區關卡庫 ==================== */
+const HOSPITAL_STAGES = [
   {
     level: 1,
-    title: "區域 1：廢棄解剖冷藏間・縱橫迷宮",
-    wallColor: 0x121418, floorColor: 0x090a0d,
-    clueName: "解剖冷藏櫃工作日誌",
+    title: "區域 1：杏林醫院・急診候診長廊",
+    wallColor: 0x0f1a14, floorColor: 0x08100b,
+    clueName: "急診室初診紀錄單",
     passcode: "404",
-    diary: "『……祂們在天花板水管中爬動。\n4 號冰櫃已被暴力拉開，號碼牌遺留在配電箱旁：4-0-4。\n輸入 404 解開通道重型門！』"
+    diary: "『……1991 年 4 月，重症急診室送來了一名沒有身分證明的病患。\n病床號碼被鮮血塗抹，只隱約辨識出號碼：4-0-4。\n輸入 404 解開急診隔離閘門！』"
   },
   {
     level: 2,
-    title: "區域 2：污穢生化祈禱所・暗影死角",
-    wallColor: 0x241212, floorColor: 0x150808,
-    clueName: "帶血的黑聖經殘頁",
-    passcode: "666",
-    diary: "『逆十字在滴血……第七位封印祭品編號。\n輸入三重咒印數值 666 破除禁閉！』"
+    title: "區域 2：放射科・暗房 X 光觀片室",
+    wallColor: 0x14181a, floorColor: 0x0a0e10,
+    clueName: "曝光過度的胸腔透視片",
+    passcode: "713",
+    diary: "『觀片燈箱閃爍不定……透視片中的肺部夾著一把手術刀。\n底片右下角標註的病歷序號是 7-1-3。\n輸入 7-1-3 解鎖防輻射鉛門！』"
   },
   {
     level: 3,
-    title: "區域 3：地下水牢死囚刑室・囚徒刻痕",
-    wallColor: 0x181812, floorColor: 0x0e0e0a,
-    clueName: "鐵窗旁的抓痕石板",
-    passcode: "911",
-    diary: "『水牢的水位正在暴漲……\n緊急越獄通道覆寫訊號是 9-1-1！』"
+    title: "區域 3：地下太平間・冷凍冰櫃排",
+    wallColor: 0x1a1515, floorColor: 0x100a0a,
+    clueName: "屍體腳趾掛牌",
+    passcode: "909",
+    diary: "『冰櫃自行彈開了……掛牌上的字跡歪斜顫抖：\n“冷藏櫃防腐排氣閥緊急代碼為 9-0-9”。\n輸入 909 解除排風閥逃出太平間！』"
   },
   {
     level: 4,
-    title: "區域 4：暴走消毒手術室・化學隔間",
-    wallColor: 0x12201a, floorColor: 0x091410,
-    clueName: "手術台毒氣閥壓力表記錄",
-    passcode: "728",
-    diary: "『三個化學儲存槽刻痕數值：7、2、8。\n輸入 7-2-8 平衡氣壓開門！』"
-  },
-  {
-    level: 5,
-    title: "區域 5：地下終焉中樞・最後防生門",
-    wallColor: 0x1a1226, floorColor: 0x0e0915,
-    clueName: "最高防禦協議授權書",
-    passcode: "2026",
-    diary: "『最後一道安全協議覆寫年份：2026。\n輸入 2026 永久開啟基地大門，逃出生天！』"
+    title: "區域 4：院長辦公室・封存檔案庫",
+    wallColor: 0x18140c, floorColor: 0x0f0c08,
+    clueName: "衛生局停業查封公文",
+    passcode: "1993",
+    diary: "『真相終於大白……偽造病歷與醫療糾紛爆發。\n杏林醫院於西元 1993 年正式勒令停業並永久封存！\n輸入停業年份 1993 開啟最後逃生鐵捲門！』"
   }
 ];
 
 let currentStageIdx = 0;
-let playerHP = 100;
-let batteryLevel = 100; // 手電筒電量 0~100%
+let inventory = [];
 let passcodeBuffer = "";
 
-/* ==================== 音效引擎 ==================== */
+/* ==================== 音效引擎 (真實驚悚環境音) ==================== */
 class HorrorAudio {
   constructor() { this.ctx = null; }
   init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
   step() {
     if (!this.ctx) return;
     const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-    o.frequency.setValueAtTime(50, this.ctx.currentTime);
-    g.gain.setValueAtTime(0.08, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.06);
-    o.connect(g); g.connect(this.ctx.destination);
-    o.start(); o.stop(this.ctx.currentTime + 0.06);
-  }
-  click() {
-    if (!this.ctx) return;
-    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-    o.frequency.setValueAtTime(800, this.ctx.currentTime);
-    g.gain.setValueAtTime(0.12, this.ctx.currentTime);
+    o.frequency.setValueAtTime(45, this.ctx.currentTime);
+    g.gain.setValueAtTime(0.06, this.ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
     o.connect(g); g.connect(this.ctx.destination);
     o.start(); o.stop(this.ctx.currentTime + 0.05);
   }
-  roar() {
+  bang() { // 金屬重擊/冰櫃暴彈聲
     if (!this.ctx) return;
     const o = this.ctx.createOscillator(), g = this.ctx.createGain();
     o.type = "sawtooth";
-    o.frequency.setValueAtTime(160, this.ctx.currentTime);
-    o.frequency.linearRampToValueAtTime(360, this.ctx.currentTime + 0.3);
-    g.gain.setValueAtTime(0.4, this.ctx.currentTime);
+    o.frequency.setValueAtTime(140, this.ctx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.4);
+    g.gain.setValueAtTime(0.6, this.ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.4);
     o.connect(g); g.connect(this.ctx.destination);
     o.start(); o.stop(this.ctx.currentTime + 0.4);
+  }
+  wheelSqueak() { // 生鏽輪椅尖銳滑行聲
+    if (!this.ctx) return;
+    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.type = "triangle";
+    o.frequency.setValueAtTime(800, this.ctx.currentTime);
+    o.frequency.linearRampToValueAtTime(1400, this.ctx.currentTime + 0.3);
+    g.gain.setValueAtTime(0.25, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.6);
+    o.connect(g); g.connect(this.ctx.destination);
+    o.start(); o.stop(this.ctx.currentTime + 0.6);
+  }
+  buzz() { // 日光燈電流短路爆閃聲
+    if (!this.ctx) return;
+    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.type = "square";
+    o.frequency.setValueAtTime(120, this.ctx.currentTime);
+    g.gain.setValueAtTime(0.2, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+    o.connect(g); g.connect(this.ctx.destination);
+    o.start(); o.stop(this.ctx.currentTime + 0.15);
   }
   doorOpen() {
     if (!this.ctx) return;
     const o = this.ctx.createOscillator(), g = this.ctx.createGain();
     o.type = "sawtooth";
-    o.frequency.setValueAtTime(100, this.ctx.currentTime);
-    o.frequency.exponentialRampToValueAtTime(450, this.ctx.currentTime + 0.6);
+    o.frequency.setValueAtTime(90, this.ctx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(350, this.ctx.currentTime + 0.7);
     g.gain.setValueAtTime(0.35, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.6);
+    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.7);
     o.connect(g); g.connect(this.ctx.destination);
-    o.start(); o.stop(this.ctx.currentTime + 0.6);
+    o.start(); o.stop(this.ctx.currentTime + 0.7);
   }
 }
 const sfx = new HorrorAudio();
 
 /* ==================== Three.js 第一人稱 3D 空間 ==================== */
-let scene, camera, renderer, flashlight;
-let roomMeshGroup = null, clueObject = null, doorObject = null, batteryObject = null;
-let ghostMesh = null; // 巡邏惡靈模型
+let scene, camera, renderer, flashlight, ceilingFlickerLight;
+let roomMeshGroup = null, clueObject = null, doorObject = null;
+let wheelchairMesh = null, morgueDrawerMesh = null; // 驚嚇道具
 let yaw = 0, pitch = 0;
-let playerPos = { x: 0, y: 1.8, z: 12 };
+let playerPos = { x: 0, y: 1.8, z: 13 };
 let keys = { KeyW: false, KeyS: false, KeyA: false, KeyD: false };
 let isInteractingLook = false, lastTouchX = 0, lastTouchY = 0;
 let headBob = 0;
-
-// 內部隔間牆碰撞箱清單 (Bounding Boxes)
 let wallColliders = [];
+
+// 驚嚇觸發旗標
+let wheelchairScareTriggered = false;
+let morgueScareTriggered = false;
 
 function startGame() {
   document.getElementById('start-modal').style.display = 'none';
   sfx.init();
 
   initThreeEngine();
-  loadStageComplex(0);
-
-  // 每 2 秒衰減手電筒電量 1%
-  setInterval(() => {
-    if (batteryLevel > 0) {
-      batteryLevel = Math.max(0, batteryLevel - 1);
-      document.getElementById('battery-bar').style.width = `${batteryLevel}%`;
-      if (flashlight) {
-        flashlight.intensity = (batteryLevel / 100) * 2.8;
-      }
-    }
-  }, 2000);
+  loadStageHospital(0);
 }
 
 function initThreeEngine() {
@@ -365,15 +349,19 @@ function initThreeEngine() {
   camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
   camera.position.set(playerPos.x, playerPos.y, playerPos.z);
 
-  // 第一人稱手電筒聚光燈
-  flashlight = new THREE.SpotLight(0xfffaed, 2.8, 24, Math.PI / 4.8, 0.45, 1.3);
+  // 第一人稱手電筒 (冷白微綠醫用光色)
+  flashlight = new THREE.SpotLight(0xecfff2, 2.8, 22, Math.PI / 4.6, 0.4, 1.2);
   camera.add(flashlight);
   flashlight.position.set(0, 0, 0.2);
   flashlight.target = camera;
   scene.add(camera);
 
-  // 極微弱暗黑環境光
-  scene.add(new THREE.AmbientLight(0x0a0a0d));
+  // 天花板故障短路燈
+  ceilingFlickerLight = new THREE.PointLight(0xaaffcc, 0.8, 15);
+  ceilingFlickerLight.position.set(0, 5.5, 0);
+  scene.add(ceilingFlickerLight);
+
+  scene.add(new THREE.AmbientLight(0x040806));
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio);
@@ -401,7 +389,6 @@ function initThreeEngine() {
     }
   });
   window.addEventListener('pointerup', () => { isInteractingLook = false; });
-
   container.addEventListener('click', checkRaycastInteract);
 
   window.addEventListener('resize', () => {
@@ -413,113 +400,134 @@ function initThreeEngine() {
   animate();
 }
 
-/* ==================== 建立複雜多隔間迷宮 ==================== */
-function loadStageComplex(idx) {
+/* ==================== 建立精緻杏林醫院隔間與驚嚇道具 ==================== */
+function loadStageHospital(idx) {
   currentStageIdx = idx;
-  const stage = COMPLEX_STAGES[idx];
+  const stage = HOSPITAL_STAGES[idx];
 
   document.getElementById('stage-title').innerText = stage.title;
   document.getElementById('radio-instruction').innerText =
-    `「進入【${stage.title}】！避開幽靈，在暗處隔間尋找電池與密碼檔案，再前往盡頭鐵門！」`;
+    `「進入【${stage.title}】！注意長廊轉角的異響，在深處病房搜查病歷，再前往鐵捲門！」`;
 
-  // 重置玩家起點至走廊起點
   playerPos = { x: 0, y: 1.8, z: 13 };
   yaw = 0; pitch = 0;
+  wheelchairScareTriggered = false;
+  morgueScareTriggered = false;
 
   if (roomMeshGroup) scene.remove(roomMeshGroup);
   roomMeshGroup = new THREE.Group();
   wallColliders = [];
 
-  // 外圍主外牆 (寬 32m, 深 32m, 高 6m)
-  const wallMat = new THREE.MeshStandardMaterial({ color: stage.wallColor, roughness: 0.9, side: THREE.BackSide });
+  // 外牆 (寬 32m, 深 32m, 高 6m，老舊斑駁瓷磚質感色調)
+  const wallMat = new THREE.MeshStandardMaterial({ color: stage.wallColor, roughness: 0.95, side: THREE.BackSide });
   const outerRoom = new THREE.Mesh(new THREE.BoxGeometry(32, 6, 32), wallMat);
   outerRoom.position.y = 3;
   roomMeshGroup.add(outerRoom);
 
-  // 地面與天花板
-  const floorMat = new THREE.MeshStandardMaterial({ color: stage.floorColor, roughness: 0.85 });
+  // 地板 (老舊潮濕綠瓷磚感)
+  const floorMat = new THREE.MeshStandardMaterial({ color: stage.floorColor, roughness: 0.8 });
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(32, 32), floorMat);
   floor.rotation.x = -Math.PI / 2;
   roomMeshGroup.add(floor);
 
-  // ⭐ 迷宮隔間內牆佈局 (產生多個死角房間：解剖室、配電間、死囚室)
-  buildInternalWall(-5, 0, 10, 0.8);  // 橫向隔間牆 A
-  buildInternalWall(6, -4, 0.8, 12);  // 直向隔間牆 B
-  buildInternalWall(-8, -8, 8, 0.8);  // 橫向隔間牆 C
-  buildInternalWall(3, 6, 10, 0.8);   // 橫向隔間牆 D
-  buildInternalWall(-4, 8, 0.8, 8);   // 直向隔間牆 E
+  // ⭐ 醫院內部迷宮隔間牆 (候診走廊、處置室、隔離開間)
+  buildWall(-6, 2, 10, 0.8);
+  buildWall(6, -3, 0.8, 12);
+  buildWall(-7, -8, 8, 0.8);
+  buildWall(4, 7, 10, 0.8);
+  buildWall(-4, 9, 0.8, 8);
 
-  // 1. 散落證物台 (藏在深處拐角房間：X: -11, Z: -11)
-  const deskMesh = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.2, 1.8), new THREE.MeshStandardMaterial({ color: 0x332211 }));
+  // 1. 調查病歷桌 (位於深處病房：X: -11, Z: -11)
+  const deskMesh = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.2, 1.8), new THREE.MeshStandardMaterial({ color: 0x1f2824 }));
   deskMesh.position.set(-11, 0.6, -11);
   roomMeshGroup.add(deskMesh);
 
-  const bookMesh = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.2, 1.1), new THREE.MeshBasicMaterial({ color: 0xffdd66 }));
+  // 發光病歷夾
+  const bookMesh = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.2, 1.1), new THREE.MeshBasicMaterial({ color: 0x00ff88 }));
   bookMesh.position.set(-11, 1.3, -11);
   clueObject = bookMesh;
   clueObject.userData = { type: "clue", data: stage };
   roomMeshGroup.add(clueObject);
 
-  // 2. ⭐ 備用手電筒電池 (藏在另一個隔間暗角：X: 11, Z: 8)
-  const batMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.8, 12), new THREE.MeshBasicMaterial({ color: 0x00ff88 }));
-  batMesh.position.set(11, 0.8, 8);
-  batteryObject = batMesh;
-  batteryObject.userData = { type: "battery" };
-  roomMeshGroup.add(batteryObject);
+  // 2. ⭐ 驚嚇道具 1：生鏽手推輪椅 (停在長廊死角 X: 6, Z: 2)
+  buildWheelchair(6, 2);
 
-  // 3. 通往下一關的重型防護鐵門 (位於走廊最盡頭：X: 0, Z: -15.8)
-  const doorGeom = new THREE.BoxGeometry(4, 5, 0.4);
-  const doorMat = new THREE.MeshStandardMaterial({ color: 0x1f1111, metalness: 0.8, roughness: 0.3 });
-  doorObject = new THREE.Mesh(doorGeom, doorMat);
+  // 3. ⭐ 驚嚇道具 2：地下冷藏冰櫃排 (位於 X: -10, Z: 5)
+  buildMorgueDrawers(-10, 5);
+
+  // 4. 重型逃生鐵捲門 (走廊盡頭：X: 0, Z: -15.8)
+  const doorMat = new THREE.MeshStandardMaterial({ color: 0x15221b, metalness: 0.85, roughness: 0.25 });
+  doorObject = new THREE.Mesh(new THREE.BoxGeometry(4, 5, 0.4), doorMat);
   doorObject.position.set(0, 2.5, -15.8);
   doorObject.userData = { type: "door", data: stage };
   roomMeshGroup.add(doorObject);
 
-  const lockPlate = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.2, 0.2), new THREE.MeshBasicMaterial({ color: 0xff2222 }));
+  const lockPlate = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.2, 0.2), new THREE.MeshBasicMaterial({ color: 0x00ff88 }));
   lockPlate.position.set(1.4, 0, 0.3);
   doorObject.add(lockPlate);
-
-  // 4. ⭐ 巡邏追殺怨靈 (在迷宮中游蕩)
-  buildStalkerGhost();
 
   scene.add(roomMeshGroup);
 }
 
-// 建立隔間內牆輔助函式
-function buildInternalWall(x, z, width, depth) {
-  const wallMat = new THREE.MeshStandardMaterial({ color: 0x1a1e24, roughness: 0.95 });
+function buildWall(x, z, width, depth) {
+  const wallMat = new THREE.MeshStandardMaterial({ color: 0x111c16, roughness: 0.95 });
   const wall = new THREE.Mesh(new THREE.BoxGeometry(width, 5.8, depth), wallMat);
   wall.position.set(x, 2.9, z);
   roomMeshGroup.add(wall);
 
-  // 建立碰撞邊界
   wallColliders.push({
     minX: x - width / 2 - 0.7, maxX: x + width / 2 + 0.7,
     minZ: z - depth / 2 - 0.7, maxZ: z + depth / 2 + 0.7
   });
 }
 
-// 建立怨靈模型
-function buildStalkerGhost() {
-  if (ghostMesh) scene.remove(ghostMesh);
+// 建立輪椅模型
+function buildWheelchair(x, z) {
+  const group = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({ color: 0x332222, metalness: 0.8 });
 
-  const ghostGroup = new THREE.Group();
-  const body = new THREE.Mesh(new THREE.ConeGeometry(1.2, 3.5, 12), new THREE.MeshBasicMaterial({ color: 0x330000, wireframe: true }));
-  body.position.y = 2.2;
-  ghostGroup.add(body);
+  // 椅座與椅背
+  const seat = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.2, 1.6), mat);
+  seat.position.y = 1.0;
+  const back = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.8, 0.2), mat);
+  back.position.set(0, 1.9, -0.7);
+  group.add(seat); group.add(back);
 
-  const eye1 = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
-  eye1.position.set(-0.35, 3.2, 0.8);
-  const eye2 = eye1.clone();
-  eye2.position.set(0.35, 3.2, 0.8);
-  ghostGroup.add(eye1); ghostGroup.add(eye2);
+  // 兩個大輪子
+  const wheelGeom = new THREE.TorusGeometry(0.8, 0.08, 8, 24);
+  const leftWheel = new THREE.Mesh(wheelGeom, mat);
+  leftWheel.position.set(-0.9, 0.8, 0);
+  leftWheel.rotation.y = Math.PI / 2;
+  const rightWheel = leftWheel.clone();
+  rightWheel.position.set(0.9, 0.8, 0);
+  group.add(leftWheel); group.add(rightWheel);
 
-  ghostMesh = ghostGroup;
-  ghostMesh.position.set(0, 0, -5);
-  scene.add(ghostMesh);
+  group.position.set(x, 0, z);
+  wheelchairMesh = group;
+  roomMeshGroup.add(wheelchairMesh);
 }
 
-/* ==================== 第一人稱走動與碰撞檢測 ==================== */
+// 建立太平間冰櫃排
+function buildMorgueDrawers(x, z) {
+  const group = new THREE.Group();
+  const steelMat = new THREE.MeshStandardMaterial({ color: 0x303c35, metalness: 0.9, roughness: 0.2 });
+
+  // 櫃體
+  const cabinet = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 5), steelMat);
+  cabinet.position.y = 1.5;
+  group.add(cabinet);
+
+  // 暴彈抽屜
+  const drawer = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.9, 3.8), new THREE.MeshStandardMaterial({ color: 0x45554c, metalness: 0.9 }));
+  drawer.position.set(0, 1.5, 0);
+  morgueDrawerMesh = drawer;
+  group.add(morgueDrawerMesh);
+
+  group.position.set(x, 0, z);
+  roomMeshGroup.add(group);
+}
+
+/* ==================== 走動與碰撞檢測 ==================== */
 function updateMovement() {
   const moveSpeed = 0.11;
   let moveX = 0, moveZ = 0;
@@ -540,14 +548,12 @@ function updateMovement() {
     const nextX = playerPos.x + (moveX * cosYaw + moveZ * sinYaw);
     const nextZ = playerPos.z + (-moveX * sinYaw + moveZ * cosYaw);
 
-    // 碰撞檢測：檢查是否撞上任何迷宮內牆
     let canMoveX = true, canMoveZ = true;
     for (let box of wallColliders) {
       if (nextX >= box.minX && nextX <= box.maxX && playerPos.z >= box.minZ && playerPos.z <= box.maxZ) canMoveX = false;
       if (playerPos.x >= box.minX && playerPos.x <= box.maxX && nextZ >= box.minZ && nextZ <= box.maxZ) canMoveZ = false;
     }
 
-    // 主外牆邊界
     if (nextX < -15 || nextX > 15) canMoveX = false;
     if (nextZ < -15 || nextZ > 15) canMoveZ = false;
 
@@ -570,45 +576,73 @@ function updateMovement() {
 
   const euler = new THREE.Euler(pitch, yaw, 0, 'YXZ');
   camera.quaternion.setFromEuler(euler);
+
+  // 檢查環境驚嚇觸發點
+  checkEnvironmentalScares();
 }
 
-/* ==================== 怨靈巡邏與追殺感知 ==================== */
-let ghostPatrolAngle = 0;
-function updateGhostAI() {
-  if (!ghostMesh) return;
+/* ==================== ⭐ 核心：環境靈異驚嚇事件觸發器 ==================== */
+function checkEnvironmentalScares() {
+  // 驚嚇 1：走進轉角時，生鏽輪椅突然自行暴衝滑過來
+  if (!wheelchairScareTriggered && wheelchairMesh) {
+    const distToChair = Math.hypot(wheelchairMesh.position.x - playerPos.x, wheelchairMesh.position.z - playerPos.z);
+    if (distToChair < 7.5) {
+      wheelchairScareTriggered = true;
+      sfx.wheelSqueak();
+      triggerScareFlash();
 
-  // 惡靈在迷宮迴廊中按橢圓路徑巡邏
-  ghostPatrolAngle += 0.012;
-  ghostMesh.position.x = Math.sin(ghostPatrolAngle) * 9;
-  ghostMesh.position.z = Math.cos(ghostPatrolAngle * 0.7) * 8 - 2;
-  ghostMesh.position.y = 0.5 + Math.sin(Date.now() * 0.005) * 0.3;
-
-  // 計算與玩家的距離
-  const dist = Math.hypot(ghostMesh.position.x - playerPos.x, ghostMesh.position.z - playerPos.z);
-  const dangerEl = document.getElementById('danger-border');
-
-  if (dist < 8.5) {
-    // 進入危險追擊半徑
-    dangerEl.style.display = 'block';
-    if (!updateGhostAI.screamed) {
-      sfx.roar();
-      updateGhostAI.screamed = true;
+      // 輪椅向玩家方向猛烈衝刺滑行
+      let slideFrames = 0;
+      const slideInterval = setInterval(() => {
+        wheelchairMesh.position.z += 0.35;
+        wheelchairMesh.rotation.y += 0.08;
+        slideFrames++;
+        if (slideFrames > 22) clearInterval(slideInterval);
+      }, 25);
     }
+  }
 
-    // 遭撲咬受傷
-    if (dist < 2.5) {
-      playerHP = Math.max(0, playerHP - 25);
-      document.getElementById('hp-bar').style.width = `${playerHP}%`;
-      alert(`【遭怨靈撲咬！】受到 25 點傷害！剩餘 HP: ${playerHP}！快跑進轉角甩開祂！`);
-      playerPos.x += 4; // 被震退
+  // 驚嚇 2：靠近太平間冰櫃時，金屬抽屜伴隨巨響突然自行向外彈出
+  if (!morgueScareTriggered && morgueDrawerMesh) {
+    const distToMorgue = Math.hypot(-10 - playerPos.x, 5 - playerPos.z);
+    if (distToMorgue < 6.0) {
+      morgueScareTriggered = true;
+      sfx.bang();
+      triggerScareFlash();
+
+      // 抽屜向外彈出
+      let popFrames = 0;
+      const popInterval = setInterval(() => {
+        morgueDrawerMesh.position.z += 0.25;
+        popFrames++;
+        if (popFrames > 12) clearInterval(popInterval);
+      }, 30);
     }
-  } else {
-    dangerEl.style.display = 'none';
-    updateGhostAI.screamed = false;
   }
 }
 
-/* ==================== 準心視線射線交互 ==================== */
+// 突發紅屏視覺干擾
+function triggerScareFlash() {
+  const flash = document.getElementById('scare-flash');
+  flash.style.display = 'block';
+  setTimeout(() => { flash.style.display = 'none'; }, 220);
+}
+
+/* ==================== 日光燈隨機短路爆閃 ==================== */
+let flickerTimer = 0;
+function updateCeilingFlicker() {
+  flickerTimer++;
+  if (flickerTimer % 45 === 0 && Math.random() > 0.4) {
+    sfx.buzz();
+    ceilingFlickerLight.intensity = 0.05; // 瞬間斷電黑屏
+    setTimeout(() => {
+      ceilingFlickerLight.intensity = 1.4;
+      setTimeout(() => { ceilingFlickerLight.intensity = 0.8; }, 80);
+    }, 60);
+  }
+}
+
+/* ==================== 準心交互 ==================== */
 function checkRaycastInteract() {
   const raycaster = new THREE.Raycaster();
   raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
@@ -616,7 +650,6 @@ function checkRaycastInteract() {
   const targets = [];
   if (clueObject) targets.push(clueObject);
   if (doorObject) targets.push(doorObject);
-  if (batteryObject) targets.push(batteryObject);
 
   const hits = raycaster.intersectObjects(targets, true);
 
@@ -630,8 +663,6 @@ function checkRaycastInteract() {
         openClueDialog(hitObj.userData.data);
       } else if (hitObj.userData.type === "door") {
         openKeypadDialog();
-      } else if (hitObj.userData.type === "battery") {
-        collectBattery();
       }
     }
   }
@@ -644,7 +675,6 @@ function updateInteractHint() {
   const targets = [];
   if (clueObject) targets.push(clueObject);
   if (doorObject) targets.push(doorObject);
-  if (batteryObject) targets.push(batteryObject);
 
   const hits = raycaster.intersectObjects(targets, true);
   const cross = document.getElementById('crosshair');
@@ -659,28 +689,22 @@ function updateInteractHint() {
   }
 }
 
-function collectBattery() {
-  sfx.click();
-  batteryLevel = Math.min(100, batteryLevel + 50);
-  document.getElementById('battery-bar').style.width = `${batteryLevel}%`;
-  if (flashlight) flashlight.intensity = (batteryLevel / 100) * 2.8;
-
-  scene.remove(batteryObject);
-  batteryObject = null;
-  alert("【撿起備用電池！】手電筒光芒大幅增強 (+50% 電量)！");
-}
-
 /* ==================== 密室彈窗解謎邏輯 ==================== */
 function openClueDialog(data) {
-  sfx.click();
+  sfx.bang();
   document.getElementById('clue-title').innerText = `【${data.clueName}】`;
   document.getElementById('clue-body').innerText = data.diary;
   document.getElementById('clue-modal').style.display = 'flex';
+
+  if (!inventory.includes(data.clueName)) {
+    inventory.push(data.clueName);
+    document.getElementById('inv-display').innerText = `道具包: ${inventory.join(', ')}`;
+  }
 }
 function closeClueModal() { document.getElementById('clue-modal').style.display = 'none'; }
 
 function openKeypadDialog() {
-  sfx.click();
+  sfx.buzz();
   passcodeBuffer = "";
   document.getElementById('keypad-code').innerText = "----";
   document.getElementById('keypad-modal').style.display = 'flex';
@@ -688,28 +712,28 @@ function openKeypadDialog() {
 function closeKeypad() { document.getElementById('keypad-modal').style.display = 'none'; }
 
 function pressKey(n) {
-  sfx.click();
+  sfx.buzz();
   if (passcodeBuffer.length < 4) {
     passcodeBuffer += n;
     document.getElementById('keypad-code').innerText = passcodeBuffer.padEnd(4, '-');
   }
 }
-function clearKeypad() { sfx.click(); passcodeBuffer = ""; document.getElementById('keypad-code').innerText = "----"; }
+function clearKeypad() { sfx.buzz(); passcodeBuffer = ""; document.getElementById('keypad-code').innerText = "----"; }
 
 function submitPasscode() {
-  const currentStage = COMPLEX_STAGES[currentStageIdx];
+  const currentStage = HOSPITAL_STAGES[currentStageIdx];
   if (passcodeBuffer === currentStage.passcode) {
     sfx.doorOpen();
     closeKeypad();
-    alert(`🎉【重型防護門解除！】\n厚重的鋼鐵閥門在刺耳摩擦聲中開啟！成功突破【${currentStage.title}】！`);
+    alert(`🎉【閘門開啟！】重型防護門在刺耳的金屬摩擦聲中升起！成功逃離【${currentStage.title}】！`);
 
-    if (currentStageIdx + 1 < COMPLEX_STAGES.length) {
-      loadStageComplex(currentStageIdx + 1);
+    if (currentStageIdx + 1 < HOSPITAL_STAGES.length) {
+      loadStageHospital(currentStageIdx + 1);
     } else {
-      alert("🏆【深淵生還者！】你已成功穿梭整座地下迷宮，突破全部 5 道密室封鎖，逃出生天！");
+      alert("🏆【杏林生還者！】你已成功穿梭整座杏林綜合醫院，解開全部 4 道病區封鎖，重見天日！");
     }
   } else {
-    alert("【密碼錯誤！】警報紅燈狂閃！請重新在暗房抽屜中核對檔案！");
+    alert("【密碼錯誤！】門禁指示燈發出蜂鳴！請核對病歷上的數字代碼！");
     clearKeypad();
   }
 }
@@ -720,11 +744,10 @@ function animate() {
 
   updateMovement();
   updateInteractHint();
-  updateGhostAI();
+  updateCeilingFlicker();
 
-  // 物品呼吸微光
+  // 病歷光芒呼吸
   if (clueObject) clueObject.rotation.y += 0.02;
-  if (batteryObject) batteryObject.rotation.y += 0.04;
 
   renderer.render(scene, camera);
 }
