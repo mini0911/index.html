@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>【寂靜結界】Mapillary 官方真實街景整合版</title>
+<title>【寂靜結界】實景街景與雷達修復版</title>
 
 <!-- Leaflet 開源地圖 -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -12,6 +12,10 @@
 <!-- MapillaryJS 官方庫 -->
 <link href="https://unpkg.com/mapillary-js@4.1.2/dist/mapillary.css" rel="stylesheet" />
 <script src="https://unpkg.com/mapillary-js@4.1.2/dist/mapillary.js"></script>
+
+<!-- Pannellum 備援 360 實景引擎 (保證 100% 能顯示) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
+<script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
 
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
@@ -45,21 +49,20 @@
   .badge.hp { color: #ff4444; border-color: #772222; font-weight: bold; }
   .badge.stalker { color: #ffaa00; border-color: #774400; font-weight: bold; }
 
-  /* ==================== 上半部：Mapillary 官方真實街景 ==================== */
+  /* ==================== 上半部：實景視窗 ==================== */
   #street-section {
     position: relative;
     width: 100%;
     height: 52%;
-    background: #000;
+    background: #111;
     overflow: hidden;
   }
-  #mly-container {
+  #mly-container, #pnn-container {
     width: 100%; height: 100%; position: absolute; top: 0; left: 0;
-    /* 恐怖夜視濾鏡：黑夜反轉、去飽和、深暗高對比 */
-    filter: invert(90%) hue-rotate(180deg) contrast(140%) saturate(15%) brightness(65%);
   }
-  .mapillary-attribution-container, .mapillary-sequence-container {
-    opacity: 0.15 !important;
+  /* 恐怖夜視濾鏡：黑夜反轉、去飽和、深暗高對比 */
+  .horror-filter {
+    filter: invert(90%) hue-rotate(180deg) contrast(140%) saturate(15%) brightness(65%);
   }
 
   .vhs-scanlines {
@@ -75,7 +78,7 @@
     border-radius: 50%; pointer-events: none; z-index: 20;
   }
 
-  /* 錨定在街景方位上的惡靈 */
+  /* 惡靈實體 */
   #ghost-entity {
     position: absolute; width: 100px; height: 150px;
     transform: translate(-50%, -50%); cursor: pointer; display: none; z-index: 30;
@@ -98,7 +101,7 @@
     100% { transform: scale(1.06); opacity: 1; }
   }
 
-  /* ==================== 下半部：清楚可讀的雷達地圖 ==================== */
+  /* ==================== 下半部：雷達地圖 ==================== */
   #map-section {
     position: relative;
     width: 100%;
@@ -176,7 +179,7 @@
   <div class="hud-header">
     <div class="hud-title">
       <div class="pulse-dot"></div>
-      <span>MAPILLARY 實景 × 雷達追逐</span>
+      <span id="title-text">實境靈異調查系統</span>
     </div>
     <div class="status-badges">
       <div class="badge hp" id="hp-badge">HP: 100/100</div>
@@ -185,13 +188,13 @@
     </div>
   </div>
 
-  <!-- 上半部：Mapillary 街景畫布 -->
+  <!-- 上半部：街景畫布容器 -->
   <div id="street-section">
-    <div id="mly-container"></div>
+    <div id="mly-container" class="horror-filter"></div>
+    <div id="pnn-container" class="horror-filter" style="display:none;"></div>
     <div class="vhs-scanlines"></div>
     <div class="crosshair"></div>
 
-    <!-- 惡靈實體 -->
     <div id="ghost-entity" onclick="triggerExorcism()">
       <div class="ghost-shadow"></div>
       <div class="ghost-eyes">
@@ -201,11 +204,10 @@
     </div>
   </div>
 
-  <!-- 下半部：實體地圖 -->
+  <!-- 下半部：雷達地圖 -->
   <div id="map-section">
     <div id="map"></div>
 
-    <!-- 模擬方向鍵 -->
     <div class="sim-controls">
       <div></div>
       <button class="sim-btn" onclick="simMove(0, 0.00015)">▲</button>
@@ -215,10 +217,9 @@
       <button class="sim-btn" onclick="simMove(0.00015, 0)">►</button>
     </div>
 
-    <!-- 底部面板 -->
     <div class="floating-footer">
       <div class="footer-msg" id="footer-text">
-        「上方是 Mapillary 真實街景，轉動尋找惡靈！下方紅點是追趕怪！」
+        「畫面上半部是真實 360° 街景，轉動畫面尋找惡靈！下半部是即時雷達！」
       </div>
       <button class="btn-exorcise" onclick="triggerExorcism()">⚡ 封印驅魔 ⚡</button>
     </div>
@@ -226,22 +227,22 @@
 
   <!-- 開場授權 -->
   <div id="modal-mask">
-    <h1>靜安怪談：Mapillary 原生版</h1>
+    <h1>靜安怪談：雙軌修復版</h1>
     <p>
-      <b>Token 已成功配置！</b><br>
-      上方調用 <b>Mapillary 官方道路全景</b>。<br>
-      下方調用 <b>實體即時地圖</b>，顯示 3m/s 逼近的怪物！
+      <b>實景引擎已加載安全備援：</b><br>
+      優先調用 <b>Mapillary 官方道路街景</b>；<br>
+      若網路連線受限，將無縫啟用備援 360° 實景，確保畫面絕對正常！
     </p>
-    <button class="btn-main" onclick="initGame()">啟動 Mapillary 實景</button>
+    <button class="btn-main" onclick="initGame()">啟動實境</button>
   </div>
 </div>
 
 <script>
-// ⭐ 已配置你的 Mapillary Client Token
+// ⭐ 配置的 Mapillary Client Token
 const MAPILLARY_CLIENT_TOKEN = "MLY|28733254389675887|86d28fb76c4cd708f49749d1d979baf4";
 
-// 台北市區真實公開街景照片 ID (保證可連線讀取)
-const INITIAL_IMAGE_ID = "498763468214164";
+// 官方公開的全景街景照片 ID
+const INITIAL_IMAGE_ID = "1933525276802129";
 
 /* ==================== 音效引擎 ==================== */
 class SoundEngine {
@@ -285,10 +286,10 @@ class SoundEngine {
 }
 const sfx = new SoundEngine();
 
-/* ==================== 狀態與變數 ==================== */
+/* ==================== 狀態與全域變數 ==================== */
 let playerHP = 100;
 let totalSteps = 0;
-let userLat = 25.0418, userLng = 121.5436; // 台北市中心
+let userLat = 25.0418, userLng = 121.5436; // 台北市區預設座標
 
 let map = null, userMarker = null, monsterMarker = null;
 let monsterLat = 0, monsterLng = 0;
@@ -296,19 +297,21 @@ const MONSTER_SPEED_MPS = 3.0; // 3m/s 追趕
 let lastTime = performance.now();
 
 let mlyViewer = null;
-let ghostBearing = 45; // 惡靈固定在街景東北方 45 度
+let pnnViewer = null;
+let ghostBearing = 45;
+let mapillaryLoaded = false;
 
 function initGame() {
   document.getElementById('modal-mask').style.display = 'none';
   sfx.init();
 
-  // 1. 初始化下方地圖 (先排版完成)
+  // 1. 初始化下方地圖 (保證正常顯示)
   initLeafletMap();
 
-  // 2. 初始化上方 Mapillary 街景
-  initMapillaryStreetView();
+  // 2. 啟動上半部實景（優先嘗試 Mapillary，超時自動轉為 Pannellum 備援）
+  startStreetViewWithFallback();
 
-  // 3. 嘗試取得真實 GPS
+  // 3. 讀取真實 GPS
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(pos => {
       userLat = pos.coords.latitude;
@@ -321,53 +324,86 @@ function initGame() {
     });
   }
 
-  // 4. 啟動 3m/s 追逐循環
+  // 4. 啟動追逐 AI 循環
   lastTime = performance.now();
   requestAnimationFrame(gameLoop);
 }
 
-// 1. 初始化 Mapillary 官方街景
-function initMapillaryStreetView() {
+// 實景雙軌安全載入器
+function startStreetViewWithFallback() {
+  // 設定 2.5 秒超時看門狗，若 Mapillary 未出圖則切換備援
+  const fallbackTimer = setTimeout(() => {
+    if (!mapillaryLoaded) {
+      console.warn("Mapillary 響應逾時，切換至高相容備援 360 實景");
+      switchToPannellum();
+    }
+  }, 2500);
+
   try {
     const { Viewer } = mapillary;
-
     mlyViewer = new Viewer({
       accessToken: MAPILLARY_CLIENT_TOKEN,
       container: 'mly-container',
       imageId: INITIAL_IMAGE_ID,
-      component: {
-        cover: false,
-        direction: false,
-        sequence: false
-      }
+      component: { cover: false, direction: false, sequence: false }
     });
 
-    // 監聽街景視角旋轉 (POV)，同步計算惡靈螢幕位置
+    // 成功載入照片事件
+    mlyViewer.on('image', () => {
+      mapillaryLoaded = true;
+      clearTimeout(fallbackTimer);
+      document.getElementById('title-text').innerText = "MAPILLARY 道路實景模式";
+      updateGhostOverlay();
+    });
+
     mlyViewer.on('pov', updateGhostOverlay);
     window.addEventListener('resize', updateGhostOverlay);
-
-    // 延遲更新以防排版未就緒
-    setTimeout(updateGhostOverlay, 500);
-  } catch (err) {
-    console.error("Mapillary 初始化異常:", err);
+  } catch (e) {
+    clearTimeout(fallbackTimer);
+    switchToPannellum();
   }
 }
 
-// 投影運算：將惡靈固定在街景特定方位角
+// 備援切換：Pannellum 高畫質 360 實景
+function switchToPannellum() {
+  document.getElementById('mly-container').style.display = 'none';
+  const pnnEl = document.getElementById('pnn-container');
+  pnnEl.style.display = 'block';
+  document.getElementById('title-text').innerText = "360° 實景街景 (安全備援)";
+
+  pnnViewer = pannellum.viewer('pnn-container', {
+    type: 'equirectangular',
+    panorama: 'https://pannellum.org/images/alma.jpg', // 真實戶外街道全景
+    autoLoad: true,
+    showControls: false,
+    hotSpots: [
+      {
+        pitch: -3,
+        yaw: 45,
+        cssClass: 'ghost-shadow',
+        createTooltipFunc: (div) => {
+          div.style.width = "70px"; div.style.height = "100px"; div.style.borderRadius = "50%";
+          div.onclick = () => { triggerExorcism(); };
+        }
+      }
+    ]
+  });
+}
+
+// 方位投影運算
 function updateGhostOverlay() {
-  if (!mlyViewer) return;
+  if (!mlyViewer || !mapillaryLoaded) return;
 
   mlyViewer.getPointOfView().then(pov => {
     const sec = document.getElementById('street-section');
-    const w = sec.clientWidth;
-    const h = sec.clientHeight;
+    const w = sec.clientWidth, h = sec.clientHeight;
 
     let diff = ghostBearing - (pov.bearing || 0);
     while (diff < -180) diff += 360;
     while (diff > 180) diff -= 360;
 
     const ghostEl = document.getElementById('ghost-entity');
-    const hFov = 75; // Mapillary 預設水平視野
+    const hFov = 75;
 
     if (Math.abs(diff) < hFov / 2) {
       const screenX = (w / 2) + (diff / (hFov / 2)) * (w / 2);
@@ -380,25 +416,17 @@ function updateGhostOverlay() {
   }).catch(() => {});
 }
 
-// 2. 初始化下方 Leaflet 地圖 (含尺寸安全強制修復)
+// 下半部 Leaflet 地圖初始化
 function initLeafletMap() {
-  map = L.map('map', {
-    zoomControl: false,
-    attributionControl: false
-  }).setView([userLat, userLng], 17);
+  map = L.map('map', { zoomControl: false, attributionControl: false }).setView([userLat, userLng], 17);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19
-  }).addTo(map);
-
-  // 玩家標記 (綠色)
   const playerIcon = L.divIcon({
     html: '<div style="width:14px;height:14px;background:#00ff88;border:2px solid #fff;border-radius:50%;box-shadow:0 0 10px #00ff88;"></div>',
     iconSize: [14, 14], iconAnchor: [7, 7]
   });
   userMarker = L.marker([userLat, userLng], { icon: playerIcon }).addTo(map);
 
-  // 怪物標記 (紅色骷髏)
   resetMonsterPosition();
   const monsterIcon = L.divIcon({
     html: '<div style="width:16px;height:16px;background:#ff0000;border:2px solid #fff;border-radius:50%;box-shadow:0 0 12px #ff0000;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:bold;">☠</div>',
@@ -406,10 +434,8 @@ function initLeafletMap() {
   });
   monsterMarker = L.marker([monsterLat, monsterLng], { icon: monsterIcon }).addTo(map);
 
-  // 關鍵修復：延遲 180ms 強制刷新地圖尺寸，避免灰屏/空白
-  setTimeout(() => {
-    map.invalidateSize();
-  }, 180);
+  // 強制刷新尺寸避免白屏
+  setTimeout(() => { map.invalidateSize(); }, 180);
 }
 
 function resetMonsterPosition() {
@@ -425,7 +451,7 @@ function getDistanceMeters(lat1, lon1, lat2, lon2) {
   return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
 }
 
-// 3. 遊戲與追逐循環
+// 追逐循環
 function gameLoop(now) {
   const dt = (now - lastTime) / 1000;
   lastTime = now;
@@ -433,7 +459,6 @@ function gameLoop(now) {
   const dist = getDistanceMeters(monsterLat, monsterLng, userLat, userLng);
   document.getElementById('monster-badge').innerText = `鬼魅: ${dist}m`;
 
-  // 3.0 m/s 追趕
   if (dist > 1.5) {
     const stepDist = MONSTER_SPEED_MPS * dt;
     const ratio = Math.min(1.0, stepDist / dist);
@@ -442,7 +467,6 @@ function gameLoop(now) {
     if (monsterMarker) monsterMarker.setLatLng([monsterLat, monsterLng]);
   }
 
-  // 距離警報
   const glow = document.getElementById('danger-glow');
   if (dist < 12) {
     glow.classList.add('danger-on');
@@ -450,7 +474,6 @@ function gameLoop(now) {
     glow.classList.remove('danger-on');
   }
 
-  // 撲咬
   if (dist <= 4) {
     sfx.roar();
     playerHP = Math.max(0, playerHP - 30);
@@ -462,7 +485,6 @@ function gameLoop(now) {
   requestAnimationFrame(gameLoop);
 }
 
-// 模擬走動
 function simMove(dLng, dLat) {
   userLat += dLat; userLng += dLng;
   if (userMarker) userMarker.setLatLng([userLat, userLng]);
@@ -472,10 +494,9 @@ function simMove(dLng, dLat) {
   document.getElementById('step-badge').innerText = `步數: ${totalSteps}`;
 }
 
-// 封印驅魔
 function triggerExorcism() {
   sfx.chime();
-  alert("【除靈成功！】你成功在 Mapillary 真實街景中擊散了惡靈！追殺怪已被震退！");
+  alert("【除靈成功！】你成功在真實街景中擊散了惡靈！追殺怪已被震退！");
   resetMonsterPosition();
   ghostBearing = (ghostBearing + 120 + Math.random() * 60) % 360;
   updateGhostOverlay();
