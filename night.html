@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>【寂靜密室】第一人稱 3D 連鎖驚悚逃脫</title>
+<title>【寂靜死囚】第一人稱複雜迷宮驚悚逃脫</title>
 
 <!-- Three.js 3D 核心庫 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -15,97 +15,102 @@
   #game-viewport { position: relative; width: 100%; height: 100%; overflow: hidden; cursor: crosshair; }
   #three-canvas { width: 100%; height: 100%; display: block; }
 
-  /* 驚悚 VHS 掃描線與手電筒暗角遮罩 */
-  .vignette-overlay {
+  /* 驚悚極致暗角與血光濾鏡 */
+  .horror-vignette {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: radial-gradient(circle at 50% 50%, transparent 35%, rgba(0,0,0,0.85) 75%, rgba(0,0,0,0.98) 100%),
-                repeating-linear-gradient(rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0, 20, 10, 0.15) 3px, rgba(0,0,0,0) 4px);
+    background: radial-gradient(circle at 50% 50%, transparent 20%, rgba(5,0,0,0.85) 60%, rgba(0,0,0,0.99) 95%),
+                repeating-linear-gradient(rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(20, 0, 0, 0.18) 3px, rgba(0,0,0,0) 4px);
     pointer-events: none; z-index: 10;
   }
 
   /* 準心 */
   .crosshair {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 8px; height: 8px; background: rgba(255, 255, 255, 0.6); border-radius: 50%;
-    pointer-events: none; z-index: 20; transition: all 0.2s;
+    width: 6px; height: 6px; background: rgba(255, 255, 255, 0.7); border-radius: 50%;
+    pointer-events: none; z-index: 20; transition: all 0.15s;
   }
   .crosshair.interactable {
-    width: 24px; height: 24px; background: transparent; border: 2px solid #ff4444;
+    width: 22px; height: 22px; background: transparent; border: 2px solid #ff3333;
     box-shadow: 0 0 10px #ff0000;
   }
 
-  /* 互動提示文字 (浮在準心下方) */
   #interact-hint {
     position: absolute; top: 56%; left: 50%; transform: translate(-50%, -50%);
-    font-size: 13px; font-weight: bold; color: #ff5555; text-shadow: 0 0 8px #000;
+    font-size: 13px; font-weight: bold; color: #ff4444; text-shadow: 0 0 8px #000;
     pointer-events: none; z-index: 25; display: none; letter-spacing: 1px;
   }
 
-  /* 頂部 HUD */
+  /* 頂部 HUD (生命條、手電筒電量、關卡進度) */
   .hud-top {
-    position: absolute; top: 0; left: 0; width: 100%; height: 56px;
-    background: linear-gradient(180deg, rgba(5,6,8,0.95) 0%, transparent 100%);
+    position: absolute; top: 0; left: 0; width: 100%; height: 64px;
+    background: linear-gradient(180deg, rgba(5,6,8,0.98) 0%, transparent 100%);
     display: flex; justify-content: space-between; align-items: center;
     padding: 0 20px; z-index: 100; pointer-events: none;
   }
-  .stage-tag {
-    color: #ff4444; font-size: 14px; font-weight: bold; letter-spacing: 1px;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .pulse-dot {
-    width: 8px; height: 8px; background: #ff2222; border-radius: 50%;
-    box-shadow: 0 0 8px #ff0000; animation: blink 1.2s infinite;
-  }
-  @keyframes blink { 50% { opacity: 0.3; } }
+  .player-status-box { display: flex; flex-direction: column; gap: 4px; }
+  .bar-container { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: bold; }
+  .bar-outer { width: 100px; height: 7px; background: #222; border-radius: 3px; overflow: hidden; border: 1px solid #444; }
+  .bar-inner-hp { width: 100%; height: 100%; background: #ff2222; transition: width 0.2s; }
+  .bar-inner-battery { width: 100%; height: 100%; background: #00ff88; transition: width 0.2s; }
 
-  .inventory-bar {
-    background: rgba(22, 27, 34, 0.85); border: 1px solid #444;
-    padding: 5px 12px; border-radius: 4px; font-size: 12px; color: #e3b341;
+  .stage-badge {
+    color: #ff5555; font-size: 13px; font-weight: bold; letter-spacing: 1px;
+    display: flex; align-items: center; gap: 6px;
   }
+  .pulse-dot { width: 8px; height: 8px; background: #ff2222; border-radius: 50%; box-shadow: 0 0 8px #ff0000; animation: blink 1.2s infinite; }
+  @keyframes blink { 50% { opacity: 0.2; } }
 
-  /* 行動裝置走動按鈕 (支援手機觸控) */
+  /* 恐慌警報紅框 (遇鬼瀕死) */
+  #danger-border {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    border: 5px solid #ff0000; box-shadow: inset 0 0 60px rgba(255, 0, 0, 0.9);
+    pointer-events: none; z-index: 800; display: none; animation: dangerPulse 0.35s infinite alternate;
+  }
+  @keyframes dangerPulse { 0% { opacity: 0.3; } 100% { opacity: 1; } }
+
+  /* 行動裝置走動按鈕 */
   .touch-controls {
     position: absolute; bottom: 20px; left: 20px; z-index: 150;
-    display: grid; grid-template-columns: repeat(3, 46px); gap: 6px;
+    display: grid; grid-template-columns: repeat(3, 44px); gap: 6px;
   }
   .touch-btn {
-    width: 46px; height: 46px; background: rgba(20, 24, 30, 0.75);
-    border: 1px solid #58a6ff; border-radius: 6px; color: #fff; font-size: 16px; font-weight: bold;
+    width: 44px; height: 44px; background: rgba(20, 24, 30, 0.75);
+    border: 1px solid #ff4444; border-radius: 6px; color: #fff; font-size: 15px; font-weight: bold;
     display: flex; justify-content: center; align-items: center; cursor: pointer;
   }
-  .touch-btn:active { background: #ff4444; }
+  .touch-btn:active { background: #b62324; }
 
-  /* 底部對講機提示 */
+  /* 底部對講機任務導引 */
   .bottom-radio {
-    position: absolute; bottom: 18px; left: 180px; right: 20px;
-    background: rgba(13, 17, 23, 0.92); border: 1px solid #30363d;
+    position: absolute; bottom: 18px; left: 175px; right: 20px;
+    background: rgba(13, 17, 23, 0.94); border: 1px solid #30363d;
     border-left: 4px solid #ff4444; padding: 10px 14px;
     z-index: 100; border-radius: 4px; box-shadow: 0 4px 20px rgba(0,0,0,0.8);
     pointer-events: none;
   }
   .radio-text { font-size: 12px; color: #c9d1d9; line-height: 1.4; }
 
-  /* ==================== 彈窗 1：調查線索紙條 ==================== */
+  /* ==================== 彈窗 1：調查檔案彈窗 ==================== */
   .modal-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.88); z-index: 2000;
+    background: rgba(0, 0, 0, 0.9); z-index: 2000;
     display: none; justify-content: center; align-items: center; padding: 20px;
   }
   .clue-paper {
     background: #ebdcc0; color: #231a11; width: 100%; max-width: 380px;
-    border-radius: 6px; padding: 24px; box-shadow: 0 0 35px rgba(255,200,100,0.25);
+    border-radius: 6px; padding: 22px; box-shadow: 0 0 35px rgba(255,200,100,0.25);
     border: 2px solid #bba377; font-family: serif; animation: popIn 0.2s ease;
   }
-  @keyframes popIn { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-  .clue-title { font-size: 16px; font-weight: bold; color: #7a1515; border-bottom: 1px dashed #7a664d; padding-bottom: 8px; margin-bottom: 14px; }
-  .clue-body { font-size: 13px; line-height: 1.8; margin-bottom: 20px; white-space: pre-line; }
+  @keyframes popIn { from { transform: scale(0.75); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .clue-title { font-size: 16px; font-weight: bold; color: #7a1515; border-bottom: 1px dashed #7a664d; padding-bottom: 8px; margin-bottom: 12px; }
+  .clue-body { font-size: 13px; line-height: 1.8; margin-bottom: 18px; white-space: pre-line; }
   .btn-close { width: 100%; background: #7a1515; color: #fff; border: none; padding: 10px 0; font-size: 13px; font-weight: bold; border-radius: 3px; cursor: pointer; }
 
-  /* ==================== 彈窗 2：鐵門密碼鎖盤 (Keypad) ==================== */
+  /* ==================== 彈窗 2：鐵門密碼鎖盤 ==================== */
   .keypad-box {
     background: #161b22; border: 2px solid #ff4444; border-radius: 8px;
-    width: 280px; padding: 22px; display: flex; flex-direction: column; align-items: center;
-    box-shadow: 0 0 35px rgba(255, 0, 0, 0.45); animation: popIn 0.2s ease;
+    width: 280px; padding: 20px; display: flex; flex-direction: column; align-items: center;
+    box-shadow: 0 0 35px rgba(255, 0, 0, 0.5); animation: popIn 0.2s ease;
   }
   .keypad-display {
     width: 100%; height: 44px; background: #000; border: 1px solid #30363d;
@@ -122,38 +127,48 @@
   /* 開場視窗 */
   #start-modal {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: #050608; z-index: 3000; display: flex; flex-direction: column;
+    background: #050508; z-index: 3000; display: flex; flex-direction: column;
     justify-content: center; align-items: center; padding: 24px; text-align: center;
   }
   #start-modal h1 { color: #ff4444; font-size: 24px; margin-bottom: 14px; letter-spacing: 2px; }
-  #start-modal p { font-size: 13px; color: #8b949e; line-height: 1.8; margin-bottom: 24px; max-width: 400px; }
+  #start-modal p { font-size: 13px; color: #8b949e; line-height: 1.8; margin-bottom: 24px; max-width: 420px; }
   .btn-start {
     background: #b62324; border: none; color: #fff; padding: 14px 38px;
     font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer;
-    box-shadow: 0 0 20px rgba(255,0,0,0.5);
+    box-shadow: 0 0 20px rgba(255,0,0,0.6);
   }
 </style>
 </head>
 <body>
 
 <div id="game-viewport">
-  <div class="vignette-overlay"></div>
+  <div class="horror-vignette"></div>
+  <div id="danger-border"></div>
   <div class="crosshair" id="crosshair"></div>
-  <div id="interact-hint">[ 點擊滑鼠 / 螢幕 進行調查 ]</div>
+  <div id="interact-hint">[ 點擊滑鼠 / 觸控進行調查 ]</div>
 
-  <!-- 頂部 HUD -->
+  <!-- 頂部 HUD (健康值與手電筒電量) -->
   <div class="hud-top">
-    <div class="stage-tag">
-      <div class="pulse-dot"></div>
-      <span id="stage-title">第 1 間密室：廢棄停屍間・冰櫃銘牌</span>
+    <div class="player-status-box">
+      <div class="bar-container">
+        <span style="color:#ff5555;">❤️ HP</span>
+        <div class="bar-outer"><div class="bar-inner-hp" id="hp-bar"></div></div>
+      </div>
+      <div class="bar-container">
+        <span style="color:#00ff88;">🔦 電量</span>
+        <div class="bar-outer"><div class="bar-inner-battery" id="battery-bar"></div></div>
+      </div>
     </div>
-    <div class="inventory-bar" id="inv-display">道具包: 空</div>
+    <div class="stage-badge">
+      <div class="pulse-dot"></div>
+      <span id="stage-title">區域 1：廢棄停屍迴廊・多隔間迷宮</span>
+    </div>
   </div>
 
-  <!-- 3D 第一人稱畫布 -->
+  <!-- 3D 畫布容器 -->
   <div id="canvas-container" style="width: 100%; height: 100%;"></div>
 
-  <!-- 行動裝置虛擬行走方向鍵 (左下角) -->
+  <!-- 虛擬走動十字按鈕 -->
   <div class="touch-controls">
     <div></div>
     <button class="touch-btn" onpointerdown="keys.KeyW=true" onpointerup="keys.KeyW=false">▲</button>
@@ -166,23 +181,23 @@
   <!-- 底部任務提示 -->
   <div class="bottom-radio">
     <div class="radio-text" id="radio-instruction">
-      「你被反鎖在陰暗的密室中……走動搜查房間，找到帶有光暈的證物，再前往鐵門解鎖！」
+      「密室內有巡邏惡靈！保持警惕，在迷宮隔間中搜刮【手電筒電池】與【密碼檔案】，再前往鐵門逃脫！」
     </div>
   </div>
 
-  <!-- 調查檔案彈窗 -->
+  <!-- 檔案彈窗 -->
   <div class="modal-overlay" id="clue-modal">
     <div class="clue-paper">
       <div class="clue-title" id="clue-title">調查證物</div>
       <div class="clue-body" id="clue-body">內容載入中...</div>
-      <button class="btn-close" onclick="closeClueModal()">放回並繼續搜查</button>
+      <button class="btn-close" onclick="closeClueModal()">放回並繼續隱匿前進</button>
     </div>
   </div>
 
-  <!-- 鐵門密碼鎖彈窗 -->
+  <!-- 密碼鎖彈窗 -->
   <div class="modal-overlay" id="keypad-modal">
     <div class="keypad-box">
-      <div style="color: #ff5555; font-size: 12px; margin-bottom: 8px;">逃生門禁終端</div>
+      <div style="color: #ff5555; font-size: 12px; margin-bottom: 8px;">通道重型防護門</div>
       <div class="keypad-display" id="keypad-code">----</div>
       <div class="keypad-grid">
         <button class="num-btn" onclick="pressKey('1')">1</button>
@@ -204,73 +219,64 @@
 
   <!-- 開場視窗 -->
   <div id="start-modal">
-    <h1>寂靜密室：第一人稱實境版</h1>
+    <h1>寂靜死囚：深淵迷宮版</h1>
     <p>
-      <b>徹底擺脫外部地圖與 GPS：</b><br>
-      化身調查員身歷其境走入 3D 密室！<br>
-      使用鍵盤 <b>W / A / S / D</b>（或左下角按鈕）走動，滑鼠拖曳視角環顧搜查，找出密碼破門逃脫！
+      <b>真實多隔間迷宮 × 怨靈巡邏追殺：</b><br>
+      密室被拆解為多個互相連通的拐角陰暗房間。<br>
+      手電筒電量會逐漸耗盡，在暗處尋找電池補充；注意聽腳步聲，別被巡邏惡靈抓到！
     </p>
-    <button class="btn-start" onclick="startGame()">點擊踏入密室</button>
+    <button class="btn-start" onclick="startGame()">踏入深淵密室</button>
   </div>
 </div>
 
 <script>
-/* ==================== 5 大連鎖驚悚密室關卡庫 ==================== */
-const ESCAPE_STAGES = [
+/* ==================== 5 大連鎖複雜區域關卡庫 ==================== */
+const COMPLEX_STAGES = [
   {
     level: 1,
-    title: "第 1 間密室：廢棄停屍間・冰櫃銘牌",
-    wallColor: 0x11161d, floorColor: 0x0a0c10,
-    clueName: "浸血的解剖台病歷",
-    cluePos: { x: -7, y: 1.5, z: -5 },
-    doorPos: { x: 0, y: 3, z: -11.8 },
+    title: "區域 1：廢棄解剖冷藏間・縱橫迷宮",
+    wallColor: 0x121418, floorColor: 0x090a0d,
+    clueName: "解剖冷藏櫃工作日誌",
     passcode: "404",
-    diary: "『……祂們在天花板上爬行。\n4 號冰櫃已被拉出，遺留著號碼牌 4-0-4。\n輸入 404 解開鐵捲門，千萬別回頭！』"
+    diary: "『……祂們在天花板水管中爬動。\n4 號冰櫃已被暴力拉開，號碼牌遺留在配電箱旁：4-0-4。\n輸入 404 解開通道重型門！』"
   },
   {
     level: 2,
-    title: "第 2 間密室：血色祈禱室・倒十字架",
-    wallColor: 0x221111, floorColor: 0x140a0a,
-    clueName: "燒焦的聖經殘頁",
-    cluePos: { x: 7, y: 1.5, z: 2 },
-    doorPos: { x: 0, y: 3, z: -11.8 },
+    title: "區域 2：污穢生化祈禱所・暗影死角",
+    wallColor: 0x241212, floorColor: 0x150808,
+    clueName: "帶血的黑聖經殘頁",
     passcode: "666",
-    diary: "『血字在牆面蔓延……聖經第 66 卷啟示錄第七封印。\n輸入三重逆十字凶數 666 破除結界！』"
+    diary: "『逆十字在滴血……第七位封印祭品編號。\n輸入三重咒印數值 666 破除禁閉！』"
   },
   {
     level: 3,
-    title: "第 3 間密室：拘禁地下牢房・生鏽手銬",
-    wallColor: 0x181814, floorColor: 0x0f0f0c,
-    clueName: "獄卒遺落的記事本",
-    cluePos: { x: -6, y: 1.5, z: 6 },
-    doorPos: { x: 0, y: 3, z: -11.8 },
+    title: "區域 3：地下水牢死囚刑室・囚徒刻痕",
+    wallColor: 0x181812, floorColor: 0x0e0e0a,
+    clueName: "鐵窗旁的抓痕石板",
     passcode: "911",
-    diary: "『獄卒在日記本的最後一頁寫著：\n緊急呼救訊號 9-1-1 是生還門禁的覆寫代碼……』"
+    diary: "『水牢的水位正在暴漲……\n緊急越獄通道覆寫訊號是 9-1-1！』"
   },
   {
     level: 4,
-    title: "第 4 間密室：廢棄手術室・消毒壓力閥",
-    wallColor: 0x111c18, floorColor: 0x0a1410,
-    clueName: "化學消毒器儀表紀錄",
-    cluePos: { x: 6, y: 1.5, z: -4 },
-    doorPos: { x: 0, y: 3, z: -11.8 },
+    title: "區域 4：暴走消毒手術室・化學隔間",
+    wallColor: 0x12201a, floorColor: 0x091410,
+    clueName: "手術台毒氣閥壓力表記錄",
     passcode: "728",
-    diary: "『生鏽的手術托盤刻著三道壓力數值：\n甲閥 7、乙閥 2、丙閥 8。\n輸入 7-2-8 洩壓開啟氣密門！』"
+    diary: "『三個化學儲存槽刻痕數值：7、2、8。\n輸入 7-2-8 平衡氣壓開門！』"
   },
   {
     level: 5,
-    title: "第 5 間密室：生化禁區・最終逃生門",
-    wallColor: 0x1a1522, floorColor: 0x100c14,
-    clueName: "院長的主控密碼卡",
-    cluePos: { x: -2, y: 1.5, z: 8 },
-    doorPos: { x: 0, y: 3, z: -11.8 },
+    title: "區域 5：地下終焉中樞・最後防生門",
+    wallColor: 0x1a1226, floorColor: 0x0e0915,
+    clueName: "最高防禦協議授權書",
     passcode: "2026",
-    diary: "『最後一道安全協議……\n基地封閉年份為 2026 年。\n輸入 2026 解除封鎖，重見天日！』"
+    diary: "『最後一道安全協議覆寫年份：2026。\n輸入 2026 永久開啟基地大門，逃出生天！』"
   }
 ];
 
 let currentStageIdx = 0;
-let inventory = [];
+let playerHP = 100;
+let batteryLevel = 100; // 手電筒電量 0~100%
 let passcodeBuffer = "";
 
 /* ==================== 音效引擎 ==================== */
@@ -280,7 +286,7 @@ class HorrorAudio {
   step() {
     if (!this.ctx) return;
     const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-    o.frequency.setValueAtTime(55, this.ctx.currentTime);
+    o.frequency.setValueAtTime(50, this.ctx.currentTime);
     g.gain.setValueAtTime(0.08, this.ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.06);
     o.connect(g); g.connect(this.ctx.destination);
@@ -294,6 +300,17 @@ class HorrorAudio {
     g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
     o.connect(g); g.connect(this.ctx.destination);
     o.start(); o.stop(this.ctx.currentTime + 0.05);
+  }
+  roar() {
+    if (!this.ctx) return;
+    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.type = "sawtooth";
+    o.frequency.setValueAtTime(160, this.ctx.currentTime);
+    o.frequency.linearRampToValueAtTime(360, this.ctx.currentTime + 0.3);
+    g.gain.setValueAtTime(0.4, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.4);
+    o.connect(g); g.connect(this.ctx.destination);
+    o.start(); o.stop(this.ctx.currentTime + 0.4);
   }
   doorOpen() {
     if (!this.ctx) return;
@@ -311,19 +328,34 @@ const sfx = new HorrorAudio();
 
 /* ==================== Three.js 第一人稱 3D 空間 ==================== */
 let scene, camera, renderer, flashlight;
-let roomMeshGroup = null, clueObject = null, doorObject = null;
-let yaw = 0, pitch = 0; // 第一視角旋轉
-let playerPos = { x: 0, y: 1.8, z: 8 }; // 玩家眼高 1.8 米
+let roomMeshGroup = null, clueObject = null, doorObject = null, batteryObject = null;
+let ghostMesh = null; // 巡邏惡靈模型
+let yaw = 0, pitch = 0;
+let playerPos = { x: 0, y: 1.8, z: 12 };
 let keys = { KeyW: false, KeyS: false, KeyA: false, KeyD: false };
 let isInteractingLook = false, lastTouchX = 0, lastTouchY = 0;
 let headBob = 0;
+
+// 內部隔間牆碰撞箱清單 (Bounding Boxes)
+let wallColliders = [];
 
 function startGame() {
   document.getElementById('start-modal').style.display = 'none';
   sfx.init();
 
   initThreeEngine();
-  loadStageRoom(0);
+  loadStageComplex(0);
+
+  // 每 2 秒衰減手電筒電量 1%
+  setInterval(() => {
+    if (batteryLevel > 0) {
+      batteryLevel = Math.max(0, batteryLevel - 1);
+      document.getElementById('battery-bar').style.width = `${batteryLevel}%`;
+      if (flashlight) {
+        flashlight.intensity = (batteryLevel / 100) * 2.8;
+      }
+    }
+  }, 2000);
 }
 
 function initThreeEngine() {
@@ -333,26 +365,24 @@ function initThreeEngine() {
   camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
   camera.position.set(playerPos.x, playerPos.y, playerPos.z);
 
-  // 第一視角專屬手電筒 (聚光燈綁在攝影機正前方)
-  flashlight = new THREE.SpotLight(0xfffaed, 2.5, 25, Math.PI / 4.5, 0.4, 1.2);
+  // 第一人稱手電筒聚光燈
+  flashlight = new THREE.SpotLight(0xfffaed, 2.8, 24, Math.PI / 4.8, 0.45, 1.3);
   camera.add(flashlight);
   flashlight.position.set(0, 0, 0.2);
   flashlight.target = camera;
   scene.add(camera);
 
-  // 微弱幽暗環境光
-  scene.add(new THREE.AmbientLight(0x111116));
+  // 極微弱暗黑環境光
+  scene.add(new THREE.AmbientLight(0x0a0a0d));
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
   container.appendChild(renderer.domElement);
 
-  // 鍵盤移動監聽
   window.addEventListener('keydown', (e) => { if (keys.hasOwnProperty(e.code)) keys[e.code] = true; });
   window.addEventListener('keyup', (e) => { if (keys.hasOwnProperty(e.code)) keys[e.code] = false; });
 
-  // 滑鼠拖曳環顧視角
   container.addEventListener('pointerdown', (e) => {
     isInteractingLook = true;
     lastTouchX = e.clientX;
@@ -372,7 +402,6 @@ function initThreeEngine() {
   });
   window.addEventListener('pointerup', () => { isInteractingLook = false; });
 
-  // 點擊調查互動
   container.addEventListener('click', checkRaycastInteract);
 
   window.addEventListener('resize', () => {
@@ -384,70 +413,115 @@ function initThreeEngine() {
   animate();
 }
 
-/* ==================== 建立實體 3D 密室結構 ==================== */
-function loadStageRoom(idx) {
+/* ==================== 建立複雜多隔間迷宮 ==================== */
+function loadStageComplex(idx) {
   currentStageIdx = idx;
-  const stage = ESCAPE_STAGES[idx];
+  const stage = COMPLEX_STAGES[idx];
 
   document.getElementById('stage-title').innerText = stage.title;
   document.getElementById('radio-instruction').innerText =
-    `「進入【${stage.title}】！走動尋找散落的證物，再前往盡頭的鐵門輸入密碼！」`;
+    `「進入【${stage.title}】！避開幽靈，在暗處隔間尋找電池與密碼檔案，再前往盡頭鐵門！」`;
 
-  // 重置玩家起點
-  playerPos = { x: 0, y: 1.8, z: 8 };
+  // 重置玩家起點至走廊起點
+  playerPos = { x: 0, y: 1.8, z: 13 };
   yaw = 0; pitch = 0;
 
   if (roomMeshGroup) scene.remove(roomMeshGroup);
   roomMeshGroup = new THREE.Group();
+  wallColliders = [];
 
-  // 1. 密室房間牆面 (寬 18m, 高 6m, 深 24m)
-  const roomGeom = new THREE.BoxGeometry(18, 6, 24);
-  const wallMat = new THREE.MeshStandardMaterial({
-    color: stage.wallColor, roughness: 0.9, side: THREE.BackSide
-  });
-  const roomMesh = new THREE.Mesh(roomGeom, wallMat);
-  roomMesh.position.y = 3;
-  roomMeshGroup.add(roomMesh);
+  // 外圍主外牆 (寬 32m, 深 32m, 高 6m)
+  const wallMat = new THREE.MeshStandardMaterial({ color: stage.wallColor, roughness: 0.9, side: THREE.BackSide });
+  const outerRoom = new THREE.Mesh(new THREE.BoxGeometry(32, 6, 32), wallMat);
+  outerRoom.position.y = 3;
+  roomMeshGroup.add(outerRoom);
 
-  // 2. 地板與天花板
-  const floorMat = new THREE.MeshStandardMaterial({ color: stage.floorColor, roughness: 0.8 });
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(18, 24), floorMat);
+  // 地面與天花板
+  const floorMat = new THREE.MeshStandardMaterial({ color: stage.floorColor, roughness: 0.85 });
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(32, 32), floorMat);
   floor.rotation.x = -Math.PI / 2;
   roomMeshGroup.add(floor);
 
-  // 3. 散落證物台 (帶有發光金光)
-  const deskGeom = new THREE.BoxGeometry(2, 1.2, 1.5);
-  const deskMesh = new THREE.Mesh(deskGeom, new THREE.MeshStandardMaterial({ color: 0x332211 }));
-  deskMesh.position.set(stage.cluePos.x, 0.6, stage.cluePos.z);
+  // ⭐ 迷宮隔間內牆佈局 (產生多個死角房間：解剖室、配電間、死囚室)
+  buildInternalWall(-5, 0, 10, 0.8);  // 橫向隔間牆 A
+  buildInternalWall(6, -4, 0.8, 12);  // 直向隔間牆 B
+  buildInternalWall(-8, -8, 8, 0.8);  // 橫向隔間牆 C
+  buildInternalWall(3, 6, 10, 0.8);   // 橫向隔間牆 D
+  buildInternalWall(-4, 8, 0.8, 8);   // 直向隔間牆 E
+
+  // 1. 散落證物台 (藏在深處拐角房間：X: -11, Z: -11)
+  const deskMesh = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.2, 1.8), new THREE.MeshStandardMaterial({ color: 0x332211 }));
+  deskMesh.position.set(-11, 0.6, -11);
   roomMeshGroup.add(deskMesh);
 
-  // 發光金黃線索本
-  const bookGeom = new THREE.BoxGeometry(0.8, 0.2, 1);
-  const bookMat = new THREE.MeshBasicMaterial({ color: 0xffdd66 });
-  clueObject = new THREE.Mesh(bookGeom, bookMat);
-  clueObject.position.set(stage.cluePos.x, 1.3, stage.cluePos.z);
+  const bookMesh = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.2, 1.1), new THREE.MeshBasicMaterial({ color: 0xffdd66 }));
+  bookMesh.position.set(-11, 1.3, -11);
+  clueObject = bookMesh;
   clueObject.userData = { type: "clue", data: stage };
   roomMeshGroup.add(clueObject);
 
-  // 4. 正前方逃生鐵門 (帶有紅燈)
-  const doorGeom = new THREE.BoxGeometry(3.5, 5, 0.4);
+  // 2. ⭐ 備用手電筒電池 (藏在另一個隔間暗角：X: 11, Z: 8)
+  const batMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.8, 12), new THREE.MeshBasicMaterial({ color: 0x00ff88 }));
+  batMesh.position.set(11, 0.8, 8);
+  batteryObject = batMesh;
+  batteryObject.userData = { type: "battery" };
+  roomMeshGroup.add(batteryObject);
+
+  // 3. 通往下一關的重型防護鐵門 (位於走廊最盡頭：X: 0, Z: -15.8)
+  const doorGeom = new THREE.BoxGeometry(4, 5, 0.4);
   const doorMat = new THREE.MeshStandardMaterial({ color: 0x1f1111, metalness: 0.8, roughness: 0.3 });
   doorObject = new THREE.Mesh(doorGeom, doorMat);
-  doorObject.position.set(stage.doorPos.x, 2.5, stage.doorPos.z);
+  doorObject.position.set(0, 2.5, -15.8);
   doorObject.userData = { type: "door", data: stage };
   roomMeshGroup.add(doorObject);
 
-  // 門上的紅色密碼鎖光標
   const lockPlate = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.2, 0.2), new THREE.MeshBasicMaterial({ color: 0xff2222 }));
-  lockPlate.position.set(1.2, 0, 0.3);
+  lockPlate.position.set(1.4, 0, 0.3);
   doorObject.add(lockPlate);
+
+  // 4. ⭐ 巡邏追殺怨靈 (在迷宮中游蕩)
+  buildStalkerGhost();
 
   scene.add(roomMeshGroup);
 }
 
-/* ==================== 第一人稱走動與碰撞判定 ==================== */
+// 建立隔間內牆輔助函式
+function buildInternalWall(x, z, width, depth) {
+  const wallMat = new THREE.MeshStandardMaterial({ color: 0x1a1e24, roughness: 0.95 });
+  const wall = new THREE.Mesh(new THREE.BoxGeometry(width, 5.8, depth), wallMat);
+  wall.position.set(x, 2.9, z);
+  roomMeshGroup.add(wall);
+
+  // 建立碰撞邊界
+  wallColliders.push({
+    minX: x - width / 2 - 0.7, maxX: x + width / 2 + 0.7,
+    minZ: z - depth / 2 - 0.7, maxZ: z + depth / 2 + 0.7
+  });
+}
+
+// 建立怨靈模型
+function buildStalkerGhost() {
+  if (ghostMesh) scene.remove(ghostMesh);
+
+  const ghostGroup = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.ConeGeometry(1.2, 3.5, 12), new THREE.MeshBasicMaterial({ color: 0x330000, wireframe: true }));
+  body.position.y = 2.2;
+  ghostGroup.add(body);
+
+  const eye1 = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
+  eye1.position.set(-0.35, 3.2, 0.8);
+  const eye2 = eye1.clone();
+  eye2.position.set(0.35, 3.2, 0.8);
+  ghostGroup.add(eye1); ghostGroup.add(eye2);
+
+  ghostMesh = ghostGroup;
+  ghostMesh.position.set(0, 0, -5);
+  scene.add(ghostMesh);
+}
+
+/* ==================== 第一人稱走動與碰撞檢測 ==================== */
 function updateMovement() {
-  const moveSpeed = 0.12;
+  const moveSpeed = 0.11;
   let moveX = 0, moveZ = 0;
 
   if (keys.KeyW) moveZ -= 1;
@@ -456,27 +530,33 @@ function updateMovement() {
   if (keys.KeyD) moveX += 1;
 
   if (moveX !== 0 || moveZ !== 0) {
-    // 規一化速度向量
     const len = Math.hypot(moveX, moveZ);
     moveX = (moveX / len) * moveSpeed;
     moveZ = (moveZ / len) * moveSpeed;
 
-    // 根據視角旋轉計算真實前進方向
     const sinYaw = Math.sin(yaw);
     const cosYaw = Math.cos(yaw);
 
-    playerPos.x += moveX * cosYaw + moveZ * sinYaw;
-    playerPos.z += -moveX * sinYaw + moveZ * cosYaw;
+    const nextX = playerPos.x + (moveX * cosYaw + moveZ * sinYaw);
+    const nextZ = playerPos.z + (-moveX * sinYaw + moveZ * cosYaw);
 
-    // 限制在房間邊界內 (防止穿牆)
-    playerPos.x = Math.max(-8, Math.min(8, playerPos.x));
-    playerPos.z = Math.max(-10.5, Math.min(10.5, playerPos.z));
+    // 碰撞檢測：檢查是否撞上任何迷宮內牆
+    let canMoveX = true, canMoveZ = true;
+    for (let box of wallColliders) {
+      if (nextX >= box.minX && nextX <= box.maxX && playerPos.z >= box.minZ && playerPos.z <= box.maxZ) canMoveX = false;
+      if (playerPos.x >= box.minX && playerPos.x <= box.maxX && nextZ >= box.minZ && nextZ <= box.maxZ) canMoveZ = false;
+    }
 
-    // 頭部晃動模擬真實腳步
+    // 主外牆邊界
+    if (nextX < -15 || nextX > 15) canMoveX = false;
+    if (nextZ < -15 || nextZ > 15) canMoveZ = false;
+
+    if (canMoveX) playerPos.x = nextX;
+    if (canMoveZ) playerPos.z = nextZ;
+
     headBob += 0.18;
     camera.position.y = playerPos.y + Math.sin(headBob) * 0.05;
 
-    // 定期發出腳步聲
     if (Math.sin(headBob) < -0.95 && !updateMovement.stepped) {
       sfx.step();
       updateMovement.stepped = true;
@@ -488,12 +568,47 @@ function updateMovement() {
   camera.position.x = playerPos.x;
   camera.position.z = playerPos.z;
 
-  // 旋轉攝影機視角
   const euler = new THREE.Euler(pitch, yaw, 0, 'YXZ');
   camera.quaternion.setFromEuler(euler);
 }
 
-/* ==================== 準心視線射線判定 ==================== */
+/* ==================== 怨靈巡邏與追殺感知 ==================== */
+let ghostPatrolAngle = 0;
+function updateGhostAI() {
+  if (!ghostMesh) return;
+
+  // 惡靈在迷宮迴廊中按橢圓路徑巡邏
+  ghostPatrolAngle += 0.012;
+  ghostMesh.position.x = Math.sin(ghostPatrolAngle) * 9;
+  ghostMesh.position.z = Math.cos(ghostPatrolAngle * 0.7) * 8 - 2;
+  ghostMesh.position.y = 0.5 + Math.sin(Date.now() * 0.005) * 0.3;
+
+  // 計算與玩家的距離
+  const dist = Math.hypot(ghostMesh.position.x - playerPos.x, ghostMesh.position.z - playerPos.z);
+  const dangerEl = document.getElementById('danger-border');
+
+  if (dist < 8.5) {
+    // 進入危險追擊半徑
+    dangerEl.style.display = 'block';
+    if (!updateGhostAI.screamed) {
+      sfx.roar();
+      updateGhostAI.screamed = true;
+    }
+
+    // 遭撲咬受傷
+    if (dist < 2.5) {
+      playerHP = Math.max(0, playerHP - 25);
+      document.getElementById('hp-bar').style.width = `${playerHP}%`;
+      alert(`【遭怨靈撲咬！】受到 25 點傷害！剩餘 HP: ${playerHP}！快跑進轉角甩開祂！`);
+      playerPos.x += 4; // 被震退
+    }
+  } else {
+    dangerEl.style.display = 'none';
+    updateGhostAI.screamed = false;
+  }
+}
+
+/* ==================== 準心視線射線交互 ==================== */
 function checkRaycastInteract() {
   const raycaster = new THREE.Raycaster();
   raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
@@ -501,6 +616,7 @@ function checkRaycastInteract() {
   const targets = [];
   if (clueObject) targets.push(clueObject);
   if (doorObject) targets.push(doorObject);
+  if (batteryObject) targets.push(batteryObject);
 
   const hits = raycaster.intersectObjects(targets, true);
 
@@ -509,17 +625,18 @@ function checkRaycastInteract() {
     while (hitObj.parent && !hitObj.userData.type) hitObj = hitObj.parent;
 
     const dist = camera.position.distanceTo(hits[0].point);
-    if (dist <= 4.5) { // 必須走近至 4.5 米內才能調查
+    if (dist <= 4.8) {
       if (hitObj.userData.type === "clue") {
         openClueDialog(hitObj.userData.data);
       } else if (hitObj.userData.type === "door") {
         openKeypadDialog();
+      } else if (hitObj.userData.type === "battery") {
+        collectBattery();
       }
     }
   }
 }
 
-// 實時更新準心變色與提示
 function updateInteractHint() {
   const raycaster = new THREE.Raycaster();
   raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
@@ -527,12 +644,13 @@ function updateInteractHint() {
   const targets = [];
   if (clueObject) targets.push(clueObject);
   if (doorObject) targets.push(doorObject);
+  if (batteryObject) targets.push(batteryObject);
 
   const hits = raycaster.intersectObjects(targets, true);
   const cross = document.getElementById('crosshair');
   const hint = document.getElementById('interact-hint');
 
-  if (hits.length > 0 && hits[0].distance <= 4.5) {
+  if (hits.length > 0 && hits[0].distance <= 4.8) {
     cross.classList.add('interactable');
     hint.style.display = 'block';
   } else {
@@ -541,21 +659,25 @@ function updateInteractHint() {
   }
 }
 
+function collectBattery() {
+  sfx.click();
+  batteryLevel = Math.min(100, batteryLevel + 50);
+  document.getElementById('battery-bar').style.width = `${batteryLevel}%`;
+  if (flashlight) flashlight.intensity = (batteryLevel / 100) * 2.8;
+
+  scene.remove(batteryObject);
+  batteryObject = null;
+  alert("【撿起備用電池！】手電筒光芒大幅增強 (+50% 電量)！");
+}
+
 /* ==================== 密室彈窗解謎邏輯 ==================== */
 function openClueDialog(data) {
   sfx.click();
   document.getElementById('clue-title').innerText = `【${data.clueName}】`;
   document.getElementById('clue-body').innerText = data.diary;
   document.getElementById('clue-modal').style.display = 'flex';
-
-  if (!inventory.includes(data.clueName)) {
-    inventory.push(data.clueName);
-    document.getElementById('inv-display').innerText = `道具包: ${inventory.join(', ')}`;
-  }
 }
-function closeClueModal() {
-  document.getElementById('clue-modal').style.display = 'none';
-}
+function closeClueModal() { document.getElementById('clue-modal').style.display = 'none'; }
 
 function openKeypadDialog() {
   sfx.click();
@@ -563,9 +685,7 @@ function openKeypadDialog() {
   document.getElementById('keypad-code').innerText = "----";
   document.getElementById('keypad-modal').style.display = 'flex';
 }
-function closeKeypad() {
-  document.getElementById('keypad-modal').style.display = 'none';
-}
+function closeKeypad() { document.getElementById('keypad-modal').style.display = 'none'; }
 
 function pressKey(n) {
   sfx.click();
@@ -574,27 +694,22 @@ function pressKey(n) {
     document.getElementById('keypad-code').innerText = passcodeBuffer.padEnd(4, '-');
   }
 }
-function clearKeypad() {
-  sfx.click();
-  passcodeBuffer = "";
-  document.getElementById('keypad-code').innerText = "----";
-}
+function clearKeypad() { sfx.click(); passcodeBuffer = ""; document.getElementById('keypad-code').innerText = "----"; }
 
 function submitPasscode() {
-  const currentStage = ESCAPE_STAGES[currentStageIdx];
+  const currentStage = COMPLEX_STAGES[currentStageIdx];
   if (passcodeBuffer === currentStage.passcode) {
     sfx.doorOpen();
     closeKeypad();
-    alert(`🎉【密室解鎖成功！】\n鐵門嘎吱作響開啟！成功逃出【${currentStage.title}】！`);
+    alert(`🎉【重型防護門解除！】\n厚重的鋼鐵閥門在刺耳摩擦聲中開啟！成功突破【${currentStage.title}】！`);
 
-    // 前往下一間密室
-    if (currentStageIdx + 1 < ESCAPE_STAGES.length) {
-      loadStageRoom(currentStageIdx + 1);
+    if (currentStageIdx + 1 < COMPLEX_STAGES.length) {
+      loadStageComplex(currentStageIdx + 1);
     } else {
-      alert("🏆【大逃殺完全生還！】你已成功連續解開全部 5 間驚悚密室，逃出生天！");
+      alert("🏆【深淵生還者！】你已成功穿梭整座地下迷宮，突破全部 5 道密室封鎖，逃出生天！");
     }
   } else {
-    alert("【密碼錯誤！】門禁系統紅燈閃爍，請走回證物台仔細閱讀線索！");
+    alert("【密碼錯誤！】警報紅燈狂閃！請重新在暗房抽屜中核對檔案！");
     clearKeypad();
   }
 }
@@ -605,12 +720,11 @@ function animate() {
 
   updateMovement();
   updateInteractHint();
+  updateGhostAI();
 
-  // 證物金黃光暈呼吸微幅旋轉
-  if (clueObject) {
-    clueObject.rotation.y += 0.02;
-    clueObject.position.y = 1.3 + Math.sin(Date.now() * 0.005) * 0.05;
-  }
+  // 物品呼吸微光
+  if (clueObject) clueObject.rotation.y += 0.02;
+  if (batteryObject) batteryObject.rotation.y += 0.04;
 
   renderer.render(scene, camera);
 }
