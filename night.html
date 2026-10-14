@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>【寂靜結界】真實道路走動穿梭版</title>
+<title>【寂靜結界】真實彩色街景 × 靈異夜視鏡切換版</title>
 
 <!-- Leaflet 開源地圖 -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -45,7 +45,19 @@
   .badge.hp { color: #ff4444; border-color: #772222; font-weight: bold; }
   .badge.stalker { color: #ffaa00; border-color: #774400; font-weight: bold; }
 
-  /* ==================== 上半部：Mapillary 官方街景容器 ==================== */
+  /* 🌙 夜視鏡切換按鈕 */
+  .btn-nvg-toggle {
+    background: #161b22; border: 1px solid #58a6ff; color: #58a6ff;
+    padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;
+    cursor: pointer; display: flex; align-items: center; gap: 4px;
+    transition: all 0.2s;
+  }
+  .btn-nvg-toggle.active {
+    background: #003311; border-color: #00ff66; color: #00ff66;
+    box-shadow: 0 0 10px rgba(0, 255, 102, 0.4);
+  }
+
+  /* ==================== 上半部：Mapillary 街景容器 ==================== */
   #street-section {
     position: relative;
     width: 100%;
@@ -53,24 +65,37 @@
     background: #000;
     overflow: hidden;
   }
+
+  /* 預設為真實原始全彩（無任何濾鏡） */
   #mly {
     width: 100%; height: 100%; position: absolute; top: 0; left: 0;
-    /* 恐怖夜視濾鏡：黑夜反轉、去飽和、深暗高對比 */
+    filter: none;
+    transition: filter 0.3s ease;
+  }
+
+  /* 啟動夜視鏡時套用的恐怖黑白負片濾鏡 */
+  #mly.night-vision-on {
     filter: invert(88%) hue-rotate(180deg) contrast(140%) saturate(15%) brightness(70%);
   }
 
-  /* 讓路面導航箭頭更明顯 */
+  /* 導航箭頭樣式保持清晰 */
   .mapillary-sequence-container {
     opacity: 0.85 !important;
   }
 
+  /* 恐怖 VHS 掃描線與暗角（預設隱藏，夜視模式時顯示） */
   .vhs-scanlines {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: radial-gradient(circle at 50% 50%, transparent 45%, rgba(20, 0, 0, 0.5) 80%, rgba(0, 0, 0, 0.9) 100%),
                 linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
     background-size: 100% 100%, 100% 4px;
     pointer-events: none; z-index: 10;
+    display: none;
   }
+  .vhs-scanlines.active {
+    display: block;
+  }
+
   .crosshair {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
     width: 40px; height: 40px; border: 2px dashed rgba(255, 60, 60, 0.7);
@@ -112,10 +137,10 @@
     background: #1a1a1a;
   }
   .leaflet-tile {
-    filter: brightness(80%) contrast(110%) !important;
+    filter: brightness(85%) contrast(105%) !important;
   }
 
-  /* 模擬走動鍵盤 (每次點擊移動約 8~10 公尺) */
+  /* 模擬方向鍵盤 */
   .sim-controls {
     position: absolute; right: 10px; top: 10px; z-index: 999;
     display: grid; grid-template-columns: repeat(3, 34px);
@@ -178,9 +203,13 @@
   <div class="hud-header">
     <div class="hud-title">
       <div class="pulse-dot"></div>
-      <span id="title-mode">道路實景穿梭系統</span>
+      <span id="title-mode">街景模式: 原生彩色</span>
     </div>
     <div class="status-badges">
+      <!-- 🌙 夜視鏡模式切換按鈕 -->
+      <button class="btn-nvg-toggle" id="btn-toggle-nvg" onclick="toggleNightVision()">
+        🌙 夜視鏡: 關閉
+      </button>
       <div class="badge hp" id="hp-badge">HP: 100/100</div>
       <div class="badge stalker" id="monster-badge">鬼魅: 50m</div>
       <div class="badge" id="step-badge">步數: 0</div>
@@ -190,7 +219,7 @@
   <!-- 上半部：Mapillary 官方街景容器 -->
   <div id="street-section">
     <div id="mly"></div>
-    <div class="vhs-scanlines"></div>
+    <div class="vhs-scanlines" id="vhs-overlay"></div>
     <div class="crosshair"></div>
 
     <!-- 街景惡靈 -->
@@ -207,7 +236,7 @@
   <div id="map-section">
     <div id="map"></div>
 
-    <!-- 模擬方向鍵 (每次位移約 10 公尺，連按兩下觸發 15m 自動換圖) -->
+    <!-- 模擬方向鍵 -->
     <div class="sim-controls">
       <div></div>
       <button class="sim-btn" onclick="simMove(0, 0.00010)">▲</button>
@@ -220,7 +249,7 @@
     <!-- 底部面板 -->
     <div class="floating-footer">
       <div class="footer-msg" id="footer-text">
-        「點擊地面白色箭頭前進，或走動滿 15 公尺自動切換下一張街景！」
+        「畫面上方為真實全彩街景！點擊右上角【🌙 夜視鏡】可切換至恐怖黑白模式！」
       </div>
       <button class="btn-exorcise" onclick="triggerExorcism()">⚡ 封印驅魔 ⚡</button>
     </div>
@@ -228,21 +257,21 @@
 
   <!-- 開場視窗 -->
   <div id="modal-mask">
-    <h1>靜安怪談：道路穿梭版</h1>
+    <h1>靜安怪談：全彩實景版</h1>
     <p>
-      <b>位移即時連動機制已載入：</b><br>
-      1. <b>路面白色導航箭頭</b>：點擊直接沿街景拍攝軌跡滑行。<br>
-      2. <b>15 公尺位移自動換圖</b>：真實走動或按鍵位移超過 15 米自動切換下一張照片！
+      <b>真實彩色視角已就緒：</b><br>
+      預設呈現 <b>真實道路原本的自然全彩色調</b>。<br>
+      隨時可透過右上角按鈕啟動「恐怖夜視鏡」進行靈異搜查！
     </p>
     <button class="btn-main" onclick="initGame()">啟動街景生還戰</button>
   </div>
 </div>
 
 <script>
-// ⭐ 請貼入在 Mapillary 點擊 View 複製的 Access Token ⭐
+// ⭐ Mapillary Access Token
 const MAPILLARY_ACCESS_TOKEN = "MLY|28733254389675887|c2488c852790b0d2d48083a0a2e4249c";
 
-// 初始預設街景照片 ID (台北市區全景)
+// 初始預設街景照片 ID
 const DEFAULT_IMAGE_ID = "1933525276802129";
 
 /* ==================== 音效引擎 ==================== */
@@ -259,6 +288,18 @@ class SoundEngine {
     g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
     osc.connect(g); g.connect(this.ctx.destination);
     osc.start(); osc.stop(this.ctx.currentTime + 0.08);
+  }
+  nvgClick() {
+    if (!this.ctx) return;
+    const osc = this.ctx.createOscillator();
+    const g = this.ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(880, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1760, this.ctx.currentTime + 0.1);
+    g.gain.setValueAtTime(0.2, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+    osc.connect(g); g.connect(this.ctx.destination);
+    osc.start(); osc.stop(this.ctx.currentTime + 0.1);
   }
   roar() {
     if (!this.ctx) return;
@@ -290,32 +331,31 @@ const sfx = new SoundEngine();
 /* ==================== 狀態與變數 ==================== */
 let playerHP = 100;
 let totalSteps = 0;
-let userLat = 25.0418, userLng = 121.5436; // 台北市區座標
+let userLat = 25.0418, userLng = 121.5436;
 
-// ⭐ 15 公尺位移自動換圖記錄點
+// 🌙 夜視鏡開關狀態 (預設關閉：呈現真實自然彩色)
+let isNightVisionActive = false;
+
+// 15 公尺位移自動換圖記錄
 let lastLoadedCoord = { lat: userLat, lng: userLng };
 let isFetchingStreet = false;
-const STREET_MOVE_THRESHOLD_METERS = 15; // 累積超過 15 公尺換圖
+const STREET_MOVE_THRESHOLD_METERS = 15;
 
 let map = null, userMarker = null, monsterMarker = null;
 let monsterLat = 0, monsterLng = 0;
-const MONSTER_SPEED_MPS = 3.0; // 3m/s 追趕速度
+const MONSTER_SPEED_MPS = 3.0;
 let lastTime = performance.now();
 
 let mlyViewer = null;
-let ghostBearing = 50; // 惡靈固定在街景東北方 50 度
+let ghostBearing = 50;
 
 function initGame() {
   document.getElementById('modal-mask').style.display = 'none';
   sfx.init();
 
-  // 1. 初始化下方 Leaflet 地圖
   initLeafletMap();
-
-  // 2. 初始化上方 Mapillary 街景 (啟用路面導航箭頭)
   initMapillaryViewer();
 
-  // 3. 讀取真實 GPS
   if (navigator.geolocation) {
     navigator.geolocation.watchPosition(pos => {
       userLat = pos.coords.latitude;
@@ -324,17 +364,44 @@ function initGame() {
         map.setView([userLat, userLng], 17);
         userMarker.setLatLng([userLat, userLng]);
       }
-      // 每次真實 GPS 改變，檢查是否累積超過 15 公尺更換街景
       checkAndFetchNextStreet();
     }, null, { enableHighAccuracy: true });
   }
 
-  // 4. 啟動追逐循環
   lastTime = performance.now();
   requestAnimationFrame(gameLoop);
 }
 
-// 1. 建立 Mapillary Viewer（開啟路面導航箭頭 sequence: true）
+// ⭐ 一鍵切換真實彩色 / 恐怖夜視鏡功能
+function toggleNightVision() {
+  sfx.nvgClick();
+  isNightVisionActive = !isNightVisionActive;
+
+  const btn = document.getElementById('btn-toggle-nvg');
+  const mlyEl = document.getElementById('mly');
+  const vhsEl = document.getElementById('vhs-overlay');
+  const title = document.getElementById('title-mode');
+
+  if (isNightVisionActive) {
+    // 開啟恐怖黑白夜視模式
+    mlyEl.classList.add('night-vision-on');
+    vhsEl.classList.add('active');
+    btn.classList.add('active');
+    btn.innerText = "🌙 夜視鏡: 開啟";
+    title.innerText = "街景模式: 靈異夜視";
+    document.getElementById('footer-text').innerText = "「已啟動靈異夜視鏡！視野轉為黑白反轉，惡靈行蹤更加清晰！」";
+  } else {
+    // 返回真實自然全彩模式
+    mlyEl.classList.remove('night-vision-on');
+    vhsEl.classList.remove('active');
+    btn.classList.remove('active');
+    btn.innerText = "🌙 夜視鏡: 關閉";
+    title.innerText = "街景模式: 原生彩色";
+    document.getElementById('footer-text').innerText = "「已切換回真實全彩街景！原汁原味呈現街道色彩！」";
+  }
+}
+
+// 建立 Mapillary Viewer
 function initMapillaryViewer() {
   const { Viewer } = mapillary;
 
@@ -346,15 +413,13 @@ function initMapillaryViewer() {
         imageId: DEFAULT_IMAGE_ID,
         component: {
           cover: false,
-          direction: true,  // 啟用方向環
-          sequence: true    // ⭐ 核心：啟用路面上的導航箭頭，點擊可滑向下一張街景
+          direction: true,
+          sequence: true // 啟用路面導航箭頭
         }
       });
 
-      // 監聽視角旋轉 (POV)
       mlyViewer.on('pov', updateGhostOverlay);
 
-      // 當玩家點擊路面箭頭成功滑向下一張照片時，同步更新雷達地圖位置
       mlyViewer.on('image', (e) => {
         mlyViewer.resize();
         updateGhostOverlay();
@@ -364,7 +429,6 @@ function initMapillaryViewer() {
           lastLoadedCoord = { lat: userLat, lng: userLng };
           if (userMarker) userMarker.setLatLng([userLat, userLng]);
           if (map) map.panTo([userLat, userLng]);
-          document.getElementById('footer-text').innerText = "「已沿道路箭頭滑入新街區！注意周遭動靜！」";
         }
       });
 
@@ -380,7 +444,7 @@ function initMapillaryViewer() {
   }, 120);
 }
 
-// 2. ⭐ 核心：檢查位移是否超過 15 公尺，自動向 API 撈取前方新街景
+// 位移超過 15 米自動切換街景
 async function checkAndFetchNextStreet() {
   if (isFetchingStreet || !mlyViewer) return;
 
@@ -388,9 +452,9 @@ async function checkAndFetchNextStreet() {
 
   if (distMoved >= STREET_MOVE_THRESHOLD_METERS) {
     isFetchingStreet = true;
-    document.getElementById('footer-text').innerText = `「累積位移 ${distMoved}m（已達標 15m）！正在搜尋前方街景……」`;
+    document.getElementById('footer-text').innerText = `「累積位移 ${distMoved}m！自動搜尋前方街道照片……」`;
 
-    const delta = 0.002; // 搜尋半徑約 200 米
+    const delta = 0.002;
     const bbox = `${userLng - delta},${userLat - delta},${userLng + delta},${userLat + delta}`;
     const url = `https://graph.mapillary.com/images?access_token=${MAPILLARY_ACCESS_TOKEN}&fields=id,geometry&bbox=${bbox}&limit=1`;
 
@@ -398,21 +462,18 @@ async function checkAndFetchNextStreet() {
       const res = await fetch(url);
       const data = await res.json();
       if (data.data && data.data.length > 0) {
-        const nextId = data.data[0].id;
-        // 平滑滑動至新街景照片
-        await mlyViewer.moveTo(nextId);
+        await mlyViewer.moveTo(data.data[0].id);
         lastLoadedCoord = { lat: userLat, lng: userLng };
-        document.getElementById('footer-text').innerText = "「街景已隨行走自動更新至新道路！」";
       }
     } catch (e) {
-      console.warn("搜尋前方街景失敗:", e);
+      console.warn("搜尋街景失敗:", e);
     } finally {
       isFetchingStreet = false;
     }
   }
 }
 
-// 3. 視角投影運算：將惡靈固定在街景特定角度
+// 惡靈方位投影
 function updateGhostOverlay() {
   if (!mlyViewer) return;
 
@@ -438,7 +499,7 @@ function updateGhostOverlay() {
   }).catch(() => {});
 }
 
-// 4. 下半部 Leaflet 地圖初始化
+// 下半部 Leaflet 地圖初始化
 function initLeafletMap() {
   map = L.map('map', { zoomControl: false, attributionControl: false }).setView([userLat, userLng], 17);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
@@ -472,7 +533,7 @@ function getDistanceMeters(lat1, lon1, lat2, lon2) {
   return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
 }
 
-// 5. 追逐主循環
+// 追逐主循環
 function gameLoop(now) {
   const dt = (now - lastTime) / 1000;
   lastTime = now;
@@ -506,7 +567,6 @@ function gameLoop(now) {
   requestAnimationFrame(gameLoop);
 }
 
-// 模擬走動 (每次位移約 10 公尺)
 function simMove(dLng, dLat) {
   userLat += dLat; userLng += dLng;
   if (userMarker) userMarker.setLatLng([userLat, userLng]);
@@ -515,7 +575,6 @@ function simMove(dLng, dLat) {
   sfx.step();
   document.getElementById('step-badge').innerText = `步數: ${totalSteps}`;
 
-  // ⭐ 點擊按鈕位移時，觸發 15 公尺檢查
   checkAndFetchNextStreet();
 }
 
