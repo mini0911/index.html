@@ -2,798 +2,800 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>仙境放置傳說 - RO手遊練等模擬器</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, orientation=landscape">
+<title>仙境傳說 - 橫向動作手遊 (RO Mobile Action)</title>
 <style>
-  :root {
-    --bg-main: #141b22;
-    --card-bg: #1c2630;
-    --panel-border: #334354;
-    --ro-blue: #4a90e2;
-    --ro-yellow: #f5a623;
-    --ro-green: #7ed321;
-    --ro-red: #d0021b;
-    --ro-crit: #f8e71c;
-    --text-main: #eef2f5;
-    --text-muted: #8b9bb4;
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body, html {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #080b10;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
-  body {
-    background: #0a0e13;
-    color: var(--text-main);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  #game-wrapper {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
+    background: #000;
   }
 
-  .mobile-shell {
+  #canvas {
+    display: block;
     width: 100%;
-    max-width: 430px;
-    height: 100vh;
-    max-height: 900px;
-    background: var(--bg-main);
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    box-shadow: 0 0 30px rgba(0,0,0,0.8);
-    overflow: hidden;
+    height: 100%;
+    object-fit: cover;
   }
 
-  /* 角色頂部 Base/Job 雙條 */
-  header {
-    background: #17212b;
-    border-bottom: 2px solid var(--panel-border);
-    padding: 10px 14px;
+  /* HUD 介面層 */
+  .hud-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  /* 左上角角色狀態欄 */
+  .player-status-badge {
+    position: absolute;
+    top: 12px;
+    left: 14px;
+    background: rgba(18, 25, 34, 0.85);
+    border: 2px solid #3c4f64;
+    border-radius: 28px;
+    padding: 6px 14px 6px 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+    pointer-events: auto;
+  }
+  .avatar-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #2b3949;
+    border: 2px solid #f6ad55;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+  }
+  .bars-col {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
+    min-width: 130px;
   }
-  .char-top-row {
+  .status-name-row {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-  }
-  .job-title {
-    font-size: 1rem;
-    font-weight: bold;
-    color: var(--ro-yellow);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .zeny-display {
-    font-size: 0.95rem;
-    color: #ffd700;
-    font-weight: bold;
-  }
-
-  .bar-group { display: flex; flex-direction: column; gap: 4px; }
-  .bar-container { display: flex; align-items: center; font-size: 0.7rem; gap: 6px; }
-  .bar-label { width: 44px; font-weight: bold; color: var(--text-muted); }
-  .progress-bg {
-    flex: 1;
-    height: 8px;
-    background: #0d1318;
-    border-radius: 4px;
-    overflow: hidden;
-    position: relative;
-    border: 1px solid #2a3745;
-  }
-  .progress-fill-base { height: 100%; background: linear-gradient(90deg, #3182ce, #63b3ed); width: 0%; transition: width 0.15s; }
-  .progress-fill-job { height: 100%; background: linear-gradient(90deg, #38a169, #68d391); width: 0%; transition: width 0.15s; }
-  .progress-fill-hp { height: 100%; background: linear-gradient(90deg, #e53e3e, #fc8181); width: 100%; transition: width 0.1s; }
-
-  /* 戰鬥舞台 */
-  .battle-stage {
-    height: 220px;
-    background: radial-gradient(circle at center, #243444 0%, #121921 100%);
-    position: relative;
-    border-bottom: 2px solid var(--panel-border);
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    overflow: hidden;
-  }
-  .map-name {
-    position: absolute;
-    top: 8px;
-    left: 12px;
     font-size: 0.75rem;
-    color: #a0aec0;
-    background: rgba(0,0,0,0.5);
-    padding: 2px 8px;
-    border-radius: 4px;
-  }
-  .auto-tag {
-    position: absolute;
-    top: 8px;
-    right: 12px;
-    font-size: 0.7rem;
-    padding: 3px 8px;
-    border-radius: 12px;
     font-weight: bold;
-    background: #276749;
-    color: #9ae6b4;
-    animation: pulse 1.5s infinite;
+    color: #edf2f7;
   }
-  @keyframes pulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
-
-  .entity {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-  }
-  .sprite {
-    font-size: 3.5rem;
-    transition: transform 0.08s ease;
-    cursor: pointer;
-  }
-  .entity-name {
-    font-size: 0.8rem;
-    font-weight: bold;
-    margin-top: 4px;
-    text-shadow: 0 1px 3px #000;
-  }
-  .hp-bar-mini {
-    width: 65px;
-    height: 5px;
-    background: #0d1318;
+  .hud-bar {
+    height: 6px;
+    background: #0c1218;
     border-radius: 3px;
     overflow: hidden;
-    margin-top: 3px;
-    border: 1px solid #334354;
+    position: relative;
+    border: 1px solid #233140;
   }
-  .hp-fill-mini {
-    height: 100%;
-    background: #e53e3e;
-    width: 100%;
-    transition: width 0.1s;
-  }
+  .fill-hp { width: 100%; height: 100%; background: linear-gradient(90deg, #e53e3e, #fc8181); transition: width 0.1s; }
+  .fill-sp { width: 100%; height: 100%; background: linear-gradient(90deg, #3182ce, #63b3ed); transition: width 0.1s; }
+  .fill-exp { width: 0%; height: 100%; background: linear-gradient(90deg, #38a169, #68d391); transition: width 0.1s; }
 
-  /* 飄字傷害特效 */
-  .dmg-float {
+  /* 右上角地圖名 */
+  .map-hud {
     position: absolute;
-    font-weight: 900;
-    font-family: 'Arial Black', Impact, sans-serif;
-    pointer-events: none;
-    animation: dmgAnim 0.7s ease-out forwards;
-    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
-  }
-  .dmg-normal { font-size: 1.2rem; color: #ffffff; }
-  .dmg-crit { font-size: 1.5rem; color: var(--ro-crit); }
-  .dmg-miss { font-size: 1rem; color: #a0aec0; font-style: italic; }
-  @keyframes dmgAnim {
-    0% { opacity: 1; transform: translateY(0) scale(1.1); }
-    30% { transform: translateY(-25px) scale(1.3); }
-    100% { opacity: 0; transform: translateY(-50px) scale(0.9); }
-  }
-
-  /* 次分頁導航 */
-  .sub-tabs { display: flex; background: #17212b; border-bottom: 1px solid var(--panel-border); }
-  .sub-tab {
-    flex: 1;
-    text-align: center;
-    padding: 9px 0;
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-  }
-  .sub-tab.active {
-    color: var(--ro-yellow);
-    border-bottom: 2px solid var(--ro-yellow);
-    font-weight: bold;
-    background: #1f2c3a;
-  }
-
-  .tab-content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 12px;
-    display: none;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .tab-content.active { display: flex; }
-
-  /* 六圍配點面板 */
-  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .stat-card {
-    background: var(--card-bg);
-    border: 1px solid var(--panel-border);
+    top: 12px;
+    right: 14px;
+    background: rgba(18, 25, 34, 0.85);
+    border: 2px solid #3c4f64;
     border-radius: 8px;
-    padding: 8px 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    padding: 6px 12px;
+    text-align: right;
+    pointer-events: auto;
   }
-  .stat-title { font-size: 0.8rem; font-weight: bold; }
-  .stat-effect { font-size: 0.65rem; color: var(--text-muted); margin-top: 2px; }
-  .stat-val-group { display: flex; align-items: center; gap: 8px; }
-  .btn-plus {
-    width: 26px;
-    height: 26px;
-    background: #2b6cb0;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    font-weight: bold;
-    cursor: pointer;
+  .map-title { font-size: 0.85rem; font-weight: bold; color: #f6ad55; }
+  .zeny-title { font-size: 0.75rem; color: #ecc94b; margin-top: 2px; }
+
+  /* 左下角虛擬搖桿 */
+  .joystick-zone {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    width: 140px;
+    height: 140px;
+    pointer-events: auto;
+    touch-action: none;
+  }
+  .joystick-base {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px dashed rgba(255, 255, 255, 0.25);
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
   }
-  .btn-plus:disabled { opacity: 0.3; cursor: not-allowed; }
-
-  /* 掛機地圖列表 */
-  .map-card {
-    background: var(--card-bg);
-    border: 1px solid var(--panel-border);
-    border-radius: 8px;
-    padding: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
+  .joystick-stick {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #4299e1 0%, #2b6cb0 100%);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    border: 2px solid #bee3f8;
+    position: absolute;
+    top: 35px;
+    left: 35px;
+    pointer-events: none;
+    transition: transform 0.04s ease-out;
   }
-  .map-card.selected { border-color: var(--ro-yellow); background: #223242; }
-  .map-info h4 { font-size: 0.85rem; color: #fff; }
-  .map-info p { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
 
-  /* 轉職面板 */
-  .job-change-card {
-    background: #231e2b;
-    border: 1px solid #553c9a;
-    border-radius: 8px;
-    padding: 12px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  /* 右下角技能與攻擊輪盤 */
+  .actions-cluster {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 180px;
+    height: 180px;
+    pointer-events: auto;
   }
-  .job-opt-btn {
-    padding: 8px;
-    background: #6b46c1;
+  .btn-attack {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #dd6b20 0%, #9c4221 100%);
+    border: 3px solid #fbd38d;
+    box-shadow: 0 6px 14px rgba(221, 107, 32, 0.45);
     color: #fff;
-    border: none;
-    border-radius: 6px;
-    font-weight: bold;
-    font-size: 0.85rem;
+    font-size: 1.8rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     cursor: pointer;
   }
+  .btn-attack:active { transform: scale(0.92); }
 
-  /* 戰況日誌 */
-  .combat-log {
-    background: #0d1318;
-    border: 1px solid #232d36;
-    border-radius: 6px;
-    padding: 8px;
-    height: 110px;
-    overflow-y: auto;
-    font-size: 0.75rem;
-    font-family: monospace;
-    display: flex;
-    flex-direction: column-reverse;
-  }
-  .log-line { margin-bottom: 2px; }
-
-  /* 快捷技能欄 */
-  footer {
-    height: 60px;
-    background: #17212b;
-    border-top: 1px solid var(--panel-border);
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    padding: 0 8px;
-  }
-  .skill-slot {
+  .skill-btn {
+    position: absolute;
     width: 48px;
     height: 48px;
-    background: #101820;
-    border: 1px solid #334354;
-    border-radius: 8px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #2b3948 0%, #17212b 100%);
+    border: 2px solid #63b3ed;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    font-size: 1.4rem;
+    font-size: 1.1rem;
     cursor: pointer;
-    position: relative;
   }
-  .skill-slot:active { transform: scale(0.92); }
-  .skill-cost {
-    position: absolute;
-    bottom: 2px;
-    right: 3px;
-    font-size: 0.6rem;
-    color: #63b3ed;
+  .skill-btn:active { transform: scale(0.92); }
+  .skill-btn span:last-child {
+    font-size: 0.55rem;
+    color: #90cdf4;
     font-weight: bold;
+    margin-top: -2px;
+  }
+
+  .btn-skill-1 { top: 10px; right: 20px; border-color: #f6ad55; }
+  .btn-skill-2 { top: 40px; left: 35px; border-color: #fc8181; }
+  .btn-skill-3 { bottom: 20px; left: 10px; border-color: #68d391; }
+  .btn-potion  { top: 2px; left: 95px; border-color: #e53e3e; width: 40px; height: 40px; font-size: 1rem; }
+
+  /* 提示直式翻轉 */
+  #rotate-hint {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: #0d131a;
+    z-index: 9999;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #f6ad55;
+    font-size: 1.2rem;
+    text-align: center;
+    padding: 20px;
+  }
+  @media screen and (orientation: portrait) {
+    #rotate-hint { display: flex; }
   }
 </style>
 </head>
 <body>
 
-<div class="mobile-shell">
-  <header>
-    <div class="char-top-row">
-      <div class="job-title">
-        <span id="char-avatar">🗡️</span>
-        <span id="job-name">初心者</span>
-      </div>
-      <div class="zeny-display">🪙 <span id="zeny-val">100</span> Zeny</div>
-    </div>
+<div id="game-wrapper">
+  <canvas id="canvas"></canvas>
 
-    <div class="bar-group">
-      <div class="bar-container">
-        <span class="bar-label" style="color:#fc8181;">HP</span>
-        <div class="progress-bg"><div class="progress-fill-hp" id="hp-bar"></div></div>
-        <span style="font-size:0.65rem;" id="hp-text">100/100</span>
-      </div>
-      <div class="bar-container">
-        <span class="bar-label" style="color:#63b3ed;">Base <span id="base-lv">1</span></span>
-        <div class="progress-bg"><div class="progress-fill-base" id="base-exp-bar"></div></div>
-        <span style="font-size:0.65rem;" id="base-exp-text">0%</span>
-      </div>
-      <div class="bar-container">
-        <span class="bar-label" style="color:#68d391;">Job <span id="job-lv">1</span></span>
-        <div class="progress-bg"><div class="progress-fill-job" id="job-exp-bar"></div></div>
-        <span style="font-size:0.65rem;" id="job-exp-text">0%</span>
+  <div class="hud-layer">
+    <div class="player-status-badge">
+      <div class="avatar-circle" id="hud-avatar">🧙</div>
+      <div class="bars-col">
+        <div class="status-name-row">
+          <span id="hud-job">魔法劍士 Lv.<span id="hud-lv">1</span></span>
+          <span style="color:#68d391;" id="hud-hp-txt">100%</span>
+        </div>
+        <div class="hud-bar"><div class="fill-hp" id="hud-hp-bar"></div></div>
+        <div class="hud-bar"><div class="fill-sp" id="hud-sp-bar"></div></div>
+        <div class="hud-bar"><div class="fill-exp" id="hud-exp-bar"></div></div>
       </div>
     </div>
-  </header>
 
-  <div class="battle-stage" id="battle-stage">
-    <div class="map-name" id="map-name">普隆德拉南門</div>
-    <div class="auto-tag">⚔️ 自動掛機中</div>
-
-    <div class="entity" id="player-entity">
-      <div class="sprite" id="player-sprite">🚶</div>
-      <div class="entity-name" id="player-name">你</div>
+    <div class="map-hud">
+      <div class="map-title">📍 普隆德拉南門外郊</div>
+      <div class="zeny-title">🪙 <span id="hud-zeny">150</span> Zeny</div>
     </div>
 
-    <div class="entity" id="mob-entity" onclick="manualAttack()">
-      <div class="sprite" id="mob-sprite">🟣</div>
-      <div class="entity-name" id="mob-name">波利</div>
-      <div class="hp-bar-mini"><div class="hp-fill-mini" id="mob-hp-bar"></div></div>
+    <div class="joystick-zone" id="joystick-zone">
+      <div class="joystick-base">
+        <div class="joystick-stick" id="joystick-stick"></div>
+      </div>
     </div>
-  </div>
 
-  <div class="sub-tabs">
-    <div class="sub-tab active" onclick="switchSubTab('stats')">六圍配點</div>
-    <div class="sub-tab" onclick="switchSubTab('maps')">掛機練等</div>
-    <div class="sub-tab" onclick="switchSubTab('job')">轉職大廳</div>
-    <div class="sub-tab" onclick="switchSubTab('log')">戰鬥戰報</div>
-  </div>
-
-  <div class="tab-content active" id="tab-stats">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-      <span style="font-size:0.85rem; color:var(--text-muted);">剩餘屬性點:</span>
-      <b style="color:var(--ro-yellow); font-size:1.1rem;" id="stat-points-val">5</b>
-    </div>
-    <div class="stat-grid" id="stat-grid"></div>
-  </div>
-
-  <div class="tab-content" id="tab-maps">
-    <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:4px;">選擇適合你等級的掛機點：</div>
-    <div id="map-list" style="display:flex; flex-direction:column; gap:8px;"></div>
-  </div>
-
-  <div class="tab-content" id="tab-job">
-    <div class="job-change-card" id="job-card-box">
-      <h3 style="color:var(--ro-yellow);">轉職神殿</h3>
-      <p style="font-size:0.8rem; color:var(--text-muted);" id="job-desc">初心者 Job Lv.10 後即可在此接取轉職任務！</p>
-      <div id="job-options" style="display:flex; flex-direction:column; gap:6px; margin-top:8px;"></div>
+    <div class="actions-cluster">
+      <div class="skill-btn btn-potion" onclick="castPotion()">
+        <span>🧪</span><span id="hud-potions">x15</span>
+      </div>
+      <div class="skill-btn btn-skill-1" onclick="castFireBolt()">
+        <span>🔥</span><span>火箭</span>
+      </div>
+      <div class="skill-btn btn-skill-2" onclick="castBash()">
+        <span>💥</span><span>狂擊</span>
+      </div>
+      <div class="skill-btn btn-skill-3" onclick="castHeal()">
+        <span>💚</span><span>治癒</span>
+      </div>
+      <div class="btn-attack" onclick="triggerNormalAttack()">
+        <span>⚔️</span>
+      </div>
     </div>
   </div>
 
-  <div class="tab-content" id="tab-log">
-    <div class="combat-log" id="combat-log"></div>
+  <div id="rotate-hint">
+    <div style="font-size:3rem; margin-bottom:12px;">📱 ➔ 🔄</div>
+    <div>請將手機翻轉至<b>橫向模式 (Landscape)</b><br>以獲得最佳手遊操作體驗！</div>
   </div>
-
-  <footer>
-    <div class="skill-slot" onclick="usePotion('red')">
-      <span>🧪</span>
-      <span class="skill-cost" id="red-pot-count">x10</span>
-    </div>
-    <div class="skill-slot" onclick="castSkill('bash')">
-      <span>💥</span>
-      <span class="skill-cost">狂擊</span>
-    </div>
-    <div class="skill-slot" onclick="castSkill('magnum')">
-      <span>🔥</span>
-      <span class="skill-cost">怒爆</span>
-    </div>
-    <div class="skill-slot" onclick="alert('卡片裝備插槽開發中！')">
-      <span>🃏</span>
-      <span class="skill-cost">卡片</span>
-    </div>
-  </footer>
 </div>
 
 <script>
-let player = {
-  job: "初心者",
-  jobStage: 0,
-  baseLv: 1,
-  baseExp: 0,
-  jobLv: 1,
-  jobExp: 0,
-  hp: 120,
-  maxHp: 120,
-  zeny: 100,
-  statPoints: 5,
-  redPotions: 15,
-  stats: { str: 1, agi: 1, vit: 1, int: 1, dex: 1, luk: 1 }
-};
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
 
-const STAT_CONFIG = {
-  str: { name: "STR (力量)", effect: "+物理攻擊 ATK" },
-  agi: { name: "AGI (敏捷)", effect: "+攻擊頻率 ASPD & 迴避" },
-  vit: { name: "VIT (體質)", effect: "+生命上限 MaxHP & 防禦" },
-  int: { name: "INT (智力)", effect: "+魔攻 MATK & 技能威力" },
-  dex: { name: "DEX (靈巧)", effect: "+命中率 & 攻擊下限" },
-  luk: { name: "LUK (幸運)", effect: "+暴擊率 CRIT" }
-};
+const WORLD_WIDTH = 2400;
+const WORLD_HEIGHT = 1600;
 
-const MAPS = [
-  { id: 0, name: "普隆德拉南門", mob: "波利", sprite: "🟣", hp: 60, atk: 5, bexp: 15, jexp: 12, zeny: 8, reqLv: 1 },
-  { id: 1, name: "西門下水道", mob: "瘋兔與盜蟲", sprite: "🪲", hp: 160, atk: 12, bexp: 45, jexp: 38, zeny: 22, reqLv: 5 },
-  { id: 2, name: "迷藏森林外圍", mob: "搖滾蝗蟲", sprite: "🦗", hp: 380, atk: 24, bexp: 120, jexp: 110, zeny: 55, reqLv: 10 },
-  { id: 3, name: "沉船幽靈幽閉處", mob: "邪骸海盜", sprite: "💀", hp: 950, atk: 48, bexp: 320, jexp: 290, zeny: 140, reqLv: 18 },
-  { id: 4, name: "獸人村落 (MVP前哨)", mob: "獸人戰士", sprite: "👹", hp: 2500, atk: 90, bexp: 850, jexp: 800, zeny: 380, reqLv: 28 }
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+
+const camera = { x: 0, y: 0 };
+
+// 場景元素
+const trees = [];
+for (let i = 0; i < 45; i++) {
+  trees.push({
+    x: Math.random() * (WORLD_WIDTH - 200) + 100,
+    y: Math.random() * (WORLD_HEIGHT - 200) + 100,
+    r: 32 + Math.random() * 16,
+    color: Math.random() < 0.5 ? "#2d6a4f" : "#40916c"
+  });
+}
+
+const ponds = [
+  { x: 500, y: 600, rx: 140, ry: 90 },
+  { x: 1700, y: 1100, rx: 180, ry: 110 }
 ];
 
-let currentMapIdx = 0;
-let currentMob = null;
-let attackTimer = 0;
+const ruins = [
+  { x: 1200, y: 800, w: 90, h: 40 },
+  { x: 1250, y: 750, w: 30, h: 80 },
+  { x: 800, y: 350, w: 70, h: 70 }
+];
 
-function getAtk() {
-  let baseJobAtk = player.jobStage === 1 ? 25 : 8;
-  return baseJobAtk + (player.stats.str * 4) + (player.stats.dex * 1.5);
+// 角色實體
+const player = {
+  x: 1000,
+  y: 800,
+  radius: 20,
+  speed: 4.8,
+  facing: 1,
+  isMoving: false,
+  vx: 0,
+  vy: 0,
+  lv: 1,
+  hp: 200,
+  maxHp: 200,
+  sp: 100,
+  maxSp: 100,
+  exp: 0,
+  maxExp: 100,
+  zeny: 150,
+  atk: 35,
+  matk: 50,
+  potions: 15,
+  attackAnimTimer: 0
+};
+
+const floatingTexts = [];
+function addFloatingText(x, y, text, color = "#fff", fontSize = 18) {
+  floatingTexts.push({ x, y, text, color, fontSize, alpha: 1.0, life: 40 });
 }
 
-function getMaxHp() {
-  let base = 80 + (player.baseLv * 25);
-  return Math.round(base + (player.stats.vit * 18));
-}
-
-function getAspdInterval() {
-  let interval = 1100 - (player.stats.agi * 28);
-  return Math.max(220, interval);
-}
-
-function getCritChance() {
-  return Math.min(80, 5 + (player.stats.luk * 2.5));
-}
-
-function getBaseExpReq(lv) {
-  return Math.round(40 * Math.pow(1.35, lv - 1));
-}
-
-function getJobExpReq(lv) {
-  return Math.round(25 * Math.pow(1.30, lv - 1));
-}
-
-function spawnMob() {
-  let map = MAPS[currentMapIdx];
-  currentMob = {
-    name: map.mob,
-    sprite: map.sprite,
-    hp: map.hp,
-    maxHp: map.hp,
-    atk: map.atk,
-    bexp: map.bexp,
-    jexp: map.jexp,
-    zeny: map.zeny
-  };
-  document.getElementById("mob-sprite").innerText = currentMob.sprite;
-  document.getElementById("mob-name").innerText = currentMob.name;
-  updateMobHpUI();
-}
-
-function hitMonster(damage, isCrit = false) {
-  if (!currentMob) return;
-  currentMob.hp -= damage;
-  let mobSprite = document.getElementById("mob-sprite");
-  mobSprite.style.transform = "translateX(8px) scale(0.92)";
-  setTimeout(() => mobSprite.style.transform = "none", 80);
-
-  showDamageText(damage, isCrit, false);
-  updateMobHpUI();
-
-  if (currentMob.hp <= 0) {
-    onMobDefeated();
+const projectiles = [];
+function addFirebolt(targetMob) {
+  for (let i = 0; i < 5; i++) {
+    setTimeout(() => {
+      if (!targetMob || targetMob.hp <= 0) return;
+      projectiles.push({
+        type: 'firebolt',
+        x: player.x,
+        y: player.y - 120,
+        tx: targetMob.x,
+        ty: targetMob.y,
+        speed: 12,
+        damage: Math.round(player.matk * 0.9),
+        target: targetMob
+      });
+    }, i * 85);
   }
 }
 
-function onMobDefeated() {
-  player.zeny += currentMob.zeny;
-  addExp(currentMob.bexp, currentMob.jexp);
-  addCombatLog(`擊倒【${currentMob.name}】！獲得 ${currentMob.bexp} BExp / ${currentMob.jexp} JExp，拾獲 ${currentMob.zeny} Zeny🪙`);
+// 魔物配置
+const MONSTER_TYPES = [
+  { name: "波利", sprite: "🟣", hp: 120, speed: 1.2, exp: 25, zeny: 15, atk: 8, color: "#d53f8c", size: 22 },
+  { name: "瘋兔", sprite: "🐰", hp: 180, speed: 1.8, exp: 40, zeny: 25, atk: 14, color: "#ecc94b", size: 24 },
+  { name: "搖滾蝗蟲", sprite: "🦗", hp: 320, speed: 2.2, exp: 80, zeny: 50, atk: 22, color: "#48bb78", size: 26 },
+  { name: "獸人戰士 (菁英)", sprite: "👹", hp: 1100, speed: 1.5, exp: 280, zeny: 180, atk: 45, color: "#e53e3e", size: 34 }
+];
 
-  if (Math.random() < 0.03) {
-    addCombatLog(`⭐【奇蹟掉落】你拾獲了稀有魔物卡片：【${currentMob.name}卡片】！`);
+const monsters = [];
+function spawnMonsters(count = 14) {
+  for (let i = 0; i < count; i++) {
+    let t = MONSTER_TYPES[Math.floor(Math.random() * (player.lv > 3 ? MONSTER_TYPES.length : 2))];
+    monsters.push({
+      x: Math.random() * (WORLD_WIDTH - 200) + 100,
+      y: Math.random() * (WORLD_HEIGHT - 200) + 100,
+      type: t,
+      hp: t.hp,
+      maxHp: t.hp,
+      vx: (Math.random() - 0.5) * t.speed,
+      vy: (Math.random() - 0.5) * t.speed,
+      changeDirTimer: Math.random() * 60,
+      hitFlash: 0
+    });
+  }
+}
+spawnMonsters(16);
+
+// 虛擬搖桿
+const joystickZone = document.getElementById("joystick-zone");
+const joystickStick = document.getElementById("joystick-stick");
+let isDraggingJoy = false;
+let joyCenter = { x: 0, y: 0 };
+let joyVector = { x: 0, y: 0 };
+
+joystickZone.addEventListener("pointerdown", (e) => {
+  isDraggingJoy = true;
+  const rect = joystickZone.getBoundingClientRect();
+  joyCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+  handleJoystickMove(e.clientX, e.clientY);
+});
+
+window.addEventListener("pointermove", (e) => {
+  if (isDraggingJoy) handleJoystickMove(e.clientX, e.clientY);
+});
+
+window.addEventListener("pointerup", () => {
+  if (isDraggingJoy) {
+    isDraggingJoy = false;
+    joyVector = { x: 0, y: 0 };
+    joystickStick.style.transform = `translate(0px, 0px)`;
+  }
+});
+
+function handleJoystickMove(clientX, clientY) {
+  const dx = clientX - joyCenter.x;
+  const dy = clientY - joyCenter.y;
+  const dist = Math.hypot(dx, dy);
+  const maxR = 45;
+
+  if (dist === 0) {
+    joyVector = { x: 0, y: 0 };
+    return;
   }
 
-  currentMob = null;
-  setTimeout(spawnMob, 300);
+  const clampedDist = Math.min(dist, maxR);
+  const angle = Math.atan2(dy, dx);
+  const stickX = Math.cos(angle) * clampedDist;
+  const stickY = Math.sin(angle) * clampedDist;
+
+  joystickStick.style.transform = `translate(${stickX}px, ${stickY}px)`;
+  joyVector = { x: stickX / maxR, y: stickY / maxR };
 }
 
-function addExp(bexp, jexp) {
-  player.baseExp += bexp;
-  player.jobExp += jexp;
+// 支援鍵盤
+const keys = {};
+window.addEventListener("keydown", (e) => keys[e.key.toLowerCase()] = true);
+window.addEventListener("keyup", (e) => keys[e.key.toLowerCase()] = false);
 
-  while (player.baseExp >= getBaseExpReq(player.baseLv)) {
-    player.baseExp -= getBaseExpReq(player.baseLv);
-    player.baseLv += 1;
-    player.statPoints += 3;
-    player.maxHp = getMaxHp();
-    player.hp = player.maxHp;
-    addCombatLog(`✨ 恭喜！Base 等級提升至 Lv.${player.baseLv}！獲得 3 點屬性點！`);
+// 戰鬥邏輯
+function findNearestMonster(range = 400) {
+  let nearest = null;
+  let minDist = range;
+  for (let m of monsters) {
+    let d = Math.hypot(m.x - player.x, m.y - player.y);
+    if (d < minDist) {
+      minDist = d;
+      nearest = m;
+    }
+  }
+  return nearest;
+}
+
+function triggerNormalAttack() {
+  player.attackAnimTimer = 10;
+  let hitCount = 0;
+  for (let m of monsters) {
+    let d = Math.hypot(m.x - player.x, m.y - player.y);
+    if (d < 85) {
+      let isCrit = Math.random() < 0.25;
+      let dmg = isCrit ? Math.round(player.atk * 1.6) : player.atk + Math.floor(Math.random() * 8);
+      damageMonster(m, dmg, isCrit ? "#f8e71c" : "#fff", isCrit ? "CRIT!" : "");
+      hitCount++;
+    }
+  }
+  if (hitCount === 0) {
+    addFloatingText(player.x + player.facing * 30, player.y - 20, "唰！", "#cbd5e0", 14);
+  }
+}
+
+function castFireBolt() {
+  if (player.sp < 20) {
+    addFloatingText(player.x, player.y - 40, "SP不足!", "#63b3ed", 14);
+    return;
+  }
+  let target = findNearestMonster(450);
+  if (!target) {
+    addFloatingText(player.x, player.y - 40, "視野內無目標!", "#cbd5e0", 14);
+    return;
+  }
+  player.sp -= 20;
+  addFloatingText(player.x, player.y - 50, "🔥 火箭術!!", "#f6ad55", 18);
+  addFirebolt(target);
+  updateHUD();
+}
+
+function castBash() {
+  if (player.sp < 15) {
+    addFloatingText(player.x, player.y - 40, "SP不足!", "#63b3ed", 14);
+    return;
+  }
+  let target = findNearestMonster(120);
+  if (!target) {
+    addFloatingText(player.x, player.y - 40, "超出攻擊距離!", "#cbd5e0", 14);
+    return;
+  }
+  player.sp -= 15;
+  let dmg = Math.round(player.atk * 2.8);
+  damageMonster(target, dmg, "#fc8181", "狂擊💥");
+  let angle = Math.atan2(target.y - player.y, target.x - player.x);
+  target.x += Math.cos(angle) * 50;
+  target.y += Math.sin(angle) * 50;
+  updateHUD();
+}
+
+function castHeal() {
+  if (player.sp < 18) {
+    addFloatingText(player.x, player.y - 40, "SP不足!", "#63b3ed", 14);
+    return;
+  }
+  player.sp -= 18;
+  let heal = 65;
+  player.hp = Math.min(player.maxHp, player.hp + heal);
+  addFloatingText(player.x, player.y - 45, `+${heal} 治癒💚`, "#68d391", 20);
+  updateHUD();
+}
+
+function castPotion() {
+  if (player.potions > 0) {
+    player.potions--;
+    player.hp = Math.min(player.maxHp, player.hp + 80);
+    addFloatingText(player.x, player.y - 40, "+80 HP 🧪", "#fc8181", 18);
+    updateHUD();
+  }
+}
+
+function damageMonster(m, dmg, color, prefix = "") {
+  m.hp -= dmg;
+  m.hitFlash = 6;
+  addFloatingText(m.x, m.y - 25, `${prefix ? prefix + ' ' : ''}-${dmg}`, color, 18);
+
+  if (m.hp <= 0) {
+    player.exp += m.type.exp;
+    player.zeny += m.type.zeny;
+    addFloatingText(m.x, m.y - 45, `+${m.type.exp} EXP`, "#68d391", 15);
+
+    if (player.exp >= player.maxExp) {
+      player.exp -= player.maxExp;
+      player.lv += 1;
+      player.maxExp = Math.round(player.maxExp * 1.5);
+      player.maxHp += 40;
+      player.maxSp += 20;
+      player.hp = player.maxHp;
+      player.sp = player.maxSp;
+      player.atk += 6;
+      player.matk += 10;
+      addFloatingText(player.x, player.y - 65, "🌟 LEVEL UP! 🌟", "#f6e05e", 24);
+    }
+
+    const idx = monsters.indexOf(m);
+    if (idx !== -1) monsters.splice(idx, 1);
+    setTimeout(() => spawnMonsters(1), 2200);
+  }
+  updateHUD();
+}
+
+// 主循環
+function update() {
+  let mx = joyVector.x;
+  let my = joyVector.y;
+
+  if (keys['w'] || keys['arrowup']) my -= 1;
+  if (keys['s'] || keys['arrowdown']) my += 1;
+  if (keys['a'] || keys['arrowleft']) mx -= 1;
+  if (keys['d'] || keys['arrowright']) mx += 1;
+
+  let len = Math.hypot(mx, my);
+  if (len > 0) {
+    player.vx = (mx / len) * player.speed;
+    player.vy = (my / len) * player.speed;
+    player.x += player.vx;
+    player.y += player.vy;
+    player.facing = player.vx > 0 ? 1 : -1;
+    player.isMoving = true;
+  } else {
+    player.isMoving = false;
   }
 
-  let maxJob = player.jobStage === 0 ? 10 : 40;
-  while (player.jobLv < maxJob && player.jobExp >= getJobExpReq(player.jobLv)) {
-    player.jobExp -= getJobExpReq(player.jobLv);
-    player.jobLv += 1;
-    addCombatLog(`🌟 恭喜！Job 等級提升至 Lv.${player.jobLv}！`);
-    if (player.jobStage === 0 && player.jobLv >= 10) {
-      addCombatLog(`🔔 你的初心者 Job 已達 10 級，可以前往【轉職大廳】進行一轉！`);
+  player.x = Math.max(player.radius, Math.min(WORLD_WIDTH - player.radius, player.x));
+  player.y = Math.max(player.radius, Math.min(WORLD_HEIGHT - player.radius, player.y));
+
+  camera.x = player.x - canvas.width / 2;
+  camera.y = player.y - canvas.height / 2;
+  camera.x = Math.max(0, Math.min(WORLD_WIDTH - canvas.width, camera.x));
+  camera.y = Math.max(0, Math.min(WORLD_HEIGHT - canvas.height, camera.y));
+
+  for (let m of monsters) {
+    if (m.hitFlash > 0) m.hitFlash--;
+    m.changeDirTimer--;
+    if (m.changeDirTimer <= 0) {
+      m.changeDirTimer = 60 + Math.random() * 80;
+      let angle = Math.random() * Math.PI * 2;
+      m.vx = Math.cos(angle) * m.type.speed;
+      m.vy = Math.sin(angle) * m.type.speed;
+    }
+    m.x += m.vx;
+    m.y += m.vy;
+
+    if (m.x < 50 || m.x > WORLD_WIDTH - 50) m.vx *= -1;
+    if (m.y < 50 || m.y > WORLD_HEIGHT - 50) m.vy *= -1;
+  }
+
+  for (let i = projectiles.length - 1; i >= 0; i--) {
+    let p = projectiles[i];
+    let dx = p.target.x - p.x;
+    let dy = p.target.y - p.y;
+    let dist = Math.hypot(dx, dy);
+
+    if (dist < 18 || p.target.hp <= 0) {
+      damageMonster(p.target, p.damage, "#f6ad55");
+      projectiles.splice(i, 1);
+    } else {
+      p.x += (dx / dist) * p.speed;
+      p.y += (dy / dist) * p.speed;
     }
   }
 
-  updateHeaderUI();
-}
-
-function manualAttack() {
-  let isCrit = Math.random() * 100 < getCritChance();
-  let baseAtk = getAtk();
-  let finalDmg = isCrit ? Math.round(baseAtk * 1.6) : Math.round(baseAtk * (0.9 + Math.random() * 0.2));
-  hitMonster(finalDmg, isCrit);
-}
-
-function autoCombatLoop() {
-  let interval = getAspdInterval();
-  if (Date.now() - attackTimer >= interval) {
-    attackTimer = Date.now();
-    if (currentMob && currentMob.hp > 0) {
-      let isCrit = Math.random() * 100 < getCritChance();
-      let baseAtk = getAtk();
-      let finalDmg = isCrit ? Math.round(baseAtk * 1.6) : Math.round(baseAtk * (0.9 + Math.random() * 0.2));
-      
-      let pSprite = document.getElementById("player-sprite");
-      pSprite.style.transform = "translateX(10px)";
-      setTimeout(() => pSprite.style.transform = "none", 70);
-
-      hitMonster(finalDmg, isCrit);
-
-      if (currentMob && currentMob.hp > 0) {
-        let dodgeChance = Math.min(60, player.stats.agi * 1.5);
-        if (Math.random() * 100 < dodgeChance) {
-          showDamageText("MISS", false, true);
-        } else {
-          let mobDmg = Math.max(1, currentMob.atk - Math.floor(player.stats.vit * 0.8));
-          player.hp = Math.max(0, player.hp - mobDmg);
-          updateHeaderUI();
-
-          if (player.hp < player.maxHp * 0.35 && player.redPotions > 0) {
-            usePotion('red');
-          }
-
-          if (player.hp <= 0) {
-            addCombatLog(`☠️ 你在戰鬥中陣亡了！正在修整重生回滿血...`);
-            player.hp = player.maxHp;
-            updateHeaderUI();
-          }
-        }
-      }
-    }
+  for (let i = floatingTexts.length - 1; i >= 0; i--) {
+    let ft = floatingTexts[i];
+    ft.y -= 1.0;
+    ft.life--;
+    ft.alpha = ft.life / 40;
+    if (ft.life <= 0) floatingTexts.splice(i, 1);
   }
-  requestAnimationFrame(autoCombatLoop);
+
+  if (player.attackAnimTimer > 0) player.attackAnimTimer--;
 }
 
-function showDamageText(text, isCrit, isPlayer) {
-  let stage = document.getElementById("battle-stage");
-  let el = document.createElement("div");
-  el.className = "dmg-float " + (isCrit ? "dmg-crit" : (text === "MISS" ? "dmg-miss" : "dmg-normal"));
-  el.innerText = isCrit ? `${text}!!` : text;
+function render() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.translate(-camera.x, -camera.y);
 
-  let targetEntity = isPlayer ? document.getElementById("player-entity") : document.getElementById("mob-entity");
-  let rect = targetEntity.getBoundingClientRect();
-  let stageRect = stage.getBoundingClientRect();
+  // 草地與網格
+  ctx.fillStyle = "#386641";
+  ctx.fillRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
 
-  el.style.left = `${(rect.left - stageRect.left) + 20 + (Math.random() * 20 - 10)}px`;
-  el.style.top = `${(rect.top - stageRect.top) + 20}px`;
-
-  stage.appendChild(el);
-  setTimeout(() => el.remove(), 700);
-}
-
-function usePotion(type) {
-  if (type === 'red' && player.redPotions > 0) {
-    player.redPotions--;
-    let heal = Math.round(player.maxHp * 0.45);
-    player.hp = Math.min(player.maxHp, player.hp + heal);
-    updateHeaderUI();
-    addCombatLog(`🧪 使用了紅色藥水，回復了 ${heal} HP！`);
+  ctx.strokeStyle = "rgba(40, 75, 48, 0.45)";
+  ctx.lineWidth = 1;
+  const TILE_SIZE = 80;
+  for (let x = 0; x < WORLD_WIDTH; x += TILE_SIZE) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, WORLD_HEIGHT);
+    ctx.stroke();
   }
-}
-
-function castSkill(skillId) {
-  if (!currentMob) return;
-  if (skillId === 'bash') {
-    let dmg = Math.round(getAtk() * 2.8);
-    hitMonster(dmg, true);
-    addCombatLog(`💥 發動【狂擊】！造成 ${dmg} 點重擊破甲傷害！`);
-  } else if (skillId === 'magnum') {
-    let dmg = Math.round(getAtk() * 3.5);
-    hitMonster(dmg, true);
-    addCombatLog(`🔥 發動【怒爆】！引爆烈焰造成 ${dmg} 點高額傷害！`);
+  for (let y = 0; y < WORLD_HEIGHT; y += TILE_SIZE) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(WORLD_WIDTH, y);
+    ctx.stroke();
   }
-}
 
-function addStat(statKey) {
-  if (player.statPoints > 0) {
-    player.statPoints--;
-    player.stats[statKey]++;
-    player.maxHp = getMaxHp();
-    updateHeaderUI();
-    renderStatsPanel();
+  // 水池
+  for (let p of ponds) {
+    ctx.fillStyle = "#2b6cb0";
+    ctx.beginPath();
+    ctx.ellipse(p.x, p.y, p.rx, p.ry, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#4299e1";
+    ctx.lineWidth = 4;
+    ctx.stroke();
   }
-}
 
-function changeJob(jobTitle) {
-  if (player.jobStage === 0 && player.jobLv >= 10) {
-    player.job = jobTitle;
-    player.jobStage = 1;
-    player.jobLv = 1;
-    player.jobExp = 0;
-    if (jobTitle === "劍士") {
-      player.stats.str += 5;
-      player.stats.vit += 3;
-      document.getElementById("char-avatar").innerText = "🛡️";
-    } else if (jobTitle === "盜賊") {
-      player.stats.agi += 6;
-      player.stats.dex += 3;
-      document.getElementById("char-avatar").innerText = "🗡️";
-    }
-    player.maxHp = getMaxHp();
-    player.hp = player.maxHp;
-    addCombatLog(`🎉 轉職成功！你正式成為了一名崇高的【${jobTitle}】！獲得職業基本屬性加乘！`);
-    updateHeaderUI();
-    renderJobPanel();
-    renderStatsPanel();
+  // 遺跡
+  for (let r of ruins) {
+    ctx.fillStyle = "#4a5568";
+    ctx.fillRect(r.x, r.y, r.w, r.h);
+    ctx.strokeStyle = "#2d3748";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(r.x, r.y, r.w, r.h);
   }
+
+  // 魔物
+  for (let m of monsters) {
+    ctx.fillStyle = m.hitFlash > 0 ? "#ffffff" : m.type.color;
+    ctx.beginPath();
+    ctx.arc(m.x, m.y, m.type.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#1a202c";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.font = `${m.type.size * 1.1}px system-ui`;
+    ctx.textAlign = "center";
+    ctx.fillText(m.type.sprite, m.x, m.y + (m.type.size * 0.35));
+
+    let hpBarW = 40;
+    let hpRatio = Math.max(0, m.hp / m.maxHp);
+    ctx.fillStyle = "rgba(0,0,0,0.6)";
+    ctx.fillRect(m.x - hpBarW / 2, m.y - m.type.size - 14, hpBarW, 5);
+    ctx.fillStyle = "#e53e3e";
+    ctx.fillRect(m.x - hpBarW / 2, m.y - m.type.size - 14, hpBarW * hpRatio, 5);
+
+    ctx.font = "11px system-ui";
+    ctx.fillStyle = "#fff";
+    ctx.fillText(m.type.name, m.x, m.y - m.type.size - 18);
+  }
+
+  // 斬擊劍氣
+  if (player.attackAnimTimer > 0) {
+    ctx.strokeStyle = "#f6e05e";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    let startA = player.facing > 0 ? -Math.PI / 3 : (2 * Math.PI) / 3;
+    let endA = player.facing > 0 ? Math.PI / 3 : (4 * Math.PI) / 3;
+    ctx.arc(player.x, player.y, 55, startA, endA);
+    ctx.stroke();
+  }
+
+  // 玩家角色
+  ctx.fillStyle = "rgba(0,0,0,0.3)";
+  ctx.beginPath();
+  ctx.ellipse(player.x, player.y + 16, 18, 8, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "#3182ce";
+  ctx.beginPath();
+  ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "#bee3f8";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.font = "26px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText("🧙", player.x, player.y + 8);
+
+  ctx.font = "bold 12px system-ui";
+  ctx.fillStyle = "#f6ad55";
+  ctx.fillText(`你 (Lv.${player.lv})`, player.x, player.y - 28);
+
+  // 樹冠景深遮罩
+  for (let t of trees) {
+    ctx.fillStyle = t.color;
+    ctx.beginPath();
+    ctx.arc(t.x, t.y, t.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#1b4332";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+  }
+
+  // 火箭術彈幕
+  for (let p of projectiles) {
+    ctx.fillStyle = "#ed8936";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 9, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#fbd38d";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  // 飄字傷害
+  for (let ft of floatingTexts) {
+    ctx.save();
+    ctx.globalAlpha = ft.alpha;
+    ctx.font = `bold ${ft.fontSize}px 'Arial Black', Impact, sans-serif`;
+    ctx.fillStyle = ft.color;
+    ctx.textAlign = "center";
+    ctx.shadowColor = "#000";
+    ctx.shadowBlur = 4;
+    ctx.fillText(ft.text, ft.x, ft.y);
+    ctx.restore();
+  }
+
+  ctx.restore();
 }
 
-function switchSubTab(tabName) {
-  const tabs = ['stats', 'maps', 'job', 'log'];
-  tabs.forEach((t, i) => {
-    document.querySelectorAll('.sub-tab')[i].classList.toggle('active', t === tabName);
-    document.getElementById(`tab-${t}`).classList.toggle('active', t === tabName);
-  });
-}
-
-function addCombatLog(msg) {
-  let logBox = document.getElementById("combat-log");
-  let line = document.createElement("div");
-  line.className = "log-line";
-  line.innerHTML = `> ${msg}`;
-  logBox.prepend(line);
-}
-
-function updateHeaderUI() {
-  document.getElementById("job-name").innerText = player.job;
-  document.getElementById("base-lv").innerText = player.baseLv;
-  document.getElementById("job-lv").innerText = player.jobLv;
-  document.getElementById("zeny-val").innerText = player.zeny.toLocaleString();
-  document.getElementById("stat-points-val").innerText = player.statPoints;
-  document.getElementById("red-pot-count").innerText = `x${player.redPotions}`;
+function updateHUD() {
+  document.getElementById("hud-lv").innerText = player.lv;
+  document.getElementById("hud-zeny").innerText = player.zeny;
+  document.getElementById("hud-potions").innerText = `x${player.potions}`;
 
   let hpPct = (player.hp / player.maxHp) * 100;
-  document.getElementById("hp-bar").style.width = `${hpPct}%`;
-  document.getElementById("hp-text").innerText = `${player.hp}/${player.maxHp}`;
+  document.getElementById("hud-hp-bar").style.width = `${hpPct}%`;
+  document.getElementById("hud-hp-txt").innerText = `${Math.round(hpPct)}%`;
 
-  let bReq = getBaseExpReq(player.baseLv);
-  let bPct = Math.min(100, Math.floor((player.baseExp / bReq) * 100));
-  document.getElementById("base-exp-bar").style.width = `${bPct}%`;
-  document.getElementById("base-exp-text").innerText = `${bPct}%`;
+  let spPct = (player.sp / player.maxSp) * 100;
+  document.getElementById("hud-sp-bar").style.width = `${spPct}%`;
 
-  let maxJob = player.jobStage === 0 ? 10 : 40;
-  let jReq = getJobExpReq(player.jobLv);
-  let jPct = player.jobLv >= maxJob ? 100 : Math.min(100, Math.floor((player.jobExp / jReq) * 100));
-  document.getElementById("job-exp-bar").style.width = `${jPct}%`;
-  document.getElementById("job-exp-text").innerText = `${jPct}%`;
+  let expPct = (player.exp / player.maxExp) * 100;
+  document.getElementById("hud-exp-bar").style.width = `${expPct}%`;
 }
 
-function updateMobHpUI() {
-  if (!currentMob) return;
-  let pct = Math.max(0, (currentMob.hp / currentMob.maxHp) * 100);
-  document.getElementById("mob-hp-bar").style.width = `${pct}%`;
+function gameLoop() {
+  update();
+  render();
+  requestAnimationFrame(gameLoop);
 }
 
-function renderStatsPanel() {
-  let grid = document.getElementById("stat-grid");
-  grid.innerHTML = "";
-  for (let key in STAT_CONFIG) {
-    let cfg = STAT_CONFIG[key];
-    let val = player.stats[key];
-    let card = document.createElement("div");
-    card.className = "stat-card";
-    card.innerHTML = `
-      <div>
-        <div class="stat-title">${cfg.name}: <b style="color:var(--ro-yellow);">${val}</b></div>
-        <div class="stat-effect">${cfg.effect}</div>
-      </div>
-      <div class="stat-val-group">
-        <button class="btn-plus" onclick="addStat('${key}')" ${player.statPoints <= 0 ? 'disabled' : ''}>+</button>
-      </div>
-    `;
-    grid.appendChild(card);
-  }
-}
-
-function renderMapsPanel() {
-  let list = document.getElementById("map-list");
-  list.innerHTML = "";
-  MAPS.forEach((m, idx) => {
-    let card = document.createElement("div");
-    card.className = `map-card ${idx === currentMapIdx ? 'selected' : ''}`;
-    card.onclick = () => {
-      if (player.baseLv < m.reqLv) {
-        alert(`等級未達到 Lv.${m.reqLv}，無法前往該危險區域！`);
-        return;
-      }
-      currentMapIdx = idx;
-      document.getElementById("map-name").innerText = m.name;
-      addCombatLog(`📍 轉移掛機陣地至【${m.name}】！`);
-      spawnMob();
-      renderMapsPanel();
-    };
-    card.innerHTML = `
-      <div class="map-info">
-        <h4>${m.sprite} ${m.name} (建議 Lv.${m.reqLv}+)</h4>
-        <p>出沒魔物: ${m.mob} | 產出: ${m.bexp} BExp / ${m.jexp} JExp / ${m.zeny} Zeny</p>
-      </div>
-      <div style="font-size:0.75rem; color:${idx === currentMapIdx ? 'var(--ro-yellow)' : 'var(--text-muted)'}; font-weight:bold;">
-        ${idx === currentMapIdx ? '掛機中' : '前往 ➔'}
-      </div>
-    `;
-    list.appendChild(card);
-  });
-}
-
-function renderJobPanel() {
-  let desc = document.getElementById("job-desc");
-  let opt = document.getElementById("job-options");
-  opt.innerHTML = "";
-
-  if (player.jobStage === 0) {
-    if (player.jobLv >= 10) {
-      desc.innerHTML = "恭喜你！已滿足初心者 Job Lv.10 條件，請選擇一轉職業分支：";
-      opt.innerHTML = `
-        <button class="job-opt-btn" onclick="changeJob('劍士')">🛡️ 轉職為【劍士】(高血量、重裝甲、物理猛攻)</button>
-        <button class="job-opt-btn" style="background:#2c7a7b;" onclick="changeJob('盜賊')">🗡️ 轉職為【盜賊】(極限攻速、高閃避、致命暴擊)</button>
-      `;
-    } else {
-      desc.innerHTML = `尚未達到轉職要求！當前進度：初心者 Job Lv. ${player.jobLv} / 10`;
-    }
-  } else {
-    desc.innerHTML = `當前職業：<b>${player.job}</b> (一轉)<br>請繼續提升 Job 等級至 Lv.40 解鎖進階二轉殿堂！`;
-  }
-}
-
-updateHeaderUI();
-renderStatsPanel();
-renderMapsPanel();
-renderJobPanel();
-spawnMob();
-requestAnimationFrame(autoCombatLoop);
+updateHUD();
+requestAnimationFrame(gameLoop);
 </script>
 </body>
 </html>
