@@ -302,8 +302,8 @@
       <p id="modal-desc">
         你是學務處最親切的校安老師！<br>
         在 17:00 前利用下方按鈕巡視校園，<br>
-        點擊【對話】傾聽同學們的現代校園煩惱，<br>
-        憑著愛心與專業守住理智，平安下班！
+        門口會陸續湧入許多帶著煩惱的學生，<br>
+        靠近冒問號的學生點擊【對話】排解難題，平安下班！
       </p>
       <button class="cute-btn" id="start-btn" onclick="startGame()">開始值勤 ⏰</button>
     </div>
@@ -427,7 +427,7 @@
     const timeScale = 0.55;
 
     const player = {
-      x: 80,
+      x: 60,
       y: 270,
       speed: 3.5,
       san: 100,
@@ -446,7 +446,7 @@
     let moveLeft = false;
     let moveRight = false;
 
-    /* 現代校園生活題庫（已移除後方分數顯示） */
+    /* 豐富題庫 */
     const questionBank = [
       {
         text: "老師！有人把我的醜照發在匿名 Threads 和 IG 告白粉專，底下好多人在笑我...",
@@ -536,19 +536,30 @@
       }
     });
 
+    /* 學生進場生成機制：從右側大門進入，走到不同指定站位等待 */
     function spawnStudent() {
-      if (!isPlaying || students.length >= 2) return;
+      // 容納最多 4 位學生在場排隊
+      if (!isPlaying || students.length >= 4) return;
+
+      // 隨機選擇不重疊的排隊站位 (X: 130 ~ 330)
+      const slotX = 130 + Math.random() * 200;
+
       students.push({
-        x: 180 + Math.random() * 140,
+        x: 420, // 從畫面右側門外走進來
         y: 285,
-        hasQuestion: true,
-        type: Math.floor(Math.random() * 2),
-        bounce: Math.random() * Math.PI
+        targetX: slotX,
+        state: 'entering', // 'entering' | 'waiting' | 'leaving'
+        type: Math.floor(Math.random() * 2), // 0: 雙馬尾女生, 1: 呆毛男生
+        facing: 'left',
+        walkFrame: 0,
+        bounce: Math.random() * Math.PI,
+        hasQuestion: false,
+        mood: null // 'happy' | 'sad'
       });
     }
 
     function openQuestion() {
-      if (!activeStudent) return;
+      if (!activeStudent || activeStudent.state !== 'waiting') return;
       const currentQuestion = questionBank[Math.floor(Math.random() * questionBank.length)];
       dialogText.innerText = currentQuestion.text;
       optionsContainer.innerHTML = '';
@@ -571,22 +582,23 @@
       if (opt.san >= 0) {
         playCorrectSound();
         triggerHaptic('success');
-        feedbackText = "處置得宜，守護了學生！ ❤️";
+        feedbackText = "處置得宜，學生放心離開！ ❤️";
       } else {
         playWrongSound();
         triggerHaptic('warning');
-        feedbackText = "處置不當，理智下降... 💦";
+        feedbackText = "處置不當，學生委屈離開... 💦";
       }
 
-      feedbackTimer = 75;
+      feedbackTimer = 70;
       dialogBox.style.display = 'none';
 
+      /* 學生觸發離開動作 */
       if (activeStudent) {
+        activeStudent.state = 'leaving';
         activeStudent.hasQuestion = false;
-        setTimeout(() => {
-          students = students.filter(s => s !== activeStudent);
-          activeStudent = null;
-        }, 800);
+        activeStudent.facing = 'right'; // 轉身向右側門走去
+        activeStudent.mood = opt.san >= 0 ? 'happy' : 'sad';
+        activeStudent = null;
       }
 
       if (player.san <= 0) {
@@ -602,12 +614,15 @@
       gameTime = 16.5 * 60;
       player.san = 100;
       player.sta = 100;
-      player.x = 80;
+      player.x = 60;
       students = [];
       activeStudent = null;
       dialogBox.style.display = 'none';
       feedbackText = "";
+
+      // 開局生成 2 位學生前來
       spawnStudent();
+      setTimeout(spawnStudent, 800);
     }
 
     function gameOver(win) {
@@ -628,7 +643,7 @@
         triggerHaptic('warning');
         modalTitle.innerText = "💦 理智斷線加班中...";
         modalTitle.style.color = "#ef4444";
-        modalDesc.innerHTML = "SAN 值歸零了！ 🥺<br>面對連環突發狀況與求助，精神徹底被榨乾，<br>今天只好多留下來喝杯奶茶寫檢討報告了。";
+        modalDesc.innerHTML = "SAN 值歸零了！ 🥺<br>面對連環湧入的諮詢與問題，精神徹底被榨乾，<br>今天只好多留下來喝杯奶茶寫檢討報告了。";
         startBtn.innerText = "重新振作";
       }
     }
@@ -648,6 +663,7 @@
         return;
       }
 
+      /* 玩家移動 */
       let isMoving = false;
       if (dialogBox.style.display === 'none') {
         if (moveLeft) { player.x -= player.speed; isMoving = true; }
@@ -657,13 +673,48 @@
       if (isMoving) player.walkFrame += 0.2;
       else player.walkFrame = 0;
 
-      player.x = Math.max(30, Math.min(canvas.width - 70, player.x));
+      player.x = Math.max(20, Math.min(canvas.width - 70, player.x));
 
+      /* 學生生命週期與行走狀態管理 */
+      for (let i = students.length - 1; i >= 0; i--) {
+        const st = students[i];
+
+        if (st.state === 'entering') {
+          // 進場走入辦公室
+          st.x -= 2;
+          st.facing = 'left';
+          st.walkFrame += 0.2;
+          if (st.x <= st.targetX) {
+            st.state = 'waiting';
+            st.hasQuestion = true;
+            st.walkFrame = 0;
+          }
+        } else if (st.state === 'waiting') {
+          // 在原地上下可愛浮動等待提問
+          st.bounce += 0.05;
+        } else if (st.state === 'leaving') {
+          // 離開動作：小碎步走出大門
+          st.x += 3.2;
+          st.facing = 'right';
+          st.walkFrame += 0.25;
+          // 完全走出畫面右邊後移除
+          if (st.x > 440) {
+            students.splice(i, 1);
+            continue;
+          }
+        }
+      }
+
+      /* 尋找最近且處於 waiting 狀態的學生 */
       activeStudent = null;
+      let minDistance = 55;
       students.forEach(st => {
-        let dist = Math.abs((player.x + 25) - (st.x + 20));
-        if (dist < 55 && st.hasQuestion) {
-          activeStudent = st;
+        if (st.state === 'waiting' && st.hasQuestion) {
+          let dist = Math.abs((player.x + 25) - (st.x + 20));
+          if (dist < minDistance) {
+            activeStudent = st;
+            minDistance = dist;
+          }
         }
       });
 
@@ -675,8 +726,9 @@
         actionBtn.style.color = "#ffffff";
       }
 
+      /* 頻繁生成學生排隊（製造熱鬧諮詢氛圍） */
       spawnTimer++;
-      if (spawnTimer > 280) {
+      if (spawnTimer > 130) {
         spawnStudent();
         spawnTimer = 0;
       }
@@ -687,7 +739,7 @@
       if (feedbackTimer > 0) feedbackTimer--;
     }
 
-    /* 可愛角色繪製函式 */
+    /* 可愛角色繪圖函式 */
     function drawCuteEye(x, y, radius, lookDir = 0) {
       ctx.save();
       ctx.fillStyle = '#ffffff';
@@ -801,18 +853,21 @@
       ctx.save();
       ctx.translate(st.x, st.y);
 
-      st.bounce += 0.05;
-      let bob = Math.sin(st.bounce) * 2.5;
+      let bob = (st.state === 'waiting') ? Math.sin(st.bounce) * 2.5 : Math.sin(st.walkFrame) * 3;
+      let dir = st.facing === 'right' ? 1 : -1;
 
+      // 影子
       ctx.fillStyle = 'rgba(120, 53, 15, 0.15)';
       ctx.beginPath();
       ctx.ellipse(20, 68, 16, 5, 0, 0, Math.PI * 2);
       ctx.fill();
 
+      // 鞋子 (行進中擺動)
+      let legOffset = (st.state !== 'waiting') ? Math.sin(st.walkFrame) * 4 : 0;
       ctx.fillStyle = '#78350f';
       ctx.beginPath();
-      ctx.ellipse(14, 65, 4, 3, 0, 0, Math.PI * 2);
-      ctx.ellipse(26, 65, 4, 3, 0, 0, Math.PI * 2);
+      ctx.ellipse(14 + legOffset, 65, 4, 3, 0, 0, Math.PI * 2);
+      ctx.ellipse(26 - legOffset, 65, 4, 3, 0, 0, Math.PI * 2);
       ctx.fill();
 
       if (st.type === 0) {
@@ -852,6 +907,7 @@
         ctx.strokeRect(10, 48 + bob, 20, 10);
       }
 
+      // Q 版大頭
       ctx.fillStyle = '#ffedd5';
       ctx.beginPath();
       ctx.arc(20, 20 + bob, 17, 0, Math.PI * 2);
@@ -886,8 +942,9 @@
         ctx.stroke();
       }
 
-      drawCuteEye(15, 20 + bob, 3.5, 0);
-      drawCuteEye(25, 20 + bob, 3.5, 0);
+      let eyeDir = dir * 1.5;
+      drawCuteEye(15, 20 + bob, 3.5, eyeDir);
+      drawCuteEye(25, 20 + bob, 3.5, eyeDir);
 
       ctx.fillStyle = 'rgba(254, 202, 202, 0.7)';
       ctx.beginPath();
@@ -900,10 +957,21 @@
       ctx.arc(20, 26 + bob, 2, 0, Math.PI * 2);
       ctx.fill();
 
-      if (st.hasQuestion) {
+      // 正在排隊發問時的問號
+      if (st.hasQuestion && st.state === 'waiting') {
         let qBob = Math.sin(st.bounce * 1.5) * 4;
         ctx.font = 'bold 22px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
         ctx.fillText("❓", 10, -5 + qBob);
+      }
+
+      // 離開時的表情圖案 (滿意愛心 / 無奈冷汗)
+      if (st.state === 'leaving') {
+        ctx.font = 'bold 18px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
+        if (st.mood === 'happy') {
+          ctx.fillText("💖", 12, -4);
+        } else {
+          ctx.fillText("💦", 12, -4);
+        }
       }
 
       ctx.restore();
@@ -924,9 +992,20 @@
       ctx.lineTo(canvas.width, 340);
       ctx.stroke();
 
+      // 右側學務處出入門框
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillRect(360, 180, 40, 160);
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(360, 180, 40, 160);
+      ctx.fillStyle = '#f97316';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.fillText("大門", 368, 205);
+
+      // 窗戶
       ctx.fillStyle = '#bae6fd';
       ctx.beginPath();
-      ctx.roundRect(240, 45, 120, 75, 10);
+      ctx.roundRect(170, 45, 120, 75, 10);
       ctx.fill();
       ctx.strokeStyle = '#7dd3fc';
       ctx.lineWidth = 3;
@@ -934,33 +1013,38 @@
 
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
-      ctx.arc(270, 75, 12, 0, Math.PI * 2);
-      ctx.arc(285, 70, 15, 0, Math.PI * 2);
-      ctx.arc(300, 75, 11, 0, Math.PI * 2);
+      ctx.arc(200, 75, 12, 0, Math.PI * 2);
+      ctx.arc(215, 70, 15, 0, Math.PI * 2);
+      ctx.arc(230, 75, 11, 0, Math.PI * 2);
       ctx.fill();
 
+      // 佈告欄
       ctx.fillStyle = '#fb923c';
       ctx.beginPath();
-      ctx.roundRect(30, 70, 140, 85, 10);
+      ctx.roundRect(20, 70, 120, 85, 10);
       ctx.fill();
       ctx.strokeStyle = '#c2410c';
       ctx.lineWidth = 2;
       ctx.stroke();
 
       ctx.fillStyle = '#fef08a';
-      ctx.fillRect(45, 85, 30, 35);
+      ctx.fillRect(32, 85, 25, 30);
       ctx.fillStyle = '#fbcfe8';
-      ctx.fillRect(90, 95, 40, 30);
+      ctx.fillRect(70, 95, 35, 25);
 
       ctx.fillStyle = '#7c2d12';
-      ctx.font = 'bold 15px sans-serif';
-      ctx.fillText("平安下班", 245, 145);
-      ctx.font = '12px sans-serif';
-      ctx.fillText("溫馨校園 守護成長 💕", 225, 165);
+      ctx.font = 'bold 14px sans-serif';
+      ctx.fillText("平安下班", 310, 100);
+      ctx.font = '11px sans-serif';
+      ctx.fillText("愛心守護", 315, 120);
 
+      // 繪製多位學生
       students.forEach(st => drawCuteStudent(st));
+
+      // 繪製校安老師
       drawCuteTeacher(player.x, player.y, player.facing, player.walkFrame);
 
+      // 靠近提問時的提示氣泡
       if (activeStudent && dialogBox.style.display === 'none') {
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
@@ -975,10 +1059,11 @@
         ctx.fillText("點擊 [對話] 💬", player.x - 9, player.y - 19);
       }
 
+      // 回覆飄字
       if (feedbackTimer > 0) {
-        ctx.fillStyle = feedbackText.includes("守護") ? '#059669' : '#dc2626';
-        ctx.font = 'bold 16px sans-serif';
-        ctx.fillText(feedbackText, player.x - 35, player.y - 50);
+        ctx.fillStyle = feedbackText.includes("放心") ? '#059669' : '#dc2626';
+        ctx.font = 'bold 15px sans-serif';
+        ctx.fillText(feedbackText, player.x - 45, player.y - 50);
       }
     }
 
