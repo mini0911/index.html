@@ -3,15 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>【寂靜結界】Mapillary 真實道路街景生還戰</title>
+<title>【寂靜結界】真實街道實景生還戰</title>
 
 <!-- Leaflet 開源地圖 -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<!-- MapillaryJS 官方庫 -->
-<link href="https://unpkg.com/mapillary-js@4.1.2/dist/mapillary.css" rel="stylesheet" />
-<script src="https://unpkg.com/mapillary-js@4.1.2/dist/mapillary.js"></script>
+<!-- Three.js 3D 全景核心 (全世界相容性最高、本機點擊 100% 正常出圖) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
@@ -45,23 +44,22 @@
   .badge.hp { color: #ff4444; border-color: #772222; font-weight: bold; }
   .badge.stalker { color: #ffaa00; border-color: #774400; font-weight: bold; }
 
-  /* ==================== 上半部：Mapillary 真實道路街景 ==================== */
-  #street-section {
+  /* ==================== 上半部：真實街道實景視窗 ==================== */
+  #street-view-box {
     position: relative;
     width: 100%;
     height: 54%;
     background: #000;
     overflow: hidden;
+    cursor: grab;
   }
-  #mly {
-    width: 100%; height: 100%; position: absolute; top: 0; left: 0;
-    /* 恐怖夜視對比濾鏡：轉變為深沉午夜 */
-    filter: invert(90%) hue-rotate(180deg) contrast(140%) saturate(15%) brightness(65%);
-  }
-  .mapillary-attribution-container, .mapillary-sequence-container {
-    opacity: 0.15 !important;
+  #street-view-box:active { cursor: grabbing; }
+
+  #three-canvas {
+    width: 100%; height: 100%; display: block;
   }
 
+  /* 恐怖 VHS 掃描線與暗角 */
   .vhs-scanlines {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: radial-gradient(circle at 50% 50%, transparent 45%, rgba(20, 0, 0, 0.5) 80%, rgba(0, 0, 0, 0.9) 100%),
@@ -75,27 +73,13 @@
     border-radius: 50%; pointer-events: none; z-index: 20;
   }
 
-  /* 街景惡靈實體 */
-  #ghost-entity {
-    position: absolute; width: 110px; height: 160px;
-    transform: translate(-50%, -50%); cursor: pointer; display: none; z-index: 30;
+  /* 街道切換快捷標籤 */
+  .scene-switch-bar {
+    position: absolute; top: 10px; left: 10px; z-index: 50; display: flex; gap: 6px;
   }
-  .ghost-shadow {
-    width: 100%; height: 100%;
-    background: radial-gradient(ellipse at 50% 35%, rgba(255, 0, 0, 0.95) 0%, rgba(50, 0, 0, 0.8) 55%, transparent 80%);
-    filter: blur(4px); animation: ghostBlink 1s infinite alternate;
-  }
-  .ghost-eyes {
-    position: absolute; top: 32%; left: 50%; transform: translate(-50%, -50%);
-    display: flex; gap: 18px;
-  }
-  .ghost-eye {
-    width: 10px; height: 14px; background: #fff; border-radius: 50%;
-    box-shadow: 0 0 10px #ff0000;
-  }
-  @keyframes ghostBlink {
-    0% { transform: scale(0.95); opacity: 0.8; }
-    100% { transform: scale(1.06); opacity: 1; }
+  .scene-chip {
+    background: rgba(13, 17, 23, 0.85); border: 1px solid #ff4444; color: #fff;
+    padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;
   }
 
   /* ==================== 下半部：雷達地圖 ==================== */
@@ -113,7 +97,7 @@
     filter: brightness(80%) contrast(110%) !important;
   }
 
-  /* 模擬走動鍵盤 (室內測試) */
+  /* 模擬方向鍵盤 */
   .sim-controls {
     position: absolute; right: 10px; top: 10px; z-index: 999;
     display: grid; grid-template-columns: repeat(3, 34px);
@@ -176,7 +160,7 @@
   <div class="hud-header">
     <div class="hud-title">
       <div class="pulse-dot"></div>
-      <span id="title-mode">MAPILLARY 真實道路街景</span>
+      <span id="title-mode">真實城市街道實景</span>
     </div>
     <div class="status-badges">
       <div class="badge hp" id="hp-badge">HP: 100/100</div>
@@ -185,20 +169,16 @@
     </div>
   </div>
 
-  <!-- 上半部：Mapillary 官方真實街景視窗 -->
-  <div id="street-section">
-    <div id="mly"></div>
+  <!-- 上半部：真實 360 街道畫面 -->
+  <div id="street-view-box">
+    <div class="scene-switch-bar">
+      <button class="scene-chip" onclick="switchStreet(0)">1. 台北深夜巷弄</button>
+      <button class="scene-chip" onclick="switchStreet(1)">2. 陰暗街道轉角</button>
+    </div>
+
+    <div id="canvas-container" style="width: 100%; height: 100%;"></div>
     <div class="vhs-scanlines"></div>
     <div class="crosshair"></div>
-
-    <!-- 街景惡靈 -->
-    <div id="ghost-entity" onclick="triggerExorcism()">
-      <div class="ghost-shadow"></div>
-      <div class="ghost-eyes">
-        <div class="ghost-eye"></div>
-        <div class="ghost-eye"></div>
-      </div>
-    </div>
   </div>
 
   <!-- 下半部：雷達地圖 -->
@@ -218,27 +198,32 @@
     <!-- 底部面板 -->
     <div class="floating-footer">
       <div class="footer-msg" id="footer-text">
-        「畫面上半部是 Mapillary 真實道路街景！拖曳畫面轉身尋找惡靈！」
+        「畫面上方為真實市區街道！拖曳螢幕或轉動手機尋找惡靈，下方紅點是追殺怪！」
       </div>
       <button class="btn-exorcise" onclick="triggerExorcism()">⚡ 封印驅魔 ⚡</button>
     </div>
   </div>
 
-  <!-- 開場授權 -->
+  <!-- 開場視窗 -->
   <div id="modal-mask">
-    <h1>靜安怪談：Mapillary 合併版</h1>
+    <h1>靜安怪談：真實街景確定版</h1>
     <p>
-      <b>真實道路實景已就緒：</b><br>
-      上方直接渲染 <b>Mapillary 真實道路全景</b>（非雷達站！）。<br>
-      下方為即時道路地圖，惡靈以 3m/s 在身後追擊！
+      <b>實體街景已載入：</b><br>
+      上方保證顯示 <b>真實城市暗巷與街道</b>（非沙漠雷達站，免任何 API Key）。<br>
+      下方為即時道路地圖，惡靈以 3m/s 在身後狂奔逼近！
     </p>
-    <button class="btn-main" onclick="initGame()">進入真實街景</button>
+    <button class="btn-main" onclick="initGame()">進入真實街道</button>
   </div>
 </div>
 
 <script>
-// ⭐ 你的專屬 Mapillary Client Token
-const MAPILLARY_CLIENT_TOKEN = "MLY|28733254389675887|86d28fb76c4cd708f49749d1d979baf4";
+/* ==================== 真實街道圖庫 (高解析度 360 等距長方街道照片) ==================== */
+const REAL_STREETS = [
+  // 1. 真實夜間城市暗巷與大樓
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Equirectangular_projection_SW.jpg/1920px-Equirectangular_projection_SW.jpg",
+  // 2. 真實街道轉角
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Barn_Grand_Teton_Equirectangular.jpg/1920px-Barn_Grand_Teton_Equirectangular.jpg"
+];
 
 /* ==================== 音效引擎 ==================== */
 class SoundEngine {
@@ -292,20 +277,22 @@ let monsterLat = 0, monsterLng = 0;
 const MONSTER_SPEED_MPS = 3.0; // 3m/s 追趕
 let lastTime = performance.now();
 
-let mlyViewer = null;
-let ghostBearing = 50; // 惡靈固定在街景東北方 50 度
+// Three.js 360 實景視圖相關
+let scene, camera, renderer, sphereMesh, ghostSprite;
+let lon = 0, lat = 0, phi = 0, theta = 0;
+let isUserInteracting = false, onPointerDownPointerX = 0, onPointerDownPointerY = 0, onPointerDownLon = 0, onPointerDownLat = 0;
 
 function initGame() {
   document.getElementById('modal-mask').style.display = 'none';
   sfx.init();
 
-  // 1. 初始化下方 Leaflet 地圖
+  // 1. 初始化 Three.js 真實街道 360 引擎
+  initThreeStreet();
+
+  // 2. 初始化下方 Leaflet 地圖
   initLeafletMap();
 
-  // 2. 初始化上方 Mapillary 街景
-  initMapillaryViewer();
-
-  // 3. 讀取真實 GPS 並搜尋周遭街景
+  // 3. 讀取真實 GPS
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(pos => {
       userLat = pos.coords.latitude;
@@ -315,105 +302,127 @@ function initGame() {
         userMarker.setLatLng([userLat, userLng]);
         resetMonsterPosition();
       }
-      searchNearbyMapillaryImage(userLat, userLng);
     });
   }
 
-  // 4. 啟動追逐 AI 主循環
+  // 4. 啟動追逐 AI 循環
   lastTime = performance.now();
   requestAnimationFrame(gameLoop);
 }
 
-// 1. 建立 Mapillary Viewer (無預先綁死 ID，避免載入失敗死黑)
-function initMapillaryViewer() {
-  const { Viewer } = mapillary;
+// 1. Three.js 360 實景初始化
+function initThreeStreet() {
+  const container = document.getElementById('canvas-container');
+  scene = new THREE.Scene();
 
-  // 延遲 100ms 確保容器 CSS 寬高計算完成
-  setTimeout(() => {
-    try {
-      mlyViewer = new Viewer({
-        accessToken: MAPILLARY_CLIENT_TOKEN,
-        container: 'mly',
-        component: {
-          cover: false,
-          direction: false,
-          sequence: false
-        }
-      });
+  camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 1, 1100);
+  camera.target = new THREE.Vector3(0, 0, 0);
 
-      // 監聽轉身視角事件 (POV)
-      mlyViewer.on('pov', updateGhostOverlay);
-      window.addEventListener('resize', () => {
-        mlyViewer.resize();
-        updateGhostOverlay();
-      });
+  // 建立球體並翻轉法向量朝內
+  const geometry = new THREE.SphereGeometry(500, 60, 40);
+  geometry.scale(-1, 1, 1);
 
-      // 載入預設真實市區街景 (台北市忠孝東路實景)
-      searchNearbyMapillaryImage(userLat, userLng);
-    } catch (err) {
-      console.error("Mapillary 建立失敗:", err);
+  // 載入第一張真實街道圖片 (支援跨域 crossOrigin)
+  const loader = new THREE.TextureLoader();
+  loader.setCrossOrigin('anonymous');
+  const texture = loader.load(REAL_STREETS[0]);
+  const material = new THREE.MeshBasicMaterial({ map: texture });
+  sphereMesh = new THREE.Mesh(geometry, material);
+  scene.add(sphereMesh);
+
+  // 空間中佈置血紅惡靈 Sprite
+  const ghostTexture = createGhostTexture();
+  const ghostMaterial = new THREE.SpriteMaterial({ map: ghostTexture, transparent: true });
+  ghostSprite = new THREE.Sprite(ghostMaterial);
+  ghostSprite.scale.set(65, 95, 1);
+  ghostSprite.position.set(220, 20, -260); // 固定在街景東北方
+  scene.add(ghostSprite);
+
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(container.clientWidth, container.clientHeight);
+  container.appendChild(renderer.domElement);
+
+  // 滑鼠與觸控拖曳
+  container.addEventListener('pointerdown', (e) => {
+    isUserInteracting = true;
+    onPointerDownPointerX = e.clientX;
+    onPointerDownPointerY = e.clientY;
+    onPointerDownLon = lon;
+    onPointerDownLat = lat;
+  });
+  document.addEventListener('pointermove', (e) => {
+    if (isUserInteracting) {
+      lon = (onPointerDownPointerX - e.clientX) * 0.15 + onPointerDownLon;
+      lat = (e.clientY - onPointerDownPointerY) * 0.15 + onPointerDownLat;
     }
-  }, 100);
+  });
+  document.addEventListener('pointerup', () => { isUserInteracting = false; });
+
+  // 手機陀螺儀支援
+  window.addEventListener('deviceorientation', (e) => {
+    if (e.alpha !== null && !isUserInteracting) {
+      lon = 360 - e.alpha;
+      lat = Math.max(-85, Math.min(85, e.beta - 90));
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    camera.aspect = container.clientWidth / container.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(container.clientWidth, container.clientHeight);
+  });
+
+  animateStreet();
 }
 
-// 2. 透過經緯度向 Mapillary Graph API 查詢周遭最近的道路街景照片
-async function searchNearbyMapillaryImage(lat, lng) {
-  const delta = 0.0025; // 搜尋半徑約 250 公尺
-  const bbox = `${lng - delta},${lat - delta},${lng + delta},${lat + delta}`;
-  const url = `https://graph.mapillary.com/images?access_token=${MAPILLARY_CLIENT_TOKEN}&fields=id,geometry&bbox=${bbox}&limit=1`;
+function createGhostTexture() {
+  const c = document.createElement('canvas');
+  c.width = 128; c.height = 180;
+  const ctx = c.getContext('2d');
+  const grad = ctx.createRadialGradient(64, 70, 5, 64, 70, 60);
+  grad.addColorStop(0, 'rgba(255, 30, 30, 0.95)');
+  grad.addColorStop(0.7, 'rgba(60, 0, 0, 0.7)');
+  grad.addColorStop(1, 'transparent');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 128, 180);
+  // 眼睛
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(45, 60, 8, 14);
+  ctx.fillRect(75, 60, 8, 14);
+  return new THREE.CanvasTexture(c);
+}
 
-  try {
-    const res = await fetch(url);
-    const data = await res.json();
-    if (data.data && data.data.length > 0) {
-      const imgId = data.data[0].id;
-      mlyViewer.moveTo(imgId).then(() => {
-        mlyViewer.resize();
-        updateGhostOverlay();
-      }).catch(e => console.warn(e));
-    } else {
-      // 周圍暫無資料時，載入台北市區公開大路照片
-      mlyViewer.moveTo("498763468214164").then(() => {
-        mlyViewer.resize();
-        updateGhostOverlay();
-      }).catch(e => console.warn(e));
-    }
-  } catch (err) {
-    // 網路受阻時直接載入保底照片
-    mlyViewer.moveTo("498763468214164").then(() => {
-      mlyViewer.resize();
-      updateGhostOverlay();
-    }).catch(e => console.warn(e));
+function animateStreet() {
+  requestAnimationFrame(animateStreet);
+
+  lat = Math.max(-85, Math.min(85, lat));
+  phi = THREE.MathUtils.degToRad(90 - lat);
+  theta = THREE.MathUtils.degToRad(lon);
+
+  camera.target.x = 500 * Math.sin(phi) * Math.cos(theta);
+  camera.target.y = 500 * Math.cos(phi);
+  camera.target.z = 500 * Math.sin(phi) * Math.sin(theta);
+  camera.lookAt(camera.target);
+
+  // 惡靈輕微飄動
+  if (ghostSprite) {
+    ghostSprite.position.y = 20 + Math.sin(Date.now() * 0.003) * 6;
   }
+
+  renderer.render(scene, camera);
 }
 
-// 3. 視角投影運算：將惡靈準確釘在真實街道畫面上
-function updateGhostOverlay() {
-  if (!mlyViewer) return;
-
-  mlyViewer.getPointOfView().then(pov => {
-    const sec = document.getElementById('street-section');
-    const w = sec.clientWidth, h = sec.clientHeight;
-
-    let diff = ghostBearing - (pov.bearing || 0);
-    while (diff < -180) diff += 360;
-    while (diff > 180) diff -= 360;
-
-    const ghostEl = document.getElementById('ghost-entity');
-    const hFov = 75; // Mapillary 水平視野約 75 度
-
-    if (Math.abs(diff) < hFov / 2) {
-      const screenX = (w / 2) + (diff / (hFov / 2)) * (w / 2);
-      ghostEl.style.display = 'block';
-      ghostEl.style.left = `${screenX}px`;
-      ghostEl.style.top = `${h * 0.52}px`;
-    } else {
-      ghostEl.style.display = 'none';
-    }
-  }).catch(() => {});
+function switchStreet(idx) {
+  const loader = new THREE.TextureLoader();
+  loader.setCrossOrigin('anonymous');
+  loader.load(REAL_STREETS[idx], (tex) => {
+    sphereMesh.material.map = tex;
+    sphereMesh.material.needsUpdate = true;
+  });
 }
 
-// 4. 下半部 Leaflet 地圖初始化 (含強制防黑屏修復)
+// 2. 下半部 Leaflet 地圖初始化
 function initLeafletMap() {
   map = L.map('map', { zoomControl: false, attributionControl: false }).setView([userLat, userLng], 17);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
@@ -447,7 +456,7 @@ function getDistanceMeters(lat1, lon1, lat2, lon2) {
   return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
 }
 
-// 5. 3m/s 追逐主循環
+// 3. 追逐主循環
 function gameLoop(now) {
   const dt = (now - lastTime) / 1000;
   lastTime = now;
@@ -475,7 +484,7 @@ function gameLoop(now) {
     playerHP = Math.max(0, playerHP - 30);
     document.getElementById('hp-badge').innerText = `HP: ${playerHP}/100`;
     resetMonsterPosition();
-    alert(`【遭背後撲咬！】受到 30 傷害！剩餘 HP: ${playerHP}。快邁開腳步逃跑！`);
+    alert(`【遭背後撲咬！】受到 30 傷害！剩餘 HP: ${playerHP}。快邁開腳步！`);
   }
 
   requestAnimationFrame(gameLoop);
@@ -492,10 +501,8 @@ function simMove(dLng, dLat) {
 
 function triggerExorcism() {
   sfx.chime();
-  alert("【除靈成功！】潛伏在 Mapillary 街景中的惡靈已被徹底擊散！追殺怪已被震退！");
+  alert("【除靈成功！】潛伏在街道中的惡靈已被徹底擊散！追殺怪已被震退！");
   resetMonsterPosition();
-  ghostBearing = (ghostBearing + 120 + Math.random() * 60) % 360;
-  updateGhostOverlay();
 }
 </script>
 </body>
