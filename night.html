@@ -3,26 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>末日便利店 - 廢土店員抽卡版</title>
+<title>仙境放置傳說 - RO手遊練等模擬器</title>
 <style>
   :root {
-    --bg-main: #12181b;
-    --card-bg: #1e262b;
-    --card-border: #2f3b43;
-    --accent-gold: #f6ad55;
-    --accent-green: #48bb78;
-    --accent-red: #f56565;
-    --accent-purple: #b794f4;
-    --text-main: #edf2f7;
-    --text-muted: #a0aec0;
-    --rarity-r: #4299e1;
-    --rarity-sr: #9f7aea;
-    --rarity-ssr: #ecc94b;
+    --bg-main: #141b22;
+    --card-bg: #1c2630;
+    --panel-border: #334354;
+    --ro-blue: #4a90e2;
+    --ro-yellow: #f5a623;
+    --ro-green: #7ed321;
+    --ro-red: #d0021b;
+    --ro-crit: #f8e71c;
+    --text-main: #eef2f5;
+    --text-muted: #8b9bb4;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
   body {
-    background: #090d0f;
+    background: #0a0e13;
     color: var(--text-main);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     display: flex;
@@ -44,605 +42,758 @@
     overflow: hidden;
   }
 
+  /* 角色頂部 Base/Job 雙條 */
   header {
-    background: #182025;
-    padding: 12px 16px;
-    border-bottom: 2px solid var(--card-border);
+    background: #17212b;
+    border-bottom: 2px solid var(--panel-border);
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .char-top-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
-  .caps-display {
-    font-size: 1.3rem;
-    font-weight: 800;
-    color: var(--accent-gold);
+  .job-title {
+    font-size: 1rem;
+    font-weight: bold;
+    color: var(--ro-yellow);
     display: flex;
     align-items: center;
     gap: 6px;
   }
-  .cps-display {
-    font-size: 0.8rem;
-    color: var(--accent-green);
-    font-weight: 600;
-  }
-
-  .view-page {
-    flex: 1;
-    overflow-y: auto;
-    display: none;
-    flex-direction: column;
-  }
-  .view-page.active { display: flex; }
-
-  /* 門市主頁 */
-  .tap-section {
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: linear-gradient(180deg, #182025 0%, var(--bg-main) 100%);
-    position: relative;
-  }
-  .tap-btn {
-    width: 82px;
-    height: 82px;
-    border-radius: 50%;
-    background: radial-gradient(circle, #dd6b20 0%, #c05621 100%);
-    border: 3px solid #fbd38d;
-    box-shadow: 0 6px 15px rgba(221, 107, 32, 0.4);
-    font-size: 2rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    transition: transform 0.05s ease;
-  }
-  .tap-btn:active { transform: scale(0.92); }
-  .tap-hint { margin-top: 8px; font-size: 0.8rem; color: var(--text-muted); }
-
-  .float-text {
-    position: absolute;
-    color: var(--accent-gold);
-    font-weight: 800;
-    font-size: 1.2rem;
-    pointer-events: none;
-    animation: floatUp 0.7s ease-out forwards;
-  }
-  @keyframes floatUp {
-    0% { opacity: 1; transform: translateY(0); }
-    100% { opacity: 0; transform: translateY(-40px); }
-  }
-
-  .shelf-container {
-    padding: 12px 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .shelf-card {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 12px;
-    padding: 10px 12px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .shelf-icon {
-    font-size: 1.6rem;
-    width: 40px;
-    height: 40px;
-    background: #151c20;
-    border-radius: 8px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-right: 10px;
-  }
-  .shelf-info { flex: 1; }
-  .shelf-title { font-weight: bold; font-size: 0.9rem; }
-  .shelf-desc { font-size: 0.75rem; color: var(--accent-green); margin-top: 2px; }
-
-  .upgrade-btn {
-    background: #2b3840;
-    border: 1px solid #4a5d6a;
-    border-radius: 8px;
-    padding: 6px 10px;
-    color: #fff;
-    cursor: pointer;
-    text-align: right;
-    min-width: 90px;
-  }
-  .upgrade-btn.can-buy {
-    background: linear-gradient(135deg, #d69e2e 0%, #b7791f 100%);
-    border-color: #f6e05e;
-  }
-  .upgrade-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .upgrade-cost { font-size: 0.8rem; font-weight: bold; }
-  .upgrade-lv { font-size: 0.68rem; color: #cbd5e0; }
-
-  /* 抽卡介面 */
-  .gacha-banner {
-    padding: 20px 16px;
-    text-align: center;
-    background: linear-gradient(180deg, #2a2038 0%, var(--bg-main) 100%);
-    border-bottom: 1px solid var(--card-border);
-  }
-  .gacha-banner h2 { color: var(--accent-purple); font-size: 1.3rem; margin-bottom: 6px; }
-  .gacha-banner p { font-size: 0.8rem; color: var(--text-muted); }
-
-  .gacha-actions {
-    display: flex;
-    gap: 12px;
-    padding: 16px;
-    justify-content: center;
-  }
-  .gacha-btn {
-    flex: 1;
-    padding: 14px 10px;
-    border-radius: 10px;
-    border: 1px solid #805ad5;
-    background: linear-gradient(135deg, #6b46c1 0%, #44337a 100%);
-    color: #fff;
+  .zeny-display {
+    font-size: 0.95rem;
+    color: #ffd700;
     font-weight: bold;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    box-shadow: 0 4px 12px rgba(107, 70, 193, 0.3);
   }
-  .gacha-btn:active { transform: scale(0.97); }
-  .gacha-btn small { font-size: 0.75rem; color: #e9d8fd; font-weight: normal; }
 
-  /* 員工名冊 */
-  .staff-container {
-    padding: 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .staff-card {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 12px;
-    padding: 12px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    position: relative;
-    overflow: hidden;
-  }
-  .staff-card.rarity-R { border-left: 5px solid var(--rarity-r); }
-  .staff-card.rarity-SR { border-left: 5px solid var(--rarity-sr); }
-  .staff-card.rarity-SSR { border-left: 5px solid var(--rarity-ssr); }
-
-  .staff-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: #171d21;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 1.8rem;
-  }
-  .staff-details { flex: 1; }
-  .staff-name-bar { display: flex; align-items: center; gap: 6px; }
-  .staff-tag {
-    font-size: 0.65rem;
-    font-weight: bold;
-    padding: 2px 6px;
+  .bar-group { display: flex; flex-direction: column; gap: 4px; }
+  .bar-container { display: flex; align-items: center; font-size: 0.7rem; gap: 6px; }
+  .bar-label { width: 44px; font-weight: bold; color: var(--text-muted); }
+  .progress-bg {
+    flex: 1;
+    height: 8px;
+    background: #0d1318;
     border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid #2a3745;
   }
-  .tag-R { background: rgba(66, 153, 225, 0.2); color: var(--rarity-r); }
-  .tag-SR { background: rgba(159, 122, 234, 0.2); color: var(--rarity-sr); }
-  .tag-SSR { background: rgba(236, 201, 75, 0.2); color: var(--rarity-ssr); }
-  .staff-buff { font-size: 0.75rem; color: var(--accent-gold); margin-top: 4px; }
+  .progress-fill-base { height: 100%; background: linear-gradient(90deg, #3182ce, #63b3ed); width: 0%; transition: width 0.15s; }
+  .progress-fill-job { height: 100%; background: linear-gradient(90deg, #38a169, #68d391); width: 0%; transition: width 0.15s; }
+  .progress-fill-hp { height: 100%; background: linear-gradient(90deg, #e53e3e, #fc8181); width: 100%; transition: width 0.1s; }
 
-  .deploy-toggle {
-    background: #2b3840;
-    color: #e2e8f0;
-    border: 1px solid #4a5d6a;
-    border-radius: 6px;
-    padding: 6px 12px;
-    font-size: 0.75rem;
-    font-weight: bold;
-    cursor: pointer;
-  }
-  .deploy-toggle.deployed {
-    background: var(--accent-green);
-    color: #12181b;
-    border-color: #48bb78;
-  }
-
-  /* 抽卡結果彈窗 */
-  .modal-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.85);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 100;
-    padding: 16px;
-  }
-  .modal-overlay.active { display: flex; }
-  .gacha-result-box {
-    background: #1a2228;
-    border: 2px solid var(--accent-purple);
-    border-radius: 14px;
-    width: 100%;
-    max-height: 80vh;
-    overflow-y: auto;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-  }
-  .result-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    width: 100%;
-  }
-  .result-item {
-    background: #12181b;
-    border-radius: 8px;
-    padding: 8px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    border: 1px solid #2d3748;
-  }
-
-  /* 底部導航欄 */
-  footer {
-    height: 56px;
-    background: #151c20;
-    border-top: 1px solid var(--card-border);
+  /* 戰鬥舞台 */
+  .battle-stage {
+    height: 220px;
+    background: radial-gradient(circle at center, #243444 0%, #121921 100%);
+    position: relative;
+    border-bottom: 2px solid var(--panel-border);
     display: flex;
     justify-content: space-around;
     align-items: center;
+    overflow: hidden;
   }
-  .nav-item {
+  .map-name {
+    position: absolute;
+    top: 8px;
+    left: 12px;
+    font-size: 0.75rem;
+    color: #a0aec0;
+    background: rgba(0,0,0,0.5);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .auto-tag {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-weight: bold;
+    background: #276749;
+    color: #9ae6b4;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
+
+  .entity {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 0.7rem;
+    position: relative;
+  }
+  .sprite {
+    font-size: 3.5rem;
+    transition: transform 0.08s ease;
+    cursor: pointer;
+  }
+  .entity-name {
+    font-size: 0.8rem;
+    font-weight: bold;
+    margin-top: 4px;
+    text-shadow: 0 1px 3px #000;
+  }
+  .hp-bar-mini {
+    width: 65px;
+    height: 5px;
+    background: #0d1318;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 3px;
+    border: 1px solid #334354;
+  }
+  .hp-fill-mini {
+    height: 100%;
+    background: #e53e3e;
+    width: 100%;
+    transition: width 0.1s;
+  }
+
+  /* 飄字傷害特效 */
+  .dmg-float {
+    position: absolute;
+    font-weight: 900;
+    font-family: 'Arial Black', Impact, sans-serif;
+    pointer-events: none;
+    animation: dmgAnim 0.7s ease-out forwards;
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+  }
+  .dmg-normal { font-size: 1.2rem; color: #ffffff; }
+  .dmg-crit { font-size: 1.5rem; color: var(--ro-crit); }
+  .dmg-miss { font-size: 1rem; color: #a0aec0; font-style: italic; }
+  @keyframes dmgAnim {
+    0% { opacity: 1; transform: translateY(0) scale(1.1); }
+    30% { transform: translateY(-25px) scale(1.3); }
+    100% { opacity: 0; transform: translateY(-50px) scale(0.9); }
+  }
+
+  /* 次分頁導航 */
+  .sub-tabs { display: flex; background: #17212b; border-bottom: 1px solid var(--panel-border); }
+  .sub-tab {
+    flex: 1;
+    text-align: center;
+    padding: 9px 0;
+    font-size: 0.85rem;
     color: var(--text-muted);
     cursor: pointer;
-    flex: 1;
-    padding: 6px 0;
+    border-bottom: 2px solid transparent;
   }
-  .nav-item.active { color: var(--accent-gold); font-weight: bold; }
-  .nav-item span:first-child { font-size: 1.2rem; }
+  .sub-tab.active {
+    color: var(--ro-yellow);
+    border-bottom: 2px solid var(--ro-yellow);
+    font-weight: bold;
+    background: #1f2c3a;
+  }
+
+  .tab-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .tab-content.active { display: flex; }
+
+  /* 六圍配點面板 */
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat-card {
+    background: var(--card-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .stat-title { font-size: 0.8rem; font-weight: bold; }
+  .stat-effect { font-size: 0.65rem; color: var(--text-muted); margin-top: 2px; }
+  .stat-val-group { display: flex; align-items: center; gap: 8px; }
+  .btn-plus {
+    width: 26px;
+    height: 26px;
+    background: #2b6cb0;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .btn-plus:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* 掛機地圖列表 */
+  .map-card {
+    background: var(--card-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+  }
+  .map-card.selected { border-color: var(--ro-yellow); background: #223242; }
+  .map-info h4 { font-size: 0.85rem; color: #fff; }
+  .map-info p { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+
+  /* 轉職面板 */
+  .job-change-card {
+    background: #231e2b;
+    border: 1px solid #553c9a;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .job-opt-btn {
+    padding: 8px;
+    background: #6b46c1;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+
+  /* 戰況日誌 */
+  .combat-log {
+    background: #0d1318;
+    border: 1px solid #232d36;
+    border-radius: 6px;
+    padding: 8px;
+    height: 110px;
+    overflow-y: auto;
+    font-size: 0.75rem;
+    font-family: monospace;
+    display: flex;
+    flex-direction: column-reverse;
+  }
+  .log-line { margin-bottom: 2px; }
+
+  /* 快捷技能欄 */
+  footer {
+    height: 60px;
+    background: #17212b;
+    border-top: 1px solid var(--panel-border);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 8px;
+  }
+  .skill-slot {
+    width: 48px;
+    height: 48px;
+    background: #101820;
+    border: 1px solid #334354;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.4rem;
+    cursor: pointer;
+    position: relative;
+  }
+  .skill-slot:active { transform: scale(0.92); }
+  .skill-cost {
+    position: absolute;
+    bottom: 2px;
+    right: 3px;
+    font-size: 0.6rem;
+    color: #63b3ed;
+    font-weight: bold;
+  }
 </style>
 </head>
 <body>
 
 <div class="mobile-shell">
-  <!-- 頂部即時貨幣列 -->
   <header>
-    <div>
-      <div class="caps-display">🪙 <span id="caps-text">0</span></div>
-      <div class="cps-display">+<span id="cps-text">0.0</span> 瓶蓋/秒</div>
+    <div class="char-top-row">
+      <div class="job-title">
+        <span id="char-avatar">🗡️</span>
+        <span id="job-name">初心者</span>
+      </div>
+      <div class="zeny-display">🪙 <span id="zeny-val">100</span> Zeny</div>
     </div>
-    <div style="font-size:0.8rem; background:#243036; padding:4px 8px; border-radius:6px;">
-      進駐員工: <span id="deployed-count" style="color:var(--accent-gold); font-weight:bold;">0</span>/3
+
+    <div class="bar-group">
+      <div class="bar-container">
+        <span class="bar-label" style="color:#fc8181;">HP</span>
+        <div class="progress-bg"><div class="progress-fill-hp" id="hp-bar"></div></div>
+        <span style="font-size:0.65rem;" id="hp-text">100/100</span>
+      </div>
+      <div class="bar-container">
+        <span class="bar-label" style="color:#63b3ed;">Base <span id="base-lv">1</span></span>
+        <div class="progress-bg"><div class="progress-fill-base" id="base-exp-bar"></div></div>
+        <span style="font-size:0.65rem;" id="base-exp-text">0%</span>
+      </div>
+      <div class="bar-container">
+        <span class="bar-label" style="color:#68d391;">Job <span id="job-lv">1</span></span>
+        <div class="progress-bg"><div class="progress-fill-job" id="job-exp-bar"></div></div>
+        <span style="font-size:0.65rem;" id="job-exp-text">0%</span>
+      </div>
     </div>
   </header>
 
-  <!-- 1. 門市主頁 -->
-  <div id="page-store" class="view-page active">
-    <div class="tap-section" id="tap-area">
-      <div class="tap-btn" id="cashier-btn">🛎️</div>
-      <div class="tap-hint">點擊收銀台攬客 (+<span id="click-val">1</span>)</div>
-    </div>
-    <div class="shelf-container" id="shelf-list"></div>
-  </div>
+  <div class="battle-stage" id="battle-stage">
+    <div class="map-name" id="map-name">普隆德拉南門</div>
+    <div class="auto-tag">⚔️ 自動掛機中</div>
 
-  <!-- 2. 抽卡介面 -->
-  <div id="page-gacha" class="view-page">
-    <div class="gacha-banner">
-      <h2>📻 廢土避難所招募廣播</h2>
-      <p>花費瓶蓋向廣播塔發信，招攬具備各類天賦的倖存者進駐門市！</p>
-      <div style="margin-top:6px; font-size:0.75rem; color:#b794f4;">
-        機率：SSR 5% | SR 25% | R 70%
-      </div>
+    <div class="entity" id="player-entity">
+      <div class="sprite" id="player-sprite">🚶</div>
+      <div class="entity-name" id="player-name">你</div>
     </div>
-    <div class="gacha-actions">
-      <button class="gacha-btn" onclick="drawGacha(1)">
-        <span>單次招募</span>
-        <small>🪙 300 瓶蓋</small>
-      </button>
-      <button class="gacha-btn" onclick="drawGacha(10)">
-        <span>十連招募</span>
-        <small>🪙 2,700 瓶蓋 (9折)</small>
-      </button>
-    </div>
-    <div style="padding: 0 16px;">
-      <h3 style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px;">已獲得員工 (<span id="staff-owned-count">0</span>)</h3>
-      <div class="staff-container" id="staff-list" style="padding:0;"></div>
+
+    <div class="entity" id="mob-entity" onclick="manualAttack()">
+      <div class="sprite" id="mob-sprite">🟣</div>
+      <div class="entity-name" id="mob-name">波利</div>
+      <div class="hp-bar-mini"><div class="hp-fill-mini" id="mob-hp-bar"></div></div>
     </div>
   </div>
 
-  <!-- 底部導航欄 -->
+  <div class="sub-tabs">
+    <div class="sub-tab active" onclick="switchSubTab('stats')">六圍配點</div>
+    <div class="sub-tab" onclick="switchSubTab('maps')">掛機練等</div>
+    <div class="sub-tab" onclick="switchSubTab('job')">轉職大廳</div>
+    <div class="sub-tab" onclick="switchSubTab('log')">戰鬥戰報</div>
+  </div>
+
+  <div class="tab-content active" id="tab-stats">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+      <span style="font-size:0.85rem; color:var(--text-muted);">剩餘屬性點:</span>
+      <b style="color:var(--ro-yellow); font-size:1.1rem;" id="stat-points-val">5</b>
+    </div>
+    <div class="stat-grid" id="stat-grid"></div>
+  </div>
+
+  <div class="tab-content" id="tab-maps">
+    <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:4px;">選擇適合你等級的掛機點：</div>
+    <div id="map-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+  </div>
+
+  <div class="tab-content" id="tab-job">
+    <div class="job-change-card" id="job-card-box">
+      <h3 style="color:var(--ro-yellow);">轉職神殿</h3>
+      <p style="font-size:0.8rem; color:var(--text-muted);" id="job-desc">初心者 Job Lv.10 後即可在此接取轉職任務！</p>
+      <div id="job-options" style="display:flex; flex-direction:column; gap:6px; margin-top:8px;"></div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-log">
+    <div class="combat-log" id="combat-log"></div>
+  </div>
+
   <footer>
-    <div class="nav-item active" id="nav-store" onclick="switchTab('store')">
-      <span>🏪</span><span>門市</span>
+    <div class="skill-slot" onclick="usePotion('red')">
+      <span>🧪</span>
+      <span class="skill-cost" id="red-pot-count">x10</span>
     </div>
-    <div class="nav-item" id="nav-gacha" onclick="switchTab('gacha')">
-      <span>🎲</span><span>員工招募</span>
+    <div class="skill-slot" onclick="castSkill('bash')">
+      <span>💥</span>
+      <span class="skill-cost">狂擊</span>
+    </div>
+    <div class="skill-slot" onclick="castSkill('magnum')">
+      <span>🔥</span>
+      <span class="skill-cost">怒爆</span>
+    </div>
+    <div class="skill-slot" onclick="alert('卡片裝備插槽開發中！')">
+      <span>🃏</span>
+      <span class="skill-cost">卡片</span>
     </div>
   </footer>
-
-  <!-- 抽卡展示彈窗 -->
-  <div class="modal-overlay" id="gacha-modal">
-    <div class="gacha-result-box">
-      <h3 style="color:var(--accent-purple);">招募結算成果</h3>
-      <div class="result-grid" id="modal-grid"></div>
-      <button class="upgrade-btn can-buy" style="margin-top:10px; width:100%; text-align:center; padding:10px;" onclick="closeModal()">確認收納</button>
-    </div>
-  </div>
 </div>
 
 <script>
-let gameState = {
-  caps: 350,
-  maxDeploy: 3,
+let player = {
+  job: "初心者",
+  jobStage: 0,
+  baseLv: 1,
+  baseExp: 0,
+  jobLv: 1,
+  jobExp: 0,
+  hp: 120,
+  maxHp: 120,
+  zeny: 100,
+  statPoints: 5,
+  redPotions: 15,
+  stats: { str: 1, agi: 1, vit: 1, int: 1, dex: 1, luk: 1 }
 };
 
-const SHELVES = [
-  { id: 'water', name: '輻射過濾純水機', icon: '💧', level: 1, baseCost: 15, baseCps: 0.5, costMult: 1.15 },
-  { id: 'canned', name: '變異牛肉罐頭箱', icon: '🥫', level: 0, baseCost: 100, baseCps: 4.0, costMult: 1.15 },
-  { id: 'rad_pill', name: '自製碘片藥品架', icon: '💊', level: 0, baseCost: 1100, baseCps: 32.0, costMult: 1.16 },
-  { id: 'battery', name: '核能微型電池倉', icon: '🔋', level: 0, baseCost: 12000, baseCps: 260.0, costMult: 1.18 },
-  { id: 'ammo', name: '廢土軍火改裝台', icon: '🔫', level: 0, baseCost: 130000, baseCps: 1400.0, costMult: 1.20 }
+const STAT_CONFIG = {
+  str: { name: "STR (力量)", effect: "+物理攻擊 ATK" },
+  agi: { name: "AGI (敏捷)", effect: "+攻擊頻率 ASPD & 迴避" },
+  vit: { name: "VIT (體質)", effect: "+生命上限 MaxHP & 防禦" },
+  int: { name: "INT (智力)", effect: "+魔攻 MATK & 技能威力" },
+  dex: { name: "DEX (靈巧)", effect: "+命中率 & 攻擊下限" },
+  luk: { name: "LUK (幸運)", effect: "+暴擊率 CRIT" }
+};
+
+const MAPS = [
+  { id: 0, name: "普隆德拉南門", mob: "波利", sprite: "🟣", hp: 60, atk: 5, bexp: 15, jexp: 12, zeny: 8, reqLv: 1 },
+  { id: 1, name: "西門下水道", mob: "瘋兔與盜蟲", sprite: "🪲", hp: 160, atk: 12, bexp: 45, jexp: 38, zeny: 22, reqLv: 5 },
+  { id: 2, name: "迷藏森林外圍", mob: "搖滾蝗蟲", sprite: "🦗", hp: 380, atk: 24, bexp: 120, jexp: 110, zeny: 55, reqLv: 10 },
+  { id: 3, name: "沉船幽靈幽閉處", mob: "邪骸海盜", sprite: "💀", hp: 950, atk: 48, bexp: 320, jexp: 290, zeny: 140, reqLv: 18 },
+  { id: 4, name: "獸人村落 (MVP前哨)", mob: "獸人戰士", sprite: "👹", hp: 2500, atk: 90, bexp: 850, jexp: 800, zeny: 380, reqLv: 28 }
 ];
 
-const STAFF_POOL = [
-  { id: 's1', name: '實習拾荒學徒', avatar: '👦', rarity: 'R', type: 'shelf_boost', target: 'water', val: 0.5, desc: '純水產量 +50%' },
-  { id: 's2', name: '廢品挑揀工', avatar: '🧤', rarity: 'R', type: 'shelf_boost', target: 'canned', val: 0.5, desc: '罐頭產量 +50%' },
-  { id: 's3', name: '招牌搖旗女孩', avatar: '👧', rarity: 'R', type: 'click_boost', val: 3, desc: '收銀台點擊收益 +3' },
-  { id: 's4', name: '前避難所軍醫', avatar: '🩺', rarity: 'SR', type: 'shelf_boost', target: 'rad_pill', val: 1.5, desc: '碘片藥架產量 +150%' },
-  { id: 's5', name: '退伍防衛士官', avatar: '👮', rarity: 'SR', type: 'shelf_boost', target: 'ammo', val: 1.5, desc: '軍火台產量 +150%' },
-  { id: 's6', name: '改裝工程師', avatar: '🔧', rarity: 'SR', type: 'all_cps', val: 0.25, desc: '全店總秒產 +25%' },
-  { id: 's7', name: '「先驅號」AI店長', avatar: '🤖', rarity: 'SSR', type: 'all_cps', val: 0.70, desc: '全店總秒產 +70%' },
-  { id: 's8', name: '廢土神秘黑商', avatar: '🎩', rarity: 'SSR', type: 'hybrid', val: 0.5, clickVal: 25, desc: '總秒產 +50% 且點擊 +25' }
-];
+let currentMapIdx = 0;
+let currentMob = null;
+let attackTimer = 0;
 
-let ownedStaff = [
-  { ...STAFF_POOL[0], deployed: true }
-];
-
-function getCost(shelf) {
-  return Math.round(shelf.baseCost * Math.pow(shelf.costMult, shelf.level));
+function getAtk() {
+  let baseJobAtk = player.jobStage === 1 ? 25 : 8;
+  return baseJobAtk + (player.stats.str * 4) + (player.stats.dex * 1.5);
 }
 
-function calcTotalCPS() {
-  let shelfMultipliers = { water: 1, canned: 1, rad_pill: 1, battery: 1, ammo: 1 };
-  let globalMultiplier = 1.0;
+function getMaxHp() {
+  let base = 80 + (player.baseLv * 25);
+  return Math.round(base + (player.stats.vit * 18));
+}
 
-  ownedStaff.filter(s => s.deployed).forEach(s => {
-    if (s.type === 'shelf_boost' && shelfMultipliers[s.target] !== undefined) {
-      shelfMultipliers[s.target] += s.val;
-    } else if (s.type === 'all_cps') {
-      globalMultiplier += s.val;
-    } else if (s.type === 'hybrid') {
-      globalMultiplier += s.val;
+function getAspdInterval() {
+  let interval = 1100 - (player.stats.agi * 28);
+  return Math.max(220, interval);
+}
+
+function getCritChance() {
+  return Math.min(80, 5 + (player.stats.luk * 2.5));
+}
+
+function getBaseExpReq(lv) {
+  return Math.round(40 * Math.pow(1.35, lv - 1));
+}
+
+function getJobExpReq(lv) {
+  return Math.round(25 * Math.pow(1.30, lv - 1));
+}
+
+function spawnMob() {
+  let map = MAPS[currentMapIdx];
+  currentMob = {
+    name: map.mob,
+    sprite: map.sprite,
+    hp: map.hp,
+    maxHp: map.hp,
+    atk: map.atk,
+    bexp: map.bexp,
+    jexp: map.jexp,
+    zeny: map.zeny
+  };
+  document.getElementById("mob-sprite").innerText = currentMob.sprite;
+  document.getElementById("mob-name").innerText = currentMob.name;
+  updateMobHpUI();
+}
+
+function hitMonster(damage, isCrit = false) {
+  if (!currentMob) return;
+  currentMob.hp -= damage;
+  let mobSprite = document.getElementById("mob-sprite");
+  mobSprite.style.transform = "translateX(8px) scale(0.92)";
+  setTimeout(() => mobSprite.style.transform = "none", 80);
+
+  showDamageText(damage, isCrit, false);
+  updateMobHpUI();
+
+  if (currentMob.hp <= 0) {
+    onMobDefeated();
+  }
+}
+
+function onMobDefeated() {
+  player.zeny += currentMob.zeny;
+  addExp(currentMob.bexp, currentMob.jexp);
+  addCombatLog(`擊倒【${currentMob.name}】！獲得 ${currentMob.bexp} BExp / ${currentMob.jexp} JExp，拾獲 ${currentMob.zeny} Zeny🪙`);
+
+  if (Math.random() < 0.03) {
+    addCombatLog(`⭐【奇蹟掉落】你拾獲了稀有魔物卡片：【${currentMob.name}卡片】！`);
+  }
+
+  currentMob = null;
+  setTimeout(spawnMob, 300);
+}
+
+function addExp(bexp, jexp) {
+  player.baseExp += bexp;
+  player.jobExp += jexp;
+
+  while (player.baseExp >= getBaseExpReq(player.baseLv)) {
+    player.baseExp -= getBaseExpReq(player.baseLv);
+    player.baseLv += 1;
+    player.statPoints += 3;
+    player.maxHp = getMaxHp();
+    player.hp = player.maxHp;
+    addCombatLog(`✨ 恭喜！Base 等級提升至 Lv.${player.baseLv}！獲得 3 點屬性點！`);
+  }
+
+  let maxJob = player.jobStage === 0 ? 10 : 40;
+  while (player.jobLv < maxJob && player.jobExp >= getJobExpReq(player.jobLv)) {
+    player.jobExp -= getJobExpReq(player.jobLv);
+    player.jobLv += 1;
+    addCombatLog(`🌟 恭喜！Job 等級提升至 Lv.${player.jobLv}！`);
+    if (player.jobStage === 0 && player.jobLv >= 10) {
+      addCombatLog(`🔔 你的初心者 Job 已達 10 級，可以前往【轉職大廳】進行一轉！`);
     }
-  });
+  }
 
-  let rawTotal = SHELVES.reduce((sum, s) => {
-    let mult = shelfMultipliers[s.id] || 1;
-    return sum + (s.level * s.baseCps * mult);
-  }, 0);
-
-  return rawTotal * globalMultiplier;
+  updateHeaderUI();
 }
 
-function calcClickPower() {
-  let baseClick = 1 + Math.floor(calcTotalCPS() * 0.05);
-  let bonus = 0;
-  ownedStaff.filter(s => s.deployed).forEach(s => {
-    if (s.type === 'click_boost') bonus += s.val;
-    if (s.type === 'hybrid') bonus += s.clickVal;
-  });
-  return baseClick + bonus;
+function manualAttack() {
+  let isCrit = Math.random() * 100 < getCritChance();
+  let baseAtk = getAtk();
+  let finalDmg = isCrit ? Math.round(baseAtk * 1.6) : Math.round(baseAtk * (0.9 + Math.random() * 0.2));
+  hitMonster(finalDmg, isCrit);
 }
 
-const cashierBtn = document.getElementById('cashier-btn');
-const tapArea = document.getElementById('tap-area');
+function autoCombatLoop() {
+  let interval = getAspdInterval();
+  if (Date.now() - attackTimer >= interval) {
+    attackTimer = Date.now();
+    if (currentMob && currentMob.hp > 0) {
+      let isCrit = Math.random() * 100 < getCritChance();
+      let baseAtk = getAtk();
+      let finalDmg = isCrit ? Math.round(baseAtk * 1.6) : Math.round(baseAtk * (0.9 + Math.random() * 0.2));
+      
+      let pSprite = document.getElementById("player-sprite");
+      pSprite.style.transform = "translateX(10px)";
+      setTimeout(() => pSprite.style.transform = "none", 70);
 
-cashierBtn.addEventListener('pointerdown', (e) => {
-  let power = calcClickPower();
-  gameState.caps += power;
-  showFloatNumber(e.clientX, e.clientY, `+${power}`);
-  updateUI();
-});
+      hitMonster(finalDmg, isCrit);
 
-function showFloatNumber(x, y, text) {
-  const el = document.createElement('div');
-  el.className = 'float-text';
-  el.innerText = text;
-  const rect = tapArea.getBoundingClientRect();
-  el.style.left = `${(x - rect.left) - 15}px`;
-  el.style.top = `${(y - rect.top) - 20}px`;
-  tapArea.appendChild(el);
+      if (currentMob && currentMob.hp > 0) {
+        let dodgeChance = Math.min(60, player.stats.agi * 1.5);
+        if (Math.random() * 100 < dodgeChance) {
+          showDamageText("MISS", false, true);
+        } else {
+          let mobDmg = Math.max(1, currentMob.atk - Math.floor(player.stats.vit * 0.8));
+          player.hp = Math.max(0, player.hp - mobDmg);
+          updateHeaderUI();
+
+          if (player.hp < player.maxHp * 0.35 && player.redPotions > 0) {
+            usePotion('red');
+          }
+
+          if (player.hp <= 0) {
+            addCombatLog(`☠️ 你在戰鬥中陣亡了！正在修整重生回滿血...`);
+            player.hp = player.maxHp;
+            updateHeaderUI();
+          }
+        }
+      }
+    }
+  }
+  requestAnimationFrame(autoCombatLoop);
+}
+
+function showDamageText(text, isCrit, isPlayer) {
+  let stage = document.getElementById("battle-stage");
+  let el = document.createElement("div");
+  el.className = "dmg-float " + (isCrit ? "dmg-crit" : (text === "MISS" ? "dmg-miss" : "dmg-normal"));
+  el.innerText = isCrit ? `${text}!!` : text;
+
+  let targetEntity = isPlayer ? document.getElementById("player-entity") : document.getElementById("mob-entity");
+  let rect = targetEntity.getBoundingClientRect();
+  let stageRect = stage.getBoundingClientRect();
+
+  el.style.left = `${(rect.left - stageRect.left) + 20 + (Math.random() * 20 - 10)}px`;
+  el.style.top = `${(rect.top - stageRect.top) + 20}px`;
+
+  stage.appendChild(el);
   setTimeout(() => el.remove(), 700);
 }
 
-function upgradeShelf(index) {
-  const shelf = SHELVES[index];
-  const cost = getCost(shelf);
-  if (gameState.caps >= cost) {
-    gameState.caps -= cost;
-    shelf.level += 1;
-    updateUI();
-    renderShelves();
+function usePotion(type) {
+  if (type === 'red' && player.redPotions > 0) {
+    player.redPotions--;
+    let heal = Math.round(player.maxHp * 0.45);
+    player.hp = Math.min(player.maxHp, player.hp + heal);
+    updateHeaderUI();
+    addCombatLog(`🧪 使用了紅色藥水，回復了 ${heal} HP！`);
   }
 }
 
-function rollSingleCard() {
-  let rand = Math.random();
-  let rarity = 'R';
-  if (rand < 0.05) rarity = 'SSR';
-  else if (rand < 0.30) rarity = 'SR';
-
-  let candidates = STAFF_POOL.filter(s => s.rarity === rarity);
-  let picked = candidates[Math.floor(Math.random() * candidates.length)];
-  return { ...picked, deployed: false, instanceId: Date.now() + Math.random() };
-}
-
-function drawGacha(times) {
-  let cost = times === 1 ? 300 : 2700;
-  if (gameState.caps < cost) {
-    alert("瓶蓋不足！多敲收銀台或升級貨架賺取瓶蓋吧！");
-    return;
+function castSkill(skillId) {
+  if (!currentMob) return;
+  if (skillId === 'bash') {
+    let dmg = Math.round(getAtk() * 2.8);
+    hitMonster(dmg, true);
+    addCombatLog(`💥 發動【狂擊】！造成 ${dmg} 點重擊破甲傷害！`);
+  } else if (skillId === 'magnum') {
+    let dmg = Math.round(getAtk() * 3.5);
+    hitMonster(dmg, true);
+    addCombatLog(`🔥 發動【怒爆】！引爆烈焰造成 ${dmg} 點高額傷害！`);
   }
-  gameState.caps -= cost;
+}
 
-  let results = [];
-  for (let i = 0; i < times; i++) {
-    let card = rollSingleCard();
-    results.push(card);
-    ownedStaff.push(card);
+function addStat(statKey) {
+  if (player.statPoints > 0) {
+    player.statPoints--;
+    player.stats[statKey]++;
+    player.maxHp = getMaxHp();
+    updateHeaderUI();
+    renderStatsPanel();
   }
-
-  showGachaResult(results);
-  updateUI();
-  renderStaff();
 }
 
-function showGachaResult(results) {
-  const modal = document.getElementById('gacha-modal');
-  const grid = document.getElementById('modal-grid');
-  grid.innerHTML = '';
-
-  results.forEach(item => {
-    let el = document.createElement('div');
-    el.className = 'result-item';
-    el.innerHTML = `
-      <div style="font-size:2rem;">${item.avatar}</div>
-      <span class="staff-tag tag-${item.rarity}" style="margin:4px 0;">${item.rarity}</span>
-      <b style="font-size:0.8rem;">${item.name}</b>
-      <small style="font-size:0.7rem; color:var(--accent-gold); margin-top:2px;">${item.desc}</small>
-    `;
-    grid.appendChild(el);
-  });
-  modal.classList.add('active');
-}
-
-function closeModal() {
-  document.getElementById('gacha-modal').classList.remove('active');
-}
-
-function toggleDeploy(idx) {
-  let staff = ownedStaff[idx];
-  let currentDeployed = ownedStaff.filter(s => s.deployed).length;
-
-  if (!staff.deployed) {
-    if (currentDeployed >= gameState.maxDeploy) {
-      alert(`進駐位已滿（上限 ${gameState.maxDeploy} 位）！請先解除其他員工。`);
-      return;
+function changeJob(jobTitle) {
+  if (player.jobStage === 0 && player.jobLv >= 10) {
+    player.job = jobTitle;
+    player.jobStage = 1;
+    player.jobLv = 1;
+    player.jobExp = 0;
+    if (jobTitle === "劍士") {
+      player.stats.str += 5;
+      player.stats.vit += 3;
+      document.getElementById("char-avatar").innerText = "🛡️";
+    } else if (jobTitle === "盜賊") {
+      player.stats.agi += 6;
+      player.stats.dex += 3;
+      document.getElementById("char-avatar").innerText = "🗡️";
     }
-    staff.deployed = true;
-  } else {
-    staff.deployed = false;
+    player.maxHp = getMaxHp();
+    player.hp = player.maxHp;
+    addCombatLog(`🎉 轉職成功！你正式成為了一名崇高的【${jobTitle}】！獲得職業基本屬性加乘！`);
+    updateHeaderUI();
+    renderJobPanel();
+    renderStatsPanel();
   }
-  updateUI();
-  renderStaff();
-  renderShelves();
 }
 
-function switchTab(tab) {
-  document.getElementById('page-store').classList.toggle('active', tab === 'store');
-  document.getElementById('page-gacha').classList.toggle('active', tab === 'gacha');
-  document.getElementById('nav-store').classList.toggle('active', tab === 'store');
-  document.getElementById('nav-gacha').classList.toggle('active', tab === 'gacha');
-}
-
-function renderShelves() {
-  const list = document.getElementById('shelf-list');
-  list.innerHTML = '';
-  SHELVES.forEach((s, idx) => {
-    const cost = getCost(s);
-    const canAfford = gameState.caps >= cost;
-    const card = document.createElement('div');
-    card.className = 'shelf-card';
-    card.innerHTML = `
-      <div class="shelf-icon">${s.icon}</div>
-      <div class="shelf-info">
-        <div class="shelf-title">${s.name}</div>
-        <div class="shelf-desc">+${(s.level * s.baseCps).toFixed(1)} 瓶蓋/秒</div>
-      </div>
-      <button class="upgrade-btn ${canAfford ? 'can-buy' : ''}" onclick="upgradeShelf(${idx})" ${canAfford ? '' : 'disabled'}>
-        <div class="upgrade-cost">🪙 ${cost >= 10000 ? (cost/1000).toFixed(1) + 'k' : cost}</div>
-        <div class="upgrade-lv">Lv. ${s.level}</div>
-      </button>
-    `;
-    list.appendChild(card);
+function switchSubTab(tabName) {
+  const tabs = ['stats', 'maps', 'job', 'log'];
+  tabs.forEach((t, i) => {
+    document.querySelectorAll('.sub-tab')[i].classList.toggle('active', t === tabName);
+    document.getElementById(`tab-${t}`).classList.toggle('active', t === tabName);
   });
 }
 
-function renderStaff() {
-  const list = document.getElementById('staff-list');
-  document.getElementById('staff-owned-count').innerText = ownedStaff.length;
-  list.innerHTML = '';
-
-  ownedStaff.forEach((s, idx) => {
-    const card = document.createElement('div');
-    card.className = `staff-card rarity-${s.rarity}`;
-    card.innerHTML = `
-      <div class="staff-avatar">${s.avatar}</div>
-      <div class="staff-details">
-        <div class="staff-name-bar">
-          <span class="staff-tag tag-${s.rarity}">${s.rarity}</span>
-          <b style="font-size:0.85rem;">${s.name}</b>
-        </div>
-        <div class="staff-buff">⚡ ${s.desc}</div>
-      </div>
-      <button class="deploy-toggle ${s.deployed ? 'deployed' : ''}" onclick="toggleDeploy(${idx})">
-        ${s.deployed ? '進駐中' : '派遣'}
-      </button>
-    `;
-    list.appendChild(card);
-  });
+function addCombatLog(msg) {
+  let logBox = document.getElementById("combat-log");
+  let line = document.createElement("div");
+  line.className = "log-line";
+  line.innerHTML = `> ${msg}`;
+  logBox.prepend(line);
 }
 
-function updateUI() {
-  document.getElementById('caps-text').innerText = Math.floor(gameState.caps).toLocaleString();
-  document.getElementById('cps-text').innerText = calcTotalCPS().toFixed(1);
-  document.getElementById('click-val').innerText = calcClickPower();
-  document.getElementById('deployed-count').innerText = ownedStaff.filter(s => s.deployed).length;
+function updateHeaderUI() {
+  document.getElementById("job-name").innerText = player.job;
+  document.getElementById("base-lv").innerText = player.baseLv;
+  document.getElementById("job-lv").innerText = player.jobLv;
+  document.getElementById("zeny-val").innerText = player.zeny.toLocaleString();
+  document.getElementById("stat-points-val").innerText = player.statPoints;
+  document.getElementById("red-pot-count").innerText = `x${player.redPotions}`;
 
-  SHELVES.forEach((s, idx) => {
-    const btn = document.querySelectorAll('.upgrade-btn')[idx];
-    if (btn) {
-      const cost = getCost(s);
-      if (gameState.caps >= cost) {
-        btn.classList.add('can-buy');
-        btn.removeAttribute('disabled');
-      } else {
-        btn.classList.remove('can-buy');
-        btn.setAttribute('disabled', 'true');
+  let hpPct = (player.hp / player.maxHp) * 100;
+  document.getElementById("hp-bar").style.width = `${hpPct}%`;
+  document.getElementById("hp-text").innerText = `${player.hp}/${player.maxHp}`;
+
+  let bReq = getBaseExpReq(player.baseLv);
+  let bPct = Math.min(100, Math.floor((player.baseExp / bReq) * 100));
+  document.getElementById("base-exp-bar").style.width = `${bPct}%`;
+  document.getElementById("base-exp-text").innerText = `${bPct}%`;
+
+  let maxJob = player.jobStage === 0 ? 10 : 40;
+  let jReq = getJobExpReq(player.jobLv);
+  let jPct = player.jobLv >= maxJob ? 100 : Math.min(100, Math.floor((player.jobExp / jReq) * 100));
+  document.getElementById("job-exp-bar").style.width = `${jPct}%`;
+  document.getElementById("job-exp-text").innerText = `${jPct}%`;
+}
+
+function updateMobHpUI() {
+  if (!currentMob) return;
+  let pct = Math.max(0, (currentMob.hp / currentMob.maxHp) * 100);
+  document.getElementById("mob-hp-bar").style.width = `${pct}%`;
+}
+
+function renderStatsPanel() {
+  let grid = document.getElementById("stat-grid");
+  grid.innerHTML = "";
+  for (let key in STAT_CONFIG) {
+    let cfg = STAT_CONFIG[key];
+    let val = player.stats[key];
+    let card = document.createElement("div");
+    card.className = "stat-card";
+    card.innerHTML = `
+      <div>
+        <div class="stat-title">${cfg.name}: <b style="color:var(--ro-yellow);">${val}</b></div>
+        <div class="stat-effect">${cfg.effect}</div>
+      </div>
+      <div class="stat-val-group">
+        <button class="btn-plus" onclick="addStat('${key}')" ${player.statPoints <= 0 ? 'disabled' : ''}>+</button>
+      </div>
+    `;
+    grid.appendChild(card);
+  }
+}
+
+function renderMapsPanel() {
+  let list = document.getElementById("map-list");
+  list.innerHTML = "";
+  MAPS.forEach((m, idx) => {
+    let card = document.createElement("div");
+    card.className = `map-card ${idx === currentMapIdx ? 'selected' : ''}`;
+    card.onclick = () => {
+      if (player.baseLv < m.reqLv) {
+        alert(`等級未達到 Lv.${m.reqLv}，無法前往該危險區域！`);
+        return;
       }
-    }
+      currentMapIdx = idx;
+      document.getElementById("map-name").innerText = m.name;
+      addCombatLog(`📍 轉移掛機陣地至【${m.name}】！`);
+      spawnMob();
+      renderMapsPanel();
+    };
+    card.innerHTML = `
+      <div class="map-info">
+        <h4>${m.sprite} ${m.name} (建議 Lv.${m.reqLv}+)</h4>
+        <p>出沒魔物: ${m.mob} | 產出: ${m.bexp} BExp / ${m.jexp} JExp / ${m.zeny} Zeny</p>
+      </div>
+      <div style="font-size:0.75rem; color:${idx === currentMapIdx ? 'var(--ro-yellow)' : 'var(--text-muted)'}; font-weight:bold;">
+        ${idx === currentMapIdx ? '掛機中' : '前往 ➔'}
+      </div>
+    `;
+    list.appendChild(card);
   });
 }
 
-setInterval(() => {
-  const cps = calcTotalCPS();
-  gameState.caps += (cps / 10);
-  updateUI();
-}, 100);
+function renderJobPanel() {
+  let desc = document.getElementById("job-desc");
+  let opt = document.getElementById("job-options");
+  opt.innerHTML = "";
 
-renderShelves();
-renderStaff();
-updateUI();
+  if (player.jobStage === 0) {
+    if (player.jobLv >= 10) {
+      desc.innerHTML = "恭喜你！已滿足初心者 Job Lv.10 條件，請選擇一轉職業分支：";
+      opt.innerHTML = `
+        <button class="job-opt-btn" onclick="changeJob('劍士')">🛡️ 轉職為【劍士】(高血量、重裝甲、物理猛攻)</button>
+        <button class="job-opt-btn" style="background:#2c7a7b;" onclick="changeJob('盜賊')">🗡️ 轉職為【盜賊】(極限攻速、高閃避、致命暴擊)</button>
+      `;
+    } else {
+      desc.innerHTML = `尚未達到轉職要求！當前進度：初心者 Job Lv. ${player.jobLv} / 10`;
+    }
+  } else {
+    desc.innerHTML = `當前職業：<b>${player.job}</b> (一轉)<br>請繼續提升 Job 等級至 Lv.40 解鎖進階二轉殿堂！`;
+  }
+}
+
+updateHeaderUI();
+renderStatsPanel();
+renderMapsPanel();
+renderJobPanel();
+spawnMob();
+requestAnimationFrame(autoCombatLoop);
 </script>
 </body>
 </html>
