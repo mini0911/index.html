@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>晚安，請熄燈 - Goodnight, Lights Out</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+  body {
+    background-color: #050505;
+    color: #bbb;
+    font-family: "Courier New", Courier, monospace, "Microsoft JhengHei";
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+  #game-container {
+    position: relative;
+    width: 800px;
+    height: 500px;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.95), 0 0 5px rgba(255, 0, 0, 0.2);
+    border: 2px solid #222;
+    background: #000;
+  }
+  canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    image-rendering: pixelated;
+  }
+  /* CRT 濾鏡掃描線與暗角 */
+  #crt-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%),
+                radial-gradient(circle, transparent 60%, rgba(0,0,0,0.85) 100%);
+    background-size: 100% 4px, 100% 100%;
+    pointer-events: none;
+  }
+  #ui-layer {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 16px;
+    color: #eee;
+    text-shadow: 1px 1px 2px #000;
+  }
+  .hud-top {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    letter-spacing: 1px;
+  }
+  .hud-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  #subtitle {
+    text-align: center;
+    font-size: 16px;
+    min-height: 24px;
+    color: #ffddaa;
+    text-shadow: 0 0 4px #000, 0 0 8px rgba(255, 150, 50, 0.4);
+    background: rgba(0, 0, 0, 0.5);
+    padding: 6px 12px;
+    border-radius: 4px;
+    align-self: center;
+  }
+  #inventory-bar {
+    font-size: 13px;
+    color: #88aacc;
+    background: rgba(10, 10, 10, 0.7);
+    padding: 4px 10px;
+    border-left: 3px solid #ff4444;
+  }
+  #crosshair {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 6px; height: 6px;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  #prompt {
+    position: absolute;
+    top: 55%; left: 50%;
+    transform: translate(-50%, 0);
+    color: #ffffff;
+    font-size: 14px;
+    background: rgba(0,0,0,0.7);
+    padding: 4px 8px;
+    border: 1px solid #444;
+    display: none;
+  }
+  /* 互動對話窗 / 謎題介面 */
+  #modal {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: #111;
+    border: 2px solid #553333;
+    padding: 20px;
+    color: #ddd;
+    display: none;
+    pointer-events: auto;
+    z-index: 100;
+    max-width: 420px;
+    width: 90%;
+    box-shadow: 0 0 20px #000;
+  }
+  #modal h3 { color: #ff5555; margin-bottom: 12px; font-size: 16px; }
+  #modal p { font-size: 13px; margin-bottom: 14px; line-height: 1.5; color: #bbb; }
+  #modal input {
+    background: #222; border: 1px solid #555; color: #fff;
+    padding: 6px; width: 100%; font-family: inherit; margin-bottom: 10px;
+  }
+  #modal button {
+    background: #331111; border: 1px solid #883333; color: #eee;
+    padding: 6px 12px; cursor: pointer; font-family: inherit; margin-right: 8px;
+  }
+  #modal button:hover { background: #662222; }
+  #start-screen {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+    cursor: pointer;
+    color: #999;
+  }
+  #start-screen h1 { color: #cc2222; font-size: 32px; letter-spacing: 4px; margin-bottom: 16px; text-shadow: 0 0 10px #ff0000; }
+  #start-screen p { font-size: 14px; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<div id="game-container">
+  <canvas id="gameCanvas" width="400" height="250"></canvas>
+  <div id="crt-overlay"></div>
+  <div id="crosshair"></div>
+  <div id="prompt">[E] 檢查</div>
+
+  <div id="ui-layer">
+    <div class="hud-top">
+      <div>場景: <span id="act-name">第一幕: 密閉房間 (404室)</span></div>
+      <div>理智: <span id="sanity-val">100%</span> | 光源: <span id="light-val">無</span></div>
+    </div>
+    <div class="hud-bottom">
+      <div id="subtitle"></div>
+      <div id="inventory-bar">物品欄: 空</div>
+    </div>
+  </div>
+
+  <div id="modal">
+    <h3 id="modal-title">標題</h3>
+    <p id="modal-desc">內容</p>
+    <div id="modal-interactive"></div>
+    <div style="text-align: right; margin-top: 10px;">
+      <button id="modal-close-btn" onclick="closeModal()">離開</button>
+    </div>
+  </div>
+
+  <div id="start-screen" onclick="startGame()">
+    <h1>晚安，請熄燈</h1>
+    <p>—— 心理恐怖 / 探索解謎 ——</p>
+    <p style="color: #666; margin-top: 20px;">[ 點擊畫面進入大樓並啟動音效 ]</p>
+    <p style="color: #444; font-size: 12px; margin-top: 10px;">操作: W/A/S/D 移動，Q/E 轉向，[SPACE] 互動/檢查，[F] 切換光源</p>
+  </div>
+</div>
+
+<script>
+/* ==================== 音效引擎 (Web Audio API) ==================== */
+class SoundEngine {
+  constructor() {
+    this.ctx = null;
+    this.droneGain = null;
+    this.heartbeatOsc = null;
+  }
+  init() {
+    if (this.ctx) return;
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    this.ctx = new AudioContext();
+
+    // 低頻環境無人機聲 (35Hz Drone)
+    const osc = this.ctx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(36, this.ctx.currentTime);
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(80, this.ctx.currentTime);
+    this.droneGain = this.ctx.createGain();
+    this.droneGain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+    osc.connect(filter);
+    filter.connect(this.droneGain);
+    this.droneGain.connect(this.ctx.destination);
+    osc.start();
+  }
+  playThud() {
+    if (!this.ctx) return;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.frequency.setValueAtTime(90, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(20, this.ctx.currentTime + 0.4);
+    gain.gain.setValueAtTime(0.8, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.4);
+    osc.connect(gain); gain.connect(this.ctx.destination);
+    osc.start(); osc.stop(this.ctx.currentTime + 0.4);
+  }
+  playLighter() {
+    if (!this.ctx) return;
+    // 摩擦與喀噠聲
+    const bufferSize = this.ctx.sampleRate * 0.08;
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = buffer;
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+    noise.connect(gain); gain.connect(this.ctx.destination);
+    noise.start();
+  }
+  playStatic() {
+    if (!this.ctx) return;
+    const bufferSize = this.ctx.sampleRate * 0.2;
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 0.4 - 0.2;
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = buffer;
+    noise.connect(this.ctx.destination);
+    noise.start();
+  }
+  playScream() {
+    if (!this.ctx) return;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(220, this.ctx.currentTime);
+    osc.frequency.linearRampToValueAtTime(80, this.ctx.currentTime + 0.8);
+    gain.gain.setValueAtTime(0.6, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.8);
+    osc.connect(gain); gain.connect(this.ctx.destination);
+    osc.start(); osc.stop(this.ctx.currentTime + 0.8);
+  }
+}
+const sfx = new SoundEngine();
+
+/* ==================== 地圖與狀態系統 ==================== */
+// 地圖代碼: 1=外牆, 0=空地, 2=衣櫃, 3=書桌, 4=衛浴門/洗手台, 5=404大門, 6=配電箱, 7=管理室門, 8=異空間門
+const MAP_ACT1 = [
+  [1,1,1,1,1,1,1,1],
+  [1,0,0,0,0,0,4,1],
+  [1,0,3,0,0,0,0,1],
+  [1,0,0,0,0,0,0,1],
+  [1,2,0,0,0,0,5,1],
+  [1,1,1,1,1,1,1,1]
+];
+
+// 第二幕：無限走廊與管理室
+const MAP_ACT2 = [
+  [1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,0,0,0,0,1,0,0,0,0,7,1],
+  [1,0,1,1,0,1,0,1,1,1,0,1],
+  [1,0,1,6,0,0,0,0,8,1,0,1],
+  [1,0,1,1,1,1,1,1,0,1,0,1],
+  [1,0,0,0,0,0,0,0,0,0,0,1],
+  [1,1,1,1,1,1,1,1,1,1,1,1]
+];
+
+let currentAct = 1;
+let map = MAP_ACT1;
+let mapW = 8, mapH = 6;
+
+// 玩家屬性
+let px = 2.5, py = 2.5;
+let pa = 0; // 朝向角
+let fov = Math.PI / 3;
+let sanity = 100;
+let hasLighter = false;
+let hasFlashlight = false;
+let activeLight = "none"; // "none" | "lighter" | "flashlight"
+let inventory = [];
+
+// 遊戲狀態旗標
+let flagCabinetTapeCut = false;
+let flagHasCutter = false;
+let flagDeskUnlocked = false;
+let flagDoorUnlocked = false;
+let flagAnomalyPassed = false;
+let flagPowerRestored = false;
+let flagInOffice = false;
+
+// 怪物實體 (第二幕)
+let patrol = { x: 9.5, y: 1.5, active: false, alert: false };
+
+/* ==================== 射線投影 3D 渲染器 ==================== */
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const cW = canvas.width;
+const cH = canvas.height;
+
+function castRays() {
+  ctx.fillStyle = "#020202";
+  ctx.fillRect(0, 0, cW, cH / 2);
+  ctx.fillStyle = "#0c0a0a";
+  ctx.fillRect(0, cH / 2, cW, cH / 2);
+
+  const numRays = cW;
+  const halfFov = fov / 2;
+  const angleStep = fov / numRays;
+
+  let interactTarget = null;
+
+  for (let i = 0; i < numRays; i++) {
+    const rayAngle = pa - halfFov + i * angleStep;
+    let dist = 0;
+    let hit = 0;
+    let hitType = 0;
+    const cosA = Math.cos(rayAngle);
+    const sinA = Math.sin(rayAngle);
+
+    while (!hit && dist < 12) {
+      dist += 0.05;
+      const checkX = Math.floor(px + cosA * dist);
+      const checkY = Math.floor(py + sinA * dist);
+
+      if (checkX < 0 || checkX >= mapW || checkY < 0 || checkY >= mapH) {
+        hit = 1; dist = 12; break;
+      }
+      hitType = map[checkY][checkX];
+      if (hitType > 0) {
+        hit = 1;
+        if (i === Math.floor(numRays / 2) && dist < 2.2) {
+          interactTarget = { type: hitType, x: checkX, y: checkY };
+        }
+      }
+    }
+
+    // 魚眼修正
+    const correctedDist = dist * Math.cos(rayAngle - pa);
+    const wallH = Math.min(cH, (cH / correctedDist));
+
+    // 計算光照強度
+    let lightRange = (activeLight === "flashlight") ? 8.5 : (activeLight === "lighter" ? 3.5 : 1.2);
+    let intensity = Math.max(0, 1 - (correctedDist / lightRange));
+
+    // 理智過低時視覺扭曲
+    if (sanity < 40) intensity += (Math.random() * 0.1 - 0.05);
+
+    // 依物體類型著色
+    let baseColor = [30, 30, 35]; // 普通水泥牆
+    if (hitType === 2) baseColor = [60, 30, 20]; // 衣櫃
+    else if (hitType === 3) baseColor = [50, 45, 30]; // 書桌
+    else if (hitType === 4) baseColor = [30, 50, 55]; // 浴室門
+    else if (hitType === 5 || hitType === 7) baseColor = [70, 20, 20]; // 關鍵大門
+    else if (hitType === 6) baseColor = [60, 60, 20]; // 配電箱
+    else if (hitType === 8) baseColor = [40, 20, 50]; // 異變走廊
+
+    const r = Math.floor(baseColor[0] * intensity);
+    const g = Math.floor(baseColor[1] * intensity);
+    const b = Math.floor(baseColor[2] * intensity);
+
+    ctx.fillStyle = `rgb(${r},${g},${b})`;
+    ctx.fillRect(i, (cH - wallH) / 2, 1, wallH);
+  }
+
+  // 渲染巡邏員怪物 (Sprite)
+  if (currentAct === 2 && patrol.active) {
+    renderMonster();
+  }
+
+  // 互動提示判定
+  const promptEl = document.getElementById('prompt');
+  if (interactTarget && interactTarget.type > 1) {
+    promptEl.style.display = 'block';
+    currentInteract = interactTarget;
+  } else {
+    promptEl.style.display = 'none';
+    currentInteract = null;
+  }
+}
+
+function renderMonster() {
+  const dx = patrol.x - px;
+  const dy = patrol.y - py;
+  const dist = Math.hypot(dx, dy);
+  let spriteAngle = Math.atan2(dy, dx) - pa;
+  while (spriteAngle < -Math.PI) spriteAngle += 2 * Math.PI;
+  while (spriteAngle > Math.PI) spriteAngle -= 2 * Math.PI;
+
+  if (Math.abs(spriteAngle) < fov) {
+    const screenX = (cW / 2) + Math.tan(spriteAngle) * (cW / 2);
+    const mHeight = Math.min(cH, (cH / dist));
+    const mWidth = mHeight * 0.4;
+    const lightDist = (activeLight === "flashlight") ? 9 : 3;
+    const alpha = Math.max(0.1, 1 - (dist / lightDist));
+
+    ctx.fillStyle = `rgba(180, 20, 20, ${alpha})`;
+    ctx.fillRect(screenX - mWidth / 2, (cH - mHeight) / 2, mWidth, mHeight);
+
+    // 蒼白無臉特徵
+    ctx.fillStyle = `rgba(220, 220, 220, ${alpha})`;
+    ctx.fillRect(screenX - mWidth / 4, (cH - mHeight) / 2 + mHeight * 0.1, mWidth / 2, mHeight * 0.25);
+  }
+}
+
+/* ==================== 互動與謎題處理 ==================== */
+let currentInteract = null;
+
+function interact() {
+  if (!currentInteract) return;
+  const t = currentInteract.type;
+
+  if (currentAct === 1) {
+    if (t === 3) {
+      // 書桌
+      if (!hasLighter) {
+        hasLighter = true;
+        activeLight = "lighter";
+        sfx.playLighter();
+        addItem("黃銅打火機");
+        showSubtitle("在書桌抽屜找到了【黃銅打火機】。火苗微弱，但足以驅散身邊的恐懼。");
+      } else if (!flagDeskUnlocked) {
+        openModal("鎖住的密碼鐵盒", "書桌下層有一個4位數轉輪密碼盒，旁邊貼著倒置的水氣印記。", true, "輸入4位密碼...", (val) => {
+          if (val === "7402") {
+            flagDeskUnlocked = true;
+            hasFlashlight = true;
+            addItem("手電筒");
+            addItem("404門鎖芯");
+            closeModal();
+            showSubtitle("密碼正確！喀噠一聲，找到了【手電筒】與脫落的【404門鎖芯】！");
+          } else {
+            showSubtitle("密碼錯誤，毫無反應。");
+          }
+        });
+      } else {
+        showSubtitle("書桌抽屜已經被搜刮一空。");
+      }
+    } else if (t === 4) {
+      // 衛浴間
+      if (!flagHasCutter) {
+        flagHasCutter = true;
+        addItem("美工刀");
+        showSubtitle("鏡子裡的倒影比我慢了一秒。在洗手台底下撿到了【美工刀】。");
+      } else {
+        sfx.playStatic();
+        showSubtitle("浴缸正不斷滴出發黑的水，鏡面上隱約浮現倒寫的水氣數字『7402』。");
+      }
+    } else if (t === 2) {
+      // 衣櫃
+      if (!flagCabinetTapeCut) {
+        if (inventory.includes("美工刀")) {
+          flagCabinetTapeCut = true;
+          sfx.playThud();
+          showSubtitle("用美工刀割開膠帶，衣櫃猛地彈開！深處刻著刮痕，並摸到一台【老式收音機】。");
+          openModal("收音機頻道", "收音機傳來雜音。依據櫃壁4道劃痕提示，轉動旋鈕至正確電台頻道 (提示: 9X.X)：", true, "輸入頻率 (例如 90.0)", (val) => {
+            if (val.trim() === "94.2") {
+              closeModal();
+              sfx.playStatic();
+              showSubtitle("收音機中斷續傳出聲音：『二、零、四、七……你在看我嗎？』");
+            } else {
+              showSubtitle("只有刺耳的白噪音。");
+            }
+          });
+        } else {
+          sfx.playThud();
+          showSubtitle("衣櫃被厚重的膠帶緊緊封死，裡面不斷發出沉重的敲擊聲……需要利器割開。");
+        }
+      } else {
+        showSubtitle("衣櫃內掛滿了發霉的大衣，刮痕隱約指向收音機的波段 94.2。");
+      }
+    } else if (t === 5) {
+      // 404大門
+      if (inventory.includes("404門鎖芯")) {
+        sfx.playThud();
+        showSubtitle("將鎖芯裝回大門，金屬鎖舌滑開！身後大衣櫃猛然彈開，你奪門而出——");
+        setTimeout(startAct2, 1800);
+      } else {
+        showSubtitle("大門把手的鎖芯脫落了，無法從內部開門。必須找到門鎖零件。");
+      }
+    }
+  } else if (currentAct === 2) {
+    if (t === 8) {
+      // 異空間鬼打牆
+      if (!flagAnomalyPassed) {
+        if (activeLight === "none") {
+          flagAnomalyPassed = true;
+          map[3][8] = 0; // 空間打通
+          sfx.playThud();
+          showSubtitle("你在黑暗中屏息站立……喀噠一聲，顛倒的門牌回正，走廊空間重組了！");
+        } else {
+          showSubtitle("門牌寫著上下顛倒的『h0h』。光線似乎讓這個空間陷入了死循環……熄燈試試？");
+        }
+      }
+    } else if (t === 6) {
+      // 配電箱
+      if (!flagPowerRestored) {
+        openModal("配電箱電壓平衡", "管理室電子鎖需要精確 [110V] 供電。\n目前電閘：A(+70V), B(+50V), C(-30V), D(+40V)。\n請輸入啟動的開關代碼（如 AD 或 BC）：", true, "輸入開關代碼組合", (val) => {
+          if (val.toUpperCase().trim() === "AD" || val.toUpperCase().trim() === "DA") {
+            flagPowerRestored = true;
+            map[1][10] = 0; // 打開管理室路徑
+            patrol.active = true; // 驚動怪物
+            closeModal();
+            sfx.playScream();
+            showSubtitle("電壓平穩在 110V！管理室大門解鎖，但全走廊紅燈閃爍，警報驚醒了無臉巡邏員！快跑！");
+          } else {
+            showSubtitle("電壓不匹配，保險絲跳火花！");
+          }
+        });
+      } else {
+        showSubtitle("配電箱已穩定運作中。");
+      }
+    } else if (t === 7) {
+      // 管理室大門
+      if (flagPowerRestored) {
+        flagInOffice = true;
+        patrol.active = false;
+        sfx.playThud();
+        openModal("管理室監視器錄影", "衝入管理室並反鎖鐵門！門外傳來狂亂的撞擊與指甲抓刮聲……\n你調出 03:14 監視錄影帶：\n【畫面 1】你看見自己離開 404 室時，背後始終黏著一具四肢著地的扭曲人影。\n【畫面 2】管理員在電梯前反覆狂按地下室『B2』。\n\n恭喜你突破前兩幕！你拿起了通往地下蓄水池的鐵門鑰匙……", false, "", null);
+      } else {
+        showSubtitle("管理室配備電子磁吸鎖，目前缺乏電力，牢牢緊閉。");
+      }
+    }
+  }
+}
+
+function startAct2() {
+  currentAct = 2;
+  map = MAP_ACT2;
+  mapW = 12; mapH = 7;
+  px = 1.5; py = 1.5; pa = 0;
+  sanity = 90;
+  document.getElementById('act-name').innerText = "第二幕: 無限長廊 (4樓中庭)";
+  showSubtitle("你踏入昏暗無邊的 4 樓長廊。空氣中瀰漫著濃烈的霉味與水氣。");
+}
+
+/* ==================== 界面輔助函式 ==================== */
+function showSubtitle(text) {
+  const el = document.getElementById('subtitle');
+  el.innerText = text;
+}
+
+function addItem(name) {
+  inventory.push(name);
+  document.getElementById('inventory-bar').innerText = "物品欄: " + inventory.join(", ");
+}
+
+function toggleLight() {
+  if (hasFlashlight && activeLight !== "flashlight") {
+    activeLight = "flashlight";
+  } else if (hasLighter && activeLight !== "lighter") {
+    activeLight = "lighter";
+    sfx.playLighter();
+  } else {
+    activeLight = "none";
+  }
+  const names = { "none": "無", "lighter": "打火機", "flashlight": "手電筒" };
+  document.getElementById('light-val').innerText = names[activeLight];
+}
+
+function openModal(title, desc, needInput, placeholder, callback) {
+  document.getElementById('modal-title').innerText = title;
+  document.getElementById('modal-desc').innerText = desc;
+  const c = document.getElementById('modal-interactive');
+  c.innerHTML = '';
+  if (needInput) {
+    const input = document.createElement('input');
+    input.id = 'modal-input';
+    input.placeholder = placeholder;
+    const btn = document.createElement('button');
+    btn.innerText = "確認";
+    btn.onclick = () => callback(input.value);
+    c.appendChild(input);
+    c.appendChild(btn);
+  }
+  document.getElementById('modal').style.display = 'block';
+}
+
+function closeModal() {
+  document.getElementById('modal').style.display = 'none';
+}
+
+/* ==================== 遊戲主循環與輸入 ==================== */
+const keys = {};
+window.addEventListener('keydown', e => {
+  keys[e.key.toLowerCase()] = true;
+  if (e.key.toLowerCase() === 'e' || e.code === 'Space') interact();
+  if (e.key.toLowerCase() === 'f') toggleLight();
+});
+window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+
+function startGame() {
+  document.getElementById('start-screen').style.display = 'none';
+  sfx.init();
+  showSubtitle("凌晨 00:00……衣櫃深處傳來沉悶的敲門聲。我必須離開這裡。");
+  lastTime = performance.now();
+  requestAnimationFrame(gameLoop);
+}
+
+let lastTime = 0;
+function update(dt) {
+  // 旋轉
+  const rotSpeed = 2.2 * dt;
+  if (keys['q'] || keys['arrowleft']) pa -= rotSpeed;
+  if (keys['e'] || keys['arrowright']) pa += rotSpeed;
+
+  // 移動
+  const moveSpeed = 2.2 * dt;
+  let dx = 0, dy = 0;
+  if (keys['w'] || keys['arrowup']) { dx += Math.cos(pa) * moveSpeed; dy += Math.sin(pa) * moveSpeed; }
+  if (keys['s'] || keys['arrowdown']) { dx -= Math.cos(pa) * moveSpeed; dy -= Math.sin(pa) * moveSpeed; }
+  if (keys['a']) { dx += Math.sin(pa) * moveSpeed; dy -= Math.cos(pa) * moveSpeed; }
+  if (keys['d']) { dx -= Math.sin(pa) * moveSpeed; dy += Math.cos(pa) * moveSpeed; }
+
+  // 簡易碰撞體積
+  const nextX = px + dx;
+  const nextY = py + dy;
+  if (map[Math.floor(py)][Math.floor(nextX)] === 0) px = nextX;
+  if (map[Math.floor(nextY)][Math.floor(px)] === 0) py = nextY;
+
+  // 理智值消耗機制
+  if (activeLight === "none") {
+    sanity = Math.max(10, sanity - dt * 2.5);
+  } else {
+    sanity = Math.min(100, sanity + dt * 0.8);
+  }
+  document.getElementById('sanity-val').innerText = Math.floor(sanity) + "%";
+
+  // 巡邏員 AI 行為 (第二幕追逐)
+  if (currentAct === 2 && patrol.active && !flagInOffice) {
+    const pdx = px - patrol.x;
+    const pdy = py - patrol.y;
+    const pdist = Math.hypot(pdx, pdy);
+
+    // 怪物向玩家逼近
+    patrol.x += (pdx / pdist) * 1.3 * dt;
+    patrol.y += (pdy / pdist) * 1.3 * dt;
+
+    if (pdist < 0.7) {
+      // 抓住玩家，回退安全點
+      sfx.playScream();
+      sanity -= 35;
+      px = 1.5; py = 5.5;
+      showSubtitle("冰冷蒼白的手抓住了你的肩膀！你驚恐地掙脫跌退回走廊起點……");
+    }
+  }
+}
+
+function gameLoop(time) {
+  const dt = Math.min((time - lastTime) / 1000, 0.1);
+  lastTime = time;
+
+  update(dt);
+  castRays();
+
+  requestAnimationFrame(gameLoop);
+}
+</script>
+</body>
+</html>
