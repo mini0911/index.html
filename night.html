@@ -3,75 +3,75 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>【寂靜密室】360° 實景驚悚逃脫</title>
+<title>【寂靜結界】現地行走式・無限實景逃脫</title>
 
-<!-- Three.js 3D 全景核心 (保證 100% 滿版秒出圖、支援真實 360° 自由環顧與陀螺儀) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- MapillaryJS 官方庫 -->
+<link href="https://unpkg.com/mapillary-js@4.1.2/dist/mapillary.css" rel="stylesheet" />
+<script src="https://unpkg.com/mapillary-js@4.1.2/dist/mapillary.js"></script>
+
+<!-- Leaflet 開源地圖 -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-  body, html { width: 100%; height: 100%; background: #000; color: #eee; overflow: hidden; font-family: monospace; }
+  body, html { width: 100%; height: 100%; background: #000; color: #eee; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; }
 
-  #game-container {
-    position: relative; width: 100%; height: 100%; overflow: hidden; cursor: grab;
+  #app-container { position: relative; width: 100%; height: 100%; overflow: hidden; }
+
+  /* 滿版 Mapillary 360 實景 */
+  #mly { width: 100%; height: 100%; position: absolute; top: 0; left: 0; filter: none; transition: filter 0.3s ease; }
+  #mly.night-vision-on { filter: invert(88%) hue-rotate(180deg) contrast(140%) saturate(15%) brightness(70%); }
+  .mapillary-sequence-container { opacity: 0.85 !important; }
+
+  /* 準心 */
+  .center-crosshair {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 34px; height: 34px; border: 2px dashed rgba(255, 60, 60, 0.6);
+    border-radius: 50%; pointer-events: none; z-index: 50;
   }
-  #game-container:active { cursor: grabbing; }
 
-  #webgl-canvas { width: 100%; height: 100%; display: block; }
-
-  /* 頂部 HUD (半透明懸浮) */
+  /* 頂部 HUD (懸浮滿版) */
   .hud-top {
-    position: absolute; top: 0; left: 0; width: 100%; height: 50px;
+    position: absolute; top: 0; left: 0; width: 100%; height: 56px;
     background: linear-gradient(180deg, rgba(0,0,0,0.85) 0%, transparent 100%);
     display: flex; justify-content: space-between; align-items: center;
     padding: 0 16px; z-index: 100; pointer-events: auto;
   }
   .stage-badge {
-    color: #ff4444; font-size: 13px; font-weight: bold; letter-spacing: 1px;
-    display: flex; align-items: center; gap: 8px;
+    color: #ff5555; font-size: 13px; font-weight: bold; letter-spacing: 1px;
+    display: flex; flex-direction: column; gap: 2px;
   }
-  .pulse-dot {
-    width: 8px; height: 8px; background: #ff2222; border-radius: 50%;
-    box-shadow: 0 0 8px #ff0000; animation: blink 1.2s infinite;
-  }
-  @keyframes blink { 50% { opacity: 0.2; } }
+  .stage-coords { font-size: 10px; color: #8b949e; font-weight: normal; }
 
   .hud-actions { display: flex; gap: 8px; align-items: center; }
 
-  .btn-hud {
-    background: rgba(22, 27, 34, 0.8); border: 1px solid #444; color: #58a6ff;
-    padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer;
-    transition: 0.2s;
+  .btn-map-toggle {
+    background: rgba(13, 17, 23, 0.9); border: 1px solid #58a6ff; color: #58a6ff;
+    padding: 5px 12px; border-radius: 4px; font-size: 12px; font-weight: bold;
+    cursor: pointer; display: flex; align-items: center; gap: 4px; transition: 0.2s;
   }
-  .btn-hud.active {
-    background: #003311; border-color: #00ff66; color: #00ff66;
-    box-shadow: 0 0 10px rgba(0,255,102,0.4);
-  }
+  .btn-map-toggle:hover { background: #1f6feb; color: #fff; }
 
-  /* 道具欄 HUD */
-  .inventory-bar {
-    background: rgba(13, 17, 23, 0.85); border: 1px solid #30363d;
-    padding: 3px 8px; border-radius: 4px; font-size: 11px; color: #e3b341;
+  .btn-nvg {
+    background: rgba(22, 27, 34, 0.85); border: 1px solid #444; color: #8b949e;
+    padding: 5px 10px; border-radius: 4px; font-size: 11px; cursor: pointer;
   }
+  .btn-nvg.active { background: #003311; border-color: #00ff66; color: #00ff66; }
 
-  /* 準心 */
-  .center-crosshair {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 32px; height: 32px; border: 2px dashed rgba(255, 60, 60, 0.6);
-    border-radius: 50%; pointer-events: none; z-index: 50;
+  /* 浮動在街景特定角度的實體證物 */
+  #clue-entity {
+    position: absolute; width: 60px; height: 60px;
+    transform: translate(-50%, -50%); cursor: pointer; display: none; z-index: 60;
   }
-
-  /* 恐怖 VHS 掃描線與暗角 (夜視模式時套用) */
-  #night-vision-layer {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: radial-gradient(circle at 50% 50%, transparent 40%, rgba(0, 30, 0, 0.4) 80%, rgba(0, 10, 0, 0.95) 100%),
-                linear-gradient(rgba(0, 255, 0, 0) 50%, rgba(0, 255, 0, 0.1) 50%);
-    background-size: 100% 100%, 100% 4px;
-    filter: invert(88%) hue-rotate(180deg) contrast(140%) brightness(75%);
-    pointer-events: none; z-index: 40; display: none;
+  .clue-orb {
+    width: 100%; height: 100%; background: radial-gradient(circle, rgba(255,230,100,0.9) 0%, rgba(255,100,0,0.6) 60%, transparent 80%);
+    border-radius: 50%; box-shadow: 0 0 20px #ffaa00; animation: orbBreathe 1s infinite alternate;
+    display: flex; justify-content: center; align-items: center; font-size: 24px;
   }
+  @keyframes orbBreathe { 0% { transform: scale(0.9); } 100% { transform: scale(1.15); } }
 
-  /* 底部對講機任務提示 (懸浮條) */
+  /* 底部對講機任務導引 */
   .bottom-radio {
     position: absolute; bottom: 16px; left: 16px; right: 16px;
     background: rgba(13, 17, 23, 0.92); border: 1px solid #30363d;
@@ -79,54 +79,76 @@
     display: flex; justify-content: space-between; align-items: center;
     z-index: 100; border-radius: 4px; box-shadow: 0 4px 20px rgba(0,0,0,0.8);
   }
-  .radio-text { font-size: 12px; color: #c9d1d9; line-height: 1.4; max-width: 75%; }
-  .btn-check-door {
+  .radio-text { font-size: 12px; color: #c9d1d9; line-height: 1.4; max-width: 72%; }
+  .btn-action {
     background: #b62324; border: 1px solid #ff4444; color: #fff;
-    padding: 8px 14px; font-size: 12px; font-weight: bold; border-radius: 4px;
-    cursor: pointer; transition: 0.2s;
+    padding: 8px 14px; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer;
   }
-  .btn-check-door:hover { background: #d72627; }
+  .btn-action:hover { background: #d72627; }
 
-  /* ==================== 彈窗 1：線索特寫視窗 ==================== */
+  /* 彈出式實體地圖視窗 */
+  #map-modal-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85); z-index: 2500;
+    display: none; justify-content: center; align-items: center; padding: 20px;
+  }
+  .map-dialog {
+    width: 100%; max-width: 650px; height: 82%; max-height: 550px;
+    background: #161b22; border: 2px solid #58a6ff; border-radius: 8px;
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .map-header {
+    height: 48px; background: #0d1117; border-bottom: 1px solid #30363d;
+    display: flex; justify-content: space-between; align-items: center; padding: 0 16px;
+  }
+  .btn-layer-switch {
+    background: #21262d; border: 1px solid #58a6ff; color: #58a6ff;
+    padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;
+  }
+  .btn-layer-switch.satellite-mode { background: #8b1111; border-color: #ff5555; color: #fff; }
+  .btn-close-map { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; }
+  #leaflet-map { flex: 1; width: 100%; background: #111; }
+  .map-footer-info {
+    height: 38px; background: #0d1117; border-top: 1px solid #30363d;
+    display: flex; justify-content: space-between; align-items: center; padding: 0 14px; font-size: 11px; color: #8b949e;
+  }
+
+  /* 密碼鎖與證物彈窗 */
   .modal-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0, 0, 0, 0.85); z-index: 2000;
     display: none; justify-content: center; align-items: center; padding: 20px;
   }
-  .clue-paper {
+  .clue-box {
     background: #ebdcc0; color: #231a11; width: 100%; max-width: 360px;
-    border-radius: 4px; padding: 24px 20px; box-shadow: 0 0 30px rgba(255,200,100,0.3);
-    border: 2px solid #bba377; position: relative; font-family: serif;
-    animation: popIn 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    border-radius: 4px; padding: 24px 20px; border: 2px solid #bba377; font-family: serif;
   }
-  @keyframes popIn { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
   .clue-title { font-size: 16px; font-weight: bold; color: #7a1515; border-bottom: 1px dashed #7a664d; padding-bottom: 6px; margin-bottom: 12px; }
-  .clue-body { font-size: 13px; line-height: 1.7; margin-bottom: 20px; white-space: pre-line; }
+  .clue-content { font-size: 13px; line-height: 1.7; margin-bottom: 20px; white-space: pre-line; }
   .btn-close { width: 100%; background: #7a1515; color: #fff; border: none; padding: 10px 0; font-size: 13px; font-weight: bold; border-radius: 3px; cursor: pointer; }
 
-  /* ==================== 彈窗 2：密碼撥盤解鎖器 (Keypad) ==================== */
   .keypad-box {
     background: #161b22; border: 2px solid #ff4444; border-radius: 8px;
     width: 280px; padding: 20px; display: flex; flex-direction: column; align-items: center;
-    box-shadow: 0 0 35px rgba(255, 0, 0, 0.4); animation: popIn 0.2s ease;
   }
   .keypad-display {
     width: 100%; height: 44px; background: #000; border: 1px solid #30363d;
     border-radius: 4px; color: #ff3333; font-size: 24px; font-family: monospace;
-    display: flex; justify-content: center; align-items: center; letter-spacing: 8px;
-    margin-bottom: 16px;
+    display: flex; justify-content: center; align-items: center; letter-spacing: 8px; margin-bottom: 16px;
   }
-  .keypad-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; margin-bottom: 16px;
-  }
-  .num-btn {
-    background: #21262d; border: 1px solid #30363d; color: #c9d1d9;
-    padding: 12px 0; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer;
-  }
+  .keypad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; margin-bottom: 16px; }
+  .num-btn { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; padding: 12px 0; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; }
   .num-btn:active { background: #ff4444; color: #fff; }
-  .keypad-actions { display: flex; width: 100%; gap: 8px; }
-  .btn-keypad-action {
-    flex: 1; padding: 8px 0; border: none; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer;
+
+  /* 室內測試方向鍵 (右下角懸浮) */
+  .sim-controls {
+    position: absolute; right: 16px; bottom: 80px; z-index: 150;
+    display: grid; grid-template-columns: repeat(3, 34px); gap: 4px;
+  }
+  .sim-btn {
+    background: rgba(13, 17, 23, 0.88); border: 1px solid #58a6ff; color: #fff;
+    display: flex; justify-content: center; align-items: center;
+    cursor: pointer; border-radius: 4px; font-size: 13px; font-weight: bold; height: 34px;
   }
 
   /* 開場視窗 */
@@ -140,53 +162,80 @@
   .btn-start {
     background: #b62324; border: none; color: #fff; padding: 12px 32px;
     font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer;
-    box-shadow: 0 0 20px rgba(255,0,0,0.4);
   }
 </style>
 </head>
 <body>
 
-<div id="game-container">
+<div id="app-container">
   <!-- 頂部 HUD -->
   <div class="hud-top">
     <div class="stage-badge">
-      <div class="pulse-dot"></div>
-      <span id="stage-title">關卡 1：辛亥隧道口・午夜引渡</span>
+      <span id="stage-name">第 1 關：初始結界・封印之門</span>
+      <span class="stage-coords" id="stage-coords">GPS: 正在校準現地坐標...</span>
     </div>
     <div class="hud-actions">
-      <div class="inventory-bar" id="inv-display">道具: 無</div>
-      <button class="btn-hud" id="nvg-btn" onclick="toggleNightVision()">🌙 夜視鏡</button>
+      <button class="btn-map-toggle" onclick="openRealMap()">🗺️ 查看實體地圖</button>
+      <button class="btn-nvg" id="nvg-btn" onclick="toggleNightVision()">🌙 夜視鏡</button>
     </div>
   </div>
 
-  <!-- Three.js 滿版畫布容器 -->
-  <div id="canvas-wrapper" style="width: 100%; height: 100%;"></div>
-
-  <!-- 準心與夜視濾鏡層 -->
+  <!-- Mapillary 360 滿版街景視窗 -->
+  <div id="mly"></div>
   <div class="center-crosshair"></div>
-  <div id="night-vision-layer"></div>
 
-  <!-- 底部任務對講機條 -->
+  <!-- 錨定於街景特定方位的發光調查證物 -->
+  <div id="clue-entity" onclick="openClueModal()">
+    <div class="clue-orb">📜</div>
+  </div>
+
+  <!-- 室內模擬位移鍵盤 (每次按鍵位移 10 公尺，方便室內測試) -->
+  <div class="sim-controls">
+    <div></div>
+    <button class="sim-btn" onclick="simMove(0, 0.00010)">▲</button>
+    <div></div>
+    <button class="sim-btn" onclick="simMove(-0.00010, 0)">◄</button>
+    <button class="sim-btn" onclick="simMove(0, -0.00010)">▼</button>
+    <button class="sim-btn" onclick="simMove(0.00010, 0)">►</button>
+  </div>
+
+  <!-- 底部任務導引面板 -->
   <div class="bottom-radio">
-    <div class="radio-text" id="radio-instruction">
-      「你被困在隧道的結界中……轉身環顧四周，低頭尋找遺留在地上的密碼線索！」
-    </div>
-    <button class="btn-check-door" onclick="openKeypad()">🚪 解開通道鎖</button>
+    <div class="radio-text" id="radio-instruction">「正在以你所在的位置連線周圍 360° 實景……」</div>
+    <button class="btn-action" onclick="openKeypad()">🚪 解鎖結界</button>
   </div>
 
-  <!-- 線索特寫視窗 -->
+  <!-- 彈出式實體地圖模態視窗 -->
+  <div id="map-modal-overlay">
+    <div class="map-dialog">
+      <div class="map-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:13px; font-weight:bold; color:#58a6ff;">📡 當前現地雷達</span>
+          <button class="btn-layer-switch" id="btn-layer-toggle" onclick="toggleMapLayer()">🛰️ 切換為衛星空照圖</button>
+        </div>
+        <button class="btn-close-map" onclick="closeRealMap()">✕ 返回現場</button>
+      </div>
+      <div id="leaflet-map"></div>
+      <div class="map-footer-info">
+        <span id="map-modal-location">現地實景已同步</span>
+        <span id="map-modal-gps">GPS 校準中</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 證物特寫視窗 -->
   <div class="modal-overlay" id="clue-modal">
-    <div class="clue-paper">
-      <div class="clue-title" id="clue-title">調查檔案</div>
-      <div class="clue-body" id="clue-content">檔案載入中...</div>
-      <button class="btn-close" onclick="closeClueModal()">收起線索</button>
+    <div class="clue-box">
+      <div class="clue-title" id="clue-title">調查證物</div>
+      <div class="clue-content" id="clue-content">檔案載入中...</div>
+      <button class="btn-close" onclick="closeClueModal()">收起證物</button>
     </div>
   </div>
 
-  <!-- 密碼鎖撥盤 (Keypad) -->
+  <!-- 密碼鎖撥盤 -->
   <div class="modal-overlay" id="keypad-modal">
     <div class="keypad-box">
-      <div style="color: #ff5555; font-size: 12px; margin-bottom: 8px;">結界電子鎖盤</div>
+      <div style="color: #ff5555; font-size: 12px; margin-bottom: 8px;">結界解鎖盤</div>
       <div class="keypad-display" id="keypad-code">----</div>
       <div class="keypad-grid">
         <button class="num-btn" onclick="pressKey('1')">1</button>
@@ -202,349 +251,312 @@
         <button class="num-btn" onclick="pressKey('0')">0</button>
         <button class="num-btn" onclick="submitPasscode()" style="background:#8b1111; color:#fff;">✓</button>
       </div>
-      <div class="keypad-actions">
-        <button class="btn-keypad-action" style="background:#30363d; color:#c9d1d9;" onclick="closeKeypad()">放棄離開</button>
-      </div>
+      <button class="btn-close" style="background:#30363d;" onclick="closeKeypad()">放棄返回</button>
     </div>
   </div>
 
-  <!-- 開場全螢幕授權視窗 -->
+  <!-- 開場視窗 -->
   <div id="start-modal">
-    <h1>靜安怪談：滿版 360° 實景密室</h1>
+    <h1>靜安怪談：現地行走式逃脫</h1>
     <p>
-      <b>純粹實景 × 4 大驚悚密室章節：</b><br>
-      已移除地圖，畫面全螢幕滿版！<br>
-      滑動或持手機轉身 360°，搜查隱藏在暗角地面上的鑰匙、遺書與線索，輸入密碼解鎖逃出生天！
+      <b>走到哪裡，實景就是哪裡：</b><br>
+      關卡不綁死景點，而是動態降臨在你目前身邊！<br>
+      肉身在真實道路行走（或按鍵位移滿 15 米），街景將隨你的行蹤自動更新！
     </p>
-    <button class="btn-start" onclick="startGame()">踏入現場</button>
+    <button class="btn-start" onclick="startGame()">啟動現地實景</button>
   </div>
 </div>
 
 <script>
-/* ==================== 4 大密室驚悚主題關卡配置 ==================== */
-const STAGES = [
-  {
-    title: "關卡 1：辛亥隧道口・午夜引渡",
-    panorama: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Equirectangular_projection_SW.jpg/1920px-Equirectangular_projection_SW.jpg",
-    passcode: "404",
-    radio: "「此處是辛亥隧道出口。結界已封死……轉身看身後地面，有一張散落的遇害者便條！」",
-    item: {
-      type: "note",
-      name: "泥濘的車票便條",
-      posX: 40, posY: -140, posZ: -240,
-      title: "【浸滿泥水的便條】",
-      text: "『……祂們在天花板上爬行。\n隧道口的警示燈閃爍著 4-0-4。\n輸入 404 解開鐵捲門，千萬別回頭！』"
-    }
-  },
-  {
-    title: "關卡 2：廢棄醫院急診室・紅水滴落",
-    panorama: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Barn_Grand_Teton_Equirectangular.jpg/1920px-Barn_Grand_Teton_Equirectangular.jpg",
-    passcode: "911",
-    radio: "「空氣中瀰漫著消毒水和鐵鏽味。牆角有生鏽的手術剪，找找看醫護留下的門禁代碼！」",
-    item: {
-      type: "key",
-      name: "生鏽手術剪",
-      posX: -180, posY: -130, posZ: -160,
-      title: "【沾血的手術托盤】",
-      text: "托盤底部刻著一行抓痕：『救護車呼叫代碼是 9-1-1，門禁鎖密碼即是呼叫代碼……』"
-    }
-  },
-  {
-    title: "關卡 3：外雙溪鄭成功廟後山・無頭陰兵",
-    panorama: "https://pannellum.org/images/bma-0.jpg",
-    passcode: "777",
-    radio: "「濃霧升起了……遠處樹林傳來踏步聲。在石階旁尋找道長留下的鎮煞黃符！」",
-    item: {
-      type: "note",
-      name: "褪色鎮煞符",
-      posX: 120, posY: -110, posZ: 220,
-      title: "【硃砂褪色的符紙】",
-      text: "『天地玄宗，三陽開泰，以三吉數 7-7-7 破除山煞！』"
-    }
-  },
-  {
-    title: "關卡 4：終焉停屍間・最後的鎖櫃",
-    panorama: "https://pannellum.org/images/jfk.jpg",
-    passcode: "2026",
-    radio: "「最後一扇逃生門就在眼前！低頭搜查地面冰櫃號碼牌，輸入逃生門年份密碼！」",
-    item: {
-      type: "key",
-      name: "停屍間主通行卡",
-      posX: -30, posY: -150, posZ: 260,
-      title: "【遺落的識別證】",
-      text: "工作證正面寫著：『停業封存年份：2026 年。門鎖密碼為封存年份。』"
-    }
-  }
+// ⭐ Mapillary Access Token
+const MAPILLARY_ACCESS_TOKEN = "MLY|28733254389675887|86d28fb76c4cd708f49749d1d979baf4";
+
+// 台北市中心備援 360 全景 ID (若深巷無圖資時使用)
+const BACKUP_360_PANO_ID = "1933525276802129";
+
+/* ==================== 無窮關卡題目庫 (Procedural Quests) ==================== */
+const QUEST_TEMPLATES = [
+  { name: "殘破紙偶的詛咒", passcode: "382", hint: "『怨氣凝結在三個方位……紙偶背後寫著 3-8-2。』", orb: "📜" },
+  { name: "生鏽配電盤的密碼", passcode: "714", hint: "『電壓閃爍不定，保險絲盒的重啟序號為 7-1-4。』", orb: "⚡" },
+  { name: "遇害者的隨身錄音機", passcode: "905", hint: "『磁帶卡在 09 分 05 秒，輸入時間代碼 9-0-5 停止播放。』", orb: "📼" },
+  { name: "染血生鏽鐵門鎖", passcode: "419", hint: "『門環上刻著四月十九日遇害紀錄，密碼是 4-1-9。』", orb: "🗝️" },
+  { name: "陰陽兩界的引路香爐", passcode: "663", hint: "『香爐底部壓著六陰三陽的卦象，代碼為 6-6-3。』", orb: "🕯️" },
+  { name: "終焉封印的九字真言", passcode: "128", hint: "『臨兵鬥者皆陣列在前，生還生門在 1-2-8。』", orb: "📿" }
 ];
 
-let currentStageIdx = 0;
-let inventory = [];
-let currentPasscodeAttempt = "";
+let stageLevel = 1;
+let currentQuest = null;
+
+/* ==================== GPS 與實景狀態 ==================== */
+let userLat = 25.0418, userLng = 121.5436; // 預設起點座標
+let lastStreetCoord = { lat: userLat, lng: userLng };
+let isFetchingStreet = false;
+const MOVE_UPDATE_THRESHOLD = 15; // 累積位移 15 公尺換圖
+
+let mlyViewer = null;
+let clueBearing = 65; // 本關證物在街景中的方位角
 let isNightVision = false;
+let passcodeBuffer = "";
 
-/* ==================== 音效引擎 ==================== */
-class HorrorAudio {
-  constructor() { this.ctx = null; }
-  init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
-  click() {
-    if (!this.ctx) return;
-    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-    o.frequency.setValueAtTime(600, this.ctx.currentTime);
-    g.gain.setValueAtTime(0.15, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
-    o.connect(g); g.connect(this.ctx.destination);
-    o.start(); o.stop(this.ctx.currentTime + 0.05);
-  }
-  doorOpen() {
-    if (!this.ctx) return;
-    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-    o.type = "sawtooth";
-    o.frequency.setValueAtTime(100, this.ctx.currentTime);
-    o.frequency.exponentialRampToValueAtTime(450, this.ctx.currentTime + 0.6);
-    g.gain.setValueAtTime(0.3, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.6);
-    o.connect(g); g.connect(this.ctx.destination);
-    o.start(); o.stop(this.ctx.currentTime + 0.6);
-  }
-  error() {
-    if (!this.ctx) return;
-    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-    o.type = "square";
-    o.frequency.setValueAtTime(130, this.ctx.currentTime);
-    g.gain.setValueAtTime(0.25, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
-    o.connect(g); g.connect(this.ctx.destination);
-    o.start(); o.stop(this.ctx.currentTime + 0.3);
-  }
-}
-const sfx = new HorrorAudio();
-
-/* ==================== Three.js 滿版 360 實景視圖 ==================== */
-let scene, camera, renderer, sphereMesh, clueSprite;
-let lon = 0, lat = 0, phi = 0, theta = 0;
-let isInteracting = false, downX = 0, downY = 0, downLon = 0, downLat = 0, moveDist = 0;
-let raycaster, mouse;
+/* ==================== 實體 Leaflet 地圖 ==================== */
+let realMap = null, currentMarker = null;
+let streetLayer = null, satelliteLayer = null, isSatellite = false;
 
 function startGame() {
   document.getElementById('start-modal').style.display = 'none';
-  sfx.init();
 
-  initThree360();
-  loadStage(0);
+  // 1. 初始化第一道動態關卡
+  generateQuestForCurrentLocation();
 
-  // 陀螺儀支援
-  window.addEventListener('deviceorientation', (e) => {
-    if (e.alpha !== null && !isInteracting) {
-      lon = 360 - e.alpha;
-      lat = Math.max(-80, Math.min(80, e.beta - 90));
-    }
-  });
+  // 2. 優先抓取手機當前真實 GPS
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        userLat = pos.coords.latitude;
+        userLng = pos.coords.longitude;
+        lastStreetCoord = { lat: userLat, lng: userLng };
+        initMapillary360(userLat, userLng);
+      },
+      () => {
+        initMapillary360(userLat, userLng);
+      },
+      { enableHighAccuracy: true, timeout: 6000 }
+    );
+
+    // 持續監聽肉身真實走動
+    navigator.geolocation.watchPosition(pos => {
+      userLat = pos.coords.latitude;
+      userLng = pos.coords.longitude;
+      document.getElementById('stage-coords').innerText = `GPS: ${userLat.toFixed(5)}° N, ${userLng.toFixed(5)}° E`;
+      checkAndFetchNextStreet();
+    }, null, { enableHighAccuracy: true });
+  } else {
+    initMapillary360(userLat, userLng);
+  }
 }
 
-function initThree360() {
-  const container = document.getElementById('canvas-wrapper');
-  scene = new THREE.Scene();
-  raycaster = new THREE.Raycaster();
-  mouse = new THREE.Vector2();
+// 動態關卡生成器（不限特定地點，走到哪生成到哪）
+function generateQuestForCurrentLocation() {
+  const template = QUEST_TEMPLATES[(stageLevel - 1) % QUEST_TEMPLATES.length];
+  clueBearing = (clueBearing + 90 + Math.floor(Math.random() * 80)) % 360;
 
-  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1100);
-  camera.target = new THREE.Vector3(0, 0, 0);
+  currentQuest = {
+    title: `第 ${stageLevel} 關：${template.name}`,
+    passcode: template.passcode,
+    radio: `「結界在當前街道生成！轉動畫面在周圍街道尋找浮空的發光證物【${template.orb}】！」`,
+    clueTitle: `【現地調查證物：${template.name}】`,
+    clueText: template.hint,
+    orbIcon: template.orb
+  };
 
-  // 360 實景大球體
-  const geom = new THREE.SphereGeometry(500, 60, 40);
-  geom.scale(-1, 1, 1);
-  sphereMesh = new THREE.Mesh(geom, new THREE.MeshBasicMaterial());
-  scene.add(sphereMesh);
+  document.getElementById('stage-name').innerText = currentQuest.title;
+  document.getElementById('radio-instruction').innerText = currentQuest.radio;
+  document.querySelector('.clue-orb').innerText = currentQuest.orbIcon;
+  updateClueOverlay();
+}
 
-  renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  container.appendChild(renderer.domElement);
+// 核心：Mapillary 360 度實景（走到哪裡，查哪裡的真 360 照片）
+async function initMapillary360(lat, lng) {
+  const { Viewer } = mapillary;
+  document.getElementById('stage-coords').innerText = `GPS: ${lat.toFixed(5)}° N, ${lng.toFixed(5)}° E`;
 
-  // 觸控與滑鼠拖曳
-  container.addEventListener('pointerdown', (e) => {
-    isInteracting = true;
-    downX = e.clientX; downY = e.clientY;
-    downLon = lon; downLat = lat;
-    moveDist = 0;
+  // 加上 is_pano=true 保證為真 360 度全景球體
+  const chosenId = await fetchNearby360Pano(lat, lng);
+
+  mlyViewer = new Viewer({
+    accessToken: MAPILLARY_ACCESS_TOKEN,
+    container: 'mly',
+    imageId: chosenId,
+    component: { cover: false, direction: true, sequence: true }
   });
-  document.addEventListener('pointermove', (e) => {
-    if (isInteracting) {
-      const dx = e.clientX - downX, dy = e.clientY - downY;
-      moveDist += Math.hypot(dx, dy);
-      lon = (downX - e.clientX) * 0.15 + downLon;
-      lat = (e.clientY - downY) * 0.15 + downLat;
-    }
-  });
-  document.addEventListener('pointerup', (e) => {
-    isInteracting = false;
-    // 點擊距離小於 5px 視為點擊調查物品
-    if (moveDist < 6) {
-      checkSpriteClick(e);
+
+  // 監聽視角轉身
+  mlyViewer.on('pov', updateClueOverlay);
+
+  // 當使用者點擊地面箭頭滑進下一張街景時，同步校準座標
+  mlyViewer.on('image', (e) => {
+    mlyViewer.resize();
+    updateClueOverlay();
+    if (e && e.image && e.image.geometry && e.image.geometry.coordinates) {
+      const [photoLng, photoLat] = e.image.geometry.coordinates;
+      userLat = photoLat; userLng = photoLng;
+      lastStreetCoord = { lat: photoLat, lng: photoLng };
+      document.getElementById('stage-coords').innerText = `GPS: ${userLat.toFixed(5)}° N, ${userLng.toFixed(5)}° E`;
     }
   });
 
   window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    if (mlyViewer) { mlyViewer.resize(); updateClueOverlay(); }
   });
-
-  animate();
 }
 
-// 載入關卡全景與物品
-function loadStage(idx) {
-  currentStageIdx = idx;
-  const stage = STAGES[idx];
+// 根據經緯度搜尋最近的 360 全景照片
+async function fetchNearby360Pano(lat, lng) {
+  const delta = 0.003; // 半徑約 300 米
+  const bbox = `${lng - delta},${lat - delta},${lng + delta},${lat + delta}`;
+  const url = `https://graph.mapillary.com/images?access_token=${MAPILLARY_ACCESS_TOKEN}&fields=id,geometry,is_pano&is_pano=true&bbox=${bbox}&limit=1`;
 
-  document.getElementById('stage-title').innerText = stage.title;
-  document.getElementById('radio-instruction').innerText = stage.radio;
-
-  // 切換 360 實景球體材質
-  const loader = new THREE.TextureLoader();
-  loader.setCrossOrigin('anonymous');
-  loader.load(stage.panorama, (tex) => {
-    sphereMesh.material.map = tex;
-    sphereMesh.material.needsUpdate = true;
-  });
-
-  // 移除上一關物品
-  if (clueSprite) scene.remove(clueSprite);
-
-  // 建立本關散落在地面的發光線索物品
-  const canvasTex = createItemTexture(stage.item.type);
-  const mat = new THREE.SpriteMaterial({ map: canvasTex, transparent: true });
-  clueSprite = new THREE.Sprite(mat);
-  clueSprite.scale.set(40, 48, 1);
-  clueSprite.position.set(stage.item.posX, stage.item.posY, stage.item.posZ);
-  clueSprite.userData = stage.item;
-  scene.add(clueSprite);
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.data && data.data.length > 0) {
+      return data.data[0].id;
+    }
+  } catch(e) {}
+  return BACKUP_360_PANO_ID; // 備援全景
 }
 
-// 繪製發光物品材質
-function createItemTexture(type) {
-  const c = document.createElement('canvas');
-  c.width = 128; c.height = 160;
-  const ctx = c.getContext('2d');
-  // 發光金黃光暈
-  const grad = ctx.createRadialGradient(64, 80, 10, 64, 80, 60);
-  grad.addColorStop(0, 'rgba(255, 230, 120, 0.95)');
-  grad.addColorStop(0.7, 'rgba(255, 100, 0, 0.6)');
-  grad.addColorStop(1, 'transparent');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, 128, 160);
+// 核心：走動滿 15 公尺，自動抓取眼前最新街道照片
+async function checkAndFetchNextStreet() {
+  if (isFetchingStreet || !mlyViewer) return;
 
-  // 繪製紙條或鑰匙
-  ctx.fillStyle = type === "note" ? "#fff3d1" : "#d4af37";
-  ctx.fillRect(28, 40, 72, 80);
-  ctx.strokeStyle = "#800000"; ctx.lineWidth = 3;
-  ctx.strokeRect(28, 40, 72, 80);
+  const dist = getDistanceMeters(lastStreetCoord.lat, lastStreetCoord.lng, userLat, userLng);
 
-  return new THREE.CanvasTexture(c);
-}
+  if (dist >= MOVE_UPDATE_THRESHOLD) {
+    isFetchingStreet = true;
+    document.getElementById('radio-instruction').innerText = `「累積走動 ${dist}m！正在載入眼前最新街景……」`;
 
-// 物品點擊判定
-function checkSpriteClick(e) {
-  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-
-  raycaster.setFromCamera(mouse, camera);
-  const hits = raycaster.intersectObject(clueSprite);
-
-  if (hits.length > 0) {
-    const data = hits[0].object.userData;
-    openClue(data);
+    try {
+      const nextId = await fetchNearby360Pano(userLat, userLng);
+      await mlyViewer.moveTo(nextId);
+      lastStreetCoord = { lat: userLat, lng: userLng };
+      document.getElementById('radio-instruction').innerText = "「街景已隨行走更新！繼續尋找線索！」";
+    } catch(e) {}
+    finally {
+      isFetchingStreet = false;
+    }
   }
 }
 
-function openClue(data) {
-  sfx.click();
-  document.getElementById('clue-title').innerText = data.title;
-  document.getElementById('clue-content').innerText = data.text;
+// 視角投影：將發光證物釘在街景特定方位
+function updateClueOverlay() {
+  if (!mlyViewer) return;
+  mlyViewer.getPointOfView().then(pov => {
+    const sec = document.getElementById('app-container');
+    const w = sec.clientWidth, h = sec.clientHeight;
+
+    let diff = clueBearing - (pov.bearing || 0);
+    while (diff < -180) diff += 360;
+    while (diff > 180) diff -= 360;
+
+    const el = document.getElementById('clue-entity');
+    if (Math.abs(diff) < 75 / 2) {
+      const screenX = (w / 2) + (diff / (75 / 2)) * (w / 2);
+      el.style.display = 'block';
+      el.style.left = `${screenX}px`;
+      el.style.top = `${h * 0.52}px`;
+    } else {
+      el.style.display = 'none';
+    }
+  }).catch(() => {});
+}
+
+// 室內模擬位移 (按鍵點擊每次位移約 10 米)
+function simMove(dLng, dLat) {
+  userLat += dLat; userLng += dLng;
+  document.getElementById('stage-coords').innerText = `GPS: ${userLat.toFixed(5)}° N, ${userLng.toFixed(5)}° E`;
+  checkAndFetchNextStreet();
+}
+
+// 距離計算 (公尺)
+function getDistanceMeters(lat1, lon1, lat2, lon2) {
+  const R = 6371e3;
+  const p1 = lat1 * Math.PI / 180, p2 = lat2 * Math.PI / 180;
+  const dp = (lat2 - lat1) * Math.PI / 180, dl = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dp/2)**2 + Math.cos(p1)*Math.cos(p2) * Math.sin(dl/2)**2;
+  return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+}
+
+/* ==================== 彈出式實體地圖 (含衛星切換) ==================== */
+function openRealMap() {
+  document.getElementById('map-modal-location').innerText = `現地經緯：${userLat.toFixed(5)}, ${userLng.toFixed(5)}`;
+  document.getElementById('map-modal-gps').innerText = `已闖過 ${stageLevel - 1} 道結界`;
+  document.getElementById('map-modal-overlay').style.display = 'flex';
+
+  if (!realMap) {
+    realMap = L.map('leaflet-map').setView([userLat, userLng], 17);
+    streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(realMap);
+    satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 });
+
+    const icon = L.divIcon({
+      html: '<div style="width:16px;height:16px;background:#00ff88;border:2px solid #fff;border-radius:50%;box-shadow:0 0 12px #00ff88;"></div>',
+      iconSize: [16, 16], iconAnchor: [8, 8]
+    });
+    currentMarker = L.marker([userLat, userLng], { icon: icon }).addTo(realMap);
+  }
+
+  setTimeout(() => {
+    if (realMap && currentMarker) {
+      realMap.setView([userLat, userLng], 17);
+      currentMarker.setLatLng([userLat, userLng]);
+      currentMarker.bindPopup(`<b>你現在在這裡</b><br>${userLat.toFixed(5)}, ${userLng.toFixed(5)}`).openPopup();
+      realMap.invalidateSize();
+    }
+  }, 120);
+}
+
+function closeRealMap() {
+  document.getElementById('map-modal-overlay').style.display = 'none';
+}
+
+function toggleMapLayer() {
+  if (!realMap) return;
+  const btn = document.getElementById('btn-layer-toggle');
+  if (!isSatellite) {
+    realMap.removeLayer(streetLayer); realMap.addLayer(satelliteLayer);
+    isSatellite = true; btn.classList.add('satellite-mode'); btn.innerText = "🗺️ 切換為道路地圖";
+  } else {
+    realMap.removeLayer(satelliteLayer); realMap.addLayer(streetLayer);
+    isSatellite = false; btn.classList.remove('satellite-mode'); btn.innerText = "🛰️ 切換為衛星空照圖";
+  }
+}
+
+/* ==================== 證物與密碼鎖 ==================== */
+function openClueModal() {
+  document.getElementById('clue-title').innerText = currentQuest.clueTitle;
+  document.getElementById('clue-content').innerText = currentQuest.clueText;
   document.getElementById('clue-modal').style.display = 'flex';
-
-  if (!inventory.includes(data.name)) {
-    inventory.push(data.name);
-    document.getElementById('inv-display').innerText = `道具: ${inventory.join(', ')}`;
-  }
 }
-
 function closeClueModal() {
   document.getElementById('clue-modal').style.display = 'none';
 }
 
-/* ==================== 密碼鎖與通關判定 ==================== */
 function openKeypad() {
-  sfx.click();
-  currentPasscodeAttempt = "";
+  passcodeBuffer = "";
   document.getElementById('keypad-code').innerText = "----";
   document.getElementById('keypad-modal').style.display = 'flex';
 }
 function closeKeypad() {
   document.getElementById('keypad-modal').style.display = 'none';
 }
-function pressKey(num) {
-  sfx.click();
-  if (currentPasscodeAttempt.length < 4) {
-    currentPasscodeAttempt += num;
-    document.getElementById('keypad-code').innerText = currentPasscodeAttempt.padEnd(4, '-');
+function pressKey(n) {
+  if (passcodeBuffer.length < 4) {
+    passcodeBuffer += n;
+    document.getElementById('keypad-code').innerText = passcodeBuffer.padEnd(4, '-');
   }
 }
 function clearKeypad() {
-  sfx.click();
-  currentPasscodeAttempt = "";
+  passcodeBuffer = "";
   document.getElementById('keypad-code').innerText = "----";
 }
 function submitPasscode() {
-  const currentStage = STAGES[currentStageIdx];
-  if (currentPasscodeAttempt === currentStage.passcode) {
-    sfx.doorOpen();
+  if (passcodeBuffer === currentQuest.passcode) {
     closeKeypad();
-    alert(`【通道解鎖成功！】結界開啟！你已逃離【${currentStage.title}】！`);
-
-    // 前進至下一關
-    if (currentStageIdx + 1 < STAGES.length) {
-      loadStage(currentStageIdx + 1);
-    } else {
-      alert("🎉【大逃殺生還！】你已成功解開全部 4 大密室結界，安全重返人間！");
-    }
+    alert(`🎉【解鎖成功！】你破除了第 ${stageLevel} 關結界！邁向下一處街道！`);
+    stageLevel++;
+    generateQuestForCurrentLocation();
   } else {
-    sfx.error();
-    alert("【密碼錯誤！】警報響起，身邊的陰氣更加濃烈了！請重新檢視地上線索！");
+    alert("【密碼錯誤！】結界反震！請轉身尋找線索！");
     clearKeypad();
   }
 }
 
-// 🌙 夜視鏡開關
 function toggleNightVision() {
   isNightVision = !isNightVision;
-  const nvgLayer = document.getElementById('night-vision-layer');
+  const mly = document.getElementById('mly');
   const btn = document.getElementById('nvg-btn');
-  nvgLayer.style.display = isNightVision ? 'block' : 'none';
+  mly.classList.toggle('night-vision-on', isNightVision);
   btn.classList.toggle('active', isNightVision);
-  sfx.click();
-}
-
-function animate() {
-  requestAnimationFrame(animate);
-
-  lat = Math.max(-85, Math.min(85, lat));
-  phi = THREE.MathUtils.degToRad(90 - lat);
-  theta = THREE.MathUtils.degToRad(lon);
-
-  camera.target.x = 500 * Math.sin(phi) * Math.cos(theta);
-  camera.target.y = 500 * Math.cos(phi);
-  camera.target.z = 500 * Math.sin(phi) * Math.sin(theta);
-  camera.lookAt(camera.target);
-
-  // 物品金光微幅呼吸
-  if (clueSprite) {
-    const pulse = 1.0 + Math.sin(Date.now() * 0.005) * 0.1;
-    clueSprite.scale.set(40 * pulse, 48 * pulse, 1);
-  }
-
-  renderer.render(scene, camera);
 }
 </script>
 </body>
