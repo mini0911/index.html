@@ -2,670 +2,630 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>晚安，請熄燈 - Goodnight, Lights Out</title>
+<title>【靜安公寓404室】真人實境線上密室逃脫</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
   body {
-    background-color: #050505;
-    color: #bbb;
-    font-family: "Courier New", Courier, monospace, "Microsoft JhengHei";
+    background-color: #080808;
+    color: #c0c0c0;
+    font-family: "Noto Sans TC", "Courier New", monospace;
     display: flex;
-    flex-direction: column;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     min-height: 100vh;
     overflow: hidden;
   }
-  #game-container {
+
+  /* 密室逃脫控制台外框 */
+  #escape-room-rig {
     position: relative;
-    width: 800px;
-    height: 500px;
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.95), 0 0 5px rgba(255, 0, 0, 0.2);
-    border: 2px solid #222;
-    background: #000;
+    width: 960px;
+    height: 600px;
+    background: #111;
+    border: 4px solid #2a2a2a;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.9), inset 0 0 100px rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
   }
-  canvas {
+
+  /* 頂部逃脫倒數計時與狀態 */
+  .escape-header {
+    height: 48px;
+    background: #181818;
+    border-bottom: 2px solid #222;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    font-size: 14px;
+    letter-spacing: 2px;
+  }
+  .timer { color: #ff3333; font-weight: bold; font-size: 20px; text-shadow: 0 0 8px #ff0000; }
+
+  /* 主視角舞台（密室主畫面） */
+  #viewport {
+    flex: 1;
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    overflow: hidden;
+    transition: filter 0.3s;
+  }
+  /* 視角背景（使用高質感程式繪製擬真密室，無須外部圖檔） */
+  .scene-canvas {
     width: 100%;
     height: 100%;
     display: block;
-    image-rendering: pixelated;
   }
-  /* CRT 濾鏡掃描線與暗角 */
-  #crt-overlay {
+
+  /* 密室熱點（可點擊搜查的真實物品） */
+  .hotspot {
+    position: absolute;
+    border: 1px dashed rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.03);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .hotspot:hover {
+    border-color: rgba(255, 80, 80, 0.8);
+    background: rgba(255, 0, 0, 0.1);
+  }
+
+  /* 監視器 VHS 濾鏡與掃描線 */
+  .vhs-scanlines {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%),
-                radial-gradient(circle, transparent 60%, rgba(0,0,0,0.85) 100%);
-    background-size: 100% 4px, 100% 100%;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.4) 50%);
+    background-size: 100% 4px;
     pointer-events: none;
   }
-  #ui-layer {
+  .vhs-tag {
     position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    pointer-events: none;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 16px;
-    color: #eee;
-    text-shadow: 1px 1px 2px #000;
-  }
-  .hud-top {
-    display: flex;
-    justify-content: space-between;
-    font-size: 14px;
-    letter-spacing: 1px;
-  }
-  .hud-bottom {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  #subtitle {
-    text-align: center;
-    font-size: 16px;
-    min-height: 24px;
-    color: #ffddaa;
-    text-shadow: 0 0 4px #000, 0 0 8px rgba(255, 150, 50, 0.4);
-    background: rgba(0, 0, 0, 0.5);
-    padding: 6px 12px;
-    border-radius: 4px;
-    align-self: center;
-  }
-  #inventory-bar {
+    top: 15px; left: 20px;
+    color: #ff3b30;
     font-size: 13px;
-    color: #88aacc;
-    background: rgba(10, 10, 10, 0.7);
-    padding: 4px 10px;
-    border-left: 3px solid #ff4444;
-  }
-  #crosshair {
-    position: absolute;
-    top: 50%; left: 50%;
-    width: 6px; height: 6px;
-    background: rgba(255, 255, 255, 0.4);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
+    font-weight: bold;
+    letter-spacing: 2px;
     pointer-events: none;
+    text-shadow: 0 0 4px #ff0000;
   }
-  #prompt {
-    position: absolute;
-    top: 55%; left: 50%;
-    transform: translate(-50%, 0);
-    color: #ffffff;
-    font-size: 14px;
-    background: rgba(0,0,0,0.7);
-    padding: 4px 8px;
-    border: 1px solid #444;
-    display: none;
+
+  /* 底部道具欄與對講機 */
+  .escape-bottom {
+    height: 120px;
+    background: #141414;
+    border-top: 2px solid #222;
+    display: flex;
   }
-  /* 互動對話窗 / 謎題介面 */
-  #modal {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    background: #111;
-    border: 2px solid #553333;
-    padding: 20px;
-    color: #ddd;
-    display: none;
-    pointer-events: auto;
-    z-index: 100;
-    max-width: 420px;
-    width: 90%;
-    box-shadow: 0 0 20px #000;
+  .inventory-tray {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 20px;
+    background: #101010;
   }
-  #modal h3 { color: #ff5555; margin-bottom: 12px; font-size: 16px; }
-  #modal p { font-size: 13px; margin-bottom: 14px; line-height: 1.5; color: #bbb; }
-  #modal input {
-    background: #222; border: 1px solid #555; color: #fff;
-    padding: 6px; width: 100%; font-family: inherit; margin-bottom: 10px;
-  }
-  #modal button {
-    background: #331111; border: 1px solid #883333; color: #eee;
-    padding: 6px 12px; cursor: pointer; font-family: inherit; margin-right: 8px;
-  }
-  #modal button:hover { background: #662222; }
-  #start-screen {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: #000;
+  .inv-slot {
+    width: 70px;
+    height: 70px;
+    background: #1c1c1c;
+    border: 2px solid #333;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    z-index: 200;
     cursor: pointer;
-    color: #999;
+    font-size: 11px;
+    color: #aaa;
+    transition: 0.2s;
+    text-align: center;
+    padding: 4px;
   }
-  #start-screen h1 { color: #cc2222; font-size: 32px; letter-spacing: 4px; margin-bottom: 16px; text-shadow: 0 0 10px #ff0000; }
-  #start-screen p { font-size: 14px; margin-bottom: 8px; }
+  .inv-slot.active { border-color: #ff4444; color: #fff; background: #2b1818; }
+  .inv-slot:hover { border-color: #666; }
+
+  /* 真人無線對講機模組 */
+  .radio-module {
+    width: 320px;
+    background: #191b1d;
+    border-left: 2px solid #282828;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .radio-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #ff9900;
+  }
+  .radio-dialogue {
+    font-size: 12px;
+    line-height: 1.4;
+    color: #99ff99;
+    background: #0d120d;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #1a331a;
+    height: 52px;
+    overflow-y: auto;
+  }
+  .radio-btn {
+    align-self: flex-end;
+    background: #2a2015;
+    border: 1px solid #664422;
+    color: #ffbb66;
+    padding: 3px 10px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .radio-btn:hover { background: #443015; }
+
+  /* 道具檢視 / 特寫對話窗（真人密室特有的雙擊放大檢視道具） */
+  #inspect-modal {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 520px;
+    background: #181818;
+    border: 2px solid #444;
+    box-shadow: 0 0 50px #000;
+    padding: 24px;
+    display: none;
+    z-index: 100;
+  }
+  #inspect-modal h3 { color: #ff4444; margin-bottom: 12px; font-size: 16px; letter-spacing: 1px; }
+  #inspect-modal p { font-size: 13px; line-height: 1.6; color: #bbb; margin-bottom: 16px; }
+  .code-input {
+    background: #0a0a0a; border: 1px solid #555; color: #fff;
+    padding: 8px; font-size: 16px; letter-spacing: 4px; text-align: center; width: 140px;
+    margin-right: 10px;
+  }
+  .action-btn {
+    background: #331111; border: 1px solid #772222; color: #eee;
+    padding: 8px 16px; cursor: pointer; font-size: 13px;
+  }
+  .action-btn:hover { background: #551a1a; }
+
+  /* 轉場視角導航按鈕（向左看、向右看） */
+  .nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-size: 24px;
+    width: 44px;
+    height: 60px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: 0.2s;
+  }
+  .nav-btn:hover { background: rgba(255, 0, 0, 0.5); border-color: #ff3333; }
+  #btn-left { left: 10px; }
+  #btn-right { right: 10px; }
+
+  #intro-curtain {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: #050505;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+  }
+  #intro-curtain h1 { color: #dd2222; font-size: 32px; letter-spacing: 4px; margin-bottom: 16px; }
+  #intro-curtain p { color: #888; font-size: 14px; margin-bottom: 8px; }
 </style>
 </head>
 <body>
 
-<div id="game-container">
-  <canvas id="gameCanvas" width="400" height="250"></canvas>
-  <div id="crt-overlay"></div>
-  <div id="crosshair"></div>
-  <div id="prompt">[E] 檢查</div>
-
-  <div id="ui-layer">
-    <div class="hud-top">
-      <div>場景: <span id="act-name">第一幕: 密閉房間 (404室)</span></div>
-      <div>理智: <span id="sanity-val">100%</span> | 光源: <span id="light-val">無</span></div>
-    </div>
-    <div class="hud-bottom">
-      <div id="subtitle"></div>
-      <div id="inventory-bar">物品欄: 空</div>
+<div id="escape-room-rig">
+  <!-- 頂部逃脫倒數 -->
+  <div class="escape-header">
+    <div>實境連線狀態: <span style="color: #00ff66;">LIVE CAM-04</span></div>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span>密室強制封閉倒數:</span>
+      <span class="timer" id="timer">45:00</span>
     </div>
   </div>
 
-  <div id="modal">
-    <h3 id="modal-title">標題</h3>
-    <p id="modal-desc">內容</p>
-    <div id="modal-interactive"></div>
-    <div style="text-align: right; margin-top: 10px;">
-      <button id="modal-close-btn" onclick="closeModal()">離開</button>
+  <!-- 密室監控主畫面 -->
+  <div id="viewport">
+    <canvas id="viewCanvas" class="scene-canvas" width="960" height="432"></canvas>
+    <div class="vhs-scanlines"></div>
+    <div class="vhs-tag">● REC 03:14:02 AM [404套房]</div>
+
+    <!-- 視角切換箭頭 -->
+    <button class="nav-btn" id="btn-left" onclick="rotateRoom(-1)">&#10094;</button>
+    <button class="nav-btn" id="btn-right" onclick="rotateRoom(1)">&#10095;</button>
+
+    <!-- 可互動熱點容器 -->
+    <div id="hotspot-container"></div>
+  </div>
+
+  <!-- 底部物品欄與真人求救對講機 -->
+  <div class="escape-bottom">
+    <div class="inventory-tray" id="inventory">
+      <!-- 物品動態加入 -->
+    </div>
+    <div class="radio-module">
+      <div class="radio-header">
+        <span>對講頻道: CH-3 (阿健 - 403室)</span>
+        <span id="radio-status">連線中</span>
+      </div>
+      <div class="radio-dialogue" id="radio-text">
+        「喂？聽得到嗎？！我被反鎖在 403……剛才走廊有東西走過去了，你那邊門開得了嗎？」
+      </div>
+      <button class="radio-btn" onclick="askRadioHint()">[回覆對講機 / 詢問線索]</button>
     </div>
   </div>
 
-  <div id="start-screen" onclick="startGame()">
-    <h1>晚安，請熄燈</h1>
-    <p>—— 心理恐怖 / 探索解謎 ——</p>
-    <p style="color: #666; margin-top: 20px;">[ 點擊畫面進入大樓並啟動音效 ]</p>
-    <p style="color: #444; font-size: 12px; margin-top: 10px;">操作: W/A/S/D 移動，Q/E 轉向，[SPACE] 互動/檢查，[F] 切換光源</p>
+  <!-- 道具特寫與密碼鎖彈窗 -->
+  <div id="inspect-modal">
+    <h3 id="modal-title">物件名稱</h3>
+    <p id="modal-desc">說明內容</p>
+    <div id="modal-content"></div>
+    <div style="text-align: right; margin-top: 14px;">
+      <button class="action-btn" onclick="closeInspect()">放回原處</button>
+    </div>
+  </div>
+
+  <!-- 開場布幕 -->
+  <div id="intro-curtain" onclick="beginEscape()">
+    <h1>靜安公寓：逃離 404 室</h1>
+    <p>—— 真人視角線上沉浸式密室逃脫 ——</p>
+    <p style="margin-top: 24px; color: #ff5555;">[ 點擊戴上監聽耳機並啟動即時訊號 ]</p>
   </div>
 </div>
 
 <script>
-/* ==================== 音效引擎 (Web Audio API) ==================== */
-class SoundEngine {
-  constructor() {
-    this.ctx = null;
-    this.droneGain = null;
-    this.heartbeatOsc = null;
-  }
+/* ==================== 恐怖環境音效合成 (Web Audio) ==================== */
+class HorrorAudio {
+  constructor() { this.ctx = null; }
   init() {
     if (this.ctx) return;
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    this.ctx = new AudioContext();
-
-    // 低頻環境無人機聲 (35Hz Drone)
+    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    // 沉悶金屬低鳴
     const osc = this.ctx.createOscillator();
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(36, this.ctx.currentTime);
-    const filter = this.ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(80, this.ctx.currentTime);
-    this.droneGain = this.ctx.createGain();
-    this.droneGain.gain.setValueAtTime(0.2, this.ctx.currentTime);
-    osc.connect(filter);
-    filter.connect(this.droneGain);
-    this.droneGain.connect(this.ctx.destination);
+    const gain = this.ctx.createGain();
+    osc.frequency.setValueAtTime(42, this.ctx.currentTime);
+    gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+    osc.connect(gain); gain.connect(this.ctx.destination);
     osc.start();
   }
-  playThud() {
+  click() {
     if (!this.ctx) return;
     const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-    osc.frequency.setValueAtTime(90, this.ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(20, this.ctx.currentTime + 0.4);
-    gain.gain.setValueAtTime(0.8, this.ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.4);
-    osc.connect(gain); gain.connect(this.ctx.destination);
-    osc.start(); osc.stop(this.ctx.currentTime + 0.4);
+    const g = this.ctx.createGain();
+    osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+    g.gain.setValueAtTime(0.2, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
+    osc.connect(g); g.connect(this.ctx.destination);
+    osc.start(); osc.stop(this.ctx.currentTime + 0.05);
   }
-  playLighter() {
-    if (!this.ctx) return;
-    // 摩擦與喀噠聲
-    const bufferSize = this.ctx.sampleRate * 0.08;
-    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-    const noise = this.ctx.createBufferSource();
-    noise.buffer = buffer;
-    const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
-    noise.connect(gain); gain.connect(this.ctx.destination);
-    noise.start();
-  }
-  playStatic() {
-    if (!this.ctx) return;
-    const bufferSize = this.ctx.sampleRate * 0.2;
-    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 0.4 - 0.2;
-    const noise = this.ctx.createBufferSource();
-    noise.buffer = buffer;
-    noise.connect(this.ctx.destination);
-    noise.start();
-  }
-  playScream() {
+  unlock() {
     if (!this.ctx) return;
     const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(220, this.ctx.currentTime);
-    osc.frequency.linearRampToValueAtTime(80, this.ctx.currentTime + 0.8);
-    gain.gain.setValueAtTime(0.6, this.ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.8);
-    osc.connect(gain); gain.connect(this.ctx.destination);
-    osc.start(); osc.stop(this.ctx.currentTime + 0.8);
+    const g = this.ctx.createGain();
+    osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(600, this.ctx.currentTime + 0.2);
+    g.gain.setValueAtTime(0.3, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+    osc.connect(g); g.connect(this.ctx.destination);
+    osc.start(); osc.stop(this.ctx.currentTime + 0.25);
+  }
+  staticNoise() {
+    if (!this.ctx) return;
+    const buf = this.ctx.createBuffer(1, this.ctx.sampleRate * 0.15, this.ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < buf.length; i++) data[i] = Math.random() * 0.3 - 0.15;
+    const src = this.ctx.createBufferSource();
+    src.buffer = buf;
+    src.connect(this.ctx.destination);
+    src.start();
   }
 }
-const sfx = new SoundEngine();
+const sfx = new HorrorAudio();
 
-/* ==================== 地圖與狀態系統 ==================== */
-// 地圖代碼: 1=外牆, 0=空地, 2=衣櫃, 3=書桌, 4=衛浴門/洗手台, 5=404大門, 6=配電箱, 7=管理室門, 8=異空間門
-const MAP_ACT1 = [
-  [1,1,1,1,1,1,1,1],
-  [1,0,0,0,0,0,4,1],
-  [1,0,3,0,0,0,0,1],
-  [1,0,0,0,0,0,0,1],
-  [1,2,0,0,0,0,5,1],
-  [1,1,1,1,1,1,1,1]
-];
-
-// 第二幕：無限走廊與管理室
-const MAP_ACT2 = [
-  [1,1,1,1,1,1,1,1,1,1,1,1],
-  [1,0,0,0,0,1,0,0,0,0,7,1],
-  [1,0,1,1,0,1,0,1,1,1,0,1],
-  [1,0,1,6,0,0,0,0,8,1,0,1],
-  [1,0,1,1,1,1,1,1,0,1,0,1],
-  [1,0,0,0,0,0,0,0,0,0,0,1],
-  [1,1,1,1,1,1,1,1,1,1,1,1]
-];
-
-let currentAct = 1;
-let map = MAP_ACT1;
-let mapW = 8, mapH = 6;
-
-// 玩家屬性
-let px = 2.5, py = 2.5;
-let pa = 0; // 朝向角
-let fov = Math.PI / 3;
-let sanity = 100;
-let hasLighter = false;
-let hasFlashlight = false;
-let activeLight = "none"; // "none" | "lighter" | "flashlight"
-let inventory = [];
-
-// 遊戲狀態旗標
-let flagCabinetTapeCut = false;
-let flagHasCutter = false;
-let flagDeskUnlocked = false;
-let flagDoorUnlocked = false;
-let flagAnomalyPassed = false;
-let flagPowerRestored = false;
-let flagInOffice = false;
-
-// 怪物實體 (第二幕)
-let patrol = { x: 9.5, y: 1.5, active: false, alert: false };
-
-/* ==================== 射線投影 3D 渲染器 ==================== */
-const canvas = document.getElementById('gameCanvas');
+/* ==================== 密室四大方位視角與寫實場景渲染 ==================== */
+// 4個視角：0:北(工作書桌與全家福), 1:東(封閉衣櫃), 2:南(防盜玄關鐵門), 3:西(衛浴暗門與梳妝鏡)
+let currentView = 0;
+const canvas = document.getElementById('viewCanvas');
 const ctx = canvas.getContext('2d');
-const cW = canvas.width;
-const cH = canvas.height;
 
-function castRays() {
-  ctx.fillStyle = "#020202";
-  ctx.fillRect(0, 0, cW, cH / 2);
-  ctx.fillStyle = "#0c0a0a";
-  ctx.fillRect(0, cH / 2, cW, cH / 2);
+function renderScene() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  const numRays = cW;
-  const halfFov = fov / 2;
-  const angleStep = fov / numRays;
+  // 繪製寫實密室的牆壁與陰影光影
+  const grad = ctx.createRadialGradient(480, 216, 50, 480, 216, 450);
+  grad.addColorStop(0, '#2b2622');
+  grad.addColorStop(1, '#050404');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  let interactTarget = null;
+  // 地板
+  ctx.fillStyle = '#14110f';
+  ctx.beginPath();
+  ctx.moveTo(0, 340); ctx.lineTo(960, 340); ctx.lineTo(960, 432); ctx.lineTo(0, 432);
+  ctx.fill();
 
-  for (let i = 0; i < numRays; i++) {
-    const rayAngle = pa - halfFov + i * angleStep;
-    let dist = 0;
-    let hit = 0;
-    let hitType = 0;
-    const cosA = Math.cos(rayAngle);
-    const sinA = Math.sin(rayAngle);
-
-    while (!hit && dist < 12) {
-      dist += 0.05;
-      const checkX = Math.floor(px + cosA * dist);
-      const checkY = Math.floor(py + sinA * dist);
-
-      if (checkX < 0 || checkX >= mapW || checkY < 0 || checkY >= mapH) {
-        hit = 1; dist = 12; break;
-      }
-      hitType = map[checkY][checkX];
-      if (hitType > 0) {
-        hit = 1;
-        if (i === Math.floor(numRays / 2) && dist < 2.2) {
-          interactTarget = { type: hitType, x: checkX, y: checkY };
-        }
-      }
+  // 繪製不同方位的密室道具實體
+  if (currentView === 0) {
+    // 【北面 - 工作區】
+    // 書桌
+    ctx.fillStyle = '#221a15';
+    ctx.fillRect(280, 200, 400, 140);
+    // 桌面發黃便條紙
+    ctx.fillStyle = '#dcd6b2';
+    ctx.fillRect(340, 215, 55, 40);
+    // 帶鎖的鐵製公文箱
+    ctx.fillStyle = '#3a3d40';
+    ctx.fillRect(520, 210, 110, 60);
+    // 牆上的舊照片相框
+    ctx.fillStyle = '#382513';
+    ctx.fillRect(430, 70, 100, 80);
+    ctx.fillStyle = '#6e6358';
+    ctx.fillRect(440, 80, 80, 60);
+  } else if (currentView === 1) {
+    // 【東面 - 封死的高大立式衣櫃】
+    ctx.fillStyle = '#2d1b10';
+    ctx.fillRect(320, 60, 320, 280);
+    // 封條十字膠帶
+    ctx.strokeStyle = state.cabinetOpened ? 'rgba(0,0,0,0)' : '#b58b4c';
+    ctx.lineWidth = 14;
+    ctx.beginPath();
+    ctx.moveTo(330, 70); ctx.lineTo(630, 330);
+    ctx.moveTo(630, 70); ctx.lineTo(330, 330);
+    ctx.stroke();
+    if (state.cabinetOpened) {
+      // 敞開的黑洞與衣物
+      ctx.fillStyle = '#0a0505';
+      ctx.fillRect(340, 80, 280, 250);
+      ctx.fillStyle = '#882222';
+      ctx.fillText("『快走』", 450, 180);
     }
-
-    // 魚眼修正
-    const correctedDist = dist * Math.cos(rayAngle - pa);
-    const wallH = Math.min(cH, (cH / correctedDist));
-
-    // 計算光照強度
-    let lightRange = (activeLight === "flashlight") ? 8.5 : (activeLight === "lighter" ? 3.5 : 1.2);
-    let intensity = Math.max(0, 1 - (correctedDist / lightRange));
-
-    // 理智過低時視覺扭曲
-    if (sanity < 40) intensity += (Math.random() * 0.1 - 0.05);
-
-    // 依物體類型著色
-    let baseColor = [30, 30, 35]; // 普通水泥牆
-    if (hitType === 2) baseColor = [60, 30, 20]; // 衣櫃
-    else if (hitType === 3) baseColor = [50, 45, 30]; // 書桌
-    else if (hitType === 4) baseColor = [30, 50, 55]; // 浴室門
-    else if (hitType === 5 || hitType === 7) baseColor = [70, 20, 20]; // 關鍵大門
-    else if (hitType === 6) baseColor = [60, 60, 20]; // 配電箱
-    else if (hitType === 8) baseColor = [40, 20, 50]; // 異變走廊
-
-    const r = Math.floor(baseColor[0] * intensity);
-    const g = Math.floor(baseColor[1] * intensity);
-    const b = Math.floor(baseColor[2] * intensity);
-
-    ctx.fillStyle = `rgb(${r},${g},${b})`;
-    ctx.fillRect(i, (cH - wallH) / 2, 1, wallH);
+  } else if (currentView === 2) {
+    // 【南面 - 玄關重型鐵門】
+    ctx.fillStyle = '#1c2024';
+    ctx.fillRect(340, 50, 280, 290);
+    // 門鎖圓形輪盤
+    ctx.fillStyle = '#7a7d82';
+    ctx.beginPath();
+    ctx.arc(580, 200, 18, 0, Math.PI * 2);
+    ctx.fill();
+    // 門底縫隙透出詭異紅光
+    ctx.fillStyle = '#ff1100';
+    ctx.fillRect(340, 338, 280, 4);
+  } else if (currentView === 3) {
+    // 【西面 - 梳妝鏡與水槽】
+    ctx.fillStyle = '#181b1c';
+    ctx.fillRect(360, 180, 240, 160);
+    // 大梳妝鏡
+    ctx.fillStyle = '#3a444a';
+    ctx.fillRect(380, 40, 200, 120);
+    // 鏡中的血字水氣
+    ctx.fillStyle = '#aa3333';
+    ctx.font = '16px monospace';
+    ctx.fillText(state.steamRevealed ? "【 0 3 : 1 4 】" : "...", 420, 105);
   }
 
-  // 渲染巡邏員怪物 (Sprite)
-  if (currentAct === 2 && patrol.active) {
-    renderMonster();
-  }
-
-  // 互動提示判定
-  const promptEl = document.getElementById('prompt');
-  if (interactTarget && interactTarget.type > 1) {
-    promptEl.style.display = 'block';
-    currentInteract = interactTarget;
-  } else {
-    promptEl.style.display = 'none';
-    currentInteract = null;
-  }
+  updateHotspots();
 }
 
-function renderMonster() {
-  const dx = patrol.x - px;
-  const dy = patrol.y - py;
-  const dist = Math.hypot(dx, dy);
-  let spriteAngle = Math.atan2(dy, dx) - pa;
-  while (spriteAngle < -Math.PI) spriteAngle += 2 * Math.PI;
-  while (spriteAngle > Math.PI) spriteAngle -= 2 * Math.PI;
+/* ==================== 密室解謎邏輯與互動熱點 ==================== */
+const state = {
+  cabinetOpened: false,
+  deskBoxOpened: false,
+  steamRevealed: false,
+  doorUnlocked: false,
+  inventory: []
+};
 
-  if (Math.abs(spriteAngle) < fov) {
-    const screenX = (cW / 2) + Math.tan(spriteAngle) * (cW / 2);
-    const mHeight = Math.min(cH, (cH / dist));
-    const mWidth = mHeight * 0.4;
-    const lightDist = (activeLight === "flashlight") ? 9 : 3;
-    const alpha = Math.max(0.1, 1 - (dist / lightDist));
+function updateHotspots() {
+  const container = document.getElementById('hotspot-container');
+  container.innerHTML = '';
 
-    ctx.fillStyle = `rgba(180, 20, 20, ${alpha})`;
-    ctx.fillRect(screenX - mWidth / 2, (cH - mHeight) / 2, mWidth, mHeight);
-
-    // 蒼白無臉特徵
-    ctx.fillStyle = `rgba(220, 220, 220, ${alpha})`;
-    ctx.fillRect(screenX - mWidth / 4, (cH - mHeight) / 2 + mHeight * 0.1, mWidth / 2, mHeight * 0.25);
-  }
-}
-
-/* ==================== 互動與謎題處理 ==================== */
-let currentInteract = null;
-
-function interact() {
-  if (!currentInteract) return;
-  const t = currentInteract.type;
-
-  if (currentAct === 1) {
-    if (t === 3) {
-      // 書桌
-      if (!hasLighter) {
-        hasLighter = true;
-        activeLight = "lighter";
-        sfx.playLighter();
-        addItem("黃銅打火機");
-        showSubtitle("在書桌抽屜找到了【黃銅打火機】。火苗微弱，但足以驅散身邊的恐懼。");
-      } else if (!flagDeskUnlocked) {
-        openModal("鎖住的密碼鐵盒", "書桌下層有一個4位數轉輪密碼盒，旁邊貼著倒置的水氣印記。", true, "輸入4位密碼...", (val) => {
-          if (val === "7402") {
-            flagDeskUnlocked = true;
-            hasFlashlight = true;
-            addItem("手電筒");
-            addItem("404門鎖芯");
-            closeModal();
-            showSubtitle("密碼正確！喀噠一聲，找到了【手電筒】與脫落的【404門鎖芯】！");
+  if (currentView === 0) {
+    // 便條紙
+    createHotspot(340, 215, 55, 40, () => {
+      openInspect("泛黃的房東便條", "紙條字跡潦草凌亂：<br>『3樓的住戶昨晚把熱水器開了一整夜……整間浴室都是水氣，他在鏡子上寫了什麼？我不敢看。』");
+    });
+    // 相框
+    createHotspot(430, 70, 100, 80, () => {
+      if (!hasItem("美工刀")) {
+        addItem("美工刀", "刀片沾著乾涸膠跡");
+        openInspect("全家福合照", "這張照片裡所有人的臉都被指甲刮爛了……<br>你在相框後方的夾層摸到了一把生鏽的【美工刀】！");
+      } else {
+        openInspect("全家福合照", "被刮爛的相片，背面寫著：『別開衣櫃，裡面根本不是人。』");
+      }
+    });
+    // 密碼公文箱
+    createHotspot(520, 210, 110, 60, () => {
+      if (state.deskBoxOpened) {
+        openInspect("公文箱（已開啟）", "箱內只剩下一張空磁帶。");
+      } else {
+        openCodeInspect("4位數密碼公文箱", "需要四位數字解鎖。金屬鎖孔旁刻著一個微型鬧鐘符號。", (code) => {
+          if (code === "0314") {
+            state.deskBoxOpened = true;
+            sfx.unlock();
+            addItem("黃銅門鎖芯", "沉重的金屬鎖栓");
+            closeInspect();
+            triggerRadio("「喀噠！你開了什麼箱子嗎？！我好像聽見隔壁有金屬聲音……快看裡面有沒有門鑰匙！」");
           } else {
-            showSubtitle("密碼錯誤，毫無反應。");
+            sfx.click();
+            alert("密碼錯誤，鎖頭死緊。");
           }
         });
-      } else {
-        showSubtitle("書桌抽屜已經被搜刮一空。");
       }
-    } else if (t === 4) {
-      // 衛浴間
-      if (!flagHasCutter) {
-        flagHasCutter = true;
-        addItem("美工刀");
-        showSubtitle("鏡子裡的倒影比我慢了一秒。在洗手台底下撿到了【美工刀】。");
-      } else {
-        sfx.playStatic();
-        showSubtitle("浴缸正不斷滴出發黑的水，鏡面上隱約浮現倒寫的水氣數字『7402』。");
-      }
-    } else if (t === 2) {
-      // 衣櫃
-      if (!flagCabinetTapeCut) {
-        if (inventory.includes("美工刀")) {
-          flagCabinetTapeCut = true;
-          sfx.playThud();
-          showSubtitle("用美工刀割開膠帶，衣櫃猛地彈開！深處刻著刮痕，並摸到一台【老式收音機】。");
-          openModal("收音機頻道", "收音機傳來雜音。依據櫃壁4道劃痕提示，轉動旋鈕至正確電台頻道 (提示: 9X.X)：", true, "輸入頻率 (例如 90.0)", (val) => {
-            if (val.trim() === "94.2") {
-              closeModal();
-              sfx.playStatic();
-              showSubtitle("收音機中斷續傳出聲音：『二、零、四、七……你在看我嗎？』");
-            } else {
-              showSubtitle("只有刺耳的白噪音。");
-            }
-          });
+    });
+  } else if (currentView === 1) {
+    // 衣櫃
+    createHotspot(320, 60, 320, 280, () => {
+      if (!state.cabinetOpened) {
+        if (hasItem("美工刀")) {
+          state.cabinetOpened = true;
+          sfx.unlock();
+          sfx.staticNoise();
+          renderScene();
+          openInspect("割開的衣櫃", "你用美工刀劃開厚重膠帶……衣櫃門砰地彈開！裡面全掛著黑色的壽衣，內側用紅色蠟筆狂亂寫著：『快走，它在天井看著你』！");
+          triggerRadio("「喂？！剛才你那邊傳來好大一聲撞擊聲……你還活著嗎？！」");
         } else {
-          sfx.playThud();
-          showSubtitle("衣櫃被厚重的膠帶緊緊封死，裡面不斷發出沉重的敲擊聲……需要利器割開。");
+          sfx.click();
+          openInspect("封死的大立櫃", "衣櫃外被工業封箱膠帶纏了數十圈。裡面正傳出指甲抓撓木板的沙沙聲……徒手撕不開，需要鋒利的切割工具。");
         }
       } else {
-        showSubtitle("衣櫃內掛滿了發霉的大衣，刮痕隱約指向收音機的波段 94.2。");
+        openInspect("空洞的衣櫃", "深處散發濃烈的霉味與檀香味。");
       }
-    } else if (t === 5) {
-      // 404大門
-      if (inventory.includes("404門鎖芯")) {
-        sfx.playThud();
-        showSubtitle("將鎖芯裝回大門，金屬鎖舌滑開！身後大衣櫃猛然彈開，你奪門而出——");
-        setTimeout(startAct2, 1800);
-      } else {
-        showSubtitle("大門把手的鎖芯脫落了，無法從內部開門。必須找到門鎖零件。");
-      }
-    }
-  } else if (currentAct === 2) {
-    if (t === 8) {
-      // 異空間鬼打牆
-      if (!flagAnomalyPassed) {
-        if (activeLight === "none") {
-          flagAnomalyPassed = true;
-          map[3][8] = 0; // 空間打通
-          sfx.playThud();
-          showSubtitle("你在黑暗中屏息站立……喀噠一聲，顛倒的門牌回正，走廊空間重組了！");
+    });
+  } else if (currentView === 2) {
+    // 玄關大門
+    createHotspot(340, 50, 280, 290, () => {
+      if (!state.doorUnlocked) {
+        if (hasItem("黃銅門鎖芯")) {
+          state.doorUnlocked = true;
+          sfx.unlock();
+          openInspect("大門解鎖成功！", "你將黃銅鎖芯塞入把手空槽，用力一扭——『喀嚓』一聲，防盜鎖舌退開！<br><br><span style='color:#00ff88;font-size:15px;'>恭喜逃離 404 室！你推開鐵門，來到了滿是紅光的 4 樓走廊……</span>");
+          document.getElementById('radio-status').innerText = "已會合";
+          triggerRadio("「門開了？！太好了……快出來，我們去管理室找電梯開關！」");
         } else {
-          showSubtitle("門牌寫著上下顛倒的『h0h』。光線似乎讓這個空間陷入了死循環……熄燈試試？");
+          openInspect("玄關重型防盜門", "把手正中央的【鎖芯】被強行拔掉了，留下一個圓形空洞，無法轉動門鎖。必須找到相配的鎖芯裝回去。");
         }
-      }
-    } else if (t === 6) {
-      // 配電箱
-      if (!flagPowerRestored) {
-        openModal("配電箱電壓平衡", "管理室電子鎖需要精確 [110V] 供電。\n目前電閘：A(+70V), B(+50V), C(-30V), D(+40V)。\n請輸入啟動的開關代碼（如 AD 或 BC）：", true, "輸入開關代碼組合", (val) => {
-          if (val.toUpperCase().trim() === "AD" || val.toUpperCase().trim() === "DA") {
-            flagPowerRestored = true;
-            map[1][10] = 0; // 打開管理室路徑
-            patrol.active = true; // 驚動怪物
-            closeModal();
-            sfx.playScream();
-            showSubtitle("電壓平穩在 110V！管理室大門解鎖，但全走廊紅燈閃爍，警報驚醒了無臉巡邏員！快跑！");
-          } else {
-            showSubtitle("電壓不匹配，保險絲跳火花！");
-          }
-        });
       } else {
-        showSubtitle("配電箱已穩定運作中。");
+        openInspect("敞開的走廊", "走廊盡頭有微弱的腳步聲靠近……");
       }
-    } else if (t === 7) {
-      // 管理室大門
-      if (flagPowerRestored) {
-        flagInOffice = true;
-        patrol.active = false;
-        sfx.playThud();
-        openModal("管理室監視器錄影", "衝入管理室並反鎖鐵門！門外傳來狂亂的撞擊與指甲抓刮聲……\n你調出 03:14 監視錄影帶：\n【畫面 1】你看見自己離開 404 室時，背後始終黏著一具四肢著地的扭曲人影。\n【畫面 2】管理員在電梯前反覆狂按地下室『B2』。\n\n恭喜你突破前兩幕！你拿起了通往地下蓄水池的鐵門鑰匙……", false, "", null);
+    });
+  } else if (currentView === 3) {
+    // 梳妝鏡
+    createHotspot(380, 40, 200, 120, () => {
+      if (!state.steamRevealed) {
+        state.steamRevealed = true;
+        sfx.staticNoise();
+        renderScene();
+        openInspect("浴室鏡面", "你打開熱水龍頭，滾燙的蒸氣迅速佈滿鏡面。<br>水氣蒸發間，鏡子上浮現了血紅的時間字跡：【 0 3 : 1 4 】！");
       } else {
-        showSubtitle("管理室配備電子磁吸鎖，目前缺乏電力，牢牢緊閉。");
+        openInspect("浴室鏡面", "鏡子上的血字依然清晰：【 0 3 : 1 4 】。");
       }
-    }
+    });
   }
 }
 
-function startAct2() {
-  currentAct = 2;
-  map = MAP_ACT2;
-  mapW = 12; mapH = 7;
-  px = 1.5; py = 1.5; pa = 0;
-  sanity = 90;
-  document.getElementById('act-name').innerText = "第二幕: 無限長廊 (4樓中庭)";
-  showSubtitle("你踏入昏暗無邊的 4 樓長廊。空氣中瀰漫著濃烈的霉味與水氣。");
+function createHotspot(x, y, w, h, onClick) {
+  const container = document.getElementById('hotspot-container');
+  const d = document.createElement('div');
+  d.className = 'hotspot';
+  // 等比映射至容器寬高百分比
+  d.style.left = (x / 960 * 100) + '%';
+  d.style.top = (y / 432 * 100) + '%';
+  d.style.width = (w / 960 * 100) + '%';
+  d.style.height = (h / 432 * 100) + '%';
+  d.onclick = onClick;
+  container.appendChild(d);
 }
 
-/* ==================== 界面輔助函式 ==================== */
-function showSubtitle(text) {
-  const el = document.getElementById('subtitle');
-  el.innerText = text;
+/* ==================== 物品欄與檢視彈窗 ==================== */
+function addItem(name, desc) {
+  state.inventory.push({ name, desc });
+  renderInventory();
 }
 
-function addItem(name) {
-  inventory.push(name);
-  document.getElementById('inventory-bar').innerText = "物品欄: " + inventory.join(", ");
+function hasItem(name) {
+  return state.inventory.some(i => i.name === name);
 }
 
-function toggleLight() {
-  if (hasFlashlight && activeLight !== "flashlight") {
-    activeLight = "flashlight";
-  } else if (hasLighter && activeLight !== "lighter") {
-    activeLight = "lighter";
-    sfx.playLighter();
-  } else {
-    activeLight = "none";
-  }
-  const names = { "none": "無", "lighter": "打火機", "flashlight": "手電筒" };
-  document.getElementById('light-val').innerText = names[activeLight];
+function renderInventory() {
+  const tray = document.getElementById('inventory');
+  tray.innerHTML = '';
+  state.inventory.forEach(item => {
+    const el = document.createElement('div');
+    el.className = 'inv-slot active';
+    el.innerHTML = `<strong>${item.name}</strong>`;
+    el.onclick = () => {
+      openInspect(item.name, item.desc);
+    };
+    tray.appendChild(el);
+  });
 }
 
-function openModal(title, desc, needInput, placeholder, callback) {
+function openInspect(title, htmlContent) {
+  sfx.click();
   document.getElementById('modal-title').innerText = title;
-  document.getElementById('modal-desc').innerText = desc;
-  const c = document.getElementById('modal-interactive');
-  c.innerHTML = '';
-  if (needInput) {
-    const input = document.createElement('input');
-    input.id = 'modal-input';
-    input.placeholder = placeholder;
-    const btn = document.createElement('button');
-    btn.innerText = "確認";
-    btn.onclick = () => callback(input.value);
-    c.appendChild(input);
-    c.appendChild(btn);
-  }
-  document.getElementById('modal').style.display = 'block';
+  document.getElementById('modal-desc').innerHTML = htmlContent;
+  document.getElementById('modal-content').innerHTML = '';
+  document.getElementById('inspect-modal').style.display = 'block';
 }
 
-function closeModal() {
-  document.getElementById('modal').style.display = 'none';
+function openCodeInspect(title, htmlContent, onConfirm) {
+  openInspect(title, htmlContent);
+  const c = document.getElementById('modal-content');
+  const input = document.createElement('input');
+  input.className = 'code-input';
+  input.maxLength = 4;
+  input.placeholder = "----";
+  const btn = document.createElement('button');
+  btn.className = 'action-btn';
+  btn.innerText = "轉動鎖盤";
+  btn.onclick = () => onConfirm(input.value.trim());
+  c.appendChild(input);
+  c.appendChild(btn);
 }
 
-/* ==================== 遊戲主循環與輸入 ==================== */
-const keys = {};
-window.addEventListener('keydown', e => {
-  keys[e.key.toLowerCase()] = true;
-  if (e.key.toLowerCase() === 'e' || e.code === 'Space') interact();
-  if (e.key.toLowerCase() === 'f') toggleLight();
-});
-window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
-
-function startGame() {
-  document.getElementById('start-screen').style.display = 'none';
-  sfx.init();
-  showSubtitle("凌晨 00:00……衣櫃深處傳來沉悶的敲門聲。我必須離開這裡。");
-  lastTime = performance.now();
-  requestAnimationFrame(gameLoop);
+function closeInspect() {
+  document.getElementById('inspect-modal').style.display = 'none';
 }
 
-let lastTime = 0;
-function update(dt) {
-  // 旋轉
-  const rotSpeed = 2.2 * dt;
-  if (keys['q'] || keys['arrowleft']) pa -= rotSpeed;
-  if (keys['e'] || keys['arrowright']) pa += rotSpeed;
+/* ==================== 對講機與視角旋轉 ==================== */
+function rotateRoom(dir) {
+  sfx.click();
+  currentView = (currentView + dir + 4) % 4;
+  renderScene();
+}
 
-  // 移動
-  const moveSpeed = 2.2 * dt;
-  let dx = 0, dy = 0;
-  if (keys['w'] || keys['arrowup']) { dx += Math.cos(pa) * moveSpeed; dy += Math.sin(pa) * moveSpeed; }
-  if (keys['s'] || keys['arrowdown']) { dx -= Math.cos(pa) * moveSpeed; dy -= Math.sin(pa) * moveSpeed; }
-  if (keys['a']) { dx += Math.sin(pa) * moveSpeed; dy -= Math.cos(pa) * moveSpeed; }
-  if (keys['d']) { dx -= Math.sin(pa) * moveSpeed; dy += Math.cos(pa) * moveSpeed; }
+function triggerRadio(msg) {
+  sfx.staticNoise();
+  const box = document.getElementById('radio-text');
+  box.innerText = msg;
+}
 
-  // 簡易碰撞體積
-  const nextX = px + dx;
-  const nextY = py + dy;
-  if (map[Math.floor(py)][Math.floor(nextX)] === 0) px = nextX;
-  if (map[Math.floor(nextY)][Math.floor(px)] === 0) py = nextY;
-
-  // 理智值消耗機制
-  if (activeLight === "none") {
-    sanity = Math.max(10, sanity - dt * 2.5);
+function askRadioHint() {
+  sfx.click();
+  if (!hasItem("美工刀")) {
+    triggerRadio("「阿健：『你看看房間裡的相框或書架夾層……我記得房東常把工具藏在那後面！』」");
+  } else if (!state.cabinetOpened) {
+    triggerRadio("「阿健：『你有利器了吧？快去把那衣櫃上的封條割開看看！那裡面一定有線索！』」");
+  } else if (!state.steamRevealed) {
+    triggerRadio("「阿健：『你找找密碼……便條紙不是說浴室有水氣嗎？去把熱水打開看看鏡子！』」");
+  } else if (!state.doorUnlocked) {
+    triggerRadio("「阿健：『公文箱開了嗎？鏡子上的時間就是密碼！把鎖芯拿去大門插上就能出來了！』」");
   } else {
-    sanity = Math.min(100, sanity + dt * 0.8);
-  }
-  document.getElementById('sanity-val').innerText = Math.floor(sanity) + "%";
-
-  // 巡邏員 AI 行為 (第二幕追逐)
-  if (currentAct === 2 && patrol.active && !flagInOffice) {
-    const pdx = px - patrol.x;
-    const pdy = py - patrol.y;
-    const pdist = Math.hypot(pdx, pdy);
-
-    // 怪物向玩家逼近
-    patrol.x += (pdx / pdist) * 1.3 * dt;
-    patrol.y += (pdy / pdist) * 1.3 * dt;
-
-    if (pdist < 0.7) {
-      // 抓住玩家，回退安全點
-      sfx.playScream();
-      sanity -= 35;
-      px = 1.5; py = 5.5;
-      showSubtitle("冰冷蒼白的手抓住了你的肩膀！你驚恐地掙脫跌退回走廊起點……");
-    }
+    triggerRadio("「阿健：『門已經開了！快點出來，我們在走廊碰頭！』」");
   }
 }
 
-function gameLoop(time) {
-  const dt = Math.min((time - lastTime) / 1000, 0.1);
-  lastTime = time;
+/* ==================== 開場與倒數計時 ==================== */
+let timeLeft = 45 * 60;
+function startTimer() {
+  setInterval(() => {
+    if (timeLeft > 0) {
+      timeLeft--;
+      const m = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+      const s = String(timeLeft % 60).padStart(2, '0');
+      document.getElementById('timer').innerText = `${m}:${s}`;
+    }
+  }, 1000);
+}
 
-  update(dt);
-  castRays();
-
-  requestAnimationFrame(gameLoop);
+function beginEscape() {
+  document.getElementById('intro-curtain').style.display = 'none';
+  sfx.init();
+  startTimer();
+  renderScene();
 }
 </script>
 </body>
