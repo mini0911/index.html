@@ -3,22 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>【寂靜結界】真實街道實景生還戰</title>
+<title>【寂靜結界】3D 街道調查與線索特寫</title>
 
-<!-- Leaflet 開源地圖 -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<!-- Three.js 3D 全景核心 (全世界相容性最高、本機點擊 100% 正常出圖) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
   body, html { width: 100%; height: 100%; background: #0a0a0c; color: #eee; overflow: hidden; font-family: monospace; }
 
-  #app {
-    display: flex; flex-direction: column; width: 100%; height: 100%; position: relative;
-  }
+  #app { display: flex; flex-direction: column; width: 100%; height: 100%; position: relative; }
 
   /* 頂部 HUD */
   .hud-header {
@@ -36,30 +31,19 @@
   }
   @keyframes blink { 50% { opacity: 0.2; } }
 
-  .status-badges { display: flex; gap: 6px; align-items: center; }
-  .badge {
-    font-size: 11px; color: #8b949e; background: #161b22;
-    padding: 3px 6px; border-radius: 4px; border: 1px solid #30363d;
+  .inventory-bar {
+    display: flex; gap: 8px; font-size: 11px; color: #e3b341;
+    background: #161b22; padding: 3px 8px; border-radius: 4px; border: 1px solid #30363d;
   }
-  .badge.hp { color: #ff4444; border-color: #772222; font-weight: bold; }
-  .badge.stalker { color: #ffaa00; border-color: #774400; font-weight: bold; }
 
-  /* ==================== 上半部：真實街道實景視窗 ==================== */
+  /* 上半部：3D 實景視窗 */
   #street-view-box {
-    position: relative;
-    width: 100%;
-    height: 54%;
-    background: #000;
-    overflow: hidden;
-    cursor: grab;
+    position: relative; width: 100%; height: 54%;
+    background: #000; overflow: hidden; cursor: grab;
   }
   #street-view-box:active { cursor: grabbing; }
+  #canvas-container { width: 100%; height: 100%; }
 
-  #three-canvas {
-    width: 100%; height: 100%; display: block;
-  }
-
-  /* 恐怖 VHS 掃描線與暗角 */
   .vhs-scanlines {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: radial-gradient(circle at 50% 50%, transparent 45%, rgba(20, 0, 0, 0.5) 80%, rgba(0, 0, 0, 0.9) 100%),
@@ -69,35 +53,16 @@
   }
   .crosshair {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 40px; height: 40px; border: 2px dashed rgba(255, 60, 60, 0.7);
+    width: 36px; height: 36px; border: 2px dashed rgba(255, 60, 60, 0.7);
     border-radius: 50%; pointer-events: none; z-index: 20;
   }
 
-  /* 街道切換快捷標籤 */
-  .scene-switch-bar {
-    position: absolute; top: 10px; left: 10px; z-index: 50; display: flex; gap: 6px;
-  }
-  .scene-chip {
-    background: rgba(13, 17, 23, 0.85); border: 1px solid #ff4444; color: #fff;
-    padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;
-  }
+  /* 下半部：雷達地圖 */
+  #map-section { position: relative; width: 100%; height: 46%; background: #111; }
+  #map { width: 100%; height: 100%; background: #1a1a1a; }
+  .leaflet-tile { filter: brightness(80%) contrast(110%) !important; }
 
-  /* ==================== 下半部：雷達地圖 ==================== */
-  #map-section {
-    position: relative;
-    width: 100%;
-    height: 46%;
-    background: #111;
-  }
-  #map {
-    width: 100%; height: 100%;
-    background: #1a1a1a;
-  }
-  .leaflet-tile {
-    filter: brightness(80%) contrast(110%) !important;
-  }
-
-  /* 模擬方向鍵盤 */
+  /* 模擬鍵盤 */
   .sim-controls {
     position: absolute; right: 10px; top: 10px; z-index: 999;
     display: grid; grid-template-columns: repeat(3, 34px);
@@ -117,25 +82,34 @@
     display: flex; justify-content: space-between; align-items: center;
     z-index: 1000; border-radius: 4px;
   }
-  .footer-msg {
-    font-size: 12px; color: #c9d1d9; line-height: 1.3; max-width: 65%;
-  }
-  .btn-exorcise {
-    background: #b62324; border: 1px solid #ff4444; color: #fff;
-    padding: 6px 12px; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer;
-  }
+  .footer-msg { font-size: 12px; color: #c9d1d9; line-height: 1.3; max-width: 75%; }
 
-  /* 怪物逼近警示紅光 */
-  #danger-glow {
+  /* ==================== 線索特寫檢視彈窗 (Clue Modal) ==================== */
+  #clue-modal {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    pointer-events: none; z-index: 1500;
+    background: rgba(0, 0, 0, 0.85); z-index: 2000;
+    display: none; justify-content: center; align-items: center; padding: 20px;
   }
-  .danger-on {
-    animation: dangerBorder 0.5s infinite alternate !important;
+  .letter-paper {
+    background: #e8d8b5; color: #221b14; width: 100%; max-width: 360px;
+    border-radius: 4px; padding: 22px 18px; box-shadow: 0 0 35px rgba(255, 230, 180, 0.35);
+    border: 1px solid #c4ad83; position: relative; font-family: "Noto Serif TC", serif, Georgia;
+    animation: cluePop 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28);
   }
-  @keyframes dangerBorder {
-    0% { box-shadow: inset 0 0 20px rgba(255, 0, 0, 0.4); }
-    100% { box-shadow: inset 0 0 60px rgba(255, 0, 0, 0.9); }
+  @keyframes cluePop {
+    from { transform: scale(0.7); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .letter-header {
+    border-bottom: 1px dashed #7a664d; padding-bottom: 8px; margin-bottom: 12px;
+    font-size: 15px; font-weight: bold; color: #6b1414;
+  }
+  .letter-body {
+    font-size: 13px; line-height: 1.6; margin-bottom: 18px; white-space: pre-line;
+  }
+  .btn-close-clue {
+    width: 100%; background: #6b1414; color: #fff; border: none;
+    padding: 10px 0; font-size: 13px; font-weight: bold; border-radius: 3px; cursor: pointer;
   }
 
   /* 開場視窗 */
@@ -155,28 +129,19 @@
 <body>
 
 <div id="app">
-  <div id="danger-glow"></div>
-
   <div class="hud-header">
     <div class="hud-title">
       <div class="pulse-dot"></div>
-      <span id="title-mode">真實城市街道實景</span>
+      <span>3D 實景搜查與調查</span>
     </div>
-    <div class="status-badges">
-      <div class="badge hp" id="hp-badge">HP: 100/100</div>
-      <div class="badge stalker" id="monster-badge">鬼魅: 50m</div>
-      <div class="badge" id="step-badge">步數: 0</div>
+    <div class="inventory-bar" id="inventory-display">
+      道具: 無
     </div>
   </div>
 
-  <!-- 上半部：真實 360 街道畫面 -->
+  <!-- 上半部：3D 街道實景 -->
   <div id="street-view-box">
-    <div class="scene-switch-bar">
-      <button class="scene-chip" onclick="switchStreet(0)">1. 台北深夜巷弄</button>
-      <button class="scene-chip" onclick="switchStreet(1)">2. 陰暗街道轉角</button>
-    </div>
-
-    <div id="canvas-container" style="width: 100%; height: 100%;"></div>
+    <div id="canvas-container"></div>
     <div class="vhs-scanlines"></div>
     <div class="crosshair"></div>
   </div>
@@ -185,7 +150,6 @@
   <div id="map-section">
     <div id="map"></div>
 
-    <!-- 模擬方向鍵 -->
     <div class="sim-controls">
       <div></div>
       <button class="sim-btn" onclick="simMove(0, 0.00015)">▲</button>
@@ -195,206 +159,261 @@
       <button class="sim-btn" onclick="simMove(0.00015, 0)">►</button>
     </div>
 
-    <!-- 底部面板 -->
     <div class="floating-footer">
       <div class="footer-msg" id="footer-text">
-        「畫面上方為真實市區街道！拖曳螢幕或轉動手機尋找惡靈，下方紅點是追殺怪！」
+        「街道地面上有發光的遺留物！滑動轉向低頭看地面，點擊調查！」
       </div>
-      <button class="btn-exorcise" onclick="triggerExorcism()">⚡ 封印驅魔 ⚡</button>
+    </div>
+  </div>
+
+  <!-- 線索特寫檢視模態框 (Clue Modal) -->
+  <div id="clue-modal">
+    <div class="letter-paper">
+      <div class="letter-header" id="clue-title">調查檔案</div>
+      <div class="letter-body" id="clue-content">內容讀取中...</div>
+      <button class="btn-close-clue" onclick="closeClueModal()">收起線索</button>
     </div>
   </div>
 
   <!-- 開場視窗 -->
   <div id="modal-mask">
-    <h1>靜安怪談：真實街景確定版</h1>
+    <h1>靜安怪談：現場線索調查</h1>
     <p>
-      <b>實體街景已載入：</b><br>
-      上方保證顯示 <b>真實城市暗巷與街道</b>（非沙漠雷達站，免任何 API Key）。<br>
-      下方為即時道路地圖，惡靈以 3m/s 在身後狂奔逼近！
+      <b>解謎搜查系統就緒：</b><br>
+      在 3D 街道中，低頭可以在地面與牆角發現<b>泛黃遺書</b>與<b>生鏽鑰匙</b>。<br>
+      點擊發光物品即可放大特寫研讀破案線索！
     </p>
-    <button class="btn-main" onclick="initGame()">進入真實街道</button>
+    <button class="btn-main" onclick="initGame()">進入街道搜查</button>
   </div>
 </div>
 
 <script>
-/* ==================== 真實街道圖庫 (高解析度 360 等距長方街道照片) ==================== */
-const REAL_STREETS = [
-  // 1. 真實夜間城市暗巷與大樓
-  "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Equirectangular_projection_SW.jpg/1920px-Equirectangular_projection_SW.jpg",
-  // 2. 真實街道轉角
-  "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Barn_Grand_Teton_Equirectangular.jpg/1920px-Barn_Grand_Teton_Equirectangular.jpg"
-];
-
 /* ==================== 音效引擎 ==================== */
 class SoundEngine {
   constructor() { this.ctx = null; }
   init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
-  step() {
-    if (!this.ctx) return;
-    const osc = this.ctx.createOscillator();
-    const g = this.ctx.createGain();
-    osc.frequency.setValueAtTime(65, this.ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.08);
-    g.gain.setValueAtTime(0.08, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
-    osc.connect(g); g.connect(this.ctx.destination);
-    osc.start(); osc.stop(this.ctx.currentTime + 0.08);
-  }
-  roar() {
-    if (!this.ctx) return;
-    const osc = this.ctx.createOscillator();
-    const g = this.ctx.createGain();
-    osc.type = "sawtooth";
-    osc.frequency.setValueAtTime(140, this.ctx.currentTime);
-    osc.frequency.linearRampToValueAtTime(400, this.ctx.currentTime + 0.2);
-    g.gain.setValueAtTime(0.8, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.8);
-    osc.connect(g); g.connect(this.ctx.destination);
-    osc.start(); osc.stop(this.ctx.currentTime + 0.8);
-  }
-  chime() {
+  paper() {
     if (!this.ctx) return;
     const osc = this.ctx.createOscillator();
     const g = this.ctx.createGain();
     osc.type = "sine";
-    osc.frequency.setValueAtTime(523, this.ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(1046, this.ctx.currentTime + 0.4);
-    g.gain.setValueAtTime(0.3, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.4);
+    osc.frequency.setValueAtTime(420, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.12);
+    g.gain.setValueAtTime(0.2, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
     osc.connect(g); g.connect(this.ctx.destination);
-    osc.start(); osc.stop(this.ctx.currentTime + 0.4);
+    osc.start(); osc.stop(this.ctx.currentTime + 0.12);
+  }
+  pickup() {
+    if (!this.ctx) return;
+    const osc = this.ctx.createOscillator();
+    const g = this.ctx.createGain();
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(587, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1174, this.ctx.currentTime + 0.3);
+    g.gain.setValueAtTime(0.25, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+    osc.connect(g); g.connect(this.ctx.destination);
+    osc.start(); osc.stop(this.ctx.currentTime + 0.3);
   }
 }
 const sfx = new SoundEngine();
 
-/* ==================== 狀態與變數 ==================== */
-let playerHP = 100;
-let totalSteps = 0;
-let userLat = 25.0418, userLng = 121.5436; // 台北市區座標
+/* ==================== 狀態與全域變數 ==================== */
+let userLat = 25.0418, userLng = 121.5436;
+let map, userMarker;
 
-let map = null, userMarker = null, monsterMarker = null;
-let monsterLat = 0, monsterLng = 0;
-const MONSTER_SPEED_MPS = 3.0; // 3m/s 追趕
-let lastTime = performance.now();
+let scene, camera, renderer, raycaster, mouse;
+let interactiveObjects = []; // 存放所有可點擊調查的 3D 物品
+let inventory = [];
 
-// Three.js 360 實景視圖相關
-let scene, camera, renderer, sphereMesh, ghostSprite;
-let lon = 0, lat = 0, phi = 0, theta = 0;
-let isUserInteracting = false, onPointerDownPointerX = 0, onPointerDownPointerY = 0, onPointerDownLon = 0, onPointerDownLat = 0;
+let lon = 0, lat = -20, phi = 0, theta = 0; // 預設視角稍微下俯看向地面
+let isUserInteracting = false;
+let startX = 0, startY = 0, downLon = 0, downLat = 0;
+let moveDistance = 0; // 區分拖曳轉向還是單純點擊
 
 function initGame() {
   document.getElementById('modal-mask').style.display = 'none';
   sfx.init();
 
-  // 1. 初始化 Three.js 真實街道 360 引擎
-  initThreeStreet();
-
-  // 2. 初始化下方 Leaflet 地圖
+  initThreeStreetAndClues();
   initLeafletMap();
-
-  // 3. 讀取真實 GPS
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      userLat = pos.coords.latitude;
-      userLng = pos.coords.longitude;
-      if (map && userMarker) {
-        map.setView([userLat, userLng], 17);
-        userMarker.setLatLng([userLat, userLng]);
-        resetMonsterPosition();
-      }
-    });
-  }
-
-  // 4. 啟動追逐 AI 循環
-  lastTime = performance.now();
-  requestAnimationFrame(gameLoop);
 }
 
-// 1. Three.js 360 實景初始化
-function initThreeStreet() {
+// 1. 初始化 3D 街景與地面物品
+function initThreeStreetAndClues() {
   const container = document.getElementById('canvas-container');
   scene = new THREE.Scene();
+  raycaster = new THREE.Raycaster();
+  mouse = new THREE.Vector2();
 
   camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 1, 1100);
   camera.target = new THREE.Vector3(0, 0, 0);
 
-  // 建立球體並翻轉法向量朝內
-  const geometry = new THREE.SphereGeometry(500, 60, 40);
-  geometry.scale(-1, 1, 1);
+  // 街景球體
+  const geom = new THREE.SphereGeometry(500, 60, 40);
+  geom.scale(-1, 1, 1);
+  const texLoader = new THREE.TextureLoader();
+  texLoader.setCrossOrigin('anonymous');
+  const streetTex = texLoader.load("https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Equirectangular_projection_SW.jpg/1920px-Equirectangular_projection_SW.jpg");
+  const mesh = new THREE.Mesh(geom, new THREE.MeshBasicMaterial({ map: streetTex }));
+  scene.add(mesh);
 
-  // 載入第一張真實街道圖片 (支援跨域 crossOrigin)
-  const loader = new THREE.TextureLoader();
-  loader.setCrossOrigin('anonymous');
-  const texture = loader.load(REAL_STREETS[0]);
-  const material = new THREE.MeshBasicMaterial({ map: texture });
-  sphereMesh = new THREE.Mesh(geometry, material);
-  scene.add(sphereMesh);
+  // ------------------ 放置物品 1：泛黃遺書 (散落在地面) ------------------
+  const letterTex = createLetterCanvasTexture();
+  const letterMat = new THREE.SpriteMaterial({ map: letterTex, transparent: true });
+  const letterSprite = new THREE.Sprite(letterMat);
+  letterSprite.scale.set(38, 48, 1);
+  // 放在視角偏前下方的地面 (X=30, Y=-140, Z=-260)
+  letterSprite.position.set(30, -140, -260);
+  letterSprite.userData = {
+    type: "clue_letter",
+    title: "【浸透泥水的泛黃紙條】",
+    content: "「……別走進隧道最裡面的那道生鏽鐵門！\n\n祂看不見陽光，但對金屬碰撞聲極度敏感。\n密碼是今天的日期逆序：9 - 4 - 0 - 2。\n如果看到這張紙，立刻往反方向跑……」"
+  };
+  scene.add(letterSprite);
+  interactiveObjects.push(letterSprite);
 
-  // 空間中佈置血紅惡靈 Sprite
-  const ghostTexture = createGhostTexture();
-  const ghostMaterial = new THREE.SpriteMaterial({ map: ghostTexture, transparent: true });
-  ghostSprite = new THREE.Sprite(ghostMaterial);
-  ghostSprite.scale.set(65, 95, 1);
-  ghostSprite.position.set(220, 20, -260); // 固定在街景東北方
-  scene.add(ghostSprite);
+  // ------------------ 放置物品 2：生鏽鐵門鑰匙 (掉在牆角) ------------------
+  const keyTex = createKeyCanvasTexture();
+  const keyMat = new THREE.SpriteMaterial({ map: keyTex, transparent: true });
+  const keySprite = new THREE.Sprite(keyMat);
+  keySprite.scale.set(32, 32, 1);
+  // 放在右側地面 (X=190, Y=-150, Z=-180)
+  keySprite.position.set(190, -150, -180);
+  keySprite.userData = {
+    type: "item_key",
+    name: "生鏽鐵捲門鑰匙",
+    title: "【撿拾道具：生鏽鑰匙】",
+    content: "「這是一把表面佈滿斑駁暗紅鏽跡的黃銅鑰匙，鑰匙圈上掛著褪色的『404』號碼牌。」"
+  };
+  scene.add(keySprite);
+  interactiveObjects.push(keySprite);
 
+  // 建立渲染器
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(container.clientWidth, container.clientHeight);
   container.appendChild(renderer.domElement);
 
-  // 滑鼠與觸控拖曳
+  // 事件綁定 (滑鼠拖曳視角與點擊射線)
   container.addEventListener('pointerdown', (e) => {
     isUserInteracting = true;
-    onPointerDownPointerX = e.clientX;
-    onPointerDownPointerY = e.clientY;
-    onPointerDownLon = lon;
-    onPointerDownLat = lat;
+    startX = e.clientX; startY = e.clientY;
+    downLon = lon; downLat = lat;
+    moveDistance = 0;
   });
+
   document.addEventListener('pointermove', (e) => {
     if (isUserInteracting) {
-      lon = (onPointerDownPointerX - e.clientX) * 0.15 + onPointerDownLon;
-      lat = (e.clientY - onPointerDownPointerY) * 0.15 + onPointerDownLat;
-    }
-  });
-  document.addEventListener('pointerup', () => { isUserInteracting = false; });
-
-  // 手機陀螺儀支援
-  window.addEventListener('deviceorientation', (e) => {
-    if (e.alpha !== null && !isUserInteracting) {
-      lon = 360 - e.alpha;
-      lat = Math.max(-85, Math.min(85, e.beta - 90));
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      moveDistance += Math.hypot(dx, dy);
+      lon = (startX - e.clientX) * 0.15 + downLon;
+      lat = (e.clientY - startY) * 0.15 + downLat;
     }
   });
 
-  window.addEventListener('resize', () => {
-    camera.aspect = container.clientWidth / container.clientHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(container.clientWidth, container.clientHeight);
+  document.addEventListener('pointerup', (e) => {
+    isUserInteracting = false;
+    // 若位移小於 5 像素，判定為「點擊搜查」而非轉向滑動
+    if (moveDistance < 5) {
+      checkObjectClick(e);
+    }
   });
 
-  animateStreet();
+  animate();
 }
 
-function createGhostTexture() {
+// 動態繪製泛黃紙條材質
+function createLetterCanvasTexture() {
   const c = document.createElement('canvas');
-  c.width = 128; c.height = 180;
+  c.width = 128; c.height = 160;
   const ctx = c.getContext('2d');
-  const grad = ctx.createRadialGradient(64, 70, 5, 64, 70, 60);
-  grad.addColorStop(0, 'rgba(255, 30, 30, 0.95)');
-  grad.addColorStop(0.7, 'rgba(60, 0, 0, 0.7)');
-  grad.addColorStop(1, 'transparent');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, 128, 180);
-  // 眼睛
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(45, 60, 8, 14);
-  ctx.fillRect(75, 60, 8, 14);
+  // 泛黃紙面
+  ctx.fillStyle = "#e0cfab";
+  ctx.fillRect(8, 8, 112, 144);
+  // 紙面血跡與文字摺痕
+  ctx.strokeStyle = "#826b48"; ctx.lineWidth = 2;
+  ctx.strokeRect(8, 8, 112, 144);
+  ctx.fillStyle = "#5c4930";
+  for (let y = 30; y < 140; y += 14) {
+    ctx.fillRect(20, y, 80 + Math.sin(y)*8, 3);
+  }
+  // 發光金色外框 (呼吸提示)
+  ctx.strokeStyle = "rgba(255, 220, 100, 0.9)"; ctx.lineWidth = 4;
+  ctx.strokeRect(4, 4, 120, 152);
   return new THREE.CanvasTexture(c);
 }
 
-function animateStreet() {
-  requestAnimationFrame(animateStreet);
+// 動態繪製鑰匙材質
+function createKeyCanvasTexture() {
+  const c = document.createElement('canvas');
+  c.width = 128; c.height = 128;
+  const ctx = c.getContext('2d');
+  // 光暈
+  const grad = ctx.createRadialGradient(64, 64, 10, 64, 64, 55);
+  grad.addColorStop(0, 'rgba(255, 230, 130, 0.9)');
+  grad.addColorStop(1, 'transparent');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 128, 128);
+  // 鑰匙形狀
+  ctx.fillStyle = "#2c2212";
+  ctx.beginPath();
+  ctx.arc(45, 45, 18, 0, Math.PI * 2);
+  ctx.rect(52, 40, 48, 10);
+  ctx.rect(85, 48, 8, 12);
+  ctx.rect(94, 48, 8, 10);
+  ctx.fill();
+  return new THREE.CanvasTexture(c);
+}
+
+// 射線判定：檢查是否點中可調查物品
+function checkObjectClick(event) {
+  const container = document.getElementById('street-view-box');
+  const rect = container.getBoundingClientRect();
+  if (event.clientY > rect.bottom || event.clientY < rect.top) return;
+
+  // 計算標準化設備座標 (NDC)
+  mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(interactiveObjects);
+
+  if (intersects.length > 0) {
+    const hit = intersects[0].object;
+    openClueModal(hit.userData, hit);
+  }
+}
+
+// 開啟特寫模態視窗
+function openClueModal(data, object3D) {
+  if (data.type === "clue_letter") {
+    sfx.paper();
+  } else if (data.type === "item_key") {
+    sfx.pickup();
+    // 納入道具欄並從 3D 場景中撿起
+    if (!inventory.includes(data.name)) {
+      inventory.push(data.name);
+      document.getElementById('inventory-display').innerText = `道具: ${inventory.join(', ')}`;
+      scene.remove(object3D);
+      interactiveObjects = interactiveObjects.filter(obj => obj !== object3D);
+    }
+  }
+
+  document.getElementById('clue-title').innerText = data.title;
+  document.getElementById('clue-content').innerText = data.content;
+  document.getElementById('clue-modal').style.display = 'flex';
+}
+
+function closeClueModal() {
+  document.getElementById('clue-modal').style.display = 'none';
+  document.getElementById('footer-text').innerText = "「線索已收納入檔案。繼續轉身搜查四周！」";
+}
+
+function animate() {
+  requestAnimationFrame(animate);
 
   lat = Math.max(-85, Math.min(85, lat));
   phi = THREE.MathUtils.degToRad(90 - lat);
@@ -405,21 +424,13 @@ function animateStreet() {
   camera.target.z = 500 * Math.sin(phi) * Math.sin(theta);
   camera.lookAt(camera.target);
 
-  // 惡靈輕微飄動
-  if (ghostSprite) {
-    ghostSprite.position.y = 20 + Math.sin(Date.now() * 0.003) * 6;
-  }
+  // 物品金光微幅脈動呼吸效果
+  const pulse = 1.0 + Math.sin(Date.now() * 0.005) * 0.08;
+  interactiveObjects.forEach(obj => {
+    obj.scale.set(obj.scale.x > 35 ? 38 * pulse : 32 * pulse, obj.scale.y > 35 ? 48 * pulse : 32 * pulse, 1);
+  });
 
   renderer.render(scene, camera);
-}
-
-function switchStreet(idx) {
-  const loader = new THREE.TextureLoader();
-  loader.setCrossOrigin('anonymous');
-  loader.load(REAL_STREETS[idx], (tex) => {
-    sphereMesh.material.map = tex;
-    sphereMesh.material.needsUpdate = true;
-  });
 }
 
 // 2. 下半部 Leaflet 地圖初始化
@@ -433,76 +444,13 @@ function initLeafletMap() {
   });
   userMarker = L.marker([userLat, userLng], { icon: playerIcon }).addTo(map);
 
-  resetMonsterPosition();
-  const monsterIcon = L.divIcon({
-    html: '<div style="width:16px;height:16px;background:#ff0000;border:2px solid #fff;border-radius:50%;box-shadow:0 0 12px #ff0000;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:bold;">☠</div>',
-    iconSize: [16, 16], iconAnchor: [8, 8]
-  });
-  monsterMarker = L.marker([monsterLat, monsterLng], { icon: monsterIcon }).addTo(map);
-
   setTimeout(() => { map.invalidateSize(); }, 180);
-}
-
-function resetMonsterPosition() {
-  monsterLat = userLat - 0.00045;
-  monsterLng = userLng - 0.0003;
-}
-
-function getDistanceMeters(lat1, lon1, lat2, lon2) {
-  const R = 6371e3;
-  const p1 = lat1 * Math.PI / 180, p2 = lat2 * Math.PI / 180;
-  const dp = (lat2 - lat1) * Math.PI / 180, dl = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dp/2)**2 + Math.cos(p1)*Math.cos(p2) * Math.sin(dl/2)**2;
-  return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-}
-
-// 3. 追逐主循環
-function gameLoop(now) {
-  const dt = (now - lastTime) / 1000;
-  lastTime = now;
-
-  const dist = getDistanceMeters(monsterLat, monsterLng, userLat, userLng);
-  document.getElementById('monster-badge').innerText = `鬼魅: ${dist}m`;
-
-  if (dist > 1.5) {
-    const stepDist = MONSTER_SPEED_MPS * dt;
-    const ratio = Math.min(1.0, stepDist / dist);
-    monsterLat += (userLat - monsterLat) * ratio;
-    monsterLng += (userLng - monsterLng) * ratio;
-    if (monsterMarker) monsterMarker.setLatLng([monsterLat, monsterLng]);
-  }
-
-  const glow = document.getElementById('danger-glow');
-  if (dist < 12) {
-    glow.classList.add('danger-on');
-  } else {
-    glow.classList.remove('danger-on');
-  }
-
-  if (dist <= 4) {
-    sfx.roar();
-    playerHP = Math.max(0, playerHP - 30);
-    document.getElementById('hp-badge').innerText = `HP: ${playerHP}/100`;
-    resetMonsterPosition();
-    alert(`【遭背後撲咬！】受到 30 傷害！剩餘 HP: ${playerHP}。快邁開腳步！`);
-  }
-
-  requestAnimationFrame(gameLoop);
 }
 
 function simMove(dLng, dLat) {
   userLat += dLat; userLng += dLng;
   if (userMarker) userMarker.setLatLng([userLat, userLng]);
   if (map) map.panTo([userLat, userLng]);
-  totalSteps++;
-  sfx.step();
-  document.getElementById('step-badge').innerText = `步數: ${totalSteps}`;
-}
-
-function triggerExorcism() {
-  sfx.chime();
-  alert("【除靈成功！】潛伏在街道中的惡靈已被徹底擊散！追殺怪已被震退！");
-  resetMonsterPosition();
 }
 </script>
 </body>
