@@ -310,7 +310,6 @@
   </div>
 
   <script>
-    /* 音訊引擎 */
     let audioCtx = null;
     let bgmInterval = null;
     let isMuted = false;
@@ -406,7 +405,6 @@
       else if (type === 'click') navigator.vibrate(20);
     }
 
-    /* 遊戲核心 */
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
@@ -446,7 +444,7 @@
     let moveLeft = false;
     let moveRight = false;
 
-    /* 豐富題庫 */
+    /* 20 道豐富現代校園真實情境題庫 */
     const questionBank = [
       {
         text: "老師！有人把我的醜照發在匿名 Threads 和 IG 告白粉專，底下好多人在笑我...",
@@ -511,6 +509,102 @@
           { text: "考個試而已裝什麼病？回去教室坐好，不會寫就用猜的！", san: -20, sta: 0 },
           { text: "想翹課自己動作俐落點，別被我看到就不算違規。", san: -30, sta: 0 }
         ]
+      },
+      {
+        text: "老師，群組裡有人用 AI 換臉把女同學照片做成不雅梗圖瘋傳，我該怎麼辦？",
+        options: [
+          { text: "這是嚴重的性別平等與法律事件！請保留截圖，我立刻啟動性平與校安通報程序。", san: 15, sta: -10 },
+          { text: "那只是同學鬧著玩的惡搞啦，不要跟著轉傳就好。", san: -20, sta: 0 },
+          { text: "把那張圖傳給我看看，我看看到底有多像！", san: -30, sta: 0 }
+        ]
+      },
+      {
+        text: "老師，網路前輩找我假日去幫忙當『收簿手』，一天現領五千元，我可以去嗎？",
+        options: [
+          { text: "千萬不行！那是詐騙集團的車手洗錢陷阱，會背刑事責任！我立刻通知家長與少年隊宣導。", san: 15, sta: -5 },
+          { text: "天下哪有這麼好賺的事，你自己去看看，發現不對勁再跑。", san: -25, sta: 0 },
+          { text: "賺了記得分紅給老師買下午茶就好。", san: -35, sta: 0 }
+        ]
+      },
+      {
+        text: "老師，班上有同學沉迷球版線上簽賭，輸了兩萬塊現在被校外人士討債...",
+        options: [
+          { text: "這涉及校外賭博與黑道介入！請他馬上來學務處，我聯繫家長與警方少年隊共同保護處理。", san: 12, sta: -15 },
+          { text: "欠債還錢天經地義，叫他去跟爸媽坦白借錢還掉。", san: -15, sta: 0 },
+          { text: "賭博是他自己的事，不要把討債的人引到學校來就好。", san: -25, sta: 0 }
+        ]
+      },
+      {
+        text: "老師，隔壁班男生說只要我傳私密照給他看，他就答應跟我交往...",
+        options: [
+          { text: "絕對不能傳！這是兒少性剝削犯罪，真正喜歡你的人不會這樣要求，我帶你找輔導老師。", san: 15, sta: -5 },
+          { text: "只傳一張不露臉的應該還好吧？你自己斟酌。", san: -30, sta: 0 },
+          { text: "感情的事老師不管，你們私下處理好。", san: -25, sta: 0 }
+        ]
+      },
+      {
+        text: "老師，放學有宮廟陣頭的人在側門發飲料，拉我們假日去出陣頭說有零用錢拿...",
+        options: [
+          { text: "請提高警覺！我立刻去側門巡視勸離，同學切勿隨意提供個資或盲目跟隨。", san: 10, sta: -15 },
+          { text: "有免費飲料不喝白不喝，拿了就趕快回家。", san: -15, sta: 0 },
+          { text: "出陣頭也是本土文化推廣嘛，想去賺外快自己小心就好。", san: -20, sta: 0 }
+        ]
+      },
+      {
+        text: "老師！剛才體育課搶籃球場，有兩班同學差點抄球棒打起來，現在僵持在球場！",
+        options: [
+          { text: "大家別衝動！我拿哨子和大聲公立刻過去隔開雙方，體育組長也隨後就到！", san: 10, sta: -20 },
+          { text: "打球有衝突很正常，讓他們自己講開就好了。", san: -15, sta: 0 },
+          { text: "有種去操場外面打，不要在校園裡面丟人現眼！", san: -30, sta: 0 }
+        ]
+      },
+      {
+        text: "老師，我看到同桌同學書包裡藏著一把彈簧刀，他說是要防身用的...",
+        options: [
+          { text: "謝謝你的機警反映！為保障大家安全，我請導師協助引導該生到學務處妥善保管查證。", san: 12, sta: -10 },
+          { text: "你直接當場叫他拿出來，問他到底想幹嘛！", san: -20, sta: -5 },
+          { text: "他平常滿乖的應該只是削鉛筆，不要大驚小怪。", san: -20, sta: 0 }
+        ]
+      },
+      {
+        text: "老師，外面下大雨走廊很滑，剛才有同學狂奔滑倒骨折，躺在地上動不了了！",
+        options: [
+          { text: "千萬別隨意搬動傷者！我立刻攜帶急救箱並聯絡健康中心校護與 119！", san: 12, sta: -15 },
+          { text: "叫他自己爬起來去健康中心擦藥，在走廊躺著成何體統！", san: -25, sta: 0 },
+          { text: "找兩個力氣大的同學直接把他抬起來送去醫務室！", san: -20, sta: -10 }
+        ]
+      },
+      {
+        text: "老師，班上有同學的錢包不見了，全班現在鼓譟要搜大家的書包，甚至要搜身...",
+        options: [
+          { text: "立刻制止私自搜查！搜查涉及人權與法規，我過去班上主持秩序並調閱教室監視器。", san: 12, sta: -10 },
+          { text: "身正不怕影子斜，大家書包打開讓班長看一眼不就解決了？", san: -20, sta: 0 },
+          { text: "直接報警叫警察來全班做筆錄！", san: -15, sta: -10 }
+        ]
+      },
+      {
+        text: "老師，男同學們在走廊玩阿魯巴撞柱子，有人撞到頭流血而且柱子磁磚掉了...",
+        options: [
+          { text: "太危險了！受傷同學我馬上送醫護室，相關同學全數到學務處進行安全再教育。", san: 10, sta: -15 },
+          { text: "男生打打鬧鬧而已，去洗手台沖沖水就沒事了。", san: -20, sta: 0 },
+          { text: "損壞公物！磁磚費用全班分攤，每人記警告一支！", san: -15, sta: 0 }
+        ]
+      },
+      {
+        text: "老師，頂樓圍欄外好像有他校穿便服的人在抽煙挑釁，還朝中庭丟飲料罐...",
+        options: [
+          { text: "所有在場學生退回室內！我攜帶防身配備並通報警衛室封鎖樓梯口，必要時通報轄區警局。", san: 12, sta: -20 },
+          { text: "你們拿掃把上去把他們趕走，不要讓別校的看扁了！", san: -30, sta: 0 },
+          { text: "當作沒看到，等他們無聊了自然就會走。", san: -25, sta: 0 }
+        ]
+      },
+      {
+        text: "老師，我跟家裡吵架不想回家，打算放學後在公園涼亭過夜...",
+        options: [
+          { text: "外面晚上很危險！來辦公室坐坐喝杯溫水，我陪你聊聊並幫忙跟家長溝通。", san: 15, sta: -10 },
+          { text: "現在離家出走很帥是不是？等沒錢吃飯看你怎麼辦。", san: -20, sta: 0 },
+          { text: "去便利商店坐著比較安全，至少有冷氣吹。", san: -15, sta: 0 }
+        ]
       }
     ];
 
@@ -536,25 +630,21 @@
       }
     });
 
-    /* 學生進場生成機制：從右側大門進入，走到不同指定站位等待 */
     function spawnStudent() {
-      // 容納最多 4 位學生在場排隊
       if (!isPlaying || students.length >= 4) return;
-
-      // 隨機選擇不重疊的排隊站位 (X: 130 ~ 330)
       const slotX = 130 + Math.random() * 200;
 
       students.push({
-        x: 420, // 從畫面右側門外走進來
+        x: 420,
         y: 285,
         targetX: slotX,
-        state: 'entering', // 'entering' | 'waiting' | 'leaving'
-        type: Math.floor(Math.random() * 2), // 0: 雙馬尾女生, 1: 呆毛男生
+        state: 'entering',
+        type: Math.floor(Math.random() * 2),
         facing: 'left',
         walkFrame: 0,
         bounce: Math.random() * Math.PI,
         hasQuestion: false,
-        mood: null // 'happy' | 'sad'
+        mood: null
       });
     }
 
@@ -592,11 +682,10 @@
       feedbackTimer = 70;
       dialogBox.style.display = 'none';
 
-      /* 學生觸發離開動作 */
       if (activeStudent) {
         activeStudent.state = 'leaving';
         activeStudent.hasQuestion = false;
-        activeStudent.facing = 'right'; // 轉身向右側門走去
+        activeStudent.facing = 'right';
         activeStudent.mood = opt.san >= 0 ? 'happy' : 'sad';
         activeStudent = null;
       }
@@ -620,7 +709,6 @@
       dialogBox.style.display = 'none';
       feedbackText = "";
 
-      // 開局生成 2 位學生前來
       spawnStudent();
       setTimeout(spawnStudent, 800);
     }
@@ -663,7 +751,6 @@
         return;
       }
 
-      /* 玩家移動 */
       let isMoving = false;
       if (dialogBox.style.display === 'none') {
         if (moveLeft) { player.x -= player.speed; isMoving = true; }
@@ -675,12 +762,10 @@
 
       player.x = Math.max(20, Math.min(canvas.width - 70, player.x));
 
-      /* 學生生命週期與行走狀態管理 */
       for (let i = students.length - 1; i >= 0; i--) {
         const st = students[i];
 
         if (st.state === 'entering') {
-          // 進場走入辦公室
           st.x -= 2;
           st.facing = 'left';
           st.walkFrame += 0.2;
@@ -690,14 +775,11 @@
             st.walkFrame = 0;
           }
         } else if (st.state === 'waiting') {
-          // 在原地上下可愛浮動等待提問
           st.bounce += 0.05;
         } else if (st.state === 'leaving') {
-          // 離開動作：小碎步走出大門
           st.x += 3.2;
           st.facing = 'right';
           st.walkFrame += 0.25;
-          // 完全走出畫面右邊後移除
           if (st.x > 440) {
             students.splice(i, 1);
             continue;
@@ -705,7 +787,6 @@
         }
       }
 
-      /* 尋找最近且處於 waiting 狀態的學生 */
       activeStudent = null;
       let minDistance = 55;
       students.forEach(st => {
@@ -726,7 +807,6 @@
         actionBtn.style.color = "#ffffff";
       }
 
-      /* 頻繁生成學生排隊（製造熱鬧諮詢氛圍） */
       spawnTimer++;
       if (spawnTimer > 130) {
         spawnStudent();
@@ -739,7 +819,6 @@
       if (feedbackTimer > 0) feedbackTimer--;
     }
 
-    /* 可愛角色繪圖函式 */
     function drawCuteEye(x, y, radius, lookDir = 0) {
       ctx.save();
       ctx.fillStyle = '#ffffff';
@@ -856,13 +935,11 @@
       let bob = (st.state === 'waiting') ? Math.sin(st.bounce) * 2.5 : Math.sin(st.walkFrame) * 3;
       let dir = st.facing === 'right' ? 1 : -1;
 
-      // 影子
       ctx.fillStyle = 'rgba(120, 53, 15, 0.15)';
       ctx.beginPath();
       ctx.ellipse(20, 68, 16, 5, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // 鞋子 (行進中擺動)
       let legOffset = (st.state !== 'waiting') ? Math.sin(st.walkFrame) * 4 : 0;
       ctx.fillStyle = '#78350f';
       ctx.beginPath();
@@ -907,7 +984,6 @@
         ctx.strokeRect(10, 48 + bob, 20, 10);
       }
 
-      // Q 版大頭
       ctx.fillStyle = '#ffedd5';
       ctx.beginPath();
       ctx.arc(20, 20 + bob, 17, 0, Math.PI * 2);
@@ -957,14 +1033,12 @@
       ctx.arc(20, 26 + bob, 2, 0, Math.PI * 2);
       ctx.fill();
 
-      // 正在排隊發問時的問號
       if (st.hasQuestion && st.state === 'waiting') {
         let qBob = Math.sin(st.bounce * 1.5) * 4;
         ctx.font = 'bold 22px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
         ctx.fillText("❓", 10, -5 + qBob);
       }
 
-      // 離開時的表情圖案 (滿意愛心 / 無奈冷汗)
       if (st.state === 'leaving') {
         ctx.font = 'bold 18px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
         if (st.mood === 'happy') {
@@ -992,7 +1066,6 @@
       ctx.lineTo(canvas.width, 340);
       ctx.stroke();
 
-      // 右側學務處出入門框
       ctx.fillStyle = '#e2e8f0';
       ctx.fillRect(360, 180, 40, 160);
       ctx.strokeStyle = '#94a3b8';
@@ -1002,7 +1075,6 @@
       ctx.font = 'bold 11px sans-serif';
       ctx.fillText("大門", 368, 205);
 
-      // 窗戶
       ctx.fillStyle = '#bae6fd';
       ctx.beginPath();
       ctx.roundRect(170, 45, 120, 75, 10);
@@ -1018,7 +1090,6 @@
       ctx.arc(230, 75, 11, 0, Math.PI * 2);
       ctx.fill();
 
-      // 佈告欄
       ctx.fillStyle = '#fb923c';
       ctx.beginPath();
       ctx.roundRect(20, 70, 120, 85, 10);
@@ -1038,13 +1109,9 @@
       ctx.font = '11px sans-serif';
       ctx.fillText("愛心守護", 315, 120);
 
-      // 繪製多位學生
       students.forEach(st => drawCuteStudent(st));
-
-      // 繪製校安老師
       drawCuteTeacher(player.x, player.y, player.facing, player.walkFrame);
 
-      // 靠近提問時的提示氣泡
       if (activeStudent && dialogBox.style.display === 'none') {
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
@@ -1059,7 +1126,6 @@
         ctx.fillText("點擊 [對話] 💬", player.x - 9, player.y - 19);
       }
 
-      // 回覆飄字
       if (feedbackTimer > 0) {
         ctx.fillStyle = feedbackText.includes("放心") ? '#059669' : '#dc2626';
         ctx.font = 'bold 15px sans-serif';
