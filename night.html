@@ -3,644 +3,583 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>【寂靜結界】真實全彩街景 × 實體彩色地圖逃脫</title>
+<title>【寂靜結界】PokéGO 實境恐懼生還戰</title>
 
-<!-- Leaflet 開源地圖 (標準明亮色彩) -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<!-- Three.js 3D 全景核心 (保證 100% 成功出圖、絕不黑屏) -->
+<!-- Three.js 核心與動畫庫 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-  body, html { width: 100%; height: 100%; background: #1a1a1a; color: #fff; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  body, html { width: 100%; height: 100%; background: #050608; color: #eee; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
 
-  #app { display: flex; flex-direction: column; width: 100%; height: 100%; position: relative; }
+  #game-viewport { position: relative; width: 100%; height: 100%; overflow: hidden; }
 
-  /* 頂部 HUD */
-  .hud-header {
-    height: 48px; background: #1f242d; border-bottom: 2px solid #384252;
+  /* 3D 遊戲世界畫布 */
+  #three-canvas { width: 100%; height: 100%; display: block; }
+
+  /* 恐懼暗角與靈異掃描線 (VHS Overlay) */
+  .horror-vignette {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at 50% 50%, transparent 50%, rgba(10, 0, 0, 0.6) 80%, rgba(0, 0, 0, 0.95) 100%),
+                repeating-linear-gradient(rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0, 20, 10, 0.15) 3px, rgba(0,0,0,0) 4px);
+    pointer-events: none; z-index: 10;
+  }
+
+  /* 頂部 HUD (Pokémon GO 經典玩家狀態列) */
+  .poke-hud-top {
+    position: absolute; top: 0; left: 0; width: 100%; height: 60px;
+    background: linear-gradient(180deg, rgba(5,6,8,0.95) 0%, transparent 100%);
     display: flex; justify-content: space-between; align-items: center;
-    padding: 0 14px; z-index: 1000; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    padding: 0 16px; z-index: 100;
   }
-  .hud-title {
-    font-size: 13px; color: #ff5555; font-weight: bold; letter-spacing: 1px;
-    display: flex; align-items: center; gap: 8px;
+  .player-card {
+    display: flex; align-items: center; gap: 10px;
   }
-  .pulse-dot {
-    width: 10px; height: 10px; background: #00ff88; border-radius: 50%;
-    box-shadow: 0 0 8px #00ff88; animation: blink 1.2s infinite;
+  .player-avatar {
+    width: 38px; height: 38px; border-radius: 50%; background: #1a0808;
+    border: 2px solid #ff4444; display: flex; justify-content: center; align-items: center;
+    box-shadow: 0 0 10px rgba(255, 68, 68, 0.5); font-size: 18px;
   }
-  @keyframes blink { 50% { opacity: 0.3; } }
+  .player-info { display: flex; flex-direction: column; gap: 2px; }
+  .player-level { font-size: 13px; font-weight: bold; color: #ff5555; letter-spacing: 0.5px; }
+  .hp-bar-outer {
+    width: 110px; height: 8px; background: #222; border-radius: 4px; overflow: hidden; border: 1px solid #444;
+  }
+  .hp-bar-inner { width: 70%; height: 100%; background: linear-gradient(90deg, #ff2222, #00ff88); transition: width 0.3s; }
 
   .status-badges { display: flex; gap: 8px; align-items: center; }
-  .badge-hp {
-    background: #2d1515; border: 1px solid #ff4444; color: #ff6666;
-    padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;
+  .badge {
+    background: rgba(22, 27, 34, 0.85); border: 1px solid #30363d;
+    padding: 4px 8px; border-radius: 4px; font-size: 11px; color: #8b949e;
   }
-  .badge-steps {
-    background: #16241b; border: 1px solid #00ff88; color: #00ff88;
-    padding: 3px 8px; border-radius: 4px; font-size: 11px;
-  }
+  .badge.steps { color: #00ff88; border-color: #008844; }
 
-  /* ==================== 上半部：真實 360° 全彩街道視窗 ==================== */
-  #street-box {
-    position: relative;
-    width: 100%;
-    height: 52%;
-    background: #222;
-    overflow: hidden;
-    cursor: grab;
+  /* 底部主功能球與任務面板 (Poké Ball Style Menu) */
+  .poke-bottom-bar {
+    position: absolute; bottom: 18px; left: 0; width: 100%;
+    display: flex; justify-content: center; align-items: center; gap: 20px;
+    z-index: 100; pointer-events: none;
   }
-  #street-box:active { cursor: grabbing; }
-  #canvas-container { width: 100%; height: 100%; }
+  .bottom-btn {
+    pointer-events: auto; width: 56px; height: 56px; border-radius: 50%;
+    background: #111; border: 2px solid #555; color: #fff; font-size: 20px;
+    display: flex; justify-content: center; align-items: center; cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.8); transition: all 0.2s;
+  }
+  .bottom-btn.main-compass {
+    width: 68px; height: 68px; border-color: #ff3333; background: #220808;
+    box-shadow: 0 0 20px rgba(255, 50, 50, 0.5); font-size: 26px;
+  }
+  .bottom-btn:active { transform: scale(0.92); }
 
-  .crosshair {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 36px; height: 36px; border: 2px dashed rgba(255, 255, 255, 0.7);
-    border-radius: 50%; pointer-events: none; z-index: 20;
+  /* 虛擬搖桿 (支援手機與電腦走動測試) */
+  .joystick-zone {
+    position: absolute; bottom: 90px; right: 20px; z-index: 150;
+    display: grid; grid-template-columns: repeat(3, 40px); gap: 4px;
   }
+  .joy-btn {
+    width: 40px; height: 40px; background: rgba(18, 22, 28, 0.85);
+    border: 1px solid #444; border-radius: 6px; color: #fff; font-weight: bold;
+    display: flex; justify-content: center; align-items: center; cursor: pointer;
+  }
+  .joy-btn:active { background: #ff4444; border-color: #ff2222; }
 
-  /* 拾取漂浮加血文字 */
-  .heal-toast {
-    position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);
-    font-size: 26px; font-weight: bold; color: #00ff88; text-shadow: 0 0 10px #00ff88;
-    pointer-events: none; z-index: 1000; animation: floatUp 1.2s forwards; display: none;
-  }
-  @keyframes floatUp {
-    0% { opacity: 0; transform: translate(-50%, 0); }
-    30% { opacity: 1; transform: translate(-50%, -25px); }
-    100% { opacity: 0; transform: translate(-50%, -60px); }
-  }
-
-  /* ==================== 下半部：真實明亮彩色實體地圖 ==================== */
-  #map-box {
-    position: relative;
-    width: 100%;
-    height: 48%;
-    background: #e5e3df; /* 經典淺色地圖底色，絕不黑屏 */
-  }
-  #leaflet-map {
-    width: 100%; height: 100%;
-    background: #e5e3df;
-  }
-
-  /* 地圖左上角：切換衛星空照按鈕 */
-  .map-layer-btn {
-    position: absolute; top: 10px; left: 10px; z-index: 800;
-    background: #ffffff; color: #333; border: 2px solid #555;
-    padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: bold;
-    cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  }
-  .map-layer-btn.active {
-    background: #1f6feb; color: #fff; border-color: #004085;
-  }
-
-  /* 室內模擬走動鍵盤 (右下角) */
-  .sim-controls {
-    position: absolute; right: 10px; top: 10px; z-index: 800;
-    display: grid; grid-template-columns: repeat(3, 36px); gap: 4px;
-  }
-  .sim-btn {
-    background: rgba(30, 35, 45, 0.9); border: 1px solid #58a6ff; color: #fff;
-    display: flex; justify-content: center; align-items: center;
-    cursor: pointer; border-radius: 4px; font-size: 13px; font-weight: bold; height: 36px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.4);
-  }
-  .sim-btn:active { background: #ff4444; }
-
-  /* 底部對講機面板 */
-  .floating-footer {
-    position: absolute; bottom: 8px; left: 8px; right: 8px;
-    background: rgba(20, 24, 30, 0.95); border: 1px solid #384252;
-    border-left: 4px solid #00ff88; padding: 8px 12px;
-    display: flex; justify-content: space-between; align-items: center;
-    z-index: 850; border-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-  }
-  .footer-msg { font-size: 12px; color: #d0d7de; line-height: 1.4; max-width: 70%; }
-  .btn-door {
-    background: #b62324; border: 1px solid #ff4444; color: #fff;
-    padding: 7px 14px; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer;
-  }
-
-  /* 證物與密碼鎖彈窗 */
-  .modal-overlay {
+  /* 靈異遭遇警報紅框 */
+  #encounter-flash {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.85); z-index: 2000;
-    display: none; justify-content: center; align-items: center; padding: 20px;
+    border: 4px solid #ff0000; box-shadow: inset 0 0 50px rgba(255, 0, 0, 0.8);
+    pointer-events: none; z-index: 500; display: none;
+    animation: flashAlert 0.4s infinite alternate;
   }
-  .clue-box {
-    background: #ebdcc0; color: #231a11; width: 100%; max-width: 360px;
-    border-radius: 4px; padding: 24px 20px; border: 2px solid #bba377; font-family: serif;
-  }
-  .clue-title { font-size: 16px; font-weight: bold; color: #7a1515; border-bottom: 1px dashed #7a664d; padding-bottom: 6px; margin-bottom: 12px; }
-  .clue-content { font-size: 13px; line-height: 1.7; margin-bottom: 20px; white-space: pre-line; }
-  .btn-close { width: 100%; background: #7a1515; color: #fff; border: none; padding: 10px 0; font-size: 13px; font-weight: bold; border-radius: 3px; cursor: pointer; }
+  @keyframes flashAlert { 0% { opacity: 0.3; } 100% { opacity: 1; } }
 
-  .keypad-box {
-    background: #161b22; border: 2px solid #ff4444; border-radius: 8px;
-    width: 280px; padding: 20px; display: flex; flex-direction: column; align-items: center;
+  /* 遭遇惡靈彈窗 */
+  .encounter-modal {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.88); z-index: 1000; display: none;
+    flex-direction: column; justify-content: center; align-items: center; padding: 24px; text-align: center;
   }
-  .keypad-display {
-    width: 100%; height: 44px; background: #000; border: 1px solid #30363d;
-    border-radius: 4px; color: #ff3333; font-size: 24px; font-family: monospace;
-    display: flex; justify-content: center; align-items: center; letter-spacing: 8px; margin-bottom: 16px;
+  .ghost-portrait {
+    width: 140px; height: 140px; border-radius: 50%; background: radial-gradient(circle, #ff2222 0%, #440000 70%, transparent 100%);
+    display: flex; justify-content: center; align-items: center; font-size: 64px; margin-bottom: 16px;
+    box-shadow: 0 0 35px #ff0000; animation: ghostFloat 1.2s infinite alternate;
   }
-  .keypad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; margin-bottom: 16px; }
-  .num-btn { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; padding: 12px 0; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; }
-  .num-btn:active { background: #ff4444; color: #fff; }
+  @keyframes ghostFloat { 0% { transform: translateY(-8px); } 100% { transform: translateY(8px); } }
+  .btn-exorcise {
+    background: #b62324; border: 1px solid #ff4444; color: #fff; padding: 12px 32px;
+    font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+  }
+
+  /* 拾取回饋文字動畫 */
+  .toast-popup {
+    position: absolute; top: 38%; left: 50%; transform: translate(-50%, -50%);
+    font-size: 24px; font-weight: bold; color: #00ff88; text-shadow: 0 0 12px #00ff88;
+    pointer-events: none; z-index: 600; display: none; animation: toastUp 1s forwards;
+  }
+  @keyframes toastUp {
+    0% { opacity: 0; transform: translate(-50%, 0); }
+    30% { opacity: 1; transform: translate(-50%, -20px); }
+    100% { opacity: 0; transform: translate(-50%, -50px); }
+  }
 
   /* 開場視窗 */
   #start-modal {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: #0d1117; z-index: 3000; display: flex; flex-direction: column;
+    background: #080a0e; z-index: 3000; display: flex; flex-direction: column;
     justify-content: center; align-items: center; padding: 24px; text-align: center;
   }
-  #start-modal h1 { color: #ff5555; font-size: 22px; margin-bottom: 14px; }
-  #start-modal p { font-size: 13px; color: #8b949e; line-height: 1.7; margin-bottom: 24px; max-width: 380px; }
+  #start-modal h1 { color: #ff4444; font-size: 24px; margin-bottom: 12px; letter-spacing: 2px; }
+  #start-modal p { font-size: 13px; color: #8b949e; line-height: 1.7; margin-bottom: 24px; max-width: 360px; }
   .btn-start {
-    background: #00ff88; border: none; color: #000; padding: 12px 34px;
+    background: #b62324; border: none; color: #fff; padding: 14px 36px;
     font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer;
-    box-shadow: 0 0 15px rgba(0,255,136,0.4);
+    box-shadow: 0 0 20px rgba(255,0,0,0.5);
   }
 </style>
 </head>
 <body>
 
-<div id="app">
+<div id="game-viewport">
+  <div class="horror-vignette"></div>
+  <div id="encounter-flash"></div>
+  <div class="toast-popup" id="toast-text">+35 HP 急救包</div>
+
   <!-- 頂部 HUD -->
-  <div class="hud-header">
-    <div class="hud-title">
-      <div class="pulse-dot"></div>
-      <span id="stage-title">第 1 關：台北市區・生鏽掛鎖</span>
+  <div class="poke-hud-top">
+    <div class="player-card">
+      <div class="player-avatar">🕯️</div>
+      <div class="player-info">
+        <span class="player-level" id="player-title">LV.1 除靈探員</span>
+        <div class="hp-bar-outer">
+          <div class="hp-bar-inner" id="hp-bar" style="width: 70%;"></div>
+        </div>
+      </div>
     </div>
     <div class="status-badges">
-      <div class="badge-hp" id="hp-badge">❤️ HP: 70/100</div>
-      <div class="badge-steps" id="step-badge">累計走動: 0m</div>
+      <div class="badge steps" id="steps-badge">走動: 0m</div>
+      <div class="badge" id="hp-badge">HP: 70/100</div>
     </div>
   </div>
 
-  <!-- 上半部：真實 360° 全彩實景視窗 (絕無黑白濾鏡) -->
-  <div id="street-box">
-    <div id="canvas-container"></div>
-    <div class="crosshair"></div>
-    <div class="heal-toast" id="heal-toast">+35 HP</div>
+  <!-- 滿版 3D 傾斜大地圖畫布 -->
+  <div id="canvas-container" style="width: 100%; height: 100%;"></div>
+
+  <!-- 虛擬走動十字搖桿 -->
+  <div class="joystick-zone">
+    <div></div>
+    <button class="joy-btn" onclick="simMove(0, 8)">▲</button>
+    <div></div>
+    <button class="joy-btn" onclick="simMove(-8, 0)">◄</button>
+    <button class="joy-btn" onclick="simMove(0, -8)">▼</button>
+    <button class="joy-btn" onclick="simMove(8, 0)">►</button>
   </div>
 
-  <!-- 下半部：真實彩色實體地圖 (絕不黑屏) -->
-  <div id="map-box">
-    <div id="leaflet-map"></div>
-
-    <!-- 地圖模式切換按鈕 -->
-    <button class="map-layer-btn" id="btn-layer-switch" onclick="toggleMapLayer()">
-      🛰️ 切換為真實衛星空照圖
-    </button>
-
-    <!-- 模擬位移方向鍵 (每按一次走動 10 米) -->
-    <div class="sim-controls">
-      <div></div>
-      <button class="sim-btn" onclick="simMove(0, 0.00010)">▲</button>
-      <div></div>
-      <button class="sim-btn" onclick="simMove(-0.00010, 0)">◄</button>
-      <button class="sim-btn" onclick="simMove(0, -0.00010)">▼</button>
-      <button class="sim-btn" onclick="simMove(0.00010, 0)">►</button>
-    </div>
-
-    <!-- 底部面板 -->
-    <div class="floating-footer">
-      <div class="footer-msg" id="footer-text">
-        「上方是真實街道 360° 全景，下方是實體彩色地圖！每走動 30 米街景會掉落急救包！」
-      </div>
-      <button class="btn-door" onclick="openKeypad()">🚪 解開通道鎖</button>
-    </div>
+  <!-- 底部經典控制面板 -->
+  <div class="poke-bottom-bar">
+    <button class="bottom-btn" onclick="alert('【背包】：目前持有 3 張驅邪符、1 罐聖水。')">🎒</button>
+    <button class="bottom-btn main-compass" onclick="scanSurroundings()">👁️</button>
+    <button class="bottom-btn" onclick="recenterPlayer()">🧭</button>
   </div>
 
-  <!-- 證物特寫視窗 -->
-  <div class="modal-overlay" id="clue-modal">
-    <div class="clue-box">
-      <div class="clue-title" id="clue-title">調查證物</div>
-      <div class="clue-content" id="clue-content">檔案載入中...</div>
-      <button class="btn-close" onclick="closeClueModal()">收起證物</button>
-    </div>
-  </div>
-
-  <!-- 密碼鎖撥盤 -->
-  <div class="modal-overlay" id="keypad-modal">
-    <div class="keypad-box">
-      <div style="color: #ff5555; font-size: 12px; margin-bottom: 8px;">結界解鎖盤</div>
-      <div class="keypad-display" id="keypad-code">----</div>
-      <div class="keypad-grid">
-        <button class="num-btn" onclick="pressKey('1')">1</button>
-        <button class="num-btn" onclick="pressKey('2')">2</button>
-        <button class="num-btn" onclick="pressKey('3')">3</button>
-        <button class="num-btn" onclick="pressKey('4')">4</button>
-        <button class="num-btn" onclick="pressKey('5')">5</button>
-        <button class="num-btn" onclick="pressKey('6')">6</button>
-        <button class="num-btn" onclick="pressKey('7')">7</button>
-        <button class="num-btn" onclick="pressKey('8')">8</button>
-        <button class="num-btn" onclick="pressKey('9')">9</button>
-        <button class="num-btn" onclick="clearKeypad()">C</button>
-        <button class="num-btn" onclick="pressKey('0')">0</button>
-        <button class="num-btn" onclick="submitPasscode()" style="background:#8b1111; color:#fff;">✓</button>
-      </div>
-      <button class="btn-close" style="background:#30363d;" onclick="closeKeypad()">放棄返回</button>
-    </div>
+  <!-- 惡靈正面遭遇彈窗 (Encounter Battle) -->
+  <div class="encounter-modal" id="encounter-modal">
+    <div class="ghost-portrait">👻</div>
+    <h2 style="color:#ff4444; margin-bottom: 8px;">遭遇：地縛紅衣煞！</h2>
+    <p style="font-size:13px; color:#aaa; margin-bottom: 22px; max-width: 280px;">
+      祂踏入了你的 20 米除靈光圈！怨氣正在侵蝕周圍氣場！
+    </p>
+    <button class="btn-exorcise" onclick="resolveEncounter()">⚡ 祭出太上辟邪道符 ⚡</button>
   </div>
 
   <!-- 開場視窗 -->
   <div id="start-modal">
-    <h1>靜安怪談：全彩實景修復版</h1>
+    <h1>靜安怪談：GO 實景除靈</h1>
     <p>
-      <b>徹底修復地圖黑屏問題：</b><br>
-      上方呈現 <b>真實城市街道 360° 全彩實景</b>。<br>
-      下方呈現 <b>真實明亮街道地圖</b>，支援一鍵切換 <b>衛星空照圖</b>！
+      <b>全螢幕 3D 恐怖大地圖：</b><br>
+      化身調查員置身立體街道，周圍圍繞著 45 米雷達感應圈。<br>
+      走動滿 <b>30 公尺</b> 路邊會掉落補給品；隨時提防在街角出沒的惡靈！
     </p>
-    <button class="btn-start" onclick="startGame()">進入真實世界現場</button>
+    <button class="btn-start" onclick="initGame()">進入雷達世界</button>
   </div>
 </div>
 
 <script>
-/* ==================== 真實高畫質城市街道 360° 全景圖庫 ==================== */
-const REAL_STREET_PANOS = [
-  // 1. 台北繁華都會街道全景
-  "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Equirectangular_projection_SW.jpg/1920px-Equirectangular_projection_SW.jpg",
-  // 2. 綠意林間大道全景
-  "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Barn_Grand_Teton_Equirectangular.jpg/1920px-Barn_Grand_Teton_Equirectangular.jpg",
-  // 3. 晴空公路轉角全景
-  "https://pannellum.org/images/bma-0.jpg"
-];
-
-/* ==================== 狀態與數值 ==================== */
-let playerHP = 70;
-const MAX_HP = 100;
-let totalDistance = 0;
-let stageLevel = 1;
-
-// 台北市中心實體經緯度起點
-let userLat = 25.0418, userLng = 121.5436;
-let lastStreetPanoIdx = 0;
-let distanceSinceLastPano = 0; // 每 15 米換街景
-let distanceSinceLastSupply = 0; // 每 30 米掉落物資
-
-let currentPasscode = "520";
-let passcodeBuffer = "";
-
 /* ==================== 音效引擎 ==================== */
 class SoundEngine {
   constructor() { this.ctx = null; }
   init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
   step() {
     if (!this.ctx) return;
-    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-    o.frequency.setValueAtTime(80, this.ctx.currentTime);
-    g.gain.setValueAtTime(0.08, this.ctx.currentTime);
+    const osc = this.ctx.createOscillator(), g = this.ctx.createGain();
+    osc.frequency.setValueAtTime(60, this.ctx.currentTime);
+    g.gain.setValueAtTime(0.06, this.ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
-    o.connect(g); g.connect(this.ctx.destination);
-    o.start(); o.stop(this.ctx.currentTime + 0.05);
+    osc.connect(g); g.connect(this.ctx.destination);
+    osc.start(); osc.stop(this.ctx.currentTime + 0.05);
   }
-  heal() {
+  ping() {
     if (!this.ctx) return;
-    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-    o.type = "sine";
-    o.frequency.setValueAtTime(440, this.ctx.currentTime);
-    o.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.3);
-    g.gain.setValueAtTime(0.25, this.ctx.currentTime);
+    const osc = this.ctx.createOscillator(), g = this.ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(587, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.3);
+    g.gain.setValueAtTime(0.2, this.ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
-    o.connect(g); g.connect(this.ctx.destination);
-    o.start(); o.stop(this.ctx.currentTime + 0.3);
+    osc.connect(g); g.connect(this.ctx.destination);
+    osc.start(); osc.stop(this.ctx.currentTime + 0.3);
+  }
+  roar() {
+    if (!this.ctx) return;
+    const osc = this.ctx.createOscillator(), g = this.ctx.createGain();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(140, this.ctx.currentTime);
+    osc.frequency.linearRampToValueAtTime(320, this.ctx.currentTime + 0.3);
+    g.gain.setValueAtTime(0.4, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.4);
+    osc.connect(g); g.connect(this.ctx.destination);
+    osc.start(); osc.stop(this.ctx.currentTime + 0.4);
   }
 }
 const sfx = new SoundEngine();
 
-/* ==================== 1. 下半部：真實明亮彩色實體地圖 ==================== */
-let map = null, userMarker = null;
-let streetLayer = null, satelliteLayer = null;
-let isSatellite = false;
+/* ==================== 狀態與數值 ==================== */
+let playerHP = 70;
+const MAX_HP = 100;
+let totalMeters = 0;
+let lastSupplyMeters = 0; // 30 米物資累加器
 
-function initLeafletMap() {
-  map = L.map('leaflet-map', { zoomControl: false }).setView([userLat, userLng], 17);
+// Three.js 核心場景
+let scene, camera, renderer;
+let playerGroup, radarPulseRing;
+let spawnedObjects = []; // 存放地面上的急救包與惡靈
 
-  // 標準明亮開源道路地圖 (絕不黑屏)
-  streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; OpenStreetMap'
-  }).addTo(map);
+// 玩家在虛擬地圖中的位置 (X, Z 坐標)
+let playerPos = { x: 0, z: 0 };
+let activeEncounter = null;
 
-  // 高解析真實衛星空照圖 (Esri World Imagery)
-  satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    maxZoom: 19,
-    attribution: '&copy; Esri'
-  });
-
-  // 玩家綠光標記
-  const playerIcon = L.divIcon({
-    html: '<div style="width:16px;height:16px;background:#00ff88;border:2px solid #fff;border-radius:50%;box-shadow:0 0 10px #00ff88;"></div>',
-    iconSize: [16, 16], iconAnchor: [8, 8]
-  });
-  userMarker = L.marker([userLat, userLng], { icon: playerIcon }).addTo(map);
-
-  // ⭐ 強制刷新地圖尺寸，避免灰屏
-  setTimeout(() => { map.invalidateSize(); }, 200);
-}
-
-// 切換「道路地圖 / 衛星空照圖」
-function toggleMapLayer() {
-  if (!map) return;
-  const btn = document.getElementById('btn-layer-switch');
-  if (!isSatellite) {
-    map.removeLayer(streetLayer);
-    map.addLayer(satelliteLayer);
-    isSatellite = true;
-    btn.classList.add('active');
-    btn.innerText = "🗺️ 切換為一般道路地圖";
-  } else {
-    map.removeLayer(satelliteLayer);
-    map.addLayer(streetLayer);
-    isSatellite = false;
-    btn.classList.remove('active');
-    btn.innerText = "🛰️ 切換為真實衛星空照圖";
-  }
-}
-
-/* ==================== 2. 上半部：真實 360° 全彩實景視窗 ==================== */
-let scene, camera, renderer, sphereMesh;
-let clueSprite = null, supplySprite = null;
-let lon = 0, lat = 0, phi = 0, theta = 0;
-let isInteracting = false, startX = 0, startY = 0, downLon = 0, downLat = 0, moveDist = 0;
-let raycaster, mouse;
-
-function initThreeStreet() {
-  const container = document.getElementById('canvas-container');
-  scene = new THREE.Scene();
-  raycaster = new THREE.Raycaster();
-  mouse = new THREE.Vector2();
-
-  camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 1, 1100);
-  camera.target = new THREE.Vector3(0, 0, 0);
-
-  // 360 實景球體
-  const geom = new THREE.SphereGeometry(500, 60, 40);
-  geom.scale(-1, 1, 1);
-  sphereMesh = new THREE.Mesh(geom, new THREE.MeshBasicMaterial());
-  scene.add(sphereMesh);
-
-  // 載入第一張全彩街景
-  loadStreetPano(0);
-
-  // 放入關卡解謎證物
-  spawnClueSprite();
-
-  renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setSize(container.clientWidth, container.clientHeight);
-  container.appendChild(renderer.domElement);
-
-  // 滑鼠與觸控拖曳轉頭
-  container.addEventListener('pointerdown', (e) => {
-    isInteracting = true;
-    startX = e.clientX; startY = e.clientY;
-    downLon = lon; downLat = lat;
-    moveDist = 0;
-  });
-  document.addEventListener('pointermove', (e) => {
-    if (isInteracting) {
-      const dx = e.clientX - startX, dy = e.clientY - startY;
-      moveDist += Math.hypot(dx, dy);
-      lon = (startX - e.clientX) * 0.15 + downLon;
-      lat = (e.clientY - startY) * 0.15 + downLat;
-    }
-  });
-  document.addEventListener('pointerup', (e) => {
-    isInteracting = false;
-    if (moveDist < 6) checkInteractiveClick(e);
-  });
-
-  window.addEventListener('resize', () => {
-    camera.aspect = container.clientWidth / container.clientHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    if (map) map.invalidateSize();
-  });
-
-  // 手機陀螺儀支援
-  window.addEventListener('deviceorientation', (e) => {
-    if (e.alpha !== null && !isInteracting) {
-      lon = 360 - e.alpha;
-      lat = Math.max(-80, Math.min(80, e.beta - 90));
-    }
-  });
-
-  animate();
-}
-
-function loadStreetPano(idx) {
-  const loader = new THREE.TextureLoader();
-  loader.setCrossOrigin('anonymous');
-  loader.load(REAL_STREET_PANOS[idx], (tex) => {
-    sphereMesh.material.map = tex;
-    sphereMesh.material.needsUpdate = true;
-  });
-}
-
-// 建立解謎證物 Sprite
-function spawnClueSprite() {
-  if (clueSprite) scene.remove(clueSprite);
-
-  const canvas = document.createElement('canvas');
-  canvas.width = 128; canvas.height = 160;
-  const ctx = canvas.getContext('2d');
-  const grad = ctx.createRadialGradient(64, 80, 10, 64, 80, 60);
-  grad.addColorStop(0, 'rgba(255, 220, 100, 0.95)');
-  grad.addColorStop(1, 'transparent');
-  ctx.fillStyle = grad; ctx.fillRect(0, 0, 128, 160);
-  ctx.fillStyle = "#fff3d1"; ctx.fillRect(30, 40, 68, 80);
-  ctx.strokeStyle = "#800000"; ctx.lineWidth = 3; ctx.strokeRect(30, 40, 68, 80);
-
-  const tex = new THREE.CanvasTexture(canvas);
-  clueSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true }));
-  clueSprite.scale.set(40, 48, 1);
-  clueSprite.position.set(40, -120, -260); // 落在地面偏前方
-  clueSprite.userData = { type: "clue" };
-  scene.add(clueSprite);
-}
-
-// ⭐ 每走 30 米生成發光的急救包 Sprite
-function spawnSupplySprite() {
-  if (supplySprite) scene.remove(supplySprite);
-
-  const canvas = document.createElement('canvas');
-  canvas.width = 128; canvas.height = 128;
-  const ctx = canvas.getContext('2d');
-  const grad = ctx.createRadialGradient(64, 64, 10, 64, 64, 55);
-  grad.addColorStop(0, 'rgba(0, 255, 136, 0.95)');
-  grad.addColorStop(1, 'transparent');
-  ctx.fillStyle = grad; ctx.fillRect(0, 0, 128, 128);
-
-  // 綠十字急救箱圖示
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(52, 28, 24, 72);
-  ctx.fillRect(28, 52, 72, 24);
-
-  const tex = new THREE.CanvasTexture(canvas);
-  supplySprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true }));
-  supplySprite.scale.set(45, 45, 1);
-
-  // 隨機放在視野周遭的地面
-  const angle = Math.random() * Math.PI * 2;
-  const r = 240;
-  supplySprite.position.set(Math.cos(angle) * r, -140, Math.sin(angle) * r);
-  supplySprite.userData = { type: "supply", heal: 35 };
-  scene.add(supplySprite);
-
-  document.getElementById('footer-text').innerText = "「🎉 累積走動 30 米！街道地面上掉落了【急救箱】！轉身低頭點擊拾取！」";
-}
-
-// 點擊判定 (撿急救包或調查證物)
-function checkInteractiveClick(e) {
-  const container = document.getElementById('street-box');
-  const rect = container.getBoundingClientRect();
-  if (e.clientY > rect.bottom || e.clientY < rect.top) return;
-
-  mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-  mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-
-  raycaster.setFromCamera(mouse, camera);
-  const targets = [];
-  if (clueSprite) targets.push(clueSprite);
-  if (supplySprite) targets.push(supplySprite);
-
-  const hits = raycaster.intersectObjects(targets);
-  if (hits.length > 0) {
-    const hitObj = hits[0].object;
-    if (hitObj.userData.type === "clue") {
-      openClueModal();
-    } else if (hitObj.userData.type === "supply") {
-      collectSupply(hitObj);
-    }
-  }
-}
-
-function collectSupply(obj) {
-  sfx.heal();
-  playerHP = Math.min(MAX_HP, playerHP + obj.userData.heal);
-  document.getElementById('hp-badge').innerText = `❤️ HP: ${playerHP}/${MAX_HP}`;
-
-  const toast = document.getElementById('heal-toast');
-  toast.innerText = `+${obj.userData.heal} HP 急救箱`;
-  toast.style.display = 'block';
-  setTimeout(() => { toast.style.display = 'none'; }, 1200);
-
-  scene.remove(obj);
-  supplySprite = null;
-  document.getElementById('footer-text').innerText = "「成功拾取急救箱！體力大幅恢復！繼續前進尋找密碼！」";
-}
-
-/* ==================== 3. 移動與累計機制 ==================== */
-function simMove(dLng, dLat) {
-  sfx.step();
-  userLat += dLat; userLng += dLng;
-  totalDistance += 10;
-  distanceSinceLastPano += 10;
-  distanceSinceLastSupply += 10;
-
-  document.getElementById('step-badge').innerText = `累計走動: ${totalDistance}m`;
-
-  // 同步下方地圖
-  if (userMarker) userMarker.setLatLng([userLat, userLng]);
-  if (map) map.panTo([userLat, userLng]);
-
-  // ⭐ 每累積 15 米切換下一張真實街景
-  if (distanceSinceLastPano >= 15) {
-    distanceSinceLastPano = 0;
-    lastStreetPanoIdx = (lastStreetPanoIdx + 1) % REAL_STREET_PANOS.length;
-    loadStreetPano(lastStreetPanoIdx);
-    document.getElementById('footer-text').innerText = "「走動滿 15 米！街景已切換至前方新街道！」";
-  }
-
-  // ⭐ 每累積 30 米動態生成急救箱
-  if (distanceSinceLastSupply >= 30) {
-    distanceSinceLastSupply = 0;
-    spawnSupplySprite();
-  }
-}
-
-function startGame() {
+function initGame() {
   document.getElementById('start-modal').style.display = 'none';
   sfx.init();
 
-  // 初始化地圖與實景
-  initLeafletMap();
-  initThreeStreet();
+  initThreePokeMap();
 
-  // 讀取真實 GPS
+  // 若裝置有真實 GPS，同步累加走動
   if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      userLat = pos.coords.latitude; userLng = pos.coords.longitude;
-      if (userMarker && map) {
-        userMarker.setLatLng([userLat, userLng]);
-        map.setView([userLat, userLng], 17);
+    let lastLat = null, lastLng = null;
+    navigator.geolocation.watchPosition(pos => {
+      if (lastLat !== null) {
+        const d = getDist(lastLat, lastLng, pos.coords.latitude, pos.coords.longitude);
+        if (d > 2) {
+          movePlayerByMeters(d);
+        }
       }
-    });
+      lastLat = pos.coords.latitude;
+      lastLng = pos.coords.longitude;
+    }, null, { enableHighAccuracy: true });
   }
 }
 
-/* ==================== 4. 密碼鎖與證物 ==================== */
-function openClueModal() {
-  document.getElementById('clue-title').innerText = "【遺留的便箋】";
-  document.getElementById('clue-content').innerText = "『……不要在原地停留！\n解開前方通道的通關代碼是：5 - 2 - 0。』";
-  document.getElementById('clue-modal').style.display = 'flex';
-}
-function closeClueModal() { document.getElementById('clue-modal').style.display = 'none'; }
+/* ==================== 建立 Pokémon GO 3D 立體暗黑地圖 ==================== */
+function initThreePokeMap() {
+  const container = document.getElementById('canvas-container');
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x07090e);
+  // 靈異深藍黑濃霧
+  scene.fog = new THREE.FogExp2(0x07090e, 0.008);
 
-function openKeypad() {
-  passcodeBuffer = "";
-  document.getElementById('keypad-code').innerText = "----";
-  document.getElementById('keypad-modal').style.display = 'flex';
-}
-function closeKeypad() { document.getElementById('keypad-modal').style.display = 'none'; }
+  // 經典 Pokémon GO 45° 俯仰透視攝影機
+  camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
+  camera.position.set(0, 85, 95);
+  camera.lookAt(0, 0, 0);
 
-function pressKey(n) {
-  if (passcodeBuffer.length < 4) {
-    passcodeBuffer += n;
-    document.getElementById('keypad-code').innerText = passcodeBuffer.padEnd(4, '-');
+  // 建立陰暗立體城市地表
+  buildDarkCityEnvironment();
+
+  // 建立玩家化身與雷達圈
+  buildPlayerAvatar();
+
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  container.appendChild(renderer.domElement);
+
+  // 點擊物資射線判定
+  const raycaster = new THREE.Raycaster();
+  const mouse = new THREE.Vector2();
+  container.addEventListener('pointerup', (e) => {
+    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+
+    const hitItems = [];
+    spawnedObjects.forEach(obj => { if (obj.mesh) hitItems.push(obj.mesh); });
+    const intersects = raycaster.intersectObjects(hitItems);
+
+    if (intersects.length > 0) {
+      const targetMesh = intersects[0].object;
+      const data = targetMesh.userData;
+      if (data && data.type === "supply") {
+        collectSupply(data.objRef);
+      }
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  // 生成開場第一隻在遠處徘徊的惡靈
+  spawnRoamingGhost(30, -35);
+
+  animateMap();
+}
+
+// 建立帶有恐怖發光網格的地表與半透明黑建築
+function buildDarkCityEnvironment() {
+  // 暗黑發光網格地面
+  const gridHelper = new THREE.GridHelper(800, 80, 0x1f3045, 0x0f1822);
+  gridHelper.position.y = -0.5;
+  scene.add(gridHelper);
+
+  // 街道血光標線 (模擬縱橫交叉道路)
+  const roadMat = new THREE.MeshBasicMaterial({ color: 0x151c24 });
+  const lineMat = new THREE.MeshBasicMaterial({ color: 0x3d1214 });
+
+  // 橫向十字主幹道
+  const mainRoadX = new THREE.Mesh(new THREE.PlaneGeometry(800, 18), roadMat);
+  mainRoadX.rotation.x = -Math.PI / 2;
+  scene.add(mainRoadX);
+
+  const mainRoadZ = new THREE.Mesh(new THREE.PlaneGeometry(18, 800), roadMat);
+  mainRoadZ.rotation.x = -Math.PI / 2;
+  scene.add(mainRoadZ);
+
+  // 隨機生成周圍半透明的黑色老舊建築剪影
+  const buildingMat = new THREE.MeshBasicMaterial({
+    color: 0x0c1017,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.35
+  });
+
+  for (let i = 0; i < 35; i++) {
+    const w = 20 + Math.random() * 25;
+    const h = 25 + Math.random() * 60;
+    const d = 20 + Math.random() * 25;
+    const bMesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), buildingMat);
+
+    let bx = (Math.random() - 0.5) * 450;
+    let bz = (Math.random() - 0.5) * 450;
+    // 避開中央十字路口
+    if (Math.abs(bx) < 25) bx += 40;
+    if (Math.abs(bz) < 25) bz += 40;
+
+    bMesh.position.set(bx, h / 2, bz);
+    scene.add(bMesh);
   }
 }
-function clearKeypad() { passcodeBuffer = ""; document.getElementById('keypad-code').innerText = "----"; }
 
-function submitPasscode() {
-  if (passcodeBuffer === currentPasscode) {
-    closeKeypad();
-    alert(`🎉【解鎖成功！】你破除了第 ${stageLevel} 關結界！邁向下一處街道！`);
-    stageLevel++;
-    document.getElementById('stage-title').innerText = `第 ${stageLevel} 關：新街區結界`;
-    spawnClueSprite();
-  } else {
-    alert("【密碼錯誤！】警報響起，請低頭查看地上便箋！");
-    clearKeypad();
-  }
+// 建立玩家核心化身與 Pokémon GO 經典脈衝感應圈
+function buildPlayerAvatar() {
+  playerGroup = new THREE.Group();
+
+  // 1. 玩家立體化身 (白光幽靈小人)
+  const bodyMat = new THREE.MeshBasicMaterial({ color: 0x00ff88 });
+  const avatarMesh = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 2.5, 6, 8), bodyMat);
+  avatarMesh.position.y = 3;
+  playerGroup.add(avatarMesh);
+
+  // 頭部光球
+  const headMesh = new THREE.Mesh(new THREE.SphereGeometry(1.8, 12, 12), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+  headMesh.position.y = 7;
+  playerGroup.add(headMesh);
+
+  // 2. 經典 45 米雷達感應圈 (圈隨時間向外擴散)
+  const ringGeom = new THREE.RingGeometry(42, 43, 48);
+  const ringMat = new THREE.MeshBasicMaterial({
+    color: 0x00ff88, side: THREE.DoubleSide, transparent: true, opacity: 0.4
+  });
+  radarPulseRing = new THREE.Mesh(ringGeom, ringMat);
+  radarPulseRing.rotation.x = -Math.PI / 2;
+  radarPulseRing.position.y = 0.2;
+  playerGroup.add(radarPulseRing);
+
+  scene.add(playerGroup);
 }
 
-function animate() {
-  requestAnimationFrame(animate);
+/* ==================== 走動與 30 米物資掉落機制 ==================== */
+function simMove(dx, dz) {
+  sfx.step();
+  playerPos.x += dx;
+  playerPos.z += dz;
 
-  lat = Math.max(-85, Math.min(85, lat));
-  phi = THREE.MathUtils.degToRad(90 - lat);
-  theta = THREE.MathUtils.degToRad(lon);
+  const moveDist = Math.hypot(dx, dz);
+  movePlayerByMeters(moveDist);
+}
 
-  camera.target.x = 500 * Math.sin(phi) * Math.cos(theta);
-  camera.target.y = 500 * Math.cos(phi);
-  camera.target.z = 500 * Math.sin(phi) * Math.sin(theta);
-  camera.lookAt(camera.target);
+function movePlayerByMeters(dist) {
+  totalMeters += Math.round(dist);
+  lastSupplyMeters += dist;
 
-  if (clueSprite) {
-    const pulse = 1.0 + Math.sin(Date.now() * 0.005) * 0.08;
-    clueSprite.scale.set(40 * pulse, 48 * pulse, 1);
+  document.getElementById('steps-badge').innerText = `走動: ${totalMeters}m`;
+
+  // 平滑移動玩家化身與攝影機
+  playerGroup.position.set(playerPos.x, 0, playerPos.z);
+  camera.position.set(playerPos.x, 85, playerPos.z + 95);
+  camera.lookAt(playerPos.x, 0, playerPos.z);
+
+  // ⭐ 每累積滿 30 公尺，在周圍馬路上動態生成急救包
+  if (lastSupplyMeters >= 30) {
+    lastSupplyMeters = 0;
+    spawnSupplyBoxNearby();
   }
-  if (supplySprite) {
-    const pulse = 1.0 + Math.sin(Date.now() * 0.008) * 0.12;
-    supplySprite.scale.set(45 * pulse, 45 * pulse, 1);
+
+  // 檢查是否踏入惡靈感應半徑 (20 米內遭遇戰)
+  checkGhostEncounters();
+}
+
+// 隨機在玩家周遭 25 米處掉落急救包
+function spawnSupplyBoxNearby() {
+  const angle = Math.random() * Math.PI * 2;
+  const radius = 22 + Math.random() * 15;
+  const sx = playerPos.x + Math.cos(angle) * radius;
+  const sz = playerPos.z + Math.sin(angle) * radius;
+
+  // 建立立體綠色醫療箱
+  const boxGeom = new THREE.BoxGeometry(4, 4, 4);
+  const boxMat = new THREE.MeshBasicMaterial({ color: 0x00ff88, wireframe: false });
+  const mesh = new THREE.Mesh(boxGeom, boxMat);
+  mesh.position.set(sx, 2.5, sz);
+
+  const supplyData = {
+    id: Date.now(),
+    type: "supply",
+    heal: 35,
+    mesh: mesh
+  };
+  mesh.userData = { type: "supply", objRef: supplyData };
+
+  scene.add(mesh);
+  spawnedObjects.push(supplyData);
+
+  sfx.ping();
+  alert("【地脈共鳴！】雷達感應圈內探測到被遺棄的【急救包】！點擊地圖上的綠色方塊拾取！");
+}
+
+function collectSupply(objRef) {
+  sfx.ping();
+  playerHP = Math.min(MAX_HP, playerHP + objRef.heal);
+  updateHPBar();
+
+  // 彈出綠字
+  const toast = document.getElementById('toast-text');
+  toast.innerText = `+${objRef.heal} HP 急救包`;
+  toast.style.display = 'block';
+  setTimeout(() => { toast.style.display = 'none'; }, 1000);
+
+  scene.remove(objRef.mesh);
+  spawnedObjects = spawnedObjects.filter(item => item !== objRef);
+}
+
+// 生成遊蕩惡靈 (血紅發光實體)
+function spawnRoamingGhost(gx, gz) {
+  const ghostGeom = new THREE.SphereGeometry(3.5, 12, 12);
+  const ghostMat = new THREE.MeshBasicMaterial({ color: 0xff1111 });
+  const ghostMesh = new THREE.Mesh(ghostGeom, ghostMat);
+  ghostMesh.position.set(gx, 4, gz);
+
+  const ghostData = {
+    type: "ghost",
+    mesh: ghostMesh,
+    x: gx, z: gz
+  };
+  scene.add(ghostMesh);
+  spawnedObjects.push(ghostData);
+}
+
+// 檢查是否觸發惡靈遭遇戰
+function checkGhostEncounters() {
+  spawnedObjects.forEach(obj => {
+    if (obj.type === "ghost") {
+      const dist = Math.hypot(obj.mesh.position.x - playerPos.x, obj.mesh.position.z - playerPos.z);
+      if (dist < 20 && !activeEncounter) {
+        triggerEncounter(obj);
+      }
+    }
+  });
+}
+
+// 觸發 Pokémon GO 式遭遇彈窗
+function triggerEncounter(ghostObj) {
+  activeEncounter = ghostObj;
+  sfx.roar();
+  document.getElementById('encounter-flash').style.display = 'block';
+  document.getElementById('encounter-modal').style.display = 'flex';
+}
+
+function resolveEncounter() {
+  sfx.ping();
+  document.getElementById('encounter-flash').style.display = 'none';
+  document.getElementById('encounter-modal').style.display = 'none';
+
+  if (activeEncounter) {
+    scene.remove(activeEncounter.mesh);
+    spawnedObjects = spawnedObjects.filter(item => item !== activeEncounter);
+    activeEncounter = null;
   }
+
+  alert("【除靈大成功！】紅衣煞已被符咒淨化驅散！獲得 100 點靈力經驗值！");
+
+  // 在更遠處再生成下一隻惡靈
+  const angle = Math.random() * Math.PI * 2;
+  spawnRoamingGhost(playerPos.x + Math.cos(angle) * 60, playerPos.z + Math.sin(angle) * 60);
+}
+
+function updateHPBar() {
+  document.getElementById('hp-bar').style.width = `${(playerHP / MAX_HP) * 100}%`;
+  document.getElementById('hp-badge').innerText = `HP: ${playerHP}/${MAX_HP}`;
+}
+
+function scanSurroundings() {
+  sfx.ping();
+  // 放大雷達圈一瞬間
+  radarPulseRing.scale.set(1.4, 1.4, 1);
+  setTimeout(() => { radarPulseRing.scale.set(1, 1, 1); }, 400);
+}
+
+function recenterPlayer() {
+  camera.position.set(playerPos.x, 85, playerPos.z + 95);
+  camera.lookAt(playerPos.x, 0, playerPos.z);
+}
+
+function getDist(lat1, lon1, lat2, lon2) {
+  const R = 6371e3;
+  const p1 = lat1 * Math.PI / 180, p2 = lat2 * Math.PI / 180;
+  const dp = (lat2 - lat1) * Math.PI / 180, dl = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dp/2)**2 + Math.cos(p1)*Math.cos(p2) * Math.sin(dl/2)**2;
+  return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+}
+
+// 主渲染動畫循環
+function animateMap() {
+  requestAnimationFrame(animateMap);
+
+  // 雷達感應圈脈衝呼吸動畫
+  if (radarPulseRing) {
+    const pulse = 1.0 + Math.sin(Date.now() * 0.004) * 0.06;
+    radarPulseRing.scale.set(pulse, pulse, 1);
+  }
+
+  // 地面急救包與惡靈浮動旋轉
+  spawnedObjects.forEach(obj => {
+    if (obj.mesh) {
+      obj.mesh.rotation.y += 0.03;
+      obj.mesh.position.y = (obj.type === "ghost" ? 5 : 2.5) + Math.sin(Date.now() * 0.005) * 0.8;
+    }
+  });
 
   renderer.render(scene, camera);
 }
