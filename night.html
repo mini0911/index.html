@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>【寂靜結界】實景街景與雷達地圖雙屏版</title>
+<title>【寂靜結界】Mapillary 官方真實街景整合版</title>
 
-<!-- Leaflet 開源地圖 (免任何 API Key，保證 100% 顯示) -->
+<!-- Leaflet 開源地圖 -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<!-- Pannellum 360° 實景引擎 (免 Key、極速渲染) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
-<script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+<!-- MapillaryJS 官方庫 -->
+<link href="https://unpkg.com/mapillary-js@4.1.2/dist/mapillary.css" rel="stylesheet" />
+<script src="https://unpkg.com/mapillary-js@4.1.2/dist/mapillary.js"></script>
 
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
@@ -45,7 +45,7 @@
   .badge.hp { color: #ff4444; border-color: #772222; font-weight: bold; }
   .badge.stalker { color: #ffaa00; border-color: #774400; font-weight: bold; }
 
-  /* ==================== 上半部：360° 真實街景 ==================== */
+  /* ==================== 上半部：Mapillary 官方真實街景 ==================== */
   #street-section {
     position: relative;
     width: 100%;
@@ -53,9 +53,15 @@
     background: #000;
     overflow: hidden;
   }
-  #panorama-viewer {
-    width: 100%; height: 100%;
+  #mly-container {
+    width: 100%; height: 100%; position: absolute; top: 0; left: 0;
+    /* 恐怖夜視濾鏡：黑夜反轉、去飽和、深暗高對比 */
+    filter: invert(90%) hue-rotate(180deg) contrast(140%) saturate(15%) brightness(65%);
   }
+  .mapillary-attribution-container, .mapillary-sequence-container {
+    opacity: 0.15 !important;
+  }
+
   .vhs-scanlines {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: radial-gradient(circle at 50% 50%, transparent 45%, rgba(0,0,0,0.5) 80%, rgba(0,0,0,0.9) 100%),
@@ -69,38 +75,45 @@
     border-radius: 50%; pointer-events: none; z-index: 20;
   }
 
-  /* 惡靈 Hotspot 樣式 */
-  .ghost-spot {
-    width: 70px; height: 100px;
-    background: radial-gradient(ellipse at 50% 35%, rgba(255, 0, 0, 0.95) 0%, rgba(50, 0, 0, 0.8) 55%, transparent 80%);
-    border-radius: 50%; cursor: pointer;
-    animation: ghostPulse 0.8s infinite alternate;
+  /* 錨定在街景方位上的惡靈 */
+  #ghost-entity {
+    position: absolute; width: 100px; height: 150px;
+    transform: translate(-50%, -50%); cursor: pointer; display: none; z-index: 30;
   }
-  @keyframes ghostPulse {
-    0% { transform: scale(0.9); filter: blur(2px); }
-    100% { transform: scale(1.1); filter: blur(4px); }
+  .ghost-shadow {
+    width: 100%; height: 100%;
+    background: radial-gradient(ellipse at 50% 35%, rgba(255, 0, 0, 0.95) 0%, rgba(50, 0, 0, 0.8) 55%, transparent 80%);
+    filter: blur(4px); animation: ghostBlink 1s infinite alternate;
+  }
+  .ghost-eyes {
+    position: absolute; top: 32%; left: 50%; transform: translate(-50%, -50%);
+    display: flex; gap: 18px;
+  }
+  .ghost-eye {
+    width: 10px; height: 14px; background: #fff; border-radius: 50%;
+    box-shadow: 0 0 10px #ff0000;
+  }
+  @keyframes ghostBlink {
+    0% { transform: scale(0.95); opacity: 0.8; }
+    100% { transform: scale(1.06); opacity: 1; }
   }
 
-  /* ==================== 下半部：清楚可見的實體雷達地圖 ==================== */
+  /* ==================== 下半部：清楚可讀的雷達地圖 ==================== */
   #map-section {
     position: relative;
     width: 100%;
     height: 48%;
     background: #111;
-    display: flex;
-    flex-direction: column;
   }
   #map {
-    width: 100%;
-    height: 100%;
+    width: 100%; height: 100%;
     background: #1a1a1a;
   }
-  /* 地圖微調：不加過激的反轉濾鏡，維持清楚可讀性 */
   .leaflet-tile {
     filter: brightness(80%) contrast(110%) !important;
   }
 
-  /* 室內方向模擬鍵盤 (浮在地圖右上角) */
+  /* 方向模擬鍵盤 */
   .sim-controls {
     position: absolute; right: 10px; top: 10px; z-index: 999;
     display: grid; grid-template-columns: repeat(3, 34px);
@@ -112,7 +125,7 @@
     cursor: pointer; border-radius: 4px; font-size: 13px; font-weight: bold;
   }
 
-  /* 底部對講機懸浮條 */
+  /* 底部面板 */
   .floating-footer {
     position: absolute; bottom: 8px; left: 8px; right: 8px;
     background: rgba(13, 17, 23, 0.92); border: 1px solid #30363d;
@@ -128,7 +141,7 @@
     padding: 6px 12px; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer;
   }
 
-  /* 怪物追上警告邊框 */
+  /* 怪物逼近警示紅光 */
   #danger-glow {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     pointer-events: none; z-index: 1500;
@@ -160,11 +173,10 @@
 <div id="app">
   <div id="danger-glow"></div>
 
-  <!-- 頂部狀態 -->
   <div class="hud-header">
     <div class="hud-title">
       <div class="pulse-dot"></div>
-      <span>靈異實景 × 雷達雙視角</span>
+      <span>MAPILLARY 實景 × 雷達追逐</span>
     </div>
     <div class="status-badges">
       <div class="badge hp" id="hp-badge">HP: 100/100</div>
@@ -173,18 +185,27 @@
     </div>
   </div>
 
-  <!-- 上半部：360° 真實街景 -->
+  <!-- 上半部：Mapillary 街景畫布 -->
   <div id="street-section">
-    <div id="panorama-viewer"></div>
+    <div id="mly-container"></div>
     <div class="vhs-scanlines"></div>
     <div class="crosshair"></div>
+
+    <!-- 惡靈實體 -->
+    <div id="ghost-entity" onclick="triggerExorcism()">
+      <div class="ghost-shadow"></div>
+      <div class="ghost-eyes">
+        <div class="ghost-eye"></div>
+        <div class="ghost-eye"></div>
+      </div>
+    </div>
   </div>
 
-  <!-- 下半部：保證 100% 顯示的 Leaflet 地圖 -->
+  <!-- 下半部：實體地圖 -->
   <div id="map-section">
     <div id="map"></div>
 
-    <!-- 室內模擬走動鍵盤 -->
+    <!-- 模擬方向鍵 -->
     <div class="sim-controls">
       <div></div>
       <button class="sim-btn" onclick="simMove(0, 0.00015)">▲</button>
@@ -194,28 +215,34 @@
       <button class="sim-btn" onclick="simMove(0.00015, 0)">►</button>
     </div>
 
-    <!-- 底部狀態面板 -->
+    <!-- 底部面板 -->
     <div class="floating-footer">
       <div class="footer-msg" id="footer-text">
-        「看下方地圖！紅點是追你的怪物（3m/s），上方滑動找惡靈！」
+        「上方是 Mapillary 真實街景，轉動尋找惡靈！下方紅點是追趕怪！」
       </div>
       <button class="btn-exorcise" onclick="triggerExorcism()">⚡ 封印驅魔 ⚡</button>
     </div>
   </div>
 
-  <!-- 開場視窗 -->
+  <!-- 開場授權 -->
   <div id="modal-mask">
-    <h1>靜安怪談：雙視角修復版</h1>
+    <h1>靜安怪談：Mapillary 原生版</h1>
     <p>
-      <b>雙重視野已就緒：</b><br>
-      上方是 <b>360° 真實街道實景</b>，拖曳畫面可轉身找鬼。<br>
-      下方是 <b>即時道路地圖</b>，清楚看見你與 3m/s 追殺怪物的距離！
+      <b>Token 已成功配置！</b><br>
+      上方調用 <b>Mapillary 官方道路全景</b>。<br>
+      下方調用 <b>實體即時地圖</b>，顯示 3m/s 逼近的怪物！
     </p>
-    <button class="btn-main" onclick="initGame()">進入現場</button>
+    <button class="btn-main" onclick="initGame()">啟動 Mapillary 實景</button>
   </div>
 </div>
 
 <script>
+// ⭐ 已配置你的 Mapillary Client Token
+const MAPILLARY_CLIENT_TOKEN = "MLY|28733254389675887|86d28fb76c4cd708f49749d1d979baf4";
+
+// 台北市區真實公開街景照片 ID (保證可連線讀取)
+const INITIAL_IMAGE_ID = "498763468214164";
+
 /* ==================== 音效引擎 ==================== */
 class SoundEngine {
   constructor() { this.ctx = null; }
@@ -268,17 +295,18 @@ let monsterLat = 0, monsterLng = 0;
 const MONSTER_SPEED_MPS = 3.0; // 3m/s 追趕
 let lastTime = performance.now();
 
-let pViewer = null;
+let mlyViewer = null;
+let ghostBearing = 45; // 惡靈固定在街景東北方 45 度
 
 function initGame() {
   document.getElementById('modal-mask').style.display = 'none';
   sfx.init();
 
-  // 1. 初始化 360° 街景 (Pannellum)
-  initPanorama();
-
-  // 2. 初始化下半部地圖 (Leaflet)
+  // 1. 初始化下方地圖 (先排版完成)
   initLeafletMap();
+
+  // 2. 初始化上方 Mapillary 街景
+  initMapillaryStreetView();
 
   // 3. 嘗試取得真實 GPS
   if (navigator.geolocation) {
@@ -293,53 +321,84 @@ function initGame() {
     });
   }
 
-  // 4. 啟動追逐主循環
+  // 4. 啟動 3m/s 追逐循環
   lastTime = performance.now();
   requestAnimationFrame(gameLoop);
 }
 
-// 1. 上半部 360 街景初始化
-function initPanorama() {
-  pViewer = pannellum.viewer('panorama-viewer', {
-    type: 'equirectangular',
-    panorama: 'https://pannellum.org/images/alma.jpg', // 高畫質真實街道全景
-    autoLoad: true,
-    showControls: false,
-    orientationOnByDefault: true,
-    hotSpots: [
-      {
-        pitch: -3,
-        yaw: 45,
-        cssClass: 'ghost-spot',
-        createTooltipFunc: (div) => {
-          div.onclick = () => { triggerExorcism(); };
-        }
+// 1. 初始化 Mapillary 官方街景
+function initMapillaryStreetView() {
+  try {
+    const { Viewer } = mapillary;
+
+    mlyViewer = new Viewer({
+      accessToken: MAPILLARY_CLIENT_TOKEN,
+      container: 'mly-container',
+      imageId: INITIAL_IMAGE_ID,
+      component: {
+        cover: false,
+        direction: false,
+        sequence: false
       }
-    ]
-  });
+    });
+
+    // 監聽街景視角旋轉 (POV)，同步計算惡靈螢幕位置
+    mlyViewer.on('pov', updateGhostOverlay);
+    window.addEventListener('resize', updateGhostOverlay);
+
+    // 延遲更新以防排版未就緒
+    setTimeout(updateGhostOverlay, 500);
+  } catch (err) {
+    console.error("Mapillary 初始化異常:", err);
+  }
 }
 
-// 2. 下半部地圖初始化 (關鍵修復：解決空白地圖)
+// 投影運算：將惡靈固定在街景特定方位角
+function updateGhostOverlay() {
+  if (!mlyViewer) return;
+
+  mlyViewer.getPointOfView().then(pov => {
+    const sec = document.getElementById('street-section');
+    const w = sec.clientWidth;
+    const h = sec.clientHeight;
+
+    let diff = ghostBearing - (pov.bearing || 0);
+    while (diff < -180) diff += 360;
+    while (diff > 180) diff -= 360;
+
+    const ghostEl = document.getElementById('ghost-entity');
+    const hFov = 75; // Mapillary 預設水平視野
+
+    if (Math.abs(diff) < hFov / 2) {
+      const screenX = (w / 2) + (diff / (hFov / 2)) * (w / 2);
+      ghostEl.style.display = 'block';
+      ghostEl.style.left = `${screenX}px`;
+      ghostEl.style.top = `${h * 0.52}px`;
+    } else {
+      ghostEl.style.display = 'none';
+    }
+  }).catch(() => {});
+}
+
+// 2. 初始化下方 Leaflet 地圖 (含尺寸安全強制修復)
 function initLeafletMap() {
-  // 建立地圖
   map = L.map('map', {
     zoomControl: false,
     attributionControl: false
   }).setView([userLat, userLng], 17);
 
-  // 載入 OpenStreetMap 圖資
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19
   }).addTo(map);
 
-  // 玩家綠光標記
+  // 玩家標記 (綠色)
   const playerIcon = L.divIcon({
     html: '<div style="width:14px;height:14px;background:#00ff88;border:2px solid #fff;border-radius:50%;box-shadow:0 0 10px #00ff88;"></div>',
     iconSize: [14, 14], iconAnchor: [7, 7]
   });
   userMarker = L.marker([userLat, userLng], { icon: playerIcon }).addTo(map);
 
-  // 怪物紅光標記
+  // 怪物標記 (紅色骷髏)
   resetMonsterPosition();
   const monsterIcon = L.divIcon({
     html: '<div style="width:16px;height:16px;background:#ff0000;border:2px solid #fff;border-radius:50%;box-shadow:0 0 12px #ff0000;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:bold;">☠</div>',
@@ -347,10 +406,10 @@ function initLeafletMap() {
   });
   monsterMarker = L.marker([monsterLat, monsterLng], { icon: monsterIcon }).addTo(map);
 
-  // ⭐ 關鍵修復：延遲 150ms 強制刷新地圖尺寸，避免容器縮放導致圖磚空白
+  // 關鍵修復：延遲 180ms 強制刷新地圖尺寸，避免灰屏/空白
   setTimeout(() => {
     map.invalidateSize();
-  }, 150);
+  }, 180);
 }
 
 function resetMonsterPosition() {
@@ -358,7 +417,6 @@ function resetMonsterPosition() {
   monsterLng = userLng - 0.0003;
 }
 
-// 距離計算 (公尺)
 function getDistanceMeters(lat1, lon1, lat2, lon2) {
   const R = 6371e3;
   const p1 = lat1 * Math.PI / 180, p2 = lat2 * Math.PI / 180;
@@ -392,13 +450,13 @@ function gameLoop(now) {
     glow.classList.remove('danger-on');
   }
 
-  // 追上撲咬 (小於 4 米)
+  // 撲咬
   if (dist <= 4) {
     sfx.roar();
     playerHP = Math.max(0, playerHP - 30);
     document.getElementById('hp-badge').innerText = `HP: ${playerHP}/100`;
     resetMonsterPosition();
-    alert(`【遭背後撲咬！】受到 30 傷害！剩餘 HP: ${playerHP}。快邁開腳步逃跑！`);
+    alert(`【遭背後撲咬！】受到 30 傷害！剩餘 HP: ${playerHP}。快邁開腳步！`);
   }
 
   requestAnimationFrame(gameLoop);
@@ -414,11 +472,13 @@ function simMove(dLng, dLat) {
   document.getElementById('step-badge').innerText = `步數: ${totalSteps}`;
 }
 
-// 封印成功
+// 封印驅魔
 function triggerExorcism() {
   sfx.chime();
-  alert("【除靈成功！】你成功在街景中擊散了惡靈！追殺怪已被暫時震退！");
+  alert("【除靈成功！】你成功在 Mapillary 真實街景中擊散了惡靈！追殺怪已被震退！");
   resetMonsterPosition();
+  ghostBearing = (ghostBearing + 120 + Math.random() * 60) % 360;
+  updateGhostOverlay();
 }
 </script>
 </body>
