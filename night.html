@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>今天也要平安下班！校安問答手遊版 (超可愛版)</title>
+  <title>今天也要平安下班！校安問答手遊版</title>
   <style>
     * {
       box-sizing: border-box;
@@ -43,7 +43,6 @@
       background: #fffbeb;
     }
 
-    /* 頂部狀態列 */
     #top-bar {
       position: absolute;
       top: env(safe-area-inset-top, 10px);
@@ -113,7 +112,6 @@
       box-shadow: 0 2px 0 #fdba74;
     }
 
-    /* 對話視窗 */
     #dialog-box {
       position: absolute;
       bottom: 125px;
@@ -128,7 +126,7 @@
       gap: 8px;
       box-shadow: 0 6px 0 #fed7aa;
       z-index: 10;
-      max-height: 40%;
+      max-height: 42%;
       overflow-y: auto;
     }
     #dialog-title {
@@ -155,19 +153,19 @@
       background: #fef3c7;
       border: 2px solid #f59e0b;
       border-radius: 12px;
-      padding: 8px 10px;
+      padding: 9px 12px;
       font-size: 13px;
       font-weight: bold;
       color: #78350f;
       cursor: pointer;
       text-align: left;
+      line-height: 1.35;
     }
     .option-btn:active {
       background: #fde047;
       transform: scale(0.98);
     }
 
-    /* 控制面板 */
     #touch-controls {
       position: absolute;
       bottom: env(safe-area-inset-bottom, 15px);
@@ -220,7 +218,6 @@
       background: #ea580c;
     }
 
-    /* 彈出層 */
     #modal {
       position: absolute;
       top: 0;
@@ -288,7 +285,7 @@
 
     <div id="dialog-box">
       <div id="dialog-title">💬 學生來請教你了！</div>
-      <div id="dialog-text">老師，校門口有奇怪的人一直看我，怎麼辦？</div>
+      <div id="dialog-text">問題內容</div>
       <div class="options-list" id="options-container"></div>
     </div>
 
@@ -303,10 +300,10 @@
     <div id="modal">
       <h1 id="modal-title">校安生存戰 🎒</h1>
       <p id="modal-desc">
-        你是學務處最親切的 Q 版校安老師！<br>
+        你是學務處最親切的校安老師！<br>
         在 17:00 前利用下方按鈕巡視校園，<br>
-        點擊【對話】解答冒問號學生的疑難雜症，<br>
-        守住你的理智值平安下班！
+        點擊【對話】傾聽同學們的現代校園煩惱，<br>
+        憑著愛心與專業守住理智，平安下班！
       </p>
       <button class="cute-btn" id="start-btn" onclick="startGame()">開始值勤 ⏰</button>
     </div>
@@ -449,37 +446,70 @@
     let moveLeft = false;
     let moveRight = false;
 
+    /* 現代校園生活題庫（已移除後方分數顯示） */
     const questionBank = [
       {
-        text: "老師！我的腳踏車鑰匙掉在車棚，而且門口好像有怪人，我該怎麼辦？",
+        text: "老師！有人把我的醜照發在匿名 Threads 和 IG 告白粉專，底下好多人在笑我...",
         options: [
-          { text: "別怕！我陪你一起去車棚找，順便巡邏門口。(SAN +10)", san: 10, sta: -5 },
-          { text: "先留在辦公室，我立刻去大門口巡查並調閱監視器。(STA -15)", san: 0, sta: -15 },
-          { text: "去生輔組問失物招領，自己走路小心點啦。(SAN -15)", san: -15, sta: 0 }
+          { text: "截圖存證！我陪你找輔導老師與生輔組，發函要求平台撤下並啟動關懷。", san: 12, sta: -5 },
+          { text: "先不要看手機了，網路留言過幾天大家就忘了，別想太多。", san: -15, sta: 0 },
+          { text: "叫你朋友一起去貼文底下留言罵回去，看誰比較大聲！", san: -25, sta: 0 }
         ]
       },
       {
-        text: "老師，隔壁班同學放學要找人在校門口堵我，我不敢回家...",
+        text: "老師，二樓男廁裡面有很濃的水果甜味，好像有人在偷抽電子煙...",
         options: [
-          { text: "這很危險！我聯絡生輔組跟導師，放學陪你走到校門！(STA -10)", san: 5, sta: -10 },
-          { text: "先去會談室坐坐，我請雙方導師過來協調。(SAN -5)", san: -5, sta: -5 },
-          { text: "你們平常不要去惹人家就沒事了嘛。(SAN -20)", san: -20, sta: 0 }
+          { text: "收到！謝謝你反映，我馬上帶生輔組老師過去巡查，並保密你的身分。", san: 10, sta: -10 },
+          { text: "你現在帶我進去抓，直接指給我看是誰！", san: -15, sta: -5 },
+          { text: "那種東西很貴他們抽不起啦，應該只是芳香劑吧？", san: -20, sta: 0 }
         ]
       },
       {
-        text: "老師，我不小心在走廊打翻了泡麵，油油的怕大家滑倒...",
+        text: "老師，我偷訂的外送到了，可是門口警衛杯杯把外送員擋在外面，我的奶茶要被沒收了...",
         options: [
-          { text: "主動承認很棒！拿警示錐擋著，我們一起去拿拖把拖乾淨！(SAN +10)", san: 10, sta: -5 },
-          { text: "去請衛生股長拿拖把，快點處理好。(SAN -5)", san: -5, sta: 0 },
-          { text: "怎麼在走廊吃泡麵！罰你寫自白書！(SAN -20)", san: -20, sta: 0 }
+          { text: "校規規定外送需集中在專區，我先幫你領回暫管，放學再來學務處拿。", san: 8, sta: -10 },
+          { text: "警衛做得對！你現在去罰站，外送當場銷毀倒掉！", san: -15, sta: 0 },
+          { text: "趁警衛不注意，你繞去側門圍牆偷偷接過來啦。", san: -25, sta: 0 }
         ]
       },
       {
-        text: "老師，我的健保卡放在家裡，但胃痛到站不起來了...",
+        text: "老師，網路上有網友說要給我免費手遊造型，要我傳學生證跟手機驗證碼給他...",
         options: [
-          { text: "身體最要緊！不用管卡片，我背你去健康中心躺著！(STA -15)", san: 5, sta: -15 },
-          { text: "我通知家長並幫你聯絡護理師拿急救箱。(SAN +5)", san: 5, sta: -5 },
-          { text: "先喝點溫水，撐到放學再回家看醫生。(SAN -15)", san: -15, sta: 0 }
+          { text: "千萬不要傳！這是典型的詐騙套路，立刻封鎖對方，有問題找老師！", san: 15, sta: 0 },
+          { text: "天下沒有白吃的午餐，但先給他看看，真的有拿到造型再說？", san: -20, sta: 0 },
+          { text: "你都幾歲了還玩這種遊戲，手機先交出來保管！", san: -15, sta: 0 }
+        ]
+      },
+      {
+        text: "老師，隔壁班阿凱放學想借我的機車去載人，但他根本沒有駕照，不借他就要堵我...",
+        options: [
+          { text: "絕對不能借！無照駕駛非常危險，我放學親自找阿凱跟他的導師會談。", san: 10, sta: -10 },
+          { text: "你就跟他說車子沒油了，自己想辦法推託掉。", san: -10, sta: 0 },
+          { text: "他敢騎你就借啊，被警察抓到罰單算他的又不是你的。", san: -30, sta: 0 }
+        ]
+      },
+      {
+        text: "老師，我交友軟體認識的『哥哥』說放學要開車在側門載我去夜景餐廳，我有點害怕...",
+        options: [
+          { text: "別去！未成年私下見網友風險極高，我陪你聯絡家長，放學一起走。", san: 15, sta: -10 },
+          { text: "既然害怕，那就約在人多的麥當勞見面比較安全吧？", san: -15, sta: 0 },
+          { text: "人家請吃飯幹嘛不去？大驚小怪的。", san: -25, sta: 0 }
+        ]
+      },
+      {
+        text: "老師！我的 AirPods 掉在操場草叢，定位顯示還在那裡，快放學了我好急！",
+        options: [
+          { text: "別慌，我們拿手電筒去定位點找找，順便廣播失物招領。", san: 8, sta: -15 },
+          { text: "操場那麼大找不到了啦，回家叫爸媽再買一副新的。", san: -15, sta: 0 },
+          { text: "肯定是剛才體育課被別班撿走了，直接報警調閱全校監視器！", san: -10, sta: -10 }
+        ]
+      },
+      {
+        text: "老師，下一節要考數學，我胃好痛手都在發抖，好想翻牆翹課回家...",
+        options: [
+          { text: "深呼吸，翻牆很危險！我先帶你去健康中心休息，我來跟導師溝通。", san: 12, sta: -10 },
+          { text: "考個試而已裝什麼病？回去教室坐好，不會寫就用猜的！", san: -20, sta: 0 },
+          { text: "想翹課自己動作俐落點，別被我看到就不算違規。", san: -30, sta: 0 }
         ]
       }
     ];
@@ -512,7 +542,7 @@
         x: 180 + Math.random() * 140,
         y: 285,
         hasQuestion: true,
-        type: Math.floor(Math.random() * 2), // 0: 雙馬尾女生, 1: 呆毛男生
+        type: Math.floor(Math.random() * 2),
         bounce: Math.random() * Math.PI
       });
     }
@@ -541,15 +571,14 @@
       if (opt.san >= 0) {
         playCorrectSound();
         triggerHaptic('success');
+        feedbackText = "處置得宜，守護了學生！ ❤️";
       } else {
         playWrongSound();
         triggerHaptic('warning');
+        feedbackText = "處置不當，理智下降... 💦";
       }
 
-      let sign = opt.san >= 0 ? "+" : "";
-      feedbackText = `回覆完成！ 理智 ${sign}${opt.san}`;
-      feedbackTimer = 70;
-
+      feedbackTimer = 75;
       dialogBox.style.display = 'none';
 
       if (activeStudent) {
@@ -592,14 +621,14 @@
         triggerHaptic('success');
         modalTitle.innerText = "🎉 順利平安下班！";
         modalTitle.style.color = "#10b981";
-        modalDesc.innerHTML = "17:00 打卡鐘響起！ ⏰<br>你用滿滿的愛與耐心回答了所有孩子的問題！<br>守住了理智值，今天又是平安的一天！";
+        modalDesc.innerHTML = "17:00 打卡鐘響起！ ⏰<br>你用滿滿的愛與專業解答了孩子們的煩惱！<br>守住了理智值，今天又是平安的一天！";
         startBtn.innerText = "明天再戰";
       } else {
         playWrongSound();
         triggerHaptic('warning');
         modalTitle.innerText = "💦 理智斷線加班中...";
         modalTitle.style.color = "#ef4444";
-        modalDesc.innerHTML = "SAN 值歸零了！ 🥺<br>面對連環突發狀況與求助，精神徹底被榨乾，<br>今天只好多留下來喝杯奶茶寫報告了。";
+        modalDesc.innerHTML = "SAN 值歸零了！ 🥺<br>面對連環突發狀況與求助，精神徹底被榨乾，<br>今天只好多留下來喝杯奶茶寫檢討報告了。";
         startBtn.innerText = "重新振作";
       }
     }
@@ -658,14 +687,9 @@
       if (feedbackTimer > 0) feedbackTimer--;
     }
 
-    /* ========================================================
-       超可愛手繪日系 Q 版角色繪製
-       ======================================================== */
-
-    // 繪製水汪汪大眼睛
+    /* 可愛角色繪製函式 */
     function drawCuteEye(x, y, radius, lookDir = 0) {
       ctx.save();
-      // 外眼白
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
       ctx.arc(x, y, radius, 0, Math.PI * 2);
@@ -674,40 +698,33 @@
       ctx.lineWidth = 1.5;
       ctx.stroke();
 
-      // 黑色眼珠
       ctx.fillStyle = '#2c1810';
       ctx.beginPath();
       ctx.arc(x + lookDir, y, radius * 0.75, 0, Math.PI * 2);
       ctx.fill();
 
-      // 大高光
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
       ctx.arc(x + lookDir - 1.5, y - 1.5, radius * 0.35, 0, Math.PI * 2);
       ctx.fill();
-
-      // 小高光
       ctx.beginPath();
       ctx.arc(x + lookDir + 1.5, y + 1.5, radius * 0.18, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
     }
 
-    // 繪製可愛校安老師
     function drawCuteTeacher(x, y, facing, walkFrame) {
       ctx.save();
       ctx.translate(x, y);
 
-      let bobY = Math.sin(walkFrame) * 3; // 走路上下彈跳
+      let bobY = Math.sin(walkFrame) * 3;
       let dir = facing === 'right' ? 1 : -1;
 
-      // 影子
       ctx.fillStyle = 'rgba(120, 53, 15, 0.15)';
       ctx.beginPath();
       ctx.ellipse(25, 75, 20, 6, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // 腳
       let legOffset = Math.sin(walkFrame) * 5;
       ctx.fillStyle = '#1e293b';
       ctx.beginPath();
@@ -715,7 +732,6 @@
       ctx.ellipse(32 - legOffset, 72, 5, 4, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // 身體 (小胖圓圓的便服)
       ctx.fillStyle = '#3b82f6';
       ctx.beginPath();
       ctx.roundRect(10, 36 + bobY, 30, 32, 12);
@@ -724,7 +740,6 @@
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // 反光背心 (黃色小背心 + 綠條)
       ctx.fillStyle = '#fde047';
       ctx.beginPath();
       ctx.roundRect(11, 40 + bobY, 28, 22, 6);
@@ -732,14 +747,12 @@
       ctx.fillStyle = '#10b981';
       ctx.fillRect(11, 48 + bobY, 28, 4);
 
-      // 手持巡邏文件夾板
       ctx.fillStyle = '#d97706';
       ctx.fillRect(dir > 0 ? 32 : 6, 46 + bobY, 8, 12);
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(dir > 0 ? 33 : 7, 47 + bobY, 6, 10);
 
-      // Q版大頭 (圓滾滾臉頰)
-      ctx.fillStyle = '#ffedd5'; // 溫暖膚色
+      ctx.fillStyle = '#ffedd5';
       ctx.beginPath();
       ctx.arc(25, 22 + bobY, 20, 0, Math.PI * 2);
       ctx.fill();
@@ -747,40 +760,34 @@
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // 可愛頭髮 (深咖啡色短髮)
       ctx.fillStyle = '#451a03';
       ctx.beginPath();
       ctx.arc(25, 14 + bobY, 20, Math.PI, Math.PI * 2);
       ctx.fill();
-      // 劉海小弧度
       ctx.beginPath();
       ctx.arc(18, 12 + bobY, 8, 0, Math.PI);
       ctx.arc(30, 12 + bobY, 9, 0, Math.PI);
       ctx.fill();
 
-      // 校安小警帽
       ctx.fillStyle = '#1e3a8a';
       ctx.beginPath();
       ctx.ellipse(25, 5 + bobY, 16, 5, 0, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = '#f59e0b'; // 金色小帽徽
+      ctx.fillStyle = '#f59e0b';
       ctx.beginPath();
       ctx.arc(25, 4 + bobY, 2.5, 0, Math.PI * 2);
       ctx.fill();
 
-      // 大眼睛
       let lookOffset = dir * 1.5;
       drawCuteEye(19, 21 + bobY, 4, lookOffset);
       drawCuteEye(31, 21 + bobY, 4, lookOffset);
 
-      // 粉嫩腮紅
       ctx.fillStyle = 'rgba(251, 113, 133, 0.5)';
       ctx.beginPath();
       ctx.arc(14, 26 + bobY, 3.5, 0, Math.PI * 2);
       ctx.arc(36, 26 + bobY, 3.5, 0, Math.PI * 2);
       ctx.fill();
 
-      // 溫柔微笑
       ctx.strokeStyle = '#3e2723';
       ctx.lineWidth = 1.8;
       ctx.beginPath();
@@ -790,7 +797,6 @@
       ctx.restore();
     }
 
-    // 繪製可愛提問學生 (男生/女生兩種超萌外觀)
     function drawCuteStudent(st) {
       ctx.save();
       ctx.translate(st.x, st.y);
@@ -798,22 +804,18 @@
       st.bounce += 0.05;
       let bob = Math.sin(st.bounce) * 2.5;
 
-      // 影子
       ctx.fillStyle = 'rgba(120, 53, 15, 0.15)';
       ctx.beginPath();
       ctx.ellipse(20, 68, 16, 5, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // 小鞋子
       ctx.fillStyle = '#78350f';
       ctx.beginPath();
       ctx.ellipse(14, 65, 4, 3, 0, 0, Math.PI * 2);
       ctx.ellipse(26, 65, 4, 3, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // 身體/校服
       if (st.type === 0) {
-        // 女生：水手服短裙
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
         ctx.roundRect(9, 32 + bob, 22, 18, 5);
@@ -822,7 +824,6 @@
         ctx.lineWidth = 1.5;
         ctx.stroke();
 
-        // 深藍百褶裙
         ctx.fillStyle = '#1e3a8a';
         ctx.beginPath();
         ctx.moveTo(8, 48 + bob);
@@ -833,13 +834,11 @@
         ctx.fill();
         ctx.stroke();
 
-        // 紅色領結
         ctx.fillStyle = '#ef4444';
         ctx.beginPath();
         ctx.arc(20, 38 + bob, 3, 0, Math.PI * 2);
         ctx.fill();
       } else {
-        // 男生：白襯衫 + 小吊帶褲
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
         ctx.roundRect(9, 32 + bob, 22, 18, 5);
@@ -848,13 +847,11 @@
         ctx.lineWidth = 1.5;
         ctx.stroke();
 
-        // 咖啡色短褲
         ctx.fillStyle = '#854d0e';
         ctx.fillRect(10, 48 + bob, 20, 10);
         ctx.strokeRect(10, 48 + bob, 20, 10);
       }
 
-      // Q 版大頭
       ctx.fillStyle = '#ffedd5';
       ctx.beginPath();
       ctx.arc(20, 20 + bob, 17, 0, Math.PI * 2);
@@ -863,30 +860,24 @@
       ctx.lineWidth = 1.8;
       ctx.stroke();
 
-      // 髮型
       if (st.type === 0) {
-        // 雙馬尾小女孩
         ctx.fillStyle = '#7c2d12';
         ctx.beginPath();
         ctx.arc(20, 14 + bob, 17, Math.PI, Math.PI * 2);
         ctx.fill();
-        // 瀏海
         ctx.beginPath();
         ctx.arc(15, 12 + bob, 6, 0, Math.PI);
         ctx.arc(25, 12 + bob, 6, 0, Math.PI);
         ctx.fill();
-        // 兩側可愛小馬尾
         ctx.beginPath();
         ctx.arc(1, 18 + bob, 6, 0, Math.PI * 2);
         ctx.arc(39, 18 + bob, 6, 0, Math.PI * 2);
         ctx.fill();
       } else {
-        // 翹呆毛小正太
         ctx.fillStyle = '#374151';
         ctx.beginPath();
         ctx.arc(20, 14 + bob, 17, Math.PI, Math.PI * 2);
         ctx.fill();
-        // 呆毛
         ctx.strokeStyle = '#374151';
         ctx.lineWidth = 3;
         ctx.beginPath();
@@ -895,24 +886,20 @@
         ctx.stroke();
       }
 
-      // 學生可愛大眼睛 (稍呈無辜圓形)
       drawCuteEye(15, 20 + bob, 3.5, 0);
       drawCuteEye(25, 20 + bob, 3.5, 0);
 
-      // 腮紅
       ctx.fillStyle = 'rgba(254, 202, 202, 0.7)';
       ctx.beginPath();
       ctx.arc(11, 24 + bob, 3, 0, Math.PI * 2);
       ctx.arc(29, 24 + bob, 3, 0, Math.PI * 2);
       ctx.fill();
 
-      // 小巧困惑的小嘴巴 (小圓點或嘟嘴)
       ctx.fillStyle = '#ef4444';
       ctx.beginPath();
       ctx.arc(20, 26 + bob, 2, 0, Math.PI * 2);
       ctx.fill();
 
-      // 問號氣泡浮動 [❓]
       if (st.hasQuestion) {
         let qBob = Math.sin(st.bounce * 1.5) * 4;
         ctx.font = 'bold 22px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
@@ -925,11 +912,9 @@
     function render() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // 溫馨奶油黃學務處背景
       ctx.fillStyle = '#fef3c7';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // 地板
       ctx.fillStyle = '#fed7aa';
       ctx.fillRect(0, 340, canvas.width, canvas.height - 340);
       ctx.strokeStyle = '#f97316';
@@ -939,7 +924,6 @@
       ctx.lineTo(canvas.width, 340);
       ctx.stroke();
 
-      // 窗戶與可愛藍天白雲
       ctx.fillStyle = '#bae6fd';
       ctx.beginPath();
       ctx.roundRect(240, 45, 120, 75, 10);
@@ -948,7 +932,6 @@
       ctx.lineWidth = 3;
       ctx.stroke();
 
-      // 窗外小雲朵
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
       ctx.arc(270, 75, 12, 0, Math.PI * 2);
@@ -956,7 +939,6 @@
       ctx.arc(300, 75, 11, 0, Math.PI * 2);
       ctx.fill();
 
-      // 佈告欄
       ctx.fillStyle = '#fb923c';
       ctx.beginPath();
       ctx.roundRect(30, 70, 140, 85, 10);
@@ -965,26 +947,20 @@
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // 可愛便條
       ctx.fillStyle = '#fef08a';
       ctx.fillRect(45, 85, 30, 35);
       ctx.fillStyle = '#fbcfe8';
       ctx.fillRect(90, 95, 40, 30);
 
-      // 海報字
       ctx.fillStyle = '#7c2d12';
       ctx.font = 'bold 15px sans-serif';
       ctx.fillText("平安下班", 245, 145);
       ctx.font = '12px sans-serif';
       ctx.fillText("溫馨校園 守護成長 💕", 225, 165);
 
-      // 繪製學生
       students.forEach(st => drawCuteStudent(st));
-
-      // 繪製校安老師
       drawCuteTeacher(player.x, player.y, player.facing, player.walkFrame);
 
-      // 互動氣泡提示
       if (activeStudent && dialogBox.style.display === 'none') {
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
@@ -999,11 +975,10 @@
         ctx.fillText("點擊 [對話] 💬", player.x - 9, player.y - 19);
       }
 
-      // 飄字回饋
       if (feedbackTimer > 0) {
-        ctx.fillStyle = '#059669';
+        ctx.fillStyle = feedbackText.includes("守護") ? '#059669' : '#dc2626';
         ctx.font = 'bold 16px sans-serif';
-        ctx.fillText(feedbackText, player.x - 20, player.y - 50);
+        ctx.fillText(feedbackText, player.x - 35, player.y - 50);
       }
     }
 
