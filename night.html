@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>末日便利店 - 廢土放置大亨</title>
+<title>末日便利店 - 廢土店員抽卡版</title>
 <style>
   :root {
     --bg-main: #12181b;
@@ -12,8 +12,12 @@
     --accent-gold: #f6ad55;
     --accent-green: #48bb78;
     --accent-red: #f56565;
+    --accent-purple: #b794f4;
     --text-main: #edf2f7;
     --text-muted: #a0aec0;
+    --rarity-r: #4299e1;
+    --rarity-sr: #9f7aea;
+    --rarity-ssr: #ecc94b;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -27,7 +31,6 @@
     min-height: 100vh;
   }
 
-  /* 直式手機容器 (Mobile Container) */
   .mobile-shell {
     width: 100%;
     max-width: 430px;
@@ -41,17 +44,16 @@
     overflow: hidden;
   }
 
-  /* 頂部看板 */
   header {
     background: #182025;
-    padding: 14px 16px;
+    padding: 12px 16px;
     border-bottom: 2px solid var(--card-border);
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
   .caps-display {
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     font-weight: 800;
     color: var(--accent-gold);
     display: flex;
@@ -64,9 +66,17 @@
     font-weight: 600;
   }
 
-  /* 招攬顧客大按鈕區 (Tap Area) */
+  .view-page {
+    flex: 1;
+    overflow-y: auto;
+    display: none;
+    flex-direction: column;
+  }
+  .view-page.active { display: flex; }
+
+  /* 門市主頁 */
   .tap-section {
-    padding: 20px 16px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -74,29 +84,22 @@
     position: relative;
   }
   .tap-btn {
-    width: 90px;
-    height: 90px;
+    width: 82px;
+    height: 82px;
     border-radius: 50%;
     background: radial-gradient(circle, #dd6b20 0%, #c05621 100%);
     border: 3px solid #fbd38d;
     box-shadow: 0 6px 15px rgba(221, 107, 32, 0.4);
-    font-size: 2.2rem;
+    font-size: 2rem;
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
     transition: transform 0.05s ease;
   }
-  .tap-btn:active {
-    transform: scale(0.92);
-  }
-  .tap-hint {
-    margin-top: 8px;
-    font-size: 0.85rem;
-    color: var(--text-muted);
-  }
+  .tap-btn:active { transform: scale(0.92); }
+  .tap-hint { margin-top: 8px; font-size: 0.8rem; color: var(--text-muted); }
 
-  /* 漂浮點擊數字 */
   .float-text {
     position: absolute;
     color: var(--accent-gold);
@@ -110,10 +113,7 @@
     100% { opacity: 0; transform: translateY(-40px); }
   }
 
-  /* 貨架清單滾動區 (Scrollable Shelf List) */
   .shelf-container {
-    flex: 1;
-    overflow-y: auto;
     padding: 12px 14px;
     display: flex;
     flex-direction: column;
@@ -123,51 +123,184 @@
     background: var(--card-bg);
     border: 1px solid var(--card-border);
     border-radius: 12px;
-    padding: 12px;
+    padding: 10px 12px;
     display: flex;
     align-items: center;
     justify-content: space-between;
   }
   .shelf-icon {
-    font-size: 1.8rem;
-    width: 44px;
-    height: 44px;
+    font-size: 1.6rem;
+    width: 40px;
+    height: 40px;
     background: #151c20;
-    border-radius: 10px;
+    border-radius: 8px;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-right: 12px;
+    margin-right: 10px;
   }
   .shelf-info { flex: 1; }
-  .shelf-title { font-weight: bold; font-size: 0.95rem; }
+  .shelf-title { font-weight: bold; font-size: 0.9rem; }
   .shelf-desc { font-size: 0.75rem; color: var(--accent-green); margin-top: 2px; }
 
-  /* 升級按鈕 */
   .upgrade-btn {
     background: #2b3840;
     border: 1px solid #4a5d6a;
     border-radius: 8px;
-    padding: 8px 12px;
+    padding: 6px 10px;
     color: #fff;
     cursor: pointer;
     text-align: right;
-    min-width: 95px;
+    min-width: 90px;
   }
   .upgrade-btn.can-buy {
     background: linear-gradient(135deg, #d69e2e 0%, #b7791f 100%);
     border-color: #f6e05e;
   }
-  .upgrade-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-  .upgrade-cost { font-size: 0.85rem; font-weight: bold; }
-  .upgrade-lv { font-size: 0.7rem; color: #cbd5e0; }
+  .upgrade-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .upgrade-cost { font-size: 0.8rem; font-weight: bold; }
+  .upgrade-lv { font-size: 0.68rem; color: #cbd5e0; }
 
-  /* 底部導航欄 (Mobile Footer Nav) */
+  /* 抽卡介面 */
+  .gacha-banner {
+    padding: 20px 16px;
+    text-align: center;
+    background: linear-gradient(180deg, #2a2038 0%, var(--bg-main) 100%);
+    border-bottom: 1px solid var(--card-border);
+  }
+  .gacha-banner h2 { color: var(--accent-purple); font-size: 1.3rem; margin-bottom: 6px; }
+  .gacha-banner p { font-size: 0.8rem; color: var(--text-muted); }
+
+  .gacha-actions {
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+    justify-content: center;
+  }
+  .gacha-btn {
+    flex: 1;
+    padding: 14px 10px;
+    border-radius: 10px;
+    border: 1px solid #805ad5;
+    background: linear-gradient(135deg, #6b46c1 0%, #44337a 100%);
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    box-shadow: 0 4px 12px rgba(107, 70, 193, 0.3);
+  }
+  .gacha-btn:active { transform: scale(0.97); }
+  .gacha-btn small { font-size: 0.75rem; color: #e9d8fd; font-weight: normal; }
+
+  /* 員工名冊 */
+  .staff-container {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .staff-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .staff-card.rarity-R { border-left: 5px solid var(--rarity-r); }
+  .staff-card.rarity-SR { border-left: 5px solid var(--rarity-sr); }
+  .staff-card.rarity-SSR { border-left: 5px solid var(--rarity-ssr); }
+
+  .staff-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #171d21;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.8rem;
+  }
+  .staff-details { flex: 1; }
+  .staff-name-bar { display: flex; align-items: center; gap: 6px; }
+  .staff-tag {
+    font-size: 0.65rem;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .tag-R { background: rgba(66, 153, 225, 0.2); color: var(--rarity-r); }
+  .tag-SR { background: rgba(159, 122, 234, 0.2); color: var(--rarity-sr); }
+  .tag-SSR { background: rgba(236, 201, 75, 0.2); color: var(--rarity-ssr); }
+  .staff-buff { font-size: 0.75rem; color: var(--accent-gold); margin-top: 4px; }
+
+  .deploy-toggle {
+    background: #2b3840;
+    color: #e2e8f0;
+    border: 1px solid #4a5d6a;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .deploy-toggle.deployed {
+    background: var(--accent-green);
+    color: #12181b;
+    border-color: #48bb78;
+  }
+
+  /* 抽卡結果彈窗 */
+  .modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    padding: 16px;
+  }
+  .modal-overlay.active { display: flex; }
+  .gacha-result-box {
+    background: #1a2228;
+    border: 2px solid var(--accent-purple);
+    border-radius: 14px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .result-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    width: 100%;
+  }
+  .result-item {
+    background: #12181b;
+    border-radius: 8px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    border: 1px solid #2d3748;
+  }
+
+  /* 底部導航欄 */
   footer {
-    height: 58px;
+    height: 56px;
     background: #151c20;
     border-top: 1px solid var(--card-border);
     display: flex;
@@ -181,6 +314,8 @@
     font-size: 0.7rem;
     color: var(--text-muted);
     cursor: pointer;
+    flex: 1;
+    padding: 6px 0;
   }
   .nav-item.active { color: var(--accent-gold); font-weight: bold; }
   .nav-item span:first-child { font-size: 1.2rem; }
@@ -192,30 +327,322 @@
   <!-- 頂部即時貨幣列 -->
   <header>
     <div>
-      <div class="caps-display">
-        <span>🪙</span><span id="caps-text">0</span>
-      </div>
+      <div class="caps-display">🪙 <span id="caps-text">0</span></div>
       <div class="cps-display">+<span id="cps-text">0.0</span> 瓶蓋/秒</div>
     </div>
     <div style="font-size:0.8rem; background:#243036; padding:4px 8px; border-radius:6px;">
-      避難所 Lv.<span id="shop-lv">1</span>
+      進駐員工: <span id="deployed-count" style="color:var(--accent-gold); font-weight:bold;">0</span>/3
     </div>
   </header>
 
-  <!-- 手動點擊促銷區域 -->
-  <div class="tap-section" id="tap-area">
-    <div class="tap-btn" id="cashier-btn">🛎️</div>
-    <div class="tap-hint">點擊收銀台快速招攬廢土顧客 (+<span id="click-val">1</span>)</div>
+  <!-- 1. 門市主頁 -->
+  <div id="page-store" class="view-page active">
+    <div class="tap-section" id="tap-area">
+      <div class="tap-btn" id="cashier-btn">🛎️</div>
+      <div class="tap-hint">點擊收銀台攬客 (+<span id="click-val">1</span>)</div>
+    </div>
+    <div class="shelf-container" id="shelf-list"></div>
   </div>
 
-  <!-- 貨架與設施滾動升級清單 -->
-  <div class="shelf-container" id="shelf-list">
-    <!-- JS 動態生成 -->
+  <!-- 2. 抽卡介面 -->
+  <div id="page-gacha" class="view-page">
+    <div class="gacha-banner">
+      <h2>📻 廢土避難所招募廣播</h2>
+      <p>花費瓶蓋向廣播塔發信，招攬具備各類天賦的倖存者進駐門市！</p>
+      <div style="margin-top:6px; font-size:0.75rem; color:#b794f4;">
+        機率：SSR 5% | SR 25% | R 70%
+      </div>
+    </div>
+    <div class="gacha-actions">
+      <button class="gacha-btn" onclick="drawGacha(1)">
+        <span>單次招募</span>
+        <small>🪙 300 瓶蓋</small>
+      </button>
+      <button class="gacha-btn" onclick="drawGacha(10)">
+        <span>十連招募</span>
+        <small>🪙 2,700 瓶蓋 (9折)</small>
+      </button>
+    </div>
+    <div style="padding: 0 16px;">
+      <h3 style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px;">已獲得員工 (<span id="staff-owned-count">0</span>)</h3>
+      <div class="staff-container" id="staff-list" style="padding:0;"></div>
+    </div>
   </div>
 
-  <!-- 手遊標準底部分頁 -->
+  <!-- 底部導航欄 -->
   <footer>
-    <div class="nav-item active"><span>🏪</span><span>門市</span></div>
-    <div class="nav-item" onclick="alert('拾荒探險功能開發中！')"><span>🎒</span><span>探險</span></div>
-    <div class="nav-item" onclick="alert('黑市抽卡功能開發中！')"><span>🎲</span><span>抽卡</span></div>
-    <div class="nav-item" onclick="alert('避難所防衛功能開發中！')"><span>🛡
+    <div class="nav-item active" id="nav-store" onclick="switchTab('store')">
+      <span>🏪</span><span>門市</span>
+    </div>
+    <div class="nav-item" id="nav-gacha" onclick="switchTab('gacha')">
+      <span>🎲</span><span>員工招募</span>
+    </div>
+  </footer>
+
+  <!-- 抽卡展示彈窗 -->
+  <div class="modal-overlay" id="gacha-modal">
+    <div class="gacha-result-box">
+      <h3 style="color:var(--accent-purple);">招募結算成果</h3>
+      <div class="result-grid" id="modal-grid"></div>
+      <button class="upgrade-btn can-buy" style="margin-top:10px; width:100%; text-align:center; padding:10px;" onclick="closeModal()">確認收納</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let gameState = {
+  caps: 350,
+  maxDeploy: 3,
+};
+
+const SHELVES = [
+  { id: 'water', name: '輻射過濾純水機', icon: '💧', level: 1, baseCost: 15, baseCps: 0.5, costMult: 1.15 },
+  { id: 'canned', name: '變異牛肉罐頭箱', icon: '🥫', level: 0, baseCost: 100, baseCps: 4.0, costMult: 1.15 },
+  { id: 'rad_pill', name: '自製碘片藥品架', icon: '💊', level: 0, baseCost: 1100, baseCps: 32.0, costMult: 1.16 },
+  { id: 'battery', name: '核能微型電池倉', icon: '🔋', level: 0, baseCost: 12000, baseCps: 260.0, costMult: 1.18 },
+  { id: 'ammo', name: '廢土軍火改裝台', icon: '🔫', level: 0, baseCost: 130000, baseCps: 1400.0, costMult: 1.20 }
+];
+
+const STAFF_POOL = [
+  { id: 's1', name: '實習拾荒學徒', avatar: '👦', rarity: 'R', type: 'shelf_boost', target: 'water', val: 0.5, desc: '純水產量 +50%' },
+  { id: 's2', name: '廢品挑揀工', avatar: '🧤', rarity: 'R', type: 'shelf_boost', target: 'canned', val: 0.5, desc: '罐頭產量 +50%' },
+  { id: 's3', name: '招牌搖旗女孩', avatar: '👧', rarity: 'R', type: 'click_boost', val: 3, desc: '收銀台點擊收益 +3' },
+  { id: 's4', name: '前避難所軍醫', avatar: '🩺', rarity: 'SR', type: 'shelf_boost', target: 'rad_pill', val: 1.5, desc: '碘片藥架產量 +150%' },
+  { id: 's5', name: '退伍防衛士官', avatar: '👮', rarity: 'SR', type: 'shelf_boost', target: 'ammo', val: 1.5, desc: '軍火台產量 +150%' },
+  { id: 's6', name: '改裝工程師', avatar: '🔧', rarity: 'SR', type: 'all_cps', val: 0.25, desc: '全店總秒產 +25%' },
+  { id: 's7', name: '「先驅號」AI店長', avatar: '🤖', rarity: 'SSR', type: 'all_cps', val: 0.70, desc: '全店總秒產 +70%' },
+  { id: 's8', name: '廢土神秘黑商', avatar: '🎩', rarity: 'SSR', type: 'hybrid', val: 0.5, clickVal: 25, desc: '總秒產 +50% 且點擊 +25' }
+];
+
+let ownedStaff = [
+  { ...STAFF_POOL[0], deployed: true }
+];
+
+function getCost(shelf) {
+  return Math.round(shelf.baseCost * Math.pow(shelf.costMult, shelf.level));
+}
+
+function calcTotalCPS() {
+  let shelfMultipliers = { water: 1, canned: 1, rad_pill: 1, battery: 1, ammo: 1 };
+  let globalMultiplier = 1.0;
+
+  ownedStaff.filter(s => s.deployed).forEach(s => {
+    if (s.type === 'shelf_boost' && shelfMultipliers[s.target] !== undefined) {
+      shelfMultipliers[s.target] += s.val;
+    } else if (s.type === 'all_cps') {
+      globalMultiplier += s.val;
+    } else if (s.type === 'hybrid') {
+      globalMultiplier += s.val;
+    }
+  });
+
+  let rawTotal = SHELVES.reduce((sum, s) => {
+    let mult = shelfMultipliers[s.id] || 1;
+    return sum + (s.level * s.baseCps * mult);
+  }, 0);
+
+  return rawTotal * globalMultiplier;
+}
+
+function calcClickPower() {
+  let baseClick = 1 + Math.floor(calcTotalCPS() * 0.05);
+  let bonus = 0;
+  ownedStaff.filter(s => s.deployed).forEach(s => {
+    if (s.type === 'click_boost') bonus += s.val;
+    if (s.type === 'hybrid') bonus += s.clickVal;
+  });
+  return baseClick + bonus;
+}
+
+const cashierBtn = document.getElementById('cashier-btn');
+const tapArea = document.getElementById('tap-area');
+
+cashierBtn.addEventListener('pointerdown', (e) => {
+  let power = calcClickPower();
+  gameState.caps += power;
+  showFloatNumber(e.clientX, e.clientY, `+${power}`);
+  updateUI();
+});
+
+function showFloatNumber(x, y, text) {
+  const el = document.createElement('div');
+  el.className = 'float-text';
+  el.innerText = text;
+  const rect = tapArea.getBoundingClientRect();
+  el.style.left = `${(x - rect.left) - 15}px`;
+  el.style.top = `${(y - rect.top) - 20}px`;
+  tapArea.appendChild(el);
+  setTimeout(() => el.remove(), 700);
+}
+
+function upgradeShelf(index) {
+  const shelf = SHELVES[index];
+  const cost = getCost(shelf);
+  if (gameState.caps >= cost) {
+    gameState.caps -= cost;
+    shelf.level += 1;
+    updateUI();
+    renderShelves();
+  }
+}
+
+function rollSingleCard() {
+  let rand = Math.random();
+  let rarity = 'R';
+  if (rand < 0.05) rarity = 'SSR';
+  else if (rand < 0.30) rarity = 'SR';
+
+  let candidates = STAFF_POOL.filter(s => s.rarity === rarity);
+  let picked = candidates[Math.floor(Math.random() * candidates.length)];
+  return { ...picked, deployed: false, instanceId: Date.now() + Math.random() };
+}
+
+function drawGacha(times) {
+  let cost = times === 1 ? 300 : 2700;
+  if (gameState.caps < cost) {
+    alert("瓶蓋不足！多敲收銀台或升級貨架賺取瓶蓋吧！");
+    return;
+  }
+  gameState.caps -= cost;
+
+  let results = [];
+  for (let i = 0; i < times; i++) {
+    let card = rollSingleCard();
+    results.push(card);
+    ownedStaff.push(card);
+  }
+
+  showGachaResult(results);
+  updateUI();
+  renderStaff();
+}
+
+function showGachaResult(results) {
+  const modal = document.getElementById('gacha-modal');
+  const grid = document.getElementById('modal-grid');
+  grid.innerHTML = '';
+
+  results.forEach(item => {
+    let el = document.createElement('div');
+    el.className = 'result-item';
+    el.innerHTML = `
+      <div style="font-size:2rem;">${item.avatar}</div>
+      <span class="staff-tag tag-${item.rarity}" style="margin:4px 0;">${item.rarity}</span>
+      <b style="font-size:0.8rem;">${item.name}</b>
+      <small style="font-size:0.7rem; color:var(--accent-gold); margin-top:2px;">${item.desc}</small>
+    `;
+    grid.appendChild(el);
+  });
+  modal.classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('gacha-modal').classList.remove('active');
+}
+
+function toggleDeploy(idx) {
+  let staff = ownedStaff[idx];
+  let currentDeployed = ownedStaff.filter(s => s.deployed).length;
+
+  if (!staff.deployed) {
+    if (currentDeployed >= gameState.maxDeploy) {
+      alert(`進駐位已滿（上限 ${gameState.maxDeploy} 位）！請先解除其他員工。`);
+      return;
+    }
+    staff.deployed = true;
+  } else {
+    staff.deployed = false;
+  }
+  updateUI();
+  renderStaff();
+  renderShelves();
+}
+
+function switchTab(tab) {
+  document.getElementById('page-store').classList.toggle('active', tab === 'store');
+  document.getElementById('page-gacha').classList.toggle('active', tab === 'gacha');
+  document.getElementById('nav-store').classList.toggle('active', tab === 'store');
+  document.getElementById('nav-gacha').classList.toggle('active', tab === 'gacha');
+}
+
+function renderShelves() {
+  const list = document.getElementById('shelf-list');
+  list.innerHTML = '';
+  SHELVES.forEach((s, idx) => {
+    const cost = getCost(s);
+    const canAfford = gameState.caps >= cost;
+    const card = document.createElement('div');
+    card.className = 'shelf-card';
+    card.innerHTML = `
+      <div class="shelf-icon">${s.icon}</div>
+      <div class="shelf-info">
+        <div class="shelf-title">${s.name}</div>
+        <div class="shelf-desc">+${(s.level * s.baseCps).toFixed(1)} 瓶蓋/秒</div>
+      </div>
+      <button class="upgrade-btn ${canAfford ? 'can-buy' : ''}" onclick="upgradeShelf(${idx})" ${canAfford ? '' : 'disabled'}>
+        <div class="upgrade-cost">🪙 ${cost >= 10000 ? (cost/1000).toFixed(1) + 'k' : cost}</div>
+        <div class="upgrade-lv">Lv. ${s.level}</div>
+      </button>
+    `;
+    list.appendChild(card);
+  });
+}
+
+function renderStaff() {
+  const list = document.getElementById('staff-list');
+  document.getElementById('staff-owned-count').innerText = ownedStaff.length;
+  list.innerHTML = '';
+
+  ownedStaff.forEach((s, idx) => {
+    const card = document.createElement('div');
+    card.className = `staff-card rarity-${s.rarity}`;
+    card.innerHTML = `
+      <div class="staff-avatar">${s.avatar}</div>
+      <div class="staff-details">
+        <div class="staff-name-bar">
+          <span class="staff-tag tag-${s.rarity}">${s.rarity}</span>
+          <b style="font-size:0.85rem;">${s.name}</b>
+        </div>
+        <div class="staff-buff">⚡ ${s.desc}</div>
+      </div>
+      <button class="deploy-toggle ${s.deployed ? 'deployed' : ''}" onclick="toggleDeploy(${idx})">
+        ${s.deployed ? '進駐中' : '派遣'}
+      </button>
+    `;
+    list.appendChild(card);
+  });
+}
+
+function updateUI() {
+  document.getElementById('caps-text').innerText = Math.floor(gameState.caps).toLocaleString();
+  document.getElementById('cps-text').innerText = calcTotalCPS().toFixed(1);
+  document.getElementById('click-val').innerText = calcClickPower();
+  document.getElementById('deployed-count').innerText = ownedStaff.filter(s => s.deployed).length;
+
+  SHELVES.forEach((s, idx) => {
+    const btn = document.querySelectorAll('.upgrade-btn')[idx];
+    if (btn) {
+      const cost = getCost(s);
+      if (gameState.caps >= cost) {
+        btn.classList.add('can-buy');
+        btn.removeAttribute('disabled');
+      } else {
+        btn.classList.remove('can-buy');
+        btn.setAttribute('disabled', 'true');
+      }
+    }
+  });
+}
+
+setInterval(() => {
+  const cps = calcTotalCPS();
+  gameState.caps += (cps / 10);
+  updateUI();
+}, 100);
+
+renderShelves();
+renderStaff();
+updateUI();
+</script>
+</body>
+</html>
