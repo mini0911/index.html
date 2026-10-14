@@ -177,4 +177,475 @@
       border: 3px solid #ea580c;
       box-shadow: 0 4px 0 #c2410c;
       font-size: 24px;
-      font-weight:
+      font-weight: 900;
+      color: #7c2d12;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+    }
+    .ctrl-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #c2410c;
+      background: #fdba74;
+    }
+    #action-btn {
+      width: 75px;
+      height: 75px;
+      background: #f97316;
+      border: 3px solid #7c2d12;
+      box-shadow: 0 4px 0 #7c2d12;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 900;
+    }
+    #action-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #7c2d12;
+      background: #ea580c;
+    }
+
+    /* 彈出視窗（開始/結束） */
+    #modal {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(254, 243, 199, 0.95);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      padding: 20px;
+      text-align: center;
+    }
+    #modal h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+      color: #ea580c;
+    }
+    #modal p {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #7c2d12;
+      line-height: 1.6;
+    }
+    .cute-btn {
+      padding: 12px 30px;
+      font-size: 17px;
+      font-weight: 900;
+      background: #f97316;
+      color: #ffffff;
+      border: 3px solid #7c2d12;
+      border-radius: 14px;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #7c2d12;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="mobile-frame">
+    <!-- 頂部即時數據 -->
+    <div id="top-bar">
+      <div class="status-group">
+        <div class="bar-container">
+          <div id="san-bar" class="bar-fill"></div>
+          <span class="bar-label">❤️ 理智值 (SAN)</span>
+        </div>
+        <div class="bar-container">
+          <div id="sta-bar" class="bar-fill"></div>
+          <span class="bar-label">👟 耐力值 (STA)</span>
+        </div>
+      </div>
+      <div id="clock-box">
+        <span style="font-size: 10px; color: #f97316; display: block;">目標 17:00</span>
+        <span id="time-display">16:30</span>
+      </div>
+    </div>
+
+    <!-- 遊戲繪圖畫布 -->
+    <canvas id="gameCanvas" width="400" height="420"></canvas>
+
+    <!-- 學生提問對話框 -->
+    <div id="dialog-box">
+      <div id="dialog-title">💬 學生來請教你了！</div>
+      <div id="dialog-text">老師，校門口有奇怪的人一直看我，怎麼辦？</div>
+      <div class="options-list" id="options-container"></div>
+    </div>
+
+    <!-- 手機虛擬觸控按鈕 -->
+    <div id="touch-controls">
+      <div class="d-pad">
+        <button class="ctrl-btn" id="btn-left">◀</button>
+        <button class="ctrl-btn" id="btn-right">▶</button>
+      </div>
+      <button class="ctrl-btn" id="action-btn">💬 對話</button>
+    </div>
+
+    <!-- 開始/結算視窗 -->
+    <div id="modal">
+      <h1 id="modal-title">校安生存戰 🎒</h1>
+      <p id="modal-desc">
+        你是值勤校安老師！<br>
+        在 17:00 前利用下方按鈕巡視校園，<br>
+        點擊【對話】解答冒問號學生的疑難雜症，<br>
+        守住你的理智值平安下班！
+      </p>
+      <button class="cute-btn" id="start-btn" onclick="startGame()">開始值勤 ⏰</button>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const sanBar = document.getElementById('san-bar');
+    const staBar = document.getElementById('sta-bar');
+    const timeDisplay = document.getElementById('time-display');
+    const dialogBox = document.getElementById('dialog-box');
+    const dialogText = document.getElementById('dialog-text');
+    const optionsContainer = document.getElementById('options-container');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalDesc = document.getElementById('modal-desc');
+    const startBtn = document.getElementById('start-btn');
+
+    let isPlaying = false;
+    let gameTime = 16.5 * 60; // 16:30
+    const targetTime = 17.0 * 60; // 17:00
+    const timeScale = 0.55;
+
+    const player = {
+      x: 100,
+      y: 280,
+      width: 42,
+      height: 65,
+      speed: 3.5,
+      san: 100,
+      maxSan: 100,
+      sta: 100,
+      maxSta: 100,
+      facing: 'right'
+    };
+
+    let students = [];
+    let activeStudent = null;
+    let feedbackText = "";
+    let feedbackTimer = 0;
+
+    let moveLeft = false;
+    let moveRight = false;
+
+    // 題庫設計
+    const questionBank = [
+      {
+        text: "老師！我的腳踏車鑰匙掉在車棚，而且門口好像有怪人，我該怎麼辦？",
+        options: [
+          { text: "別怕！我陪你一起去車棚找，順便巡邏門口。(SAN +10)", san: 10, sta: -5 },
+          { text: "先留在辦公室，我立刻去大門口巡查並調閱監視器。(STA -15)", san: 0, sta: -15 },
+          { text: "去生輔組問失物招領，自己走路小心點啦。(SAN -15)", san: -15, sta: 0 }
+        ]
+      },
+      {
+        text: "老師，隔壁班同學放學要找人在校門口堵我，我不敢回家...",
+        options: [
+          { text: "這很危險！我聯絡生輔組跟導師，放學陪你走到校門！(STA -10)", san: 5, sta: -10 },
+          { text: "先去會談室坐坐，我請雙方導師過來協調。(SAN -5)", san: -5, sta: -5 },
+          { text: "你們平常不要去惹人家就沒事了嘛。(SAN -20)", san: -20, sta: 0 }
+        ]
+      },
+      {
+        text: "老師，我不小心在走廊打翻了泡麵，油油的怕大家滑倒...",
+        options: [
+          { text: "主動承認很棒！拿警示錐擋著，我們一起去拿拖把拖乾淨！(SAN +10)", san: 10, sta: -5 },
+          { text: "去請衛生股長拿拖把，快點處理好。(SAN -5)", san: -5, sta: 0 },
+          { text: "怎麼在走廊吃泡麵！罰你寫自白書！(SAN -20)", san: -20, sta: 0 }
+        ]
+      },
+      {
+        text: "老師，我的健保卡放在家裡，但胃痛到站不起來了...",
+        options: [
+          { text: "身體最要緊！不用管卡片，我背你去健康中心躺著！(STA -15)", san: 5, sta: -15 },
+          { text: "我通知家長並幫你聯絡護理師拿急救箱。(SAN +5)", san: 5, sta: -5 },
+          { text: "先喝點溫水，撐到放學再回家看醫生。(SAN -15)", san: -15, sta: 0 }
+        ]
+      }
+    ];
+
+    // 觸控事件綁定
+    const btnLeft = document.getElementById('btn-left');
+    const btnRight = document.getElementById('btn-right');
+    const actionBtn = document.getElementById('action-btn');
+
+    const bindTouch = (elem, onPress, onRelease) => {
+      elem.addEventListener('touchstart', (e) => { e.preventDefault(); onPress(); });
+      elem.addEventListener('touchend', (e) => { e.preventDefault(); onRelease(); });
+      elem.addEventListener('mousedown', onPress);
+      elem.addEventListener('mouseup', onRelease);
+    };
+
+    bindTouch(btnLeft, () => { moveLeft = true; player.facing = 'left'; }, () => { moveLeft = false; });
+    bindTouch(btnRight, () => { moveRight = true; player.facing = 'right'; }, () => { moveRight = false; });
+
+    actionBtn.addEventListener('click', () => {
+      if (activeStudent && dialogBox.style.display === 'none') {
+        openQuestion();
+      }
+    });
+
+    function spawnStudent() {
+      if (!isPlaying || students.length >= 2) return;
+      students.push({
+        x: 180 + Math.random() * 150,
+        y: 285,
+        width: 38,
+        height: 58,
+        hasQuestion: true,
+        color: `hsl(${Math.random() * 360}, 65%, 72%)`
+      });
+    }
+
+    function openQuestion() {
+      if (!activeStudent) return;
+      const currentQuestion = questionBank[Math.floor(Math.random() * questionBank.length)];
+      dialogText.innerText = currentQuestion.text;
+      optionsContainer.innerHTML = '';
+
+      currentQuestion.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = `${idx + 1}. ${opt.text}`;
+        btn.onclick = () => answerQuestion(opt);
+        optionsContainer.appendChild(btn);
+      });
+
+      dialogBox.style.display = 'flex';
+    }
+
+    function answerQuestion(opt) {
+      player.san = Math.max(0, Math.min(player.maxSan, player.san + opt.san));
+      player.sta = Math.max(0, Math.min(player.maxSta, player.sta + opt.sta));
+
+      let sign = opt.san >= 0 ? "+" : "";
+      feedbackText = `回覆完成！ 理智 ${sign}${opt.san}`;
+      feedbackTimer = 70;
+
+      dialogBox.style.display = 'none';
+
+      if (activeStudent) {
+        activeStudent.hasQuestion = false;
+        setTimeout(() => {
+          students = students.filter(s => s !== activeStudent);
+          activeStudent = null;
+        }, 800);
+      }
+
+      if (player.san <= 0) {
+        gameOver(false);
+      }
+    }
+
+    function startGame() {
+      modal.style.display = 'none';
+      isPlaying = true;
+      gameTime = 16.5 * 60;
+      player.san = 100;
+      player.sta = 100;
+      player.x = 80;
+      students = [];
+      activeStudent = null;
+      dialogBox.style.display = 'none';
+      feedbackText = "";
+
+      spawnStudent();
+    }
+
+    function gameOver(win) {
+      isPlaying = false;
+      modal.style.display = 'flex';
+      dialogBox.style.display = 'none';
+      if (win) {
+        modalTitle.innerText = "🎉 順利平安下班！";
+        modalTitle.style.color = "#10b981";
+        modalDesc.innerHTML = "17:00 打卡鐘響起！ ⏰<br>你耐心傾聽並解答了所有同學的問題，<br>守住了理智值，今天也是最暖心的校安老師！";
+        startBtn.innerText = "明天再戰";
+      } else {
+        modalTitle.innerText = "💦 理智斷線加班中...";
+        modalTitle.style.color = "#ef4444";
+        modalDesc.innerHTML = "SAN 值歸零了！ 🥺<br>面對連環突發狀況與求助，精神徹底被榨乾，<br>今天只好多留下來喝杯奶茶寫檢討報告了。";
+        startBtn.innerText = "重新振作";
+      }
+    }
+
+    let spawnTimer = 0;
+
+    function update() {
+      if (!isPlaying) return;
+
+      gameTime += (1 / 60) * timeScale;
+      let hours = Math.floor(gameTime / 60);
+      let minutes = Math.floor(gameTime % 60);
+      timeDisplay.innerText = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+
+      if (gameTime >= targetTime) {
+        gameOver(true);
+        return;
+      }
+
+      // 移動判斷
+      if (dialogBox.style.display === 'none') {
+        if (moveLeft) player.x -= player.speed;
+        if (moveRight) player.x += player.speed;
+      }
+
+      player.x = Math.max(20, Math.min(canvas.width - 60, player.x));
+
+      // 碰撞與互動距離判定
+      activeStudent = null;
+      students.forEach(st => {
+        let dist = Math.abs((player.x + player.width/2) - (st.x + st.width/2));
+        if (dist < 55 && st.hasQuestion) {
+          activeStudent = st;
+        }
+      });
+
+      // 互動按鈕樣式提示
+      if (activeStudent && dialogBox.style.display === 'none') {
+        actionBtn.style.background = "#fbbf24";
+        actionBtn.style.color = "#7c2d12";
+      } else {
+        actionBtn.style.background = "#f97316";
+        actionBtn.style.color = "#ffffff";
+      }
+
+      // 隨機生成新學生
+      spawnTimer++;
+      if (spawnTimer > 280) {
+        spawnStudent();
+        spawnTimer = 0;
+      }
+
+      sanBar.style.width = `${(player.san / player.maxSan) * 100}%`;
+      staBar.style.width = `${(player.sta / player.maxSta) * 100}%`;
+
+      if (feedbackTimer > 0) feedbackTimer--;
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // 學務處背景
+      ctx.fillStyle = '#fef3c7';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // 地板
+      ctx.fillStyle = '#fed7aa';
+      ctx.fillRect(0, 340, canvas.width, canvas.height - 340);
+      ctx.strokeStyle = '#f97316';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(0, 340);
+      ctx.lineTo(canvas.width, 340);
+      ctx.stroke();
+
+      // 公佈欄與校安標語海報
+      ctx.fillStyle = '#fb923c';
+      ctx.fillRect(30, 80, 140, 90);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(45, 95, 30, 35);
+      ctx.fillRect(90, 105, 40, 30);
+
+      ctx.fillStyle = '#7c2d12';
+      ctx.font = 'bold 15px sans-serif';
+      ctx.fillText("平安下班", 240, 100);
+      ctx.font = '12px sans-serif';
+      ctx.fillText("安全第一 敬業愛生", 240, 125);
+
+      // 學生繪製
+      students.forEach(st => {
+        ctx.fillStyle = st.color;
+        ctx.beginPath();
+        ctx.roundRect(st.x, st.y, st.width, st.height, 12);
+        ctx.fill();
+        ctx.strokeStyle = '#7c2d12';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        // 眼睛與腮紅
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.arc(st.x + 10, st.y + 18, 2.5, 0, Math.PI * 2);
+        ctx.arc(st.x + 26, st.y + 18, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#f87171';
+        ctx.beginPath();
+        ctx.arc(st.x + 7, st.y + 24, 3, 0, Math.PI * 2);
+        ctx.arc(st.x + 29, st.y + 24, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 頭頂問號
+        if (st.hasQuestion) {
+          ctx.font = 'bold 22px Arial';
+          ctx.fillStyle = '#ea580c';
+          ctx.fillText("❓", st.x + 7, st.y - 10);
+        }
+      });
+
+      // 玩家角色（校安先生）
+      ctx.fillStyle = '#60a5fa';
+      ctx.beginPath();
+      ctx.roundRect(player.x, player.y, player.width, player.height, 14);
+      ctx.fill();
+      ctx.strokeStyle = '#1e3a8a';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      // 反光背心
+      ctx.fillStyle = '#fde047';
+      ctx.fillRect(player.x + 2, player.y + 22, player.width - 4, 22);
+      ctx.fillStyle = '#10b981';
+      ctx.fillRect(player.x + 2, player.y + 30, player.width - 4, 4);
+
+      // 眼睛與表情
+      ctx.fillStyle = '#000000';
+      let eyeOffset = player.facing === 'right' ? 6 : -4;
+      ctx.beginPath();
+      ctx.arc(player.x + 18 + eyeOffset, player.y + 14, 2.5, 0, Math.PI * 2);
+      ctx.arc(player.x + 28 + eyeOffset, player.y + 14, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 靠近提問時的提示氣泡
+      if (activeStudent && dialogBox.style.display === 'none') {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(player.x - 15, player.y - 35, 75, 24);
+        ctx.strokeStyle = '#f97316';
+        ctx.strokeRect(player.x - 15, player.y - 35, 75, 24);
+
+        ctx.fillStyle = '#ea580c';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.fillText("點擊 [對話]", player.x - 9, player.y - 19);
+      }
+
+      // 回覆飄字
+      if (feedbackTimer > 0) {
+        ctx.fillStyle = '#059669';
+        ctx.font = 'bold 15px sans-serif';
+        ctx.fillText(feedbackText, player.x - 20, player.y - 50);
+      }
+    }
+
+    function gameLoop() {
+      update();
+      render();
+      requestAnimationFrame(gameLoop);
+    }
+
+    requestAnimationFrame(gameLoop);
+  </script>
+</body>
+</html>
