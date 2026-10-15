@@ -1,2104 +1,630 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>杏林綜合醫院 1993：西門路一段實景密室逃脫</title>
-<style>
-  :root {
-    --bg-dark: #070908;
-    --tile-green: #2b4c3f;
-    --terrazzo: #4a4e4d;
-    --rust: #6e3524;
-    --paper: #d8c8a0;
-    --blood-rust: #8a2be2;
-    --hud-green: #7fb89b;
-    --warn-red: #d93829;
-  }
-  * {
-    box-sizing: border-box;
-    user-select: none;
-    -webkit-user-select: none;
-    -webkit-touch-callout: none;
-    margin: 0;
-    padding: 0;
-  }
-  body, html {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background-color: var(--bg-dark);
-    font-family: "Noto Serif TC", "PMingLiU", "DFKai-SB", serif;
-    color: #e2e2d8;
-    touch-action: none;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flyff Web Prototype - 3D 網頁版飛飛核心雛形</title>
+  <!-- 載入 Babylon.js 3D 引擎 -->
+  <script src="https://cdn.babylonjs.com/babylon.js"></script>
+  <style>
+    * { box-sizing: border-box; user-select: none; font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; }
+    body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #111; }
+    #renderCanvas { width: 100%; height: 100%; touch-action: none; display: block; outline: none; }
 
-  /* 主遊戲容器 */
-  #game-container {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-    max-width: 540px;
-    margin: 0 auto;
-    background: #0d110f;
-    overflow: hidden;
-    box-shadow: 0 0 40px rgba(0,0,0,0.95);
-    border-left: 1px solid #1f2723;
-    border-right: 1px solid #1f2723;
-  }
+    /* 左上角：玩家狀態面板 (Flyff 風格) */
+    #player-hud {
+      position: absolute; top: 16px; left: 16px; width: 260px;
+      background: linear-gradient(180deg, rgba(25,35,60,0.9), rgba(15,20,35,0.92));
+      border: 2px solid #6b8cce; border-radius: 10px; padding: 12px;
+      color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+    }
+    .hud-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-weight: bold; }
+    .lv-badge { background: #f5b041; color: #111; padding: 2px 8px; border-radius: 6px; font-size: 13px; }
+    .bar-row { display: flex; align-items: center; margin: 5px 0; font-size: 12px; }
+    .bar-label { width: 32px; font-weight: bold; color: #cbd5e1; }
+    .bar-bg { flex: 1; height: 14px; background: #1e293b; border-radius: 7px; overflow: hidden; position: relative; border: 1px solid #475569; }
+    .bar-fill { height: 100%; transition: width 0.15s ease-out; }
+    .hp-fill { background: linear-gradient(90deg, #dc2626, #ef4444); }
+    .mp-fill { background: linear-gradient(90deg, #2563eb, #3b82f6); }
+    .exp-fill { background: linear-gradient(90deg, #16a34a, #4ade80); }
+    .bar-text { position: absolute; inset: 0; text-align: center; line-height: 12px; font-size: 10px; color: #fff; text-shadow: 1px 1px 2px #000; }
 
-  /* 場景畫布與SVG層 */
-  #scene-viewport {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-  }
-  .scene-layer {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    display: none;
-  }
-  .scene-layer.active {
-    display: block;
-  }
-  svg.scene-svg {
-    width: 100%;
-    height: 100%;
-    display: block;
-  }
+    /* 正上方：鎖定怪物目標血條 */
+    #target-hud {
+      position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
+      width: 300px; background: rgba(20, 20, 30, 0.9);
+      border: 2px solid #e11d48; border-radius: 10px; padding: 10px 14px;
+      color: #fff; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+    }
+    #target-name { text-align: center; font-weight: bold; font-size: 14px; margin-bottom: 6px; color: #fda4af; }
 
-  /* 可點擊熱區樣式 */
-  .hotspot {
-    cursor: pointer;
-    transition: filter 0.2s ease;
-  }
-  .hotspot:hover, .hotspot:active {
-    filter: brightness(1.25) drop-shadow(0 0 6px rgba(216, 200, 160, 0.45));
-  }
+    /* 右上角：伺服器防外掛實測面板 */
+    #anticheat-panel {
+      position: absolute; top: 16px; right: 16px; width: 270px;
+      background: rgba(15, 23, 42, 0.88); border: 1px solid #38bdf8;
+      border-radius: 10px; padding: 12px; color: #e2e8f0; font-size: 12px;
+    }
+    .panel-title { font-weight: bold; color: #38bdf8; margin-bottom: 8px; font-size: 13px; }
+    .cheat-btn {
+      width: 100%; margin-top: 6px; padding: 7px; border: 1px solid #f43f5e;
+      background: rgba(244, 63, 94, 0.2); color: #fda4af; border-radius: 6px;
+      cursor: pointer; font-weight: bold; font-size: 12px; transition: 0.15s;
+    }
+    .cheat-btn:hover { background: rgba(244, 63, 94, 0.45); color: #fff; }
 
-  /* 手電筒遮罩層 */
-  #flashlight-canvas {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 20;
-  }
+    /* 正下方：快捷技能列 (Hotbar) */
+    #hotbar {
+      position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 10px; background: rgba(15, 23, 42, 0.9);
+      padding: 8px 12px; border-radius: 12px; border: 2px solid #64748b;
+    }
+    .skill-slot {
+      width: 58px; height: 58px; background: #1e293b; border: 2px solid #94a3b8;
+      border-radius: 8px; position: relative; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: #fff; font-size: 11px; text-align: center; transition: transform 0.1s, border-color 0.15s;
+    }
+    .skill-slot:hover { border-color: #fbbf24; transform: translateY(-2px); }
+    .skill-slot.active-flight { border-color: #38bdf8; background: rgba(56, 189, 248, 0.25); }
+    .hotkey { position: absolute; top: 3px; left: 5px; font-size: 10px; color: #fbbf24; font-weight: bold; }
+    .cd-overlay {
+      position: absolute; inset: 0; background: rgba(0,0,0,0.75);
+      color: #fbbf24; display: none; align-items: center; justify-content: center;
+      font-weight: bold; font-size: 15px; border-radius: 6px;
+    }
 
-  /* 閃光燈與低電量紅光特效 */
-  #fx-overlay {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 22;
-    opacity: 0;
-    transition: opacity 0.15s ease;
-  }
-  @keyframes lowBatteryPulse {
-    0%, 100% { background: rgba(180, 15, 15, 0.0); }
-    50% { background: rgba(180, 15, 15, 0.36); }
-  }
-  .critical-battery {
-    opacity: 1 !important;
-    animation: lowBatteryPulse 1.1s infinite ease-in-out;
-  }
+    /* 左下角：系統與伺服器日誌 */
+    #chat-log {
+      position: absolute; bottom: 20px; left: 16px; width: 350px; height: 150px;
+      background: rgba(0, 0, 0, 0.65); border: 1px solid #475569; border-radius: 8px;
+      padding: 8px 10px; overflow-y: auto; font-size: 12px; color: #e2e8f0;
+      pointer-events: auto;
+    }
+    .log-item { margin-bottom: 4px; line-height: 1.4; }
+    .log-sys { color: #38bdf8; }
+    .log-dmg { color: #fbbf24; }
+    .log-warn { color: #fb7185; font-weight: bold; }
+    .log-lv { color: #4ade80; font-weight: bold; }
 
-  /* 頂部 HUD 狀態列 */
-  #top-hud {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    padding: 10px 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: linear-gradient(to bottom, rgba(5, 8, 7, 0.92), rgba(5, 8, 7, 0.0));
-    z-index: 30;
-    pointer-events: none;
-  }
-  .hud-left, .hud-right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    pointer-events: auto;
-  }
-  .floor-badge {
-    background: #1b2822;
-    border: 1px solid #496a5a;
-    color: #c8e6d5;
-    padding: 4px 10px;
-    font-size: 0.85rem;
-    letter-spacing: 1px;
-    border-radius: 4px;
-    font-weight: bold;
-  }
-  .hud-btn {
-    background: rgba(24, 34, 29, 0.88);
-    border: 1px solid #4c6458;
-    color: #d6e4dc;
-    padding: 5px 9px;
-    font-size: 0.78rem;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  .hud-btn.active {
-    background: #355e4b;
-    border-color: #8cd4b0;
-    color: #fff;
-  }
-  .battery-box {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    background: rgba(15, 20, 18, 0.9);
-    border: 1px solid #495e54;
-    padding: 4px 9px;
-    border-radius: 4px;
-    font-family: monospace;
-    font-size: 0.9rem;
-  }
-  .battery-bar-wrap {
-    width: 32px;
-    height: 13px;
-    border: 1px solid #9ab3a6;
-    padding: 1px;
-    position: relative;
-  }
-  .battery-bar-wrap::after {
-    content: '';
-    position: absolute;
-    right: -4px;
-    top: 3px;
-    width: 3px;
-    height: 5px;
-    background: #9ab3a6;
-  }
-  #battery-fill {
-    height: 100%;
-    width: 100%;
-    background: #5cd68d;
-    transition: width 0.3s, background 0.3s;
-  }
-
-  /* 字幕與敘事訊息框 */
-  #narrative-box {
-    position: absolute;
-    bottom: 92px;
-    left: 12px;
-    right: 12px;
-    background: rgba(10, 14, 12, 0.88);
-    border: 1px solid #4a5d52;
-    border-left: 4px solid #8ba896;
-    padding: 10px 14px;
-    font-size: 0.9rem;
-    line-height: 1.5;
-    color: #e4e2d5;
-    z-index: 30;
-    min-height: 54px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.75);
-  }
-  #narrative-text {
-    flex: 1;
-  }
-  #stair-nav-btn {
-    margin-left: 10px;
-    background: #2f473c;
-    border: 1px solid #75a38d;
-    color: #eff7f2;
-    padding: 6px 12px;
-    border-radius: 4px;
-    font-size: 0.82rem;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-
-  /* 底部道具欄 */
-  #inventory-bar {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 82px;
-    background: #0d1310;
-    border-top: 2px solid #2b3b33;
-    display: flex;
-    align-items: center;
-    padding: 6px 10px;
-    gap: 8px;
-    overflow-x: auto;
-    z-index: 30;
-  }
-  .inv-slot {
-    min-width: 64px;
-    height: 64px;
-    background: #161f1b;
-    border: 1px solid #384d42;
-    border-radius: 6px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 4px;
-    cursor: pointer;
-    position: relative;
-    transition: all 0.15s;
-  }
-  .inv-slot.selected {
-    border: 2px solid #d8c8a0;
-    background: #283830;
-    box-shadow: 0 0 10px rgba(216, 200, 160, 0.4);
-  }
-  .inv-slot .inv-icon {
-    font-size: 1.45rem;
-    margin-bottom: 2px;
-  }
-  .inv-slot .inv-name {
-    font-size: 0.65rem;
-    text-align: center;
-    color: #c9d6ce;
-    line-height: 1.1;
-  }
-
-  /* 彈出式近景解謎視窗 (Modal) */
-  #puzzle-modal {
-    position: absolute;
-    inset: 0;
-    background: rgba(4, 7, 6, 0.92);
-    z-index: 45;
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-  }
-  #puzzle-modal.open {
-    display: flex;
-  }
-  .modal-card {
-    width: 100%;
-    max-width: 460px;
-    max-height: 86vh;
-    background: #151c19;
-    border: 1px solid #526b5e;
-    border-radius: 8px;
-    padding: 16px;
-    overflow-y: auto;
-    box-shadow: 0 10px 35px rgba(0,0,0,0.95);
-    position: relative;
-  }
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #304239;
-    padding-bottom: 10px;
-    margin-bottom: 12px;
-  }
-  .modal-title {
-    font-size: 1.05rem;
-    font-weight: bold;
-    color: #d8c8a0;
-    letter-spacing: 1px;
-  }
-  .modal-close {
-    background: #2c1e1e;
-    border: 1px solid #7c4646;
-    color: #f0c6c6;
-    padding: 4px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.85rem;
-  }
-
-  /* 復古紙張與病歷樣式 */
-  .vintage-paper {
-    background: #d8c9a7;
-    color: #262118;
-    padding: 14px;
-    border-radius: 4px;
-    border: 1px solid #8c7b56;
-    box-shadow: inset 0 0 24px rgba(85, 65, 30, 0.35);
-    font-family: "DFKai-SB", "Noto Serif TC", serif;
-    position: relative;
-  }
-  .red-stamp {
-    display: inline-block;
-    border: 2px solid #a82020;
-    color: #a82020;
-    padding: 2px 6px;
-    font-weight: bold;
-    transform: rotate(-4deg);
-    letter-spacing: 1px;
-    background: rgba(168, 32, 32, 0.06);
-  }
-
-  /* 通用按鈕與數字鎖 */
-  .action-btn {
-    background: #2d4c3e;
-    border: 1px solid #7ab398;
-    color: #fff;
-    padding: 8px 14px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.88rem;
-    margin-top: 8px;
-  }
-  .action-btn:hover {
-    background: #3c6452;
-  }
-  .keypad-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-top: 10px;
-  }
-  .key-btn {
-    background: #242e29;
-    border: 1px solid #597065;
-    color: #e6efe9;
-    font-size: 1.2rem;
-    padding: 12px 0;
-    border-radius: 4px;
-    cursor: pointer;
-    font-family: monospace;
-  }
-  .key-btn:active {
-    background: #40594d;
-  }
-  .code-display {
-    background: #0b100d;
-    border: 1px solid #4f665a;
-    color: #79e0a3;
-    font-family: monospace;
-    font-size: 1.45rem;
-    letter-spacing: 6px;
-    text-align: center;
-    padding: 10px;
-    border-radius: 4px;
-    margin-bottom: 8px;
-  }
-
-  /* 標題開場與結局畫面 */
-  #intro-screen, #ending-screen {
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at center, #16221c 0%, #050706 100%);
-    z-index: 60;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 26px;
-    text-align: center;
-  }
-  #ending-screen {
-    display: none;
-    background: radial-gradient(circle at center, #f3d088 0%, #59452a 65%, #1c1710 100%);
-    color: #1f160a;
-  }
-  .title-main {
-    font-size: 1.75rem;
-    color: #d8c8a0;
-    letter-spacing: 3px;
-    margin-bottom: 8px;
-    text-shadow: 0 2px 12px rgba(0,0,0,0.9);
-  }
-  .title-sub {
-    font-size: 0.92rem;
-    color: #8fa99b;
-    margin-bottom: 18px;
-    line-height: 1.5;
-  }
-  .history-box {
-    background: rgba(15, 22, 19, 0.85);
-    border: 1px solid #435c4f;
-    padding: 14px;
-    border-radius: 6px;
-    font-size: 0.84rem;
-    line-height: 1.6;
-    color: #c9d4ce;
-    margin-bottom: 20px;
-    text-align: left;
-  }
-</style>
+    /* 浮動傷害數字 (Floating Combat Text) */
+    .floating-text {
+      position: absolute; pointer-events: none; font-weight: 900;
+      font-size: 20px; text-shadow: 0 2px 4px rgba(0,0,0,0.85);
+      animation: floatUp 0.9s ease-out forwards;
+    }
+    @keyframes floatUp {
+      0% { opacity: 1; transform: translate(-50%, 0) scale(0.8); }
+      25% { transform: translate(-50%, -18px) scale(1.15); }
+      100% { opacity: 0; transform: translate(-50%, -55px) scale(0.95); }
+    }
+  </style>
 </head>
 <body>
 
-<div id="game-container">
-  <!-- 開場畫面 -->
-  <div id="intro-screen">
-    <div class="title-main">杏林綜合醫院</div>
-    <div class="title-sub">1975–1993 台南市中西區西門路一段<br>真實建築格局・第一人稱實景密室逃脫</div>
-    <div class="history-box">
-      <strong>【紀錄片拍攝檔案：2018年11月・拆除前夕】</strong><br>
-      原「杏林綜合醫院」為地上七層、地下一層之鋼筋混凝土老式醫療大樓，1993年8月21日因健保與勞保弊案勒令停業，此後斷水斷電閒置長達25年。<br><br>
-      你是一名獨自進入院內取景的紀錄片攝影師，身後的1樓西門路鐵捲門因老舊滑軌鬆脫而重重封死。你必須在<strong>手機手電筒電量耗盡前</strong>，穿梭於真實遺留的掛號處、B1太平間、3F外科手術室與4F病房區，找出手動鐵捲門搖桿逃離現場。
-    </div>
-    <button class="action-btn" style="font-size:1.05rem; padding:12px 28px;" onclick="startGame()">開啟手電筒・進入1樓大廳</button>
-  </div>
+  <canvas id="renderCanvas"></canvas>
 
-  <!-- 結局畫面 -->
-  <div id="ending-screen">
-    <div class="title-main" style="color:#2b1a08; text-shadow:none;">重見天日：西門路一段</div>
-    <div class="title-sub" style="color:#473014;">你俯身鑽出鐵捲門下方的 50 公分縫隙，午後溫暖的台南陽光與西門路車水馬龍聲瞬間湧入。</div>
-    <div class="history-box" style="background:rgba(255,250,235,0.88); color:#2b2113; border-color:#8c6d46;">
-      <strong>【歷史後記】</strong><br>
-      台南杏林綜合醫院於 1975 年開業，曾為台南市區重要的大型綜合醫院，1993 年停業後因產權與稅務問題長期荒廢，院內遺留大量手寫病歷、藥瓶、X光片與醫療器材。2018 年底，這棟見證台灣醫療史與都市變遷的七層樓建築正式進行拆除改建，走入歷史。
+  <!-- 左上角玩家狀態 -->
+  <div id="player-hud">
+    <div class="hud-header">
+      <span>初心者冒險家</span>
+      <span class="lv-badge" id="ui-lv">Lv. 1</span>
     </div>
-    <button class="action-btn" style="background:#4a3319; border-color:#8c6d46;" onclick="location.reload()">重新體驗實景探索</button>
-  </div>
-
-  <!-- 頂部 HUD -->
-  <div id="top-hud">
-    <div class="hud-left">
-      <span id="floor-indicator" class="floor-badge">1F 掛號大廳</span>
-      <button id="btn-beam" class="hud-btn" onclick="toggleHighBeam()">強光: 關</button>
-      <button id="btn-flash" class="hud-btn" onclick="triggerCameraFlash()">閃光燈</button>
-      <button id="btn-gyro" class="hud-btn" onclick="toggleGyro()">陀螺儀</button>
+    <div class="bar-row">
+      <span class="bar-label">HP</span>
+      <div class="bar-bg"><div class="bar-fill hp-fill" id="ui-hp-bar" style="width:100%"></div><div class="bar-text" id="ui-hp-text">200 / 200</div></div>
     </div>
-    <div class="hud-right">
-      <div class="battery-box">
-        <div class="battery-bar-wrap"><div id="battery-fill"></div></div>
-        <span id="battery-text">100%</span>
-      </div>
+    <div class="bar-row">
+      <span class="bar-label">MP</span>
+      <div class="bar-bg"><div class="bar-fill mp-fill" id="ui-mp-bar" style="width:100%"></div><div class="bar-text" id="ui-mp-text">100 / 100</div></div>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">EXP</span>
+      <div class="bar-bg"><div class="bar-fill exp-fill" id="ui-exp-bar" style="width:0%"></div><div class="bar-text" id="ui-exp-text">0%</div></div>
     </div>
   </div>
 
-  <!-- 實景視覺層 -->
-  <div id="scene-viewport">
-    <!-- ================= 1F 掛號大廳與藥局 ================= -->
-    <div id="scene-1F" class="scene-layer active">
-      <svg class="scene-svg" viewBox="0 0 540 760" preserveAspectRatio="xMidYMid slice">
-        <!-- 磨石子地坪與斑駁牆面 -->
-        <rect width="540" height="520" fill="#232b27"/>
-        <polygon points="0,520 540,520 540,760 0,760" fill="#373d3a"/>
-        <!-- 牆面壁癌與磁磚紋理 -->
-        <g stroke="#1b221e" stroke-width="1" opacity="0.6">
-          <line x1="0" y1="260" x2="540" y2="260"/>
-          <line x1="0" y1="300" x2="540" y2="300"/>
-          <line x1="0" y1="340" x2="540" y2="340"/>
-          <line x1="0" y1="380" x2="540" y2="380"/>
-        </g>
-
-        <!-- 左側：封死的西門路生鏽綠色鐵捲門 -->
-        <g class="hotspot" onclick="inspectShutter1F()">
-          <rect x="22" y="130" width="165" height="390" fill="#233d2f" stroke="#15241c" stroke-width="4"/>
-          <!-- 鐵捲門橫條紋與鏽斑 -->
-          <g stroke="#17281f" stroke-width="3">
-            <line x1="22" y1="160" x2="187" y2="160"/><line x1="22" y1="190" x2="187" y2="190"/>
-            <line x1="22" y1="220" x2="187" y2="220"/><line x1="22" y1="250" x2="187" y2="250"/>
-            <line x1="22" y1="280" x2="187" y2="280"/><line x1="22" y1="310" x2="187" y2="310"/>
-            <line x1="22" y1="340" x2="187" y2="340"/><line x1="22" y1="370" x2="187" y2="370"/>
-            <line x1="22" y1="400" x2="187" y2="400"/><line x1="22" y1="430" x2="187" y2="430"/>
-            <line x1="22" y1="460" x2="187" y2="460"/><line x1="22" y1="490" x2="187" y2="490"/>
-          </g>
-          <ellipse cx="95" cy="360" rx="45" ry="22" fill="#5e2f1d" opacity="0.55"/>
-          <ellipse cx="140" cy="240" rx="30" ry="40" fill="#5e2f1d" opacity="0.45"/>
-          <text x="104" y="118" fill="#8fa99b" font-size="13" text-anchor="middle">▲ 西門路一段大門（鐵捲門封死）</text>
-        </g>
-
-        <!-- 鐵捲門右側：手動鏈條盒 -->
-        <g class="hotspot" onclick="inspectShutterChainBox()">
-          <rect x="192" y="295" width="26" height="52" fill="#4a352b" stroke="#7d5c49" stroke-width="2" rx="2"/>
-          <circle cx="205" cy="321" r="6" fill="#1e1612"/>
-          <text x="205" y="286" fill="#c7b299" font-size="10" text-anchor="middle">鏈條盒</text>
-        </g>
-
-        <!-- 正中央：貼白色小磁磚的「掛號／批價」木框玻璃窗櫃檯 -->
-        <g class="hotspot" onclick="openRegistrationModal()">
-          <!-- 櫃檯下半部白色小磁磚 -->
-          <rect x="228" y="340" width="160" height="180" fill="#9ea8a2" stroke="#454d48" stroke-width="3"/>
-          <!-- 木框玻璃窗與後方病歷架 -->
-          <rect x="228" y="175" width="160" height="165" fill="#18201c" stroke="#5c4328" stroke-width="6"/>
-          <line x1="308" y1="175" x2="308" y2="340" stroke="#5c4328" stroke-width="5"/>
-          <!-- 內部病歷分類木格剪影 -->
-          <rect x="240" y="195" width="58" height="90" fill="#2e2318" stroke="#4a3827"/>
-          <rect x="318" y="195" width="58" height="90" fill="#2e2318" stroke="#4a3827"/>
-          <!-- 招牌字 -->
-          <rect x="248" y="142" width="120" height="26" fill="#d8cfc0" stroke="#4a3827" stroke-width="2"/>
-          <text x="308" y="160" fill="#1f1b16" font-size="15" font-weight="bold" text-anchor="middle">掛號 ／ 批價處</text>
-          <!-- 櫃檯抽屜密碼鎖提示 -->
-          <rect x="283" y="362" width="50" height="24" fill="#3d352e" stroke="#8c7a6b" stroke-width="1.5"/>
-          <text x="308" y="378" fill="#e0d0b8" font-size="11" text-anchor="middle">號碼鎖抽屜</text>
-        </g>
-
-        <!-- 右側：鐵窗深鎖的「藥局」 -->
-        <g class="hotspot" onclick="openPharmacyModal()">
-          <rect x="404" y="175" width="118" height="345" fill="#1b2420" stroke="#45574e" stroke-width="3"/>
-          <!-- 藥局內部棕色藥瓶層架 -->
-          <line x1="412" y1="240" x2="514" y2="240" stroke="#4a3928" stroke-width="4"/>
-          <line x1="412" y1="295" x2="514" y2="295" stroke="#4a3928" stroke-width="4"/>
-          <rect x="422" y="218" width="12" height="20" fill="#6e4720" rx="2"/>
-          <rect x="442" y="215" width="14" height="23" fill="#593818" rx="2"/>
-          <rect x="472" y="218" width="12" height="20" fill="#6e4720" rx="2"/>
-          <rect x="430" y="272" width="13" height="21" fill="#6e4720" rx="2"/>
-          <rect x="460" y="270" width="15" height="23" fill="#593818" rx="2"/>
-          <!-- 鐵欄杆 -->
-          <line x1="432" y1="175" x2="432" y2="350" stroke="#6d7d75" stroke-width="3"/>
-          <line x1="462" y1="175" x2="462" y2="350" stroke="#6d7d75" stroke-width="3"/>
-          <line x1="492" y1="175" x2="492" y2="350" stroke="#6d7d75" stroke-width="3"/>
-          <rect x="424" y="142" width="78" height="26" fill="#d8cfc0" stroke="#4a3827" stroke-width="2"/>
-          <text x="463" y="160" fill="#1f1b16" font-size="15" font-weight="bold" text-anchor="middle">領藥處</text>
-        </g>
-
-        <!-- 地上散落的1993年手寫病歷與勞保單 -->
-        <g class="hotspot" onclick="openDustyRecordModal()">
-          <polygon points="180,585 265,570 285,625 195,640" fill="#c7b68f" stroke="#6e5e3e" stroke-width="1.5"/>
-          <polygon points="240,610 335,595 350,650 250,665" fill="#d6c69e" stroke="#6e5e3e" stroke-width="1.5"/>
-          <polygon points="130,625 215,615 225,665 140,675" fill="#bfb08c" stroke="#6e5e3e" stroke-width="1.5"/>
-          <text x="242" y="692" fill="#d8c8a0" font-size="13" text-anchor="middle">📄 散落的民國82年勞保診療書與手寫病歷</text>
-        </g>
-      </svg>
-    </div>
-
-    <!-- ================= B1 太平間與機房 ================= -->
-    <div id="scene-B1" class="scene-layer">
-      <svg class="scene-svg" viewBox="0 0 540 760" preserveAspectRatio="xMidYMid slice">
-        <!-- 潮濕壁癌地下室背景 -->
-        <rect width="540" height="530" fill="#16211d"/>
-        <polygon points="0,530 540,530 540,760 0,760" fill="#25302c"/>
-        <!-- 綠色馬賽克磁磚牆裙 -->
-        <rect x="0" y="340" width="540" height="190" fill="#1f362d" stroke="#2d4d40" stroke-width="2"/>
-        <!-- 頂部緊急照明燈管 -->
-        <rect id="b1-light-tube" x="180" y="70" width="180" height="14" fill="#33403a" stroke="#556b60" rx="4"/>
-        <text x="270" y="60" fill="#7fa392" font-size="11" text-anchor="middle">B1 緊急照明燈</text>
-
-        <!-- 左側：全院最知名的三格橫向不鏽鋼遺體冰櫃 -->
-        <g class="hotspot" onclick="openMorgueFreezerModal()">
-          <rect x="22" y="185" width="330" height="185" fill="#707d78" stroke="#39423f" stroke-width="5"/>
-          <!-- 三格橫向冰櫃門 -->
-          <rect x="34" y="197" width="98" height="160" fill="#889690" stroke="#454f4b" stroke-width="3"/>
-          <rect x="138" y="197" width="98" height="160" fill="#889690" stroke="#29302d" stroke-width="3"/>
-          <rect x="242" y="197" width="98" height="160" fill="#889690" stroke="#454f4b" stroke-width="3"/>
-          <!-- 編號牌 -->
-          <text x="83" y="230" fill="#1c2421" font-size="15" font-weight="bold" text-anchor="middle">一號櫃</text>
-          <text x="187" y="230" fill="#6e1a1a" font-size="15" font-weight="bold" text-anchor="middle">二號櫃(暗格)</text>
-          <text x="291" y="230" fill="#1c2421" font-size="15" font-weight="bold" text-anchor="middle">三號櫃</text>
-          <!-- 氣密把手 -->
-          <rect x="110" y="268" width="16" height="32" fill="#3a423f"/>
-          <rect x="214" y="268" width="16" height="32" fill="#5e3224"/>
-          <rect x="318" y="268" width="16" height="32" fill="#3a423f"/>
-          <text x="187" y="172" fill="#c4d4cc" font-size="13" text-anchor="middle">❄️ 三格不鏽鋼遺體冰櫃</text>
-        </g>
-
-        <!-- 中下方：磁磚砌成的解剖沖洗台與往生室登記簿 -->
-        <g class="hotspot" onclick="openAutopsyTableModal()">
-          <polygon points="35,440 315,440 335,515 20,515" fill="#6c8077" stroke="#384740" stroke-width="3"/>
-          <rect x="25" y="515" width="305" height="65" fill="#465750" stroke="#2c3833" stroke-width="2"/>
-          <!-- 往生室登記簿 -->
-          <rect x="75" y="455" width="75" height="45" fill="#c7b693" stroke="#4d3f26" stroke-width="1.5"/>
-          <!-- 解剖台上的手術刀 -->
-          <line id="svg-scalpel" x1="210" y1="475" x2="265" y2="465" stroke="#d8e6df" stroke-width="4"/>
-          <text x="175" y="432" fill="#d8c8a0" font-size="13" text-anchor="middle">🔪 磁磚沖洗台與往生室登記簿</text>
-        </g>
-
-        <!-- 右側：B1 總配電箱 -->
-        <g class="hotspot" onclick="openBreakerModal()">
-          <rect x="385" y="190" width="128" height="210" fill="#3a4741" stroke="#62786e" stroke-width="3" rx="3"/>
-          <rect x="400" y="210" width="98" height="170" fill="#27302c" stroke="#4d5e56" stroke-width="1.5"/>
-          <polygon points="449,255 436,282 462,282" fill="#d4a238"/>
-          <text x="449" y="315" fill="#d4a238" font-size="12" text-anchor="middle">高壓配電箱</text>
-          <text x="449" y="176" fill="#d8c8a0" font-size="13" text-anchor="middle">⚡ B1 機房配電箱</text>
-        </g>
-
-        <!-- 地上散落的冥紙與往生被 -->
-        <g opacity="0.75">
-          <rect x="110" y="615" width="46" height="28" fill="#d9ba57" stroke="#8c6d1f" transform="rotate(12 110 615)"/>
-          <rect x="165" y="630" width="46" height="28" fill="#d9ba57" stroke="#8c6d1f" transform="rotate(-18 165 630)"/>
-          <rect x="235" y="620" width="46" height="28" fill="#d9ba57" stroke="#8c6d1f" transform="rotate(6 235 620)"/>
-          <polygon points="330,600 470,590 490,660 315,670" fill="#b89435" stroke="#785812"/>
-          <text x="402" y="635" fill="#6b1d1d" font-size="13" font-weight="bold" text-anchor="middle">往生蓮花被與廢棄冥紙</text>
-        </g>
-      </svg>
-    </div>
-
-    <!-- ================= 3F 外科手術室與檢驗室 ================= -->
-    <div id="scene-3F" class="scene-layer">
-      <svg class="scene-svg" viewBox="0 0 540 760" preserveAspectRatio="xMidYMid slice">
-        <rect width="540" height="520" fill="#1b2924"/>
-        <polygon points="0,520 540,520 540,760 0,760" fill="#2c3b35"/>
-
-        <!-- 上方懸掛：破裂的圓形無影燈 -->
-        <g>
-          <line x1="250" y1="0" x2="250" y2="95" stroke="#5b6e65" stroke-width="8"/>
-          <ellipse cx="250" cy="115" rx="92" ry="34" fill="#778c82" stroke="#3c4a43" stroke-width="4"/>
-          <ellipse cx="250" cy="122" rx="76" ry="22" fill="#9fb5ab" stroke="#495952" stroke-width="2"/>
-          <!-- 破裂裂痕 -->
-          <polyline points="210,115 245,125 230,138 275,118" fill="none" stroke="#1b2420" stroke-width="3"/>
-          <text x="250" y="168" fill="#9ab8a9" font-size="12" text-anchor="middle">破裂的外科無影燈</text>
-        </g>
-
-        <!-- 左側牆面：X光看片燈箱 -->
-        <g class="hotspot" onclick="openXrayLightboxModal()">
-          <rect x="20" y="190" width="175" height="135" fill="#18211e" stroke="#62786e" stroke-width="4"/>
-          <rect id="xray-screen-glow" x="28" y="198" width="159" height="119" fill="#2a3632"/>
-          <text x="107" y="262" fill="#95b0a4" font-size="13" text-anchor="middle">🩻 X光看片燈箱</text>
-          <text x="107" y="180" fill="#d8c8a0" font-size="12" text-anchor="middle">點擊掛上/檢視胸腔X光片</text>
-        </g>
-
-        <!-- 正中央：綠色皮革破裂的手術床 -->
-        <g class="hotspot" onclick="openOperatingTableModal()">
-          <polygon points="145,430 365,430 395,485 115,485" fill="#2d5944" stroke="#193327" stroke-width="3"/>
-          <!-- 皮革破口 -->
-          <polygon points="225,448 285,452 270,470 215,465" fill="#6b573b" stroke="#1a1610" stroke-width="2"/>
-          <!-- 不鏽鋼底座 -->
-          <rect x="225" y="485" width="60" height="95" fill="#5b6963" stroke="#323b37" stroke-width="3"/>
-          <rect x="175" y="575" width="160" height="18" fill="#46524d"/>
-          <text x="255" y="418" fill="#d8c8a0" font-size="13" text-anchor="middle">🛏️ 破裂的綠色皮革手術床</text>
-        </g>
-
-        <!-- 右側：檢驗科福馬林玻璃標本罐木櫃 -->
-        <g class="hotspot" onclick="openSpecimenCabinetModal()">
-          <rect x="378" y="185" width="142" height="250" fill="#2e2218" stroke="#594330" stroke-width="4"/>
-          <line x1="382" y1="265" x2="516" y2="265" stroke="#594330" stroke-width="4"/>
-          <line x1="382" y1="345" x2="516" y2="345" stroke="#594330" stroke-width="4"/>
-          <!-- 混濁福馬林玻璃標本罐 -->
-          <rect x="396" y="210" width="24" height="48" fill="#6d825e" stroke="#a9bfa0" rx="4"/>
-          <rect x="434" y="205" width="28" height="53" fill="#7a8c62" stroke="#a9bfa0" rx="4"/>
-          <rect x="476" y="212" width="24" height="46" fill="#657856" stroke="#a9bfa0" rx="4"/>
-          <rect x="402" y="290" width="26" height="48" fill="#788558" stroke="#a9bfa0" rx="4"/>
-          <rect x="448" y="288" width="35" height="50" fill="#6d825e" stroke="#a9bfa0" rx="4"/>
-          <text x="449" y="172" fill="#d8c8a0" font-size="12" text-anchor="middle">🫙 檢驗室福馬林標本櫃</text>
-        </g>
-
-        <!-- 左下：手術室藥品保險箱 -->
-        <g class="hotspot" onclick="openMedicineSafeModal()">
-          <rect x="28" y="455" width="96" height="110" fill="#3a4540" stroke="#758a80" stroke-width="3" rx="4"/>
-          <circle cx="76" cy="505" r="20" fill="#1e2421" stroke="#9eb3a9" stroke-width="2"/>
-          <text x="76" y="552" fill="#d8c8a0" font-size="11" text-anchor="middle">🔒 藥品保險箱</text>
-        </g>
-      </svg>
-    </div>
-
-    <!-- ================= 4F 中央護理站與病房 ================= -->
-    <div id="scene-4F" class="scene-layer">
-      <svg class="scene-svg" viewBox="0 0 540 760" preserveAspectRatio="xMidYMid slice">
-        <rect width="540" height="520" fill="#1e2623"/>
-        <polygon points="0,520 540,520 540,760 0,760" fill="#343d39"/>
-
-        <!-- 陽台雜草與構樹剪影 -->
-        <rect x="200" y="75" width="140" height="105" fill="#142419" stroke="#3c4f42" stroke-width="3"/>
-        <path d="M210,180 Q235,110 260,180 Q285,95 315,180 Q325,130 335,180" fill="#26472e" opacity="0.8"/>
-        <text x="270" y="95" fill="#7fa688" font-size="11" text-anchor="middle">陽台攀生構樹與雜草</text>
-
-        <!-- 中央上方：30年前粉筆字跡黑板 -->
-        <g class="hotspot" onclick="openBlackboardModal()">
-          <rect x="45" y="85" width="450" height="92" fill="#182e23" stroke="#6b5135" stroke-width="5"/>
-          <text x="270" y="115" fill="#d9e3dc" font-size="14" font-weight="bold" text-anchor="middle">【四樓住院病患轉床紀錄表】</text>
-          <text x="270" y="142" fill="#b7c9be" font-size="13" text-anchor="middle">第一轉床：402房 ➔ 第二轉床：405房 ➔ 第三轉床：408房</text>
-          <text x="270" y="165" fill="#d8c8a0" font-size="11" text-anchor="middle">（點擊查看黑板與護理長交班日誌）</text>
-        </g>
-
-        <!-- 左中右三間病房入口與鐵床（402、405、408） -->
-        <g class="hotspot" onclick="openWardRoomModal('402')">
-          <rect x="24" y="210" width="145" height="185" fill="#161d1a" stroke="#485950" stroke-width="2"/>
-          <rect x="38" y="310" width="115" height="60" fill="#2e4f3e" stroke="#6e3b28" stroke-width="2"/>
-          <rect x="80" y="330" width="28" height="20" fill="#d8c8a0"/>
-          <text x="96" y="238" fill="#d8c8a0" font-size="14" font-weight="bold" text-anchor="middle">402 病房</text>
-          <text x="96" y="295" fill="#9ab0a4" font-size="11" text-anchor="middle">生鏽鐵床與床頭卡</text>
-        </g>
-
-        <g class="hotspot" onclick="openWardRoomModal('405')">
-          <rect x="197" y="210" width="145" height="185" fill="#161d1a" stroke="#485950" stroke-width="2"/>
-          <rect x="211" y="310" width="115" height="60" fill="#2e4f3e" stroke="#6e3b28" stroke-width="2"/>
-          <rect x="253" y="330" width="28" height="20" fill="#d8c8a0"/>
-          <text x="270" y="238" fill="#d8c8a0" font-size="14" font-weight="bold" text-anchor="middle">405 病房</text>
-          <text x="270" y="295" fill="#9ab0a4" font-size="11" text-anchor="middle">生鏽鐵床與床頭卡</text>
-        </g>
-
-        <g class="hotspot" onclick="openWardRoomModal('408')">
-          <rect x="370" y="210" width="145" height="185" fill="#161d1a" stroke="#485950" stroke-width="2"/>
-          <rect x="384" y="310" width="115" height="60" fill="#2e4f3e" stroke="#6e3b28" stroke-width="2"/>
-          <rect x="426" y="330" width="28" height="20" fill="#d8c8a0"/>
-          <text x="442" y="238" fill="#d8c8a0" font-size="14" font-weight="bold" text-anchor="middle">408 病房</text>
-          <text x="442" y="295" fill="#9ab0a4" font-size="11" text-anchor="middle">生鏽鐵床與床頭卡</text>
-        </g>
-
-        <!-- 中央下方：半開放式環形中央護理站與老式綠色轉盤電話 -->
-        <g class="hotspot" onclick="openRotaryPhoneModal()">
-          <polygon points="65,455 475,455 510,615 30,615" fill="#3a4a42" stroke="#637a6f" stroke-width="4"/>
-          <!-- 桌上三台老式綠色轉盤電話 -->
-          <rect x="135" y="425" width="56" height="38" fill="#25593f" stroke="#78ad92" stroke-width="2" rx="6"/>
-          <circle cx="163" cy="446" r="12" fill="#d8e3dc"/>
-          <rect x="242" y="425" width="56" height="38" fill="#25593f" stroke="#78ad92" stroke-width="2" rx="6"/>
-          <circle cx="270" cy="446" r="12" fill="#d8e3dc"/>
-          <rect x="349" y="425" width="56" height="38" fill="#25593f" stroke="#78ad92" stroke-width="2" rx="6"/>
-          <circle cx="377" cy="446" r="12" fill="#d8e3dc"/>
-          <text x="270" y="515" fill="#e6f2ec" font-size="15" font-weight="bold" text-anchor="middle">☎️ 四樓中央環形護理站（舊式轉盤內線電話）</text>
-          <text x="270" y="542" fill="#d8c8a0" font-size="12" text-anchor="middle">下方工務鐵櫃需依序撥通三位主治醫師內線分機解鎖</text>
-        </g>
-      </svg>
-    </div>
-
-    <!-- ================= 動線樞紐：磨石子樓梯間 ================= -->
-    <div id="scene-STAIRS" class="scene-layer">
-      <svg class="scene-svg" viewBox="0 0 540 760" preserveAspectRatio="xMidYMid slice">
-        <rect width="540" height="760" fill="#1b211e"/>
-        <!-- 磨石子階梯與紅色鐵欄杆 -->
-        <polygon points="60,560 320,320 480,320 480,560" fill="#3f4643" stroke="#282e2b" stroke-width="3"/>
-        <line x1="60" y1="560" x2="320" y2="320" stroke="#8c2d26" stroke-width="8"/>
-        <line x1="120" y1="505" x2="120" y2="415" stroke="#6e221d" stroke-width="4"/>
-        <line x1="190" y1="440" x2="190" y2="350" stroke="#6e221d" stroke-width="4"/>
-        <line x1="260" y1="375" x2="260" y2="285" stroke="#6e221d" stroke-width="4"/>
-
-        <!-- 永遠停在4樓的廢棄舊電梯 -->
-        <rect x="55" y="135" width="160" height="235" fill="#262e2a" stroke="#4d5c54" stroke-width="4"/>
-        <line x1="135" y1="135" x2="135" y2="370" stroke="#161c19" stroke-width="3"/>
-        <rect x="105" y="102" width="60" height="24" fill="#111" stroke="#4d5c54"/>
-        <text x="135" y="119" fill="#d93829" font-family="monospace" font-size="15" text-anchor="middle">4F ▼</text>
-        <text x="135" y="255" fill="#889990" font-size="12" text-anchor="middle">廢棄舊電梯（停滯於4樓）</text>
-
-        <!-- 樓層移動按鈕面板 -->
-        <g transform="translate(260, 125)">
-          <rect x="0" y="0" width="245" height="390" fill="#161f1b" stroke="#536e60" stroke-width="3" rx="6"/>
-          <text x="122" y="34" fill="#d8c8a0" font-size="16" font-weight="bold" text-anchor="middle">磨石子樓梯・樓層動線</text>
-
-          <g class="hotspot" onclick="moveToFloor('4F')">
-            <rect x="22" y="55" width="200" height="54" fill="#283b32" stroke="#6d9481" rx="4"/>
-            <text x="122" y="87" fill="#fff" font-size="14" text-anchor="middle">4F 中央護理站與病房區</text>
-          </g>
-
-          <g class="hotspot" onclick="moveToFloor('3F')">
-            <rect x="22" y="125" width="200" height="54" fill="#283b32" stroke="#6d9481" rx="4"/>
-            <text x="122" y="157" fill="#fff" font-size="14" text-anchor="middle">3F 外科手術室與檢驗科</text>
-          </g>
-
-          <g class="hotspot" onclick="moveToFloor('2F')">
-            <rect x="22" y="195" width="200" height="54" fill="#242020" stroke="#634747" rx="4"/>
-            <text x="122" y="227" fill="#b88a8a" font-size="13" text-anchor="middle">2F 門診區（鐵門焊死封閉）</text>
-          </g>
-
-          <g class="hotspot" onclick="moveToFloor('1F')">
-            <rect x="22" y="265" width="200" height="54" fill="#283b32" stroke="#6d9481" rx="4"/>
-            <text x="122" y="297" fill="#fff" font-size="14" text-anchor="middle">1F 掛號大廳與西門路鐵門</text>
-          </g>
-
-          <g class="hotspot" onclick="moveToFloor('B1')">
-            <rect x="22" y="330" width="200" height="48" fill="#1f3028" stroke="#6d9481" rx="4"/>
-            <text x="122" y="359" fill="#c7e6d7" font-size="14" text-anchor="middle">B1 地下太平間與配電室</text>
-          </g>
-        </g>
-      </svg>
+  <!-- 正上方鎖定怪物血條 -->
+  <div id="target-hud">
+    <div id="target-name">獨眼蝙蝠 (Lv.1)</div>
+    <div class="bar-bg">
+      <div class="bar-fill hp-fill" id="target-hp-bar" style="width:100%"></div>
+      <div class="bar-text" id="target-hp-text">100 / 100</div>
     </div>
   </div>
 
-  <!-- 手電筒光束遮罩 Canvas -->
-  <canvas id="flashlight-canvas"></canvas>
-  <div id="fx-overlay"></div>
-
-  <!-- 敘事訊息與樓梯切換列 -->
-  <div id="narrative-box">
-    <div id="narrative-text">手指滑動螢幕移動手電筒光束，點擊場景中的遺留物進行調查。</div>
-    <button id="stair-nav-btn" onclick="goToStairwell()">前往樓梯間</button>
+  <!-- 右上角防外掛實測面板 -->
+  <div id="anticheat-panel">
+    <div class="panel-title">🛡️ 權威伺服器防外掛實測</div>
+    <div style="color:#94a3b8; margin-bottom:6px;">
+      操作：<b>WASD</b> 移動、<b>左鍵點擊怪物</b>鎖定、<b>右鍵拖曳</b>轉視角、飛行時 <b>空白鍵/Shift</b> 升降。
+    </div>
+    <button class="cheat-btn" onclick="triggerSpeedHack()">⚡ 測試外掛：修改記憶體瞬移</button>
+    <button class="cheat-btn" onclick="triggerHpHack()">💉 測試外掛：本地竄改血量 99999</button>
   </div>
 
-  <!-- 底部道具欄 -->
-  <div id="inventory-bar"></div>
-
-  <!-- 解謎互動視窗 Modal -->
-  <div id="puzzle-modal">
-    <div class="modal-card">
-      <div class="modal-header">
-        <div id="modal-title" class="modal-title">調查項目</div>
-        <button class="modal-close" onclick="closeModal()">關閉</button>
-      </div>
-      <div id="modal-body"></div>
+  <!-- 下方技能快捷列 -->
+  <div id="hotbar">
+    <div class="skill-slot" onclick="useSkill(1)">
+      <span class="hotkey">1</span>
+      <span>⚔️<br>普通攻擊</span>
+      <div class="cd-overlay" id="cd-1"></div>
+    </div>
+    <div class="skill-slot" onclick="useSkill(2)">
+      <span class="hotkey">2</span>
+      <span>💥<br>連環重擊</span>
+      <div class="cd-overlay" id="cd-2"></div>
+    </div>
+    <div class="skill-slot" onclick="useSkill(3)">
+      <span class="hotkey">3</span>
+      <span>✨<br>緊急治癒</span>
+      <div class="cd-overlay" id="cd-3"></div>
+    </div>
+    <div class="skill-slot" id="slot-flight" onclick="useSkill(4)">
+      <span class="hotkey">4</span>
+      <span>🛹<br>飛行滑板</span>
+      <div class="cd-overlay" id="cd-4"></div>
     </div>
   </div>
-</div>
+
+  <!-- 左下角系統日誌 -->
+  <div id="chat-log"></div>
 
 <script>
-/* ============================================================================
-   1. 遊戲全域狀態與真實歷史道具管理
-============================================================================ */
-const state = {
-  started: false,
-  currentFloor: '1F',
-  battery: 100,
-  highBeam: false,
-  gyroEnabled: false,
-  pointerX: 270,
-  pointerY: 360,
-  selectedItem: null,
-  inventory: [],
-
-  // 各關卡進度旗標
-  dustCleared: 0,           // 1F 病歷灰塵清除進度 0~100
-  drawerUnlocked: false,    // 1F 掛號處抽屜 820821
-  pharmacyUnlocked: false,  // 1F 藥局解鎖
-  batteryCollected: false,  // 1F 藥局底層備用電池
-  b1DoorOpened: false,      // 1F 藥局通往B1樓梯門
-
-  fuseInstalled: false,     // B1 保險絲裝入
-  powerRestored: false,     // B1 拉閘式開關解謎完成 (<=30A 且點亮B1與3F)
-  freezerUnlocked: false,   // B1 二號冰櫃 45度+下壓完成
-  scalpelCollected: false,  // B1 解剖台手術刀
-
-  floor3Unlocked: false,    // 3F 手術室防煙門解鎖
-  xraysCollected: false,    // 3F 4張胸腔X光片收集
-  mattressCut: false,       // 3F 割開手術床墊拿到器材清點單
-  xraysOrdered: false,      // 3F X光片依序排好
-  safeUnlocked: false,      // 3F 保險箱 4729 解開
-
-  floor4Unlocked: false,    // 4F 護理站萬用鑰匙解鎖
-  dialedSequence: [],       // 4F 轉盤電話已撥分機 (目標: 3 -> 8 -> 5)
-  crankCollected: false,    // 4F 取得1樓鐵捲門手動搖桿
-
-  chainBoxPried: false,     // 1F 手術刀撬開鏈條盒
-  crankInserted: false,     // 1F 插入手動搖桿
-  shutterHeightCm: 0        // 1F 鐵捲門拉起高度 (目標 50cm)
-};
-
-const ITEM_META = {
-  pharmacy_key: { name: '藥局側門鑰匙', icon: '🗝️', desc: '掛號處抽屜取得的舊銅鑰匙，可開啟1樓領藥處。' },
-  b1_fuse:      { name: 'B1備用保險絲', icon: '🔌', desc: '30A 老式陶瓷保險絲，用於B1總配電箱。' },
-  spare_battery:{ name: '手電筒備用電池', icon: '🔋', desc: '藥局底層找到的乾電池，點擊可直接補充50%手電筒電力。' },
-  or_key:       { name: '3樓手術室鑰匙', icon: '🔑', desc: 'B1二號遺體冰櫃把手暗格取得的防煙門鑰匙。' },
-  scalpel:      { name: '外科手術刀', icon: '🔪', desc: 'B1解剖沖洗台遺留的鋒利手術刀，可割開皮革或撬開鏽蝕鐵盒。' },
-  xray_set:     { name: '4張胸腔X光片', icon: '🩻', desc: '檢驗室收集的4張1993年病患胸腔X光片。' },
-  checklist:    { name: '器材清點單', icon: '📋', desc: '從手術床墊破口取出的清點單，記載4位病患體內止血鉗位置。' },
-  nurse_key:    { name: '4樓萬用鑰匙', icon: '🗝️', desc: '3樓藥品保險箱取得的4樓護理站與病房區鑰匙。' },
-  shutter_crank:{ name: '鐵捲門手動搖桿', icon: '🔧', desc: '4樓護理站下方鐵櫃取得的工務室搖桿，可手動拉起1樓西門路鐵捲門。' }
-};
-
-/* ============================================================================
-   2. Web Audio API 擬真音效合成器 (無須外部音檔)
-============================================================================ */
-let audioCtx = null;
-function initAudio() {
-  if (!audioCtx) {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    audioCtx = new AudioContext();
-  }
-  if (audioCtx.state === 'suspended') audioCtx.resume();
+// ==========================================
+// 1. 系統日誌與浮動傷害文字工具
+// ==========================================
+const chatLog = document.getElementById('chat-log');
+function addLog(msg, type = 'log-sys') {
+  const div = document.createElement('div');
+  div.className = 'log-item ' + type;
+  div.textContent = `[系統] ${msg}`;
+  chatLog.appendChild(div);
+  chatLog.scrollTop = chatLog.scrollHeight;
 }
 
-function playSound(type) {
-  if (!audioCtx) return;
-  const now = audioCtx.currentTime;
-  if (type === 'click') {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(520, now);
-    osc.frequency.exponentialRampToValueAtTime(140, now + 0.06);
-    gain.gain.setValueAtTime(0.2, now);
-    gain.gain.linearRampToValueAtTime(0.01, now + 0.06);
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.start(now); osc.stop(now + 0.06);
-  } else if (type === 'unlock') {
-    [440, 660, 880].forEach((freq, idx) => {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, now + idx * 0.08);
-      gain.gain.setValueAtTime(0.18, now + idx * 0.08);
-      gain.gain.exponentialRampToValueAtTime(0.008, now + idx * 0.08 + 0.18);
-      osc.connect(gain); gain.connect(audioCtx.destination);
-      osc.start(now + idx * 0.08); osc.stop(now + idx * 0.08 + 0.18);
-    });
-  } else if (type === 'Switch') {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(180, now);
-    osc.frequency.linearRampToValueAtTime(90, now + 0.09);
-    gain.gain.setValueAtTime(0.3, now);
-    gain.gain.linearRampToValueAtTime(0.01, now + 0.09);
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.start(now); osc.stop(now + 0.09);
-  } else if (type === 'crank') {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(110 + Math.random() * 45, now);
-    gain.gain.setValueAtTime(0.16, now);
-    gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.start(now); osc.stop(now + 0.12);
-  } else if (type === 'dialTick') {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = 'square';
-    osc.frequency.setValueAtTime(800, now);
-    gain.gain.setValueAtTime(0.09, now);
-    gain.gain.linearRampToValueAtTime(0.005, now + 0.025);
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.start(now); osc.stop(now + 0.025);
-  }
-}
-
-/* ============================================================================
-   3. 手電筒光束遮罩、閃光燈、陀螺儀與電量系統
-============================================================================ */
-const canvas = document.getElementById('flashlight-canvas');
-const ctx = canvas.getContext('2d');
-
-function resizeCanvas() {
-  const container = document.getElementById('game-container');
-  canvas.width = container.clientWidth;
-  canvas.height = container.clientHeight;
-  state.pointerX = canvas.width / 2;
-  state.pointerY = canvas.height / 2;
-}
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
-
-function updatePointer(clientX, clientY) {
-  const rect = canvas.getBoundingClientRect();
-  state.pointerX = Math.max(0, Math.min(canvas.width, clientX - rect.left));
-  state.pointerY = Math.max(0, Math.min(canvas.height, clientY - rect.top));
-}
-
-const viewport = document.getElementById('game-container');
-viewport.addEventListener('mousemove', e => updatePointer(e.clientX, e.clientY));
-viewport.addEventListener('touchmove', e => {
-  if (e.touches.length > 0 && !document.getElementById('puzzle-modal').classList.contains('open')) {
-    updatePointer(e.touches[0].clientX, e.touches[0].clientY);
-  }
-}, { passive: true });
-viewport.addEventListener('touchstart', e => {
-  if (e.touches.length > 0 && !document.getElementById('puzzle-modal').classList.contains('open')) {
-    updatePointer(e.touches[0].clientX, e.touches[0].clientY);
-  }
-}, { passive: true });
-
-function toggleGyro() {
-  initAudio();
-  playSound('click');
-  if (!state.gyroEnabled) {
-    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-      DeviceOrientationEvent.requestPermission().then(res => {
-        if (res === 'granted') enableGyroListener();
-      }).catch(() => setNarrative('瀏覽器未授權陀螺儀權限，您可以直接以手指滑動控制手電筒。'));
-    } else {
-      enableGyroListener();
-    }
-  } else {
-    state.gyroEnabled = false;
-    document.getElementById('btn-gyro').classList.remove('active');
-    setNarrative('已關閉陀螺儀視角，改由手指滑動控制手電筒光束。');
-  }
-}
-
-function enableGyroListener() {
-  state.gyroEnabled = true;
-  document.getElementById('btn-gyro').classList.add('active');
-  setNarrative('已啟用手機陀螺儀手電筒視角，傾斜手機即可移動光束。');
-  window.addEventListener('deviceorientation', e => {
-    if (!state.gyroEnabled) return;
-    const gamma = e.gamma || 0; // 左右傾斜 -45 ~ 45
-    const beta = e.beta || 45;  // 前後傾斜
-    state.pointerX = Math.max(30, Math.min(canvas.width - 30, (canvas.width / 2) + gamma * 6));
-    state.pointerY = Math.max(60, Math.min(canvas.height - 90, (canvas.height / 2) + (beta - 45) * 6));
-  });
-}
-
-function renderFlashlight() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // 若B1與3F已恢復局部緊急照明，環境暗度稍微降低
-  const hasAmbient = state.powerRestored && (state.currentFloor === 'B1' || state.currentFloor === '3F');
-  const baseDarkness = state.battery <= 0 ? 0.985 : (hasAmbient ? 0.78 : 0.94);
-
-  const radius = state.battery <= 0 ? 28 : (state.highBeam ? 195 : 120);
-  const grad = ctx.createRadialGradient(
-    state.pointerX, state.pointerY, radius * 0.12,
-    state.pointerX, state.pointerY, radius
+function spawnFloatingText(worldPos, text, color = '#ffffff') {
+  const screenPos = BABYLON.Vector3.Project(
+    worldPos,
+    BABYLON.Matrix.Identity(),
+    scene.getTransformMatrix(),
+    camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight())
   );
-
-  grad.addColorStop(0, 'rgba(255, 248, 220, 0.0)');
-  grad.addColorStop(0.55, 'rgba(15, 22, 18, 0.35)');
-  grad.addColorStop(1, `rgba(4, 7, 6, ${baseDarkness})`);
-
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  requestAnimationFrame(renderFlashlight);
-}
-requestAnimationFrame(renderFlashlight);
-
-function toggleHighBeam() {
-  initAudio();
-  playSound('click');
-  state.highBeam = !state.highBeam;
-  const btn = document.getElementById('btn-beam');
-  btn.textContent = state.highBeam ? '強光: 開' : '強光: 關';
-  btn.classList.toggle('active', state.highBeam);
-  setNarrative(state.highBeam ? '手電筒切換至【強光模式】，視野擴大但耗電速度加倍！' : '手電筒切換回【一般省電光束】。');
+  if (screenPos.z > 1) return;
+  const el = document.createElement('div');
+  el.className = 'floating-text';
+  el.style.left = `${screenPos.x}px`;
+  el.style.top = `${screenPos.y}px`;
+  el.style.color = color;
+  el.textContent = text;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 900);
 }
 
-function triggerCameraFlash() {
-  initAudio();
-  if (state.battery < 5) {
-    setNarrative('電量過低，無法觸發相機閃光燈！');
-    return;
-  }
-  playSound('Switch');
-  modifyBattery(-4);
-  const fx = document.getElementById('fx-overlay');
-  fx.style.background = 'rgba(255,255,245,0.88)';
-  fx.style.opacity = '1';
-  setTimeout(() => { fx.style.opacity = '0'; }, 350);
-  setNarrative('【喀嚓！】相機閃光燈瞬間照亮全場（消耗 4% 電力）。');
+// ==========================================
+// 2. 初始化 Babylon.js 3D 場景與相機
+// ==========================================
+const canvas = document.getElementById('renderCanvas');
+const engine = new BABYLON.Engine(canvas, true);
+const scene = new BABYLON.Scene(engine);
+scene.clearColor = new BABYLON.Color4(0.45, 0.72, 0.95, 1);
+scene.fogMode = BABYLON.Scene.FOGMODE_EXP2;
+scene.fogDensity = 0.008;
+scene.fogColor = new BABYLON.Color3(0.45, 0.72, 0.95);
+
+// 第三人稱環繞相機 (ArcRotateCamera)
+const camera = new BABYLON.ArcRotateCamera("cam", -Math.PI / 2, Math.PI / 3, 16, BABYLON.Vector3.Zero(), scene);
+camera.lowerRadiusLimit = 6;
+camera.upperRadiusLimit = 35;
+camera.upperBetaLimit = Math.PI / 2 - 0.05;
+camera.attachControl(canvas, true);
+
+// 光源設定
+const hemiLight = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
+hemiLight.intensity = 0.85;
+const dirLight = new BABYLON.DirectionalLight("dir", new BABYLON.Vector3(-1, -2, -1), scene);
+dirLight.position = new BABYLON.Vector3(20, 40, 20);
+dirLight.intensity = 0.6;
+
+// 帕里鎮草地地形與裝飾物
+const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 120, height: 120 }, scene);
+const groundMat = new BABYLON.StandardMaterial("groundMat", scene);
+groundMat.diffuseColor = new BABYLON.Color3(0.32, 0.62, 0.28);
+groundMat.specularColor = new BABYLON.Color3(0.05, 0.05, 0.05);
+ground.material = groundMat;
+
+// 建立樹木作為空間參照
+for (let i = 0; i < 25; i++) {
+  const angle = Math.random() * Math.PI * 2;
+  const dist = 12 + Math.random() * 40;
+  const tx = Math.cos(angle) * dist;
+  const tz = Math.sin(angle) * dist;
+
+  const trunk = BABYLON.MeshBuilder.CreateCylinder("trunk", { height: 2.5, diameter: 0.7 }, scene);
+  trunk.position.set(tx, 1.25, tz);
+  const trunkMat = new BABYLON.StandardMaterial("tMat", scene);
+  trunkMat.diffuseColor = new BABYLON.Color3(0.45, 0.28, 0.15);
+  trunk.material = trunkMat;
+
+  const leaves = BABYLON.MeshBuilder.CreateSphere("leaves", { diameter: 3.2, segments: 8 }, scene);
+  leaves.position.set(tx, 3.2, tz);
+  const leafMat = new BABYLON.StandardMaterial("lMat", scene);
+  leafMat.diffuseColor = new BABYLON.Color3(0.18, 0.48, 0.22);
+  leaves.material = leafMat;
 }
 
-function modifyBattery(delta) {
-  state.battery = Math.max(0, Math.min(100, +(state.battery + delta).toFixed(1)));
-  const fill = document.getElementById('battery-fill');
-  const txt = document.getElementById('battery-text');
-  fill.style.width = state.battery + '%';
-  txt.textContent = Math.ceil(state.battery) + '%';
+// ==========================================
+// 3. 建立玩家角色與「飛天滑板」模型
+// ==========================================
+const playerRoot = new BABYLON.TransformNode("playerRoot", scene);
+playerRoot.position.set(0, 0, 0);
 
-  const fx = document.getElementById('fx-overlay');
-  if (state.battery <= 18) {
-    fill.style.background = '#d93829';
-    fx.classList.add('critical-battery');
-  } else if (state.battery <= 45) {
-    fill.style.background = '#e0a82e';
-    fx.classList.remove('critical-battery');
-  } else {
-    fill.style.background = '#5cd68d';
-    fx.classList.remove('critical-battery');
-  }
+const bodyMesh = BABYLON.MeshBuilder.CreateCapsule("playerBody", { height: 1.8, radius: 0.45 }, scene);
+bodyMesh.position.y = 0.9;
+bodyMesh.parent = playerRoot;
+const playerMat = new BABYLON.StandardMaterial("playerMat", scene);
+playerMat.diffuseColor = new BABYLON.Color3(0.2, 0.55, 0.95);
+bodyMesh.material = playerMat;
 
-  if (state.battery <= 0) {
-    if (hasItem('spare_battery')) {
-      useInventoryItem('spare_battery');
-    } else {
-      setNarrative('⚠️ 手機電力完全耗盡！畫面陷入黑暗，系統自動啟動緊急備用微電（回充 25%）。');
-      setTimeout(() => modifyBattery(25), 1400);
-    }
-  }
+// 手持武器
+const sword = BABYLON.MeshBuilder.CreateBox("sword", { width: 0.12, height: 0.12, depth: 1.4 }, scene);
+sword.position.set(0.55, 1.0, 0.5);
+sword.parent = playerRoot;
+const swordMat = new BABYLON.StandardMaterial("swordMat", scene);
+swordMat.diffuseColor = new BABYLON.Color3(0.9, 0.85, 0.3);
+sword.material = swordMat;
+
+// 飛天滑板 (預設隱藏)
+const hoverboard = BABYLON.MeshBuilder.CreateBox("board", { width: 0.9, height: 0.12, depth: 2.2 }, scene);
+hoverboard.position.y = 0.1;
+hoverboard.parent = playerRoot;
+const boardMat = new BABYLON.StandardMaterial("boardMat", scene);
+boardMat.diffuseColor = new BABYLON.Color3(0.1, 0.85, 0.95);
+boardMat.emissiveColor = new BABYLON.Color3(0.05, 0.35, 0.45);
+hoverboard.material = boardMat;
+hoverboard.setEnabled(false);
+
+// 目標鎖定紅圈 (Target Ring)
+const targetRing = BABYLON.MeshBuilder.CreateTorus("ring", { diameter: 2.0, thickness: 0.12, tessellation: 32 }, scene);
+const ringMat = new BABYLON.StandardMaterial("ringMat", scene);
+ringMat.emissiveColor = new BABYLON.Color3(1, 0.15, 0.2);
+targetRing.material = ringMat;
+targetRing.setEnabled(false);
+
+// ==========================================
+// 4. 模擬「權威伺服器 (Server-Authoritative)」與玩家狀態
+// ==========================================
+const serverState = {
+  pos: new BABYLON.Vector3(0, 0, 0),
+  lv: 1,
+  hp: 200, maxHp: 200,
+  mp: 100, maxMp: 100,
+  exp: 0, maxExp: 100,
+  atk: 28,
+  isFlying: false,
+  maxSpeed: 0.16,
+  flySpeed: 0.28
+};
+
+// 技能冷卻紀錄
+const cooldowns = { 1: 0, 2: 0, 3: 0, 4: 0 };
+
+function updatePlayerHUD() {
+  document.getElementById('ui-lv').textContent = `Lv. ${serverState.lv}`;
+  document.getElementById('ui-hp-bar').style.width = `${(serverState.hp / serverState.maxHp) * 100}%`;
+  document.getElementById('ui-hp-text').textContent = `${Math.max(0, Math.floor(serverState.hp))} / ${serverState.maxHp}`;
+  document.getElementById('ui-mp-bar').style.width = `${(serverState.mp / serverState.maxMp) * 100}%`;
+  document.getElementById('ui-mp-text').textContent = `${Math.floor(serverState.mp)} / ${serverState.maxMp}`;
+  const expPct = Math.min(100, Math.floor((serverState.exp / serverState.maxExp) * 100));
+  document.getElementById('ui-exp-bar').style.width = `${expPct}%`;
+  document.getElementById('ui-exp-text').textContent = `${expPct}%`;
 }
 
-setInterval(() => {
-  if (!state.started) return;
-  const drain = state.highBeam ? -0.45 : -0.18;
-  modifyBattery(drain);
-}, 1000);
+// ==========================================
+// 5. 怪物生成與 AI 狀態機 (獨眼蝙蝠 & 蘑菇怪)
+// ==========================================
+const monsters = [];
+let selectedTarget = null;
 
-/* ============================================================================
-   4. 道具欄、敘事文字與樓層切換
-============================================================================ */
-function startGame() {
-  initAudio();
-  playSound('click');
-  state.started = true;
-  document.getElementById('intro-screen').style.display = 'none';
-  setNarrative('【1F 掛號大廳】西門路鐵捲門緊閉，地上散落著民國82年的勞保單與病歷，先在四周調查吧。');
-}
+function createMonster(id, name, lv, maxHp, color, startX, startZ) {
+  const mesh = BABYLON.MeshBuilder.CreateSphere("mob_" + id, { diameter: 1.5, segments: 12 }, scene);
+  mesh.position.set(startX, 0.8, startZ);
+  const mat = new BABYLON.StandardMaterial("mobMat_" + id, scene);
+  mat.diffuseColor = color;
+  mesh.material = mat;
 
-function setNarrative(text) {
-  document.getElementById('narrative-text').innerHTML = text;
-}
-
-function addItem(id) {
-  if (!state.inventory.includes(id)) {
-    state.inventory.push(id);
-    renderInventory();
-  }
-}
-
-function hasItem(id) {
-  return state.inventory.includes(id);
-}
-
-function useInventoryItem(id) {
-  initAudio();
-  playSound('click');
-  if (id === 'spare_battery') {
-    state.inventory = state.inventory.filter(x => x !== 'spare_battery');
-    state.selectedItem = null;
-    modifyBattery(55);
-    renderInventory();
-    setNarrative('🔋 已更換藥局找到的【手電筒備用電池】，電力大幅恢復！');
-    return;
-  }
-  state.selectedItem = (state.selectedItem === id) ? null : id;
-  renderInventory();
-  if (state.selectedItem) {
-    const meta = ITEM_META[id];
-    setNarrative(`已裝備【${meta.name}】：${meta.desc}`);
-  } else {
-    setNarrative('已取消選取道具。');
-  }
-}
-
-function renderInventory() {
-  const bar = document.getElementById('inventory-bar');
-  bar.innerHTML = '';
-  if (state.inventory.length === 0) {
-    bar.innerHTML = '<div style="color:#697d72; font-size:0.82rem; margin:auto;">尚未取得遺留物品（點擊場景收集線索與工具）</div>';
-    return;
-  }
-  state.inventory.forEach(id => {
-    const meta = ITEM_META[id];
-    const slot = document.createElement('div');
-    slot.className = 'inv-slot' + (state.selectedItem === id ? ' selected' : '');
-    slot.onclick = () => useInventoryItem(id);
-    slot.innerHTML = `<div class="inv-icon">${meta.icon}</div><div class="inv-name">${meta.name}</div>`;
-    bar.appendChild(slot);
-  });
-}
-renderInventory();
-
-function goToStairwell() {
-  initAudio();
-  playSound('click');
-  if (!state.b1DoorOpened) {
-    setNarrative('通往地下室與樓上的磨石子樓梯門被從1樓藥局內側反鎖了，必須先進入【領藥處】。');
-    return;
-  }
-  switchScene('STAIRS', '磨石子樓梯間');
-  setNarrative('【垂直動線樞紐】貫穿B1至7F的磨石子樓梯與紅色鐵欄杆，舊電梯永遠停在4樓。請選擇要前往的樓層。');
-}
-
-function moveToFloor(floor) {
-  initAudio();
-  playSound('click');
-  if (floor === '2F') {
-    setNarrative('【2F 門診區】防盜鐵門早在廢院時就被焊死，無法進入，只能沿磨石子樓梯繼續往上。');
-    return;
-  }
-  if (floor === '3F' && !state.floor3Unlocked) {
-    if (state.selectedItem === 'or_key' || hasItem('or_key')) {
-      state.floor3Unlocked = true;
-      playSound('unlock');
-      setNarrative('🔑 使用【3樓手術室鑰匙】打開了3樓防煙鐵門！');
-    } else {
-      setNarrative('【3F 外科手術室】防煙門深鎖，鑰匙據傳藏在 B1 太平間第二格遺體冰櫃的把手暗格裡。');
-      return;
-    }
-  }
-  if (floor === '4F' && !state.floor4Unlocked) {
-    if (state.selectedItem === 'nurse_key' || hasItem('nurse_key')) {
-      state.floor4Unlocked = true;
-      playSound('unlock');
-      setNarrative('🗝️ 使用【4樓護理站萬用鑰匙】打開了4樓病房區鐵門！');
-    } else {
-      setNarrative('【4F 住院病房區】走廊鐵門上鎖，必須先在 3F 手術室藥品保險箱取得萬用鑰匙。');
-      return;
-    }
-  }
-
-  const titles = {
-    '1F': '1F 掛號大廳',
-    'B1': 'B1 地下太平間',
-    '3F': '3F 外科手術室',
-    '4F': '4F 住院病房區'
+  const mob = {
+    id, name, lv,
+    hp: maxHp, maxHp,
+    mesh,
+    spawnPos: new BABYLON.Vector3(startX, 0.8, startZ),
+    targetPos: new BABYLON.Vector3(startX, 0.8, startZ),
+    dead: false,
+    atkCooldown: 0
   };
-  switchScene(floor, titles[floor]);
-
-  // 若已拿到搖桿重返1F，觸發最終關低電量緊張氛圍
-  if (floor === '1F' && state.crankCollected && state.battery > 16) {
-    state.battery = 15;
-    modifyBattery(0);
-    setNarrative('⚠️ 【最終關：重返1樓西門路大門】手電筒電力即將歸零並閃爍紅光！快用手術刀撬開鐵捲門右側的鏈條盒！');
-  }
+  mesh.metadata = { mobRef: mob };
+  monsters.push(mob);
 }
 
-function switchScene(sceneId, badgeText) {
-  state.currentFloor = sceneId;
-  document.querySelectorAll('.scene-layer').forEach(el => el.classList.remove('active'));
-  document.getElementById('scene-' + sceneId).classList.add('active');
-  document.getElementById('floor-indicator').textContent = badgeText;
+// 初始化 8 隻怪物
+for (let i = 0; i < 5; i++) {
+  const a = (i / 5) * Math.PI * 2;
+  createMonster(i, "獨眼蝙蝠 Aibatt", 1, 90, new BABYLON.Color3(0.95, 0.45, 0.15), Math.cos(a) * 10, Math.sin(a) * 10);
+}
+for (let i = 5; i < 8; i++) {
+  const a = ((i - 5) / 3) * Math.PI * 2;
+  createMonster(i, "蘑菇怪 Mushpang", 3, 180, new BABYLON.Color3(0.85, 0.2, 0.35), Math.cos(a) * 20, Math.sin(a) * 20);
 }
 
-function openModal(title, htmlContent) {
-  initAudio();
-  playSound('click');
-  document.getElementById('modal-title').textContent = title;
-  document.getElementById('modal-body').innerHTML = htmlContent;
-  document.getElementById('puzzle-modal').classList.add('open');
-}
-
-function closeModal() {
-  playSound('click');
-  stopMicBlowDetection();
-  document.getElementById('puzzle-modal').classList.remove('open');
-}
-
-/* ============================================================================
-   5. 第一關：1F 掛號大廳與藥局 解謎邏輯
-============================================================================ */
-let micStream = null;
-let micAnimFrame = null;
-
-function stopMicBlowDetection() {
-  if (micAnimFrame) cancelAnimationFrame(micAnimFrame);
-  micAnimFrame = null;
-  if (micStream) {
-    micStream.getTracks().forEach(t => t.stop());
-    micStream = null;
-  }
-}
-
-function openDustyRecordModal() {
-  const isClean = state.dustCleared >= 100;
-  openModal('1993年散落病歷與勞保診療書', `
-    <p style="font-size:0.85rem; color:#b8c7be; margin-bottom:10px;">
-      地上散落著三份泛黃的「勞工保險門診診療書」與手寫病歷，表面覆蓋著厚重灰塵。<br>
-      👉 <strong>互動方式</strong>：用手指在病歷上<strong>來回滑動擦拭</strong>，或點擊下方按鈕對著<strong>手機麥克風吹氣</strong>清除灰塵；也可調整縮放滑桿放大檢視字跡。
-    </p>
-    <div style="display:flex; gap:8px; margin-bottom:10px; align-items:center;">
-      <button class="action-btn" style="margin:0;" onclick="startMicBlow()">🎙️ 啟用麥克風吹氣除塵</button>
-      <span style="font-size:0.8rem; color:#9ab3a6;">雙指/滑桿縮放：</span>
-      <input type="range" min="1" max="1.6" step="0.05" value="1" oninput="document.getElementById('record-zoom-wrap').style.transform='scale('+this.value+')'">
-    </div>
-    <div style="overflow:hidden; border:1px solid #594b33; border-radius:4px;">
-      <div id="record-zoom-wrap" style="transform-origin:center center; transition:transform 0.1s; position:relative;">
-        <div class="vintage-paper" id="dust-paper-area" style="touch-action:none; cursor:grab;">
-          <div style="font-size:1.05rem; font-weight:bold; border-bottom:1px solid #5c4b32; padding-bottom:4px; margin-bottom:8px;">
-            臺南市私立杏林綜合醫院・門診病歷表
-          </div>
-          <div style="font-size:0.85rem; line-height:1.6;">
-            病歷分類格：依出生民國年份歸檔<br>
-            患者甲（民國38年生）・科別：內科<br>
-            患者乙（民國42年生）・科別：外科<br>
-            患者丙（民國51年生）・科別：骨科<br>
-            診斷記事：健保與勞保門診申報查核封存
-          </div>
-          <div style="margin-top:12px; text-align:right;">
-            <span class="red-stamp">最後看診日：民國 82 年 08 月 21 日</span>
-          </div>
-          <!-- 灰塵覆蓋層 -->
-          <div id="dust-overlay" style="position:absolute; inset:0; background:repeating-radial-gradient(circle, #5e5a50 0, #45423b 18px); opacity:${(1 - state.dustCleared / 100).toFixed(2)}; display:${isClean ? 'none' : 'flex'}; align-items:center; justify-content:center; color:#dfd8c8; font-weight:bold; text-align:center; padding:15px;">
-            [ 厚重灰塵覆蓋：請用手指在紙面上來回擦拭，或開啟麥克風吹氣 ]
-          </div>
-        </div>
-      </div>
-    </div>
-    <p id="dust-status" style="margin-top:10px; font-size:0.84rem; color:#d8c8a0;">
-      ${isClean ? '✅ 灰塵已完全清除！清楚露出勒令停業當天的紅章：民國82年08月21日（密碼線索：820821）。' : `目前除塵進度：${Math.floor(state.dustCleared)}%`}
-    </p>
-  `);
-
-  const paper = document.getElementById('dust-paper-area');
-  const wipeHandler = () => {
-    if (state.dustCleared >= 100) return;
-    state.dustCleared = Math.min(100, state.dustCleared + 3.5);
-    updateDustUI();
-  };
-  paper.addEventListener('mousemove', e => { if (e.buttons === 1) wipeHandler(); });
-  paper.addEventListener('touchmove', wipeHandler, { passive: true });
-}
-
-function updateDustUI() {
-  const overlay = document.getElementById('dust-overlay');
-  const status = document.getElementById('dust-status');
-  if (!overlay || !status) return;
-  overlay.style.opacity = (1 - state.dustCleared / 100).toFixed(2);
-  if (state.dustCleared >= 100) {
-    overlay.style.display = 'none';
-    playSound('unlock');
-    status.innerHTML = '✅ 灰塵已完全清除！清楚露出勒令停業當天的紅章：<strong>民國82年08月21日（820821）</strong>。';
-    setNarrative('吹開病歷上的厚重灰塵後，發現三份病歷皆蓋有杏林醫院停業日紅章：民國82年8月21日（820821）。');
-  } else {
-    status.textContent = `目前除塵進度：${Math.floor(state.dustCleared)}%`;
-  }
-}
-
-function startMicBlow() {
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    alert('您的瀏覽器不支援麥克風讀取，請直接用手指在病歷上來回滑動擦拭除塵！');
+function updateTargetHUD() {
+  const hud = document.getElementById('target-hud');
+  if (!selectedTarget || selectedTarget.dead) {
+    hud.style.display = 'none';
+    targetRing.setEnabled(false);
     return;
   }
-  navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-    micStream = stream;
-    const aCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const src = aCtx.createMediaStreamSource(stream);
-    const analyser = aCtx.createAnalyser();
-    analyser.fftSize = 256;
-    src.connect(analyser);
-    const data = new Uint8Array(analyser.frequencyBinCount);
+  hud.style.display = 'block';
+  document.getElementById('target-name').textContent = `${selectedTarget.name} (Lv.${selectedTarget.lv})`;
+  const pct = Math.max(0, (selectedTarget.hp / selectedTarget.maxHp) * 100);
+  document.getElementById('target-hp-bar').style.width = `${pct}%`;
+  document.getElementById('target-hp-text').textContent = `${Math.max(0, selectedTarget.hp)} / ${selectedTarget.maxHp}`;
+}
 
-    function checkBlow() {
-      if (!micStream) return;
-      analyser.getByteFrequencyData(data);
-      let sum = 0;
-      for (let i = 0; i < 30; i++) sum += data[i];
-      const avg = sum / 30;
-      if (avg > 45 && state.dustCleared < 100) {
-        state.dustCleared = Math.min(100, state.dustCleared + 4);
-        updateDustUI();
-      }
-      if (state.dustCleared < 100) micAnimFrame = requestAnimationFrame(checkBlow);
+// 點擊怪物鎖定目標
+scene.onPointerDown = function (evt, pickResult) {
+  if (evt.button !== 0) return; // 僅限左鍵點選
+  if (pickResult.hit && pickResult.pickedMesh && pickResult.pickedMesh.metadata && pickResult.pickedMesh.metadata.mobRef) {
+    const mob = pickResult.pickedMesh.metadata.mobRef;
+    if (!mob.dead) {
+      selectedTarget = mob;
+      targetRing.setEnabled(true);
+      updateTargetHUD();
+      addLog(`已鎖定目標：${mob.name} (Lv.${mob.lv})`);
     }
-    checkBlow();
-    document.getElementById('dust-status').textContent = '🎙️ 麥克風已開啟，請對著手機底部吹氣！';
-  }).catch(() => {
-    alert('無法取得麥克風權限，請直接用手指在病歷上滑動擦拭除塵。');
-  });
-}
-
-let regCodeInput = '';
-function openRegistrationModal() {
-  if (state.drawerUnlocked) {
-    openModal('1F 掛號／批價處櫃檯', `
-      <p style="font-size:0.9rem; color:#c8e6d5;">掛號處抽屜的舊式號碼鎖（820821）已經解開，裡面原有的「藥局側門鑰匙」與「B1配電室備用保險絲」皆已取走。</p>
-    `);
-    return;
   }
-  regCodeInput = '';
-  openModal('1F 掛號處抽屜・六位數舊式號碼鎖', `
-    <p style="font-size:0.85rem; color:#b8c7be; margin-bottom:8px;">
-      櫃檯後方牆上是按「出生民國年份」分類的木製病歷格，下方抽屜鎖著一只六位數號碼鎖（提示：6碼民國年月日）。
-    </p>
-    <div id="reg-code-disp" class="code-display">------</div>
-    <div class="keypad-grid">
-      ${[1,2,3,4,5,6,7,8,9,'清除',0,'確認'].map(k =>
-        `<button class="key-btn" onclick="pressRegKey('${k}')">${k}</button>`
-      ).join('')}
-    </div>
-  `);
+};
+
+// ==========================================
+// 6. 戰鬥技能與飛天滑板系統
+// ==========================================
+function setCooldown(slot, seconds) {
+  cooldowns[slot] = seconds;
+  const el = document.getElementById(`cd-${slot}`);
+  el.style.display = 'flex';
+  el.textContent = seconds.toFixed(1);
 }
 
-function pressRegKey(k) {
-  initAudio();
-  playSound('click');
-  const disp = document.getElementById('reg-code-disp');
-  if (k === '清除') {
-    regCodeInput = '';
-  } else if (k === '確認') {
-    if (regCodeInput === '820821') {
-      state.drawerUnlocked = true;
-      addItem('pharmacy_key');
-      addItem('b1_fuse');
-      playSound('unlock');
-      closeModal();
-      setNarrative('🔓 輸入 820821 解開掛號處抽屜！獲得【藥局側門鑰匙】與【B1備用保險絲】。');
-      return;
+function dealDamageToTarget(multiplier, skillName) {
+  if (!selectedTarget || selectedTarget.dead) {
+    addLog("請先用滑鼠左鍵點擊場上的怪物以鎖定目標！", "log-warn");
+    return false;
+  }
+  const dist = BABYLON.Vector3.Distance(playerRoot.position, selectedTarget.mesh.position);
+  if (dist > 4.5) {
+    addLog(`距離太遠（目前 ${dist.toFixed(1)}m），請靠近目標再施放 ${skillName}！`, "log-warn");
+    return false;
+  }
+
+  // 面向目標
+  playerRoot.lookAt(new BABYLON.Vector3(selectedTarget.mesh.position.x, playerRoot.position.y, selectedTarget.mesh.position.z));
+
+  // 伺服器端計算暴擊與傷害
+  const isCrit = Math.random() < 0.3;
+  let dmg = Math.floor(serverState.atk * multiplier * (0.9 + Math.random() * 0.2));
+  if (isCrit) dmg = Math.floor(dmg * 1.6);
+
+  selectedTarget.hp -= dmg;
+  spawnFloatingText(
+    selectedTarget.mesh.position.add(new BABYLON.Vector3(0, 1.2, 0)),
+    isCrit ? `CRIT ${dmg}!` : `-${dmg}`,
+    isCrit ? '#facc15' : '#ffffff'
+  );
+  addLog(`使用【${skillName}】對 ${selectedTarget.name} 造成 ${dmg} 點傷害！`, "log-dmg");
+
+  if (selectedTarget.hp <= 0) {
+    killMonster(selectedTarget);
+  }
+  updateTargetHUD();
+  return true;
+}
+
+function killMonster(mob) {
+  mob.dead = true;
+  mob.mesh.setEnabled(false);
+  const expGain = mob.lv * 45;
+  serverState.exp += expGain;
+  addLog(`擊敗了 ${mob.name}！獲得 ${expGain} EXP。`, "log-lv");
+
+  // 升級判定
+  if (serverState.exp >= serverState.maxExp) {
+    serverState.exp -= serverState.maxExp;
+    serverState.lv += 1;
+    serverState.maxExp = Math.floor(serverState.maxExp * 1.4);
+    serverState.maxHp += 50;
+    serverState.hp = serverState.maxHp;
+    serverState.maxMp += 25;
+    serverState.mp = serverState.maxMp;
+    serverState.atk += 9;
+    spawnFloatingText(playerRoot.position.add(new BABYLON.Vector3(0, 2.2, 0)), `LEVEL UP! Lv.${serverState.lv}`, '#4ade80');
+    addLog(`🎉 恭喜升級至 Lv.${serverState.lv}！攻擊力與生命上限提升！`, "log-lv");
+  }
+  updatePlayerHUD();
+  updateTargetHUD();
+
+  // 5 秒後重生
+  setTimeout(() => {
+    mob.hp = mob.maxHp;
+    mob.dead = false;
+    mob.mesh.position.copyFrom(mob.spawnPos);
+    mob.mesh.setEnabled(true);
+  }, 5000);
+}
+
+function useSkill(slot) {
+  if (cooldowns[slot] > 0) return;
+
+  if (slot === 1) {
+    if (dealDamageToTarget(1.0, "普通攻擊")) setCooldown(1, 0.8);
+  } else if (slot === 2) {
+    if (serverState.mp < 15) { addLog("MP 不足，無法施放連環重擊！", "log-warn"); return; }
+    if (dealDamageToTarget(2.2, "連環重擊")) {
+      serverState.mp -= 15;
+      updatePlayerHUD();
+      setCooldown(2, 2.5);
+    }
+  } else if (slot === 3) {
+    if (serverState.mp < 20) { addLog("MP 不足，無法施放緊急治癒！", "log-warn"); return; }
+    serverState.mp -= 20;
+    const heal = Math.floor(serverState.maxHp * 0.35);
+    serverState.hp = Math.min(serverState.maxHp, serverState.hp + heal);
+    spawnFloatingText(playerRoot.position.add(new BABYLON.Vector3(0, 2.0, 0)), `+${heal} HP`, '#4ade80');
+    addLog(`施放【緊急治癒】恢復了 ${heal} 點生命值。`, "log-lv");
+    updatePlayerHUD();
+    setCooldown(3, 4.0);
+  } else if (slot === 4) {
+    serverState.isFlying = !serverState.isFlying;
+    hoverboard.setEnabled(serverState.isFlying);
+    const slotEl = document.getElementById('slot-flight');
+    if (serverState.isFlying) {
+      slotEl.classList.add('active-flight');
+      playerRoot.position.y = Math.max(playerRoot.position.y, 2.5);
+      serverState.pos.y = playerRoot.position.y;
+      addLog("🛹 已召喚【飛天滑板】！按住 空白鍵(Space) 升空、Shift 下降。");
     } else {
-      disp.style.color = '#e05a47';
-      disp.textContent = 'ERROR!';
-      regCodeInput = '';
-      setTimeout(() => { disp.style.color = '#79e0a3'; disp.textContent = '------'; }, 650);
-      return;
+      slotEl.classList.remove('active-flight');
+      playerRoot.position.y = 0;
+      serverState.pos.y = 0;
+      addLog("已收起飛天滑板，回到地面步行模式。");
     }
-  } else if (regCodeInput.length < 6) {
-    regCodeInput += String(k);
+    setCooldown(4, 1.0);
   }
-  disp.textContent = regCodeInput.padEnd(6, '-');
 }
 
-function openPharmacyModal() {
-  if (!state.pharmacyUnlocked) {
-    if (state.selectedItem === 'pharmacy_key' || hasItem('pharmacy_key')) {
-      state.pharmacyUnlocked = true;
-      state.b1DoorOpened = true;
-      playSound('unlock');
-    } else {
-      openModal('1F 領藥處（鐵窗深鎖）', `
-        <p style="font-size:0.88rem; color:#d6c8b8;">藥局側門被鐵鎖鎖住，內部架上留有大量未帶走的棕色玻璃藥瓶。需要先從掛號處抽屜取得【藥局側門鑰匙】。</p>
-      `);
-      return;
+// ==========================================
+// 7. 防外掛實測功能 (模擬竄改記憶體與伺服器校正)
+// ==========================================
+function triggerSpeedHack() {
+  // 模擬玩家透過 Cheat Engine 將本地座標瞬間移動 35 公尺
+  playerRoot.position.x += 35;
+  playerRoot.position.z += 35;
+  addLog("⚠️ [外掛模擬] 客戶端已強制竄改本地座標 (+35m, +35m)...", "log-warn");
+
+  // 模擬 250ms 後伺服器收到封包並進行速度校驗
+  setTimeout(() => {
+    const dist = BABYLON.Vector3.Distance(playerRoot.position, serverState.pos);
+    const allowedMax = serverState.isFlying ? serverState.flySpeed * 20 : serverState.maxSpeed * 20;
+    if (dist > allowedMax) {
+      playerRoot.position.copyFrom(serverState.pos);
+      spawnFloatingText(playerRoot.position.add(new BABYLON.Vector3(0, 2, 0)), "RUBBER-BANDED!", "#fb7185");
+      addLog(`🛡️ [伺服器攔截] 偵測到單一 Tick 位移異常 (${dist.toFixed(1)}m)！已拒絕封包並強制拉回伺服器權威座標。`, "log-warn");
     }
-  }
-
-  openModal('1F 藥局內部與地下室通道', `
-    <p style="font-size:0.86rem; color:#c8d6ce; line-height:1.55; margin-bottom:12px;">
-      你用鑰匙打開藥局側門走入內部。木架上整齊排列著數十瓶蒙塵的棕色玻璃藥瓶，後方通往 B1 與樓上的<strong>磨石子樓梯門</strong>已經可以推開了！
-    </p>
-    <div style="background:#1c2621; border:1px solid #486356; padding:12px; border-radius:6px; margin-bottom:10px;">
-      <strong>🔦 藥局最底層層架：</strong><br>
-      ${state.batteryCollected
-        ? '<span style="color:#7fb89b;">已取走手電筒備用電池。</span>'
-        : '<button class="action-btn" onclick="collectPharmacyBattery()">拾取【手電筒備用電池】</button>'}
-    </div>
-    <button class="action-btn" style="width:100%; background:#38594a;" onclick="closeModal(); goToStairwell();">推開磨石子樓梯門（前往 B1 太平間）</button>
-  `);
+  }, 250);
 }
 
-function collectPharmacyBattery() {
-  state.batteryCollected = true;
-  addItem('spare_battery');
-  playSound('unlock');
-  openPharmacyModal();
-  setNarrative('在藥局最底層找到【手電筒備用電池】（點擊底部道具欄可隨時補充 55% 電力），並開啟了通往B1的磨石子樓梯門！');
+function triggerHpHack() {
+  // 模擬玩家修改瀏覽器 UI 與本地變數將血量改為 99999
+  document.getElementById('ui-hp-text').textContent = "99999 / 99999";
+  document.getElementById('ui-hp-bar').style.width = "100%";
+  addLog("⚠️ [外掛模擬] 客戶端已將本地記憶體 HP 鎖定為 99999...", "log-warn");
+
+  setTimeout(() => {
+    updatePlayerHUD();
+    spawnFloatingText(playerRoot.position.add(new BABYLON.Vector3(0, 2, 0)), "STATE SYNCED", "#38bdf8");
+    addLog(`🛡️ [伺服器攔截] 戰鬥結算以伺服器端資料庫為準（真實 HP: ${serverState.hp}/${serverState.maxHp}），本地修改無效！`, "log-warn");
+  }, 600);
 }
 
-/* ============================================================================
-   6. 第二關：B1 太平間與機房 解謎邏輯
-============================================================================ */
-// 拉閘式無熔絲開關負載設定：目標點亮 B1(12A) 與 3F(15A) 總和 27A <= 30A，且不可開啟短路迴路
-const breakers = [
-  { id: 'b1', name: 'B1 太平間緊急照明', amp: 12, on: false },
-  { id: 'f1', name: '1F 大廳霓虹招牌(短路)', amp: 18, on: false },
-  { id: 'f2', name: '2F 門診冷氣主機', amp: 20, on: false },
-  { id: 'f3', name: '3F 手術室與X光看片燈', amp: 15, on: false }
-];
+// ==========================================
+// 8. 鍵盤輸入與主遊戲迴圈
+// ==========================================
+const keys = {};
+window.addEventListener('keydown', (e) => {
+  keys[e.key.toLowerCase()] = true;
+  if (['1', '2', '3', '4'].includes(e.key)) useSkill(parseInt(e.key));
+});
+window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
 
-function openBreakerModal() {
-  if (!state.fuseInstalled) {
-    if (state.selectedItem === 'b1_fuse' || hasItem('b1_fuse')) {
-      state.fuseInstalled = true;
-      playSound('Switch');
-      setNarrative('🔌 已將1樓取得的【30A備用保險絲】裝入B1總配電箱！');
-    } else {
-      openModal('B1 機房總配電箱（缺保險絲）', `
-        <p style="font-size:0.88rem; color:#e0c9a6;">配電箱的主保險絲座是空的，無法送電。請先在 1F 掛號處抽屜找到【B1備用保險絲】。</p>
-      `);
-      return;
+addLog("歡迎來到 3D 網頁版《飛飛》核心原型！請用 WASD 移動，左鍵點擊怪物戰鬥，按 4 召喚飛行滑板。");
+
+let lastTime = performance.now();
+engine.runRenderLoop(() => {
+  const now = performance.now();
+  const dt = (now - lastTime) / 1000;
+  lastTime = now;
+
+  // 更新技能冷卻 UI
+  for (let s = 1; s <= 4; s++) {
+    if (cooldowns[s] > 0) {
+      cooldowns[s] = Math.max(0, cooldowns[s] - dt);
+      const el = document.getElementById(`cd-${s}`);
+      if (cooldowns[s] === 0) el.style.display = 'none';
+      else el.textContent = cooldowns[s].toFixed(1);
     }
   }
 
-  renderBreakerModalContent();
-}
+  // 依據相機水平角度計算移動方向
+  const forward = new BABYLON.Vector3(Math.cos(camera.alpha + Math.PI), 0, Math.sin(camera.alpha + Math.PI)).normalize();
+  const right = new BABYLON.Vector3(forward.z, 0, -forward.x).normalize();
+  let moveVec = BABYLON.Vector3.Zero();
 
-function renderBreakerModalContent() {
-  const totalAmp = breakers.reduce((acc, b) => acc + (b.on ? b.amp : 0), 0);
-  const overload = totalAmp > 30;
+  if (keys['w']) moveVec.addInPlace(forward);
+  if (keys['s']) moveVec.subtractInPlace(forward);
+  if (keys['d']) moveVec.addInPlace(right);
+  if (keys['a']) moveVec.subtractInPlace(right);
 
-  openModal('B1 拉閘式無熔絲開關配電盤', `
-    <div class="vintage-paper" style="margin-bottom:12px; padding:10px; font-size:0.82rem;">
-      <strong>【配電箱門內側手寫負載表】</strong><br>
-      ⚠️ 總保險絲額定上限：<strong>30A（超過30A將跳電）</strong><br>
-      任務需求：請同時供電給 <strong>「B1 太平間緊急照明」</strong> 與 <strong>「3F 手術室與X光看片燈」</strong>，並關閉其餘高負載迴路。
-    </div>
-    <div style="background:#0d1411; border:1px solid #496356; padding:10px; border-radius:6px; margin-bottom:10px;">
-      <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-family:monospace; font-size:0.95rem;">
-        <span>目前總電流負載：</span>
-        <span style="color:${overload ? '#ff5242' : '#6be098'}; font-weight:bold;">${totalAmp} A / 30 A</span>
-      </div>
-      ${breakers.map((b, idx) => `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px; border-bottom:1px solid #223029;">
-          <div>
-            <div style="font-size:0.88rem; color:#e2ece6;">${b.name}</div>
-            <div style="font-size:0.75rem; color:#8ca397;">負載電流：${b.amp} A</div>
-          </div>
-          <button class="action-btn" style="margin:0; min-width:82px; background:${b.on ? '#3c7a57' : '#2b2424'}; border-color:${b.on ? '#8ce0b1' : '#7a5252'};" onclick="toggleBreaker(${idx})">
-            ${b.on ? 'ON 投入' : 'OFF 拉斷'}
-          </button>
-        </div>
-      `).join('')}
-    </div>
-    <button class="action-btn" style="width:100%;" onclick="verifyBreakerPuzzle()">送出電力配置</button>
-  `);
-}
-
-function toggleBreaker(idx) {
-  initAudio();
-  playSound('Switch');
-  breakers[idx].on = !breakers[idx].on;
-  renderBreakerModalContent();
-}
-
-function verifyBreakerPuzzle() {
-  const totalAmp = breakers.reduce((acc, b) => acc + (b.on ? b.amp : 0), 0);
-  const b1On = breakers[0].on;
-  const f3On = breakers[3].on;
-  if (totalAmp <= 30 && b1On && f3On && !breakers[1].on && !breakers[2].on) {
-    state.powerRestored = true;
-    playSound('unlock');
-    document.getElementById('b1-light-tube').setAttribute('fill', '#d8f5e5');
-    document.getElementById('xray-screen-glow').setAttribute('fill', '#d9ebe4');
-    closeModal();
-    setNarrative('⚡ 總電流 27A（未超過 30A 上限）！B1 太平間與 3F 手術室看片燈箱的局部緊急照明已成功點亮！');
-  } else if (totalAmp > 30) {
-    playSound('Switch');
-    alert('啪！總電流超過 30A 上限導致無熔絲開關跳脫，請重新調整開關組合！');
-  } else {
-    alert('尚未同時接通「B1 太平間照明」與「3F 手術室與X光看片燈」！');
-  }
-}
-
-function openAutopsyTableModal() {
-  openModal('B1 磁磚解剖沖洗台與往生室登記簿', `
-    <div class="vintage-paper" style="margin-bottom:12px;">
-      <strong>【杏林醫院往生室・冰櫃維修登記簿】</strong><br>
-      一號冰櫃：氣密膠條老化，把手卡死。<br>
-      <span style="color:#8f1d1d; font-weight:bold;">二號冰櫃（暗格鎖扣）：因冷縮卡榫變形，開啟時必須先將把手「順時針旋轉至 45 度」，再「向下拉壓到底」方可解開氣密栓。</span><br>
-      三號冰櫃：壓縮機拆除報廢。
-    </div>
-    <div style="background:#1a2420; border:1px solid #4d665b; padding:12px; border-radius:6px;">
-      <strong>🔪 沖洗台遺留器械：</strong><br>
-      ${state.scalpelCollected
-        ? '<span style="color:#7fb89b;">已取走【外科手術刀】。</span>'
-        : '<button class="action-btn" onclick="collectScalpel()">拾取【外科手術刀】</button>'}
-    </div>
-  `);
-}
-
-function collectScalpel() {
-  state.scalpelCollected = true;
-  addItem('scalpel');
-  const el = document.getElementById('svg-scalpel');
-  if (el) el.style.display = 'none';
-  playSound('unlock');
-  openAutopsyTableModal();
-  setNarrative('🔪 從B1解剖沖洗台取得了【外科手術刀】！');
-}
-
-// B1 二號冰櫃把手旋轉 45 度 + 下壓互動
-let handleAngle = 0;
-let handlePullY = 0;
-
-function openMorgueFreezerModal() {
-  if (state.freezerUnlocked) {
-    openModal('B1 二號不鏽鋼遺體冰櫃', `
-      <p style="font-size:0.9rem; color:#c8e6d5;">二號冰櫃的氣密門栓已經打開，把手暗格內的【3樓手術室鑰匙】已取走。</p>
-    `);
-    return;
-  }
-  handleAngle = 0;
-  handlePullY = 0;
-  openModal('B1 二號遺體冰櫃・氣密門栓解鎖', `
-    <p style="font-size:0.84rem; color:#b8c7be; margin-bottom:10px;">
-      依據《往生室登記簿》記載：請先將二號冰櫃把手<strong>順時針旋轉至 45°</strong>（允許誤差 40°~50°），接著<strong>向下壓到底</strong>解開氣密門栓。
-    </p>
-    <div style="background:#202925; border:2px solid #596e64; border-radius:8px; padding:16px; text-align:center;">
-      <svg id="freezer-latch-svg" width="220" height="200" viewBox="0 0 220 200" style="background:#7a8781; border-radius:6px; border:3px solid #3f4744;">
-        <circle cx="110" cy="85" r="34" fill="#46524d" stroke="#262e2a" stroke-width="3"/>
-        <g id="latch-handle-group" transform="translate(110, 85) rotate(0)">
-          <rect x="-12" y="-12" width="90" height="24" rx="8" fill="#c2ccc7" stroke="#2c3330" stroke-width="3"/>
-          <circle cx="0" cy="0" r="8" fill="#2c3330"/>
-        </g>
-        <text x="110" y="182" fill="#18201d" font-size="12" font-weight="bold" text-anchor="middle">二號冰櫃氣密把手</text>
-      </svg>
-
-      <div style="margin-top:12px; text-align:left;">
-        <label style="font-size:0.82rem; color:#d8c8a0;">步驟 1：順時針旋轉把手角度（<span id="angle-val">0</span>°）</label>
-        <input type="range" min="0" max="90" value="0" style="width:100%; margin:6px 0;" oninput="updateFreezerHandle(this.value, null)">
-
-        <label style="font-size:0.82rem; color:#d8c8a0;">步驟 2：角度對準 45° 後，向下壓門栓（<span id="pull-val">0</span>%）</label>
-        <input id="pull-slider" type="range" min="0" max="100" value="0" style="width:100%; margin:6px 0;" oninput="updateFreezerHandle(null, this.value)">
-      </div>
-    </div>
-  `);
-}
-
-function updateFreezerHandle(angle, pull) {
-  if (angle !== null) {
-    handleAngle = parseInt(angle, 10);
-    document.getElementById('angle-val').textContent = handleAngle;
-    playSound('click');
-  }
-  if (pull !== null) {
-    handlePullY = parseInt(pull, 10);
-    document.getElementById('pull-val').textContent = handlePullY;
-  }
-  const grp = document.getElementById('latch-handle-group');
-  if (grp) {
-    const dy = (handlePullY / 100) * 28;
-    grp.setAttribute('transform', `translate(110, ${85 + dy}) rotate(${handleAngle})`);
+  const speed = serverState.isFlying ? serverState.flySpeed : serverState.maxSpeed;
+  if (moveVec.lengthSquared() > 0.001) {
+    moveVec.normalize().scaleInPlace(speed);
+    playerRoot.position.addInPlace(moveVec);
+    playerRoot.lookAt(playerRoot.position.add(moveVec));
   }
 
-  if (handleAngle >= 40 && handleAngle <= 50 && handlePullY >= 95 && !state.freezerUnlocked) {
-    state.freezerUnlocked = true;
-    addItem('or_key');
-    playSound('unlock');
-    closeModal();
-    setNarrative('❄️ 順時針旋轉 45 度並下壓氣密門栓，二號遺體冰櫃「鏗」一聲彈開！從把手暗格取得【3樓手術室鑰匙】！');
+  // 飛行模式垂直升降
+  if (serverState.isFlying) {
+    if (keys[' ']) playerRoot.position.y = Math.min(25, playerRoot.position.y + 0.15);
+    if (keys['shift']) playerRoot.position.y = Math.max(1.2, playerRoot.position.y - 0.15);
   }
-}
 
-/* ============================================================================
-   7. 第三關：3F 外科手術室與檢驗室 解謎邏輯
-============================================================================ */
-function openSpecimenCabinetModal() {
-  openModal('3F 檢驗科福馬林標本櫃', `
-    <p style="font-size:0.86rem; color:#c8d6ce; line-height:1.55; margin-bottom:12px;">
-      木櫃上整齊排列著數十個浸泡在混濁福馬林液體裡的器官標本玻璃罐。你在標本櫃下方的檔案夾層發現了 4 張散落的真實胸腔 X 光片。
-    </p>
-    ${state.xraysCollected
-      ? '<p style="color:#7fb89b;">✅ 已收集【4張胸腔X光片】。</p>'
-      : '<button class="action-btn" onclick="collectXrays()">收集【4張胸腔X光片】</button>'}
-  `);
-}
-
-function collectXrays() {
-  state.xraysCollected = true;
-  addItem('xray_set');
-  playSound('unlock');
-  openSpecimenCabinetModal();
-  setNarrative('🩻 從檢驗室收集到【4張胸腔X光片】！可以將它們掛到手術室牆上的 X 光看片燈箱。');
-}
-
-function openOperatingTableModal() {
-  const canCut = !state.mattressCut && (state.selectedItem === 'scalpel' || hasItem('scalpel'));
-  openModal('3F 綠色皮革破裂手術床', `
-    <p style="font-size:0.86rem; color:#c8d6ce; line-height:1.55; margin-bottom:12px;">
-      手術室正中央擺著一張老舊的綠色皮革手術床，上方懸掛著破裂的無影燈。床墊側邊有一道裂口，裡面似乎塞著一張摺疊的表單。
-    </p>
-    ${state.mattressCut ? `
-      <div class="vintage-paper">
-        <strong>【外科手術器材清點單（1993年）】</strong><br>
-        清點異常紀錄：以下四份胸腔 X 光片依<strong>「病歷號由小到大（#7804 ➔ #7912 ➔ #8105 ➔ #8208）」</strong>排列後，片中殘留止血鉗陰影所對應的<strong>「第幾根肋骨編號」</strong>，即為手術室藥品保險箱之四位數密碼。
-      </div>
-    ` : (canCut
-      ? '<button class="action-btn" onclick="cutMattress()">🔪 使用【外科手術刀】割開手術床墊破口</button>'
-      : '<p style="color:#e0a82e; font-size:0.84rem;">床墊皮革相當厚實，徒手無法撕開，需要先在 B1 解剖沖洗台找到【外科手術刀】。</p>'
-    )}
-  `);
-}
-
-function cutMattress() {
-  state.mattressCut = true;
-  addItem('checklist');
-  playSound('Switch');
-  openOperatingTableModal();
-  setNarrative('🔪 用手術刀割開手術床墊破口，取出一張1993年的【器材清點單】！');
-}
-
-// X光片排序資料：正確順序 #7804(第4肋骨) -> #7912(第7肋骨) -> #8105(第2肋骨) -> #8208(第9肋骨) => 密碼 4729
-let xraySlots = [
-  { recordNo: 8105, rib: 2, label: '病歷 #8105' },
-  { recordNo: 7804, rib: 4, label: '病歷 #7804' },
-  { recordNo: 8208, rib: 9, label: '病歷 #8208' },
-  { recordNo: 7912, rib: 7, label: '病歷 #7912' }
-];
-let swapFirstIdx = null;
-
-function openXrayLightboxModal() {
-  if (!state.powerRestored) {
-    openModal('3F X光看片燈箱（未通電）', `
-      <p style="font-size:0.88rem; color:#e0c9a6;">看片燈箱漆黑一片，無法看清 X 光片的骨骼細節。請先至 B1 配電箱接通 3F 緊急電源。</p>
-    `);
-    return;
+  // 正常移動下更新權威伺服器座標
+  if (BABYLON.Vector3.Distance(playerRoot.position, serverState.pos) < 2.0) {
+    serverState.pos.copyFrom(playerRoot.position);
   }
-  if (!state.xraysCollected) {
-    openModal('3F X光看片燈箱（已通電）', `
-      <p style="font-size:0.88rem; color:#c8e6d5;">看片燈箱閃爍著慘白光芒，但目前上面沒有 X 光片。請先至右側檢驗室標本櫃收集【4張胸腔X光片】。</p>
-    `);
-    return;
+
+  // 相機跟隨玩家
+  camera.target.set(playerRoot.position.x, playerRoot.position.y + 1.2, playerRoot.position.z);
+
+  // 更新鎖定紅圈與怪物 AI
+  if (selectedTarget && !selectedTarget.dead) {
+    targetRing.position.set(selectedTarget.mesh.position.x, 0.08, selectedTarget.mesh.position.z);
+    targetRing.rotation.y += 0.04;
   }
-  renderXrayLightbox();
-}
 
-function renderXrayLightbox() {
-  const isSorted = xraySlots[0].recordNo === 7804 && xraySlots[1].recordNo === 7912 && xraySlots[2].recordNo === 8105 && xraySlots[3].recordNo === 8208;
-  if (isSorted) state.xraysOrdered = true;
-
-  openModal('3F X光看片燈箱・肋骨與止血鉗比對', `
-    <p style="font-size:0.83rem; color:#b8c7be; margin-bottom:10px;">
-      看片燈箱閃爍著慘白光芒。請點擊任兩張 X 光片<strong>交換位置</strong>，依<strong>病歷號由小到大（左至右）</strong>排列，並觀察止血鉗殘留位置對應的肋骨編號：
-    </p>
-    <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:8px; background:#d6e8e0; padding:10px; border-radius:6px; border:3px solid #60786d;">
-      ${xraySlots.map((x, idx) => `
-        <div onclick="clickXraySlot(${idx})" style="background:#13211d; color:#b8f2d6; padding:10px; border-radius:4px; cursor:pointer; border:2px solid ${swapFirstIdx === idx ? '#ffcf40' : '#3a5c50'}; text-align:center;">
-          <div style="font-weight:bold; font-size:0.9rem; color:#fff;">第 ${idx + 1} 格：${x.label}</div>
-          <svg width="100" height="72" viewBox="0 0 100 72" style="margin:6px auto; display:block;">
-            <!-- 胸腔肋骨骨架 -->
-            <line x1="50" y1="6" x2="50" y2="66" stroke="#78b89a" stroke-width="3"/>
-            <path d="M20,16 Q50,24 80,16 M18,28 Q50,36 82,28 M18,40 Q50,48 82,40 M22,52 Q50,60 78,52" fill="none" stroke="#629c81" stroke-width="2.5"/>
-            <!-- 止血鉗白色殘影 -->
-            <line x1="34" y1="22" x2="64" y2="48" stroke="#ffef99" stroke-width="3"/>
-            <circle cx="34" cy="22" r="4" fill="none" stroke="#ffef99" stroke-width="2"/>
-          </svg>
-          <div style="font-size:0.8rem; color:#ffef99;">止血鉗位於：<strong>第 ${x.rib} 肋骨</strong></div>
-        </div>
-      `).join('')}
-    </div>
-    <p style="margin-top:10px; font-size:0.85rem; color:${isSorted ? '#79e0a3' : '#d8c8a0'};">
-      ${isSorted
-        ? '✅ 已依病歷號 (#7804 ➔ #7912 ➔ #8105 ➔ #8208) 排列完成！四張X光片對應的肋骨編號依序為：<strong>4 - 7 - 2 - 9</strong>。'
-        : '提示：點擊一張 X 光片後再點擊另一張即可對調順序。'}
-    </p>
-  `);
-}
-
-function clickXraySlot(idx) {
-  initAudio();
-  playSound('click');
-  if (swapFirstIdx === null) {
-    swapFirstIdx = idx;
-  } else {
-    const tmp = xraySlots[swapFirstIdx];
-    xraySlots[swapFirstIdx] = xraySlots[idx];
-    xraySlots[idx] = tmp;
-    swapFirstIdx = null;
-    playSound('Switch');
-  }
-  renderXrayLightbox();
-}
-
-let safeCodeInput = '';
-function openMedicineSafeModal() {
-  if (state.safeUnlocked) {
-    openModal('3F 手術室藥品保險箱', `<p style="font-size:0.9rem; color:#c8e6d5;">保險箱（4729）已開啟，裡面的【4樓護理站萬用鑰匙】已取走。</p>`);
-    return;
-  }
-  safeCodeInput = '';
-  openModal('3F 手術室藥品保險箱（四位數轉盤鎖）', `
-    <p style="font-size:0.84rem; color:#b8c7be; margin-bottom:8px;">
-      請根據看片燈箱上 4 張胸腔 X 光片依病歷號排序後的「止血鉗所在肋骨編號」輸入 4 位數密碼：
-    </p>
-    <div id="safe-code-disp" class="code-display">----</div>
-    <div class="keypad-grid">
-      ${[1,2,3,4,5,6,7,8,9,'清除',0,'確認'].map(k =>
-        `<button class="key-btn" onclick="pressSafeKey('${k}')">${k}</button>`
-      ).join('')}
-    </div>
-  `);
-}
-
-function pressSafeKey(k) {
-  initAudio();
-  playSound('click');
-  const disp = document.getElementById('safe-code-disp');
-  if (k === '清除') {
-    safeCodeInput = '';
-  } else if (k === '確認') {
-    if (safeCodeInput === '4729') {
-      state.safeUnlocked = true;
-      addItem('nurse_key');
-      playSound('unlock');
-      closeModal();
-      setNarrative('🔓 保險箱轉盤鎖解開（4729）！取得【4樓護理站萬用鑰匙】，現在可由樓梯間登上 4 樓住院病房區。');
-      return;
-    } else {
-      disp.style.color = '#e05a47';
-      disp.textContent = 'ERR!';
-      safeCodeInput = '';
-      setTimeout(() => { disp.style.color = '#79e0a3'; disp.textContent = '----'; }, 650);
-      return;
-    }
-  } else if (safeCodeInput.length < 4) {
-    safeCodeInput += String(k);
-  }
-  disp.textContent = safeCodeInput.padEnd(4, '-');
-}
-
-/* ============================================================================
-   8. 第四關：4F 中央護理站與病房 轉盤電話解謎
-============================================================================ */
-function openBlackboardModal() {
-  openModal('4F 護理站粉筆黑板與護理長交班日誌', `
-    <div style="background:#172b20; border:3px solid #6b5135; padding:12px; color:#e2ede6; border-radius:4px; margin-bottom:12px; font-size:0.86rem;">
-      <strong>【黑板殘留粉筆字跡】</strong><br>
-      緊急轉床查房順序：<strong>第1站：402房 ➔ 第2站：405房 ➔ 第3站：408房</strong>
-    </div>
-    <div class="vintage-paper" style="font-size:0.84rem; line-height:1.6;">
-      <strong>【護理長交班日誌（1993年8月）】</strong><br>
-      本院由三位台大醫學院背景創辦醫師共同主治，各主治醫師姓氏縮寫與護理站內線分機對照如下：<br>
-      • <strong>黃醫師（代號 Dr. H）</strong> ➔ 內線分機 <strong>3</strong> 號<br>
-      • <strong>施醫師（代號 Dr. S）</strong> ➔ 內線分機 <strong>5</strong> 號<br>
-      • <strong>吳醫師（代號 Dr. W）</strong> ➔ 內線分機 <strong>8</strong> 號<br>
-      備註：護理站下方工務鐵櫃設有電話繼電器鎖，依序撥通「402房 ➔ 405房 ➔ 408房」三位主治醫師的分機號碼即可彈開鐵櫃。
-    </div>
-  `);
-}
-
-function openWardRoomModal(roomNo) {
-  const roomData = {
-    '402': { patient: '林○雄', doctorCode: 'Dr. H（黃醫師）', ext: '3', note: '生鏽綠色鐵床尾端掛著壓克力床頭卡，發霉條紋床墊上還留著舊棉被。' },
-    '405': { patient: '陳○月', doctorCode: 'Dr. W（吳醫師）', ext: '8', note: '四人病房靠窗床位，陽台外長滿野生構樹，床頭卡字跡依然清晰。' },
-    '408': { patient: '蔡○宗', doctorCode: 'Dr. S（施醫師）', ext: '5', note: '雙人病房內側床位，壓克力床頭卡記載著最後一位主治醫師代號。' }
-  }[roomNo];
-
-  openModal(`4F 【${roomNo} 病房】病患床頭卡`, `
-    <p style="font-size:0.85rem; color:#b8c7be; margin-bottom:12px;">${roomData.note}</p>
-    <div class="vintage-paper" style="border:3px solid #789486; background:#e8ece9;">
-      <div style="font-size:1rem; font-weight:bold; border-bottom:2px solid #3c4f46; padding-bottom:4px; margin-bottom:8px;">
-        杏林綜合醫院・住院病患床頭卡（${roomNo} 房）
-      </div>
-      <div style="font-size:0.9rem; line-height:1.7;">
-        病患姓名：${roomData.patient}<br>
-        <strong>主治醫師代號：<span style="color:#8f1d1d;">${roomData.doctorCode}</span></strong><br>
-        （對照護理長日誌內線分機：<strong>分機 ${roomData.ext} 號</strong>）
-      </div>
-    </div>
-  `);
-}
-
-// 4F 轉盤電話畫圓撥號互動 (目標順序: 3 -> 8 -> 5)
-let rotaryStartAngle = null;
-let currentDialRotation = 0;
-let activeDialNumber = null;
-
-function openRotaryPhoneModal() {
-  if (state.crankCollected) {
-    openModal('4F 中央護理站轉盤電話', `<p style="font-size:0.9rem; color:#c8e6d5;">已依序撥通分機 3 - 8 - 5，護理站下方鐵櫃內的【1樓鐵捲門手動搖桿】已取走！快回 1 樓西門路大門逃生！</p>`);
-    return;
-  }
-  state.dialedSequence = [];
-  renderRotaryPhoneModal();
-}
-
-function renderRotaryPhoneModal() {
-  openModal('4F 老式綠色轉盤電話（內線分機撥號）', `
-    <p style="font-size:0.83rem; color:#b8c7be; margin-bottom:8px;">
-      請依照黑板轉床順序（<strong>402房 ➔ 405房 ➔ 408房</strong>）對應的主治醫師分機碼，<strong>按住下方電話轉盤上的數字孔並順時針畫圓拉到底</strong>進行撥號：
-    </p>
-    <div class="code-display" id="dial-seq-disp" style="font-size:1.15rem; letter-spacing:3px;">
-      已撥分機：${state.dialedSequence.length ? state.dialedSequence.join(' ➔ ') : '尚未撥號'}
-    </div>
-    <div style="text-align:center; position:relative; user-select:none;">
-      <svg id="rotary-svg" width="250" height="250" viewBox="0 0 250 250" style="background:#1c4532; border-radius:50%; border:6px solid #356e54; touch-action:none;">
-        <!-- 電話中央標籤 -->
-        <circle cx="125" cy="125" r="42" fill="#e6dec8" stroke="#333" stroke-width="2"/>
-        <text x="125" y="122" fill="#1c2420" font-size="11" font-weight="bold" text-anchor="middle">杏林醫院</text>
-        <text x="125" y="137" fill="#6e221d" font-size="10" text-anchor="middle">內線總機</text>
-        <!-- 止動鐵片 (右下角) -->
-        <polygon points="185,175 215,165 205,195" fill="#b8c2bc" stroke="#222" stroke-width="2"/>
-
-        <!-- 可旋轉透明轉盤與指孔 -->
-        <g id="rotary-wheel" transform="rotate(0, 125, 125)">
-          <circle cx="125" cy="125" r="96" fill="none" stroke="rgba(220,235,228,0.45)" stroke-width="32"/>
-          ${[1,2,3,4,5,6,7,8,9,0].map((num, i) => {
-            const deg = -60 - i * 26;
-            const rad = deg * Math.PI / 180;
-            const cx = 125 + 88 * Math.cos(rad);
-            const cy = 125 + 88 * Math.sin(rad);
-            return `
-              <g class="hotspot" onmousedown="startRotaryDrag(event, ${num})" ontouchstart="startRotaryDrag(event, ${num})">
-                <circle cx="${cx}" cy="${cy}" r="16" fill="rgba(15,28,22,0.85)" stroke="#d8e8df" stroke-width="2"/>
-                <text x="${cx}" y="${cy + 5}" fill="#fff" font-size="14" font-weight="bold" text-anchor="middle">${num}</text>
-              </g>
-            `;
-          }).join('')}
-        </g>
-      </svg>
-      <p style="font-size:0.78rem; color:#9ab3a6; margin-top:6px;">
-        💡 操作提示：按住數字孔後，順時針畫圓拉動轉盤超過 60 度再放開，轉盤即會自動彈回並撥出該分機。
-      </p>
-    </div>
-  `);
-}
-
-function getSvgAngle(evt, svgEl) {
-  const rect = svgEl.getBoundingClientRect();
-  const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
-  const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
-  const dx = clientX - (rect.left + rect.width / 2);
-  const dy = clientY - (rect.top + rect.height / 2);
-  return Math.atan2(dy, dx) * (180 / Math.PI);
-}
-
-function startRotaryDrag(evt, num) {
-  evt.preventDefault();
-  initAudio();
-  const svgEl = document.getElementById('rotary-svg');
-  if (!svgEl) return;
-  activeDialNumber = num;
-  rotaryStartAngle = getSvgAngle(evt, svgEl);
-  currentDialRotation = 0;
-
-  const moveFn = e => {
-    if (activeDialNumber === null) return;
-    const ang = getSvgAngle(e, svgEl);
-    let diff = ang - rotaryStartAngle;
-    if (diff < -180) diff += 360;
-    if (diff > 0 && diff < 170) {
-      if (Math.abs(diff - currentDialRotation) > 12) playSound('dialTick');
-      currentDialRotation = diff;
-      const wheel = document.getElementById('rotary-wheel');
-      if (wheel) wheel.setAttribute('transform', `rotate(${currentDialRotation}, 125, 125)`);
-    }
-  };
-
-  const endFn = () => {
-    window.removeEventListener('mousemove', moveFn);
-    window.removeEventListener('mouseup', endFn);
-    window.removeEventListener('touchmove', moveFn);
-    window.removeEventListener('touchend', endFn);
-
-    if (activeDialNumber !== null && currentDialRotation >= 45) {
-      completeRotaryDigit(activeDialNumber);
-    } else {
-      const wheel = document.getElementById('rotary-wheel');
-      if (wheel) wheel.setAttribute('transform', 'rotate(0, 125, 125)');
-    }
-    activeDialNumber = null;
-    currentDialRotation = 0;
-  };
-
-  window.addEventListener('mousemove', moveFn);
-  window.addEventListener('mouseup', endFn);
-  window.addEventListener('touchmove', moveFn, { passive: false });
-  window.addEventListener('touchend', endFn);
-}
-
-function completeRotaryDigit(num) {
-  const wheel = document.getElementById('rotary-wheel');
-  if (wheel) {
-    wheel.style.transition = 'transform 0.35s ease-out';
-    wheel.setAttribute('transform', 'rotate(0, 125, 125)');
-    setTimeout(() => { if (wheel) wheel.style.transition = ''; }, 360);
-  }
-  playSound('Switch');
-  state.dialedSequence.push(num);
-
-  const disp = document.getElementById('dial-seq-disp');
-  if (disp) disp.textContent = '已撥分機：' + state.dialedSequence.join(' ➔ ');
-
-  if (state.dialedSequence.length === 3) {
-    const seqStr = state.dialedSequence.join('');
-    if (seqStr === '385') {
-      state.crankCollected = true;
-      addItem('shutter_crank');
-      playSound('unlock');
-      setTimeout(() => {
-        closeModal();
-        setNarrative('☎️ 撥通內線分機 3 ➔ 8 ➔ 5！護理站下方卡死的鐵櫃「哐啷」彈開，取得【1樓鐵捲門手動搖桿】！快由樓梯間衝回 1 樓大廳逃生！');
-      }, 450);
-    } else {
-      setTimeout(() => {
-        alert(`分機順序（${state.dialedSequence.join('-')}）不正確！請依 402房 ➔ 405房 ➔ 408房 的主治醫師分機順序重新撥號。`);
-        state.dialedSequence = [];
-        renderRotaryPhoneModal();
-      }, 350);
-    }
-  }
-}
-
-/* ============================================================================
-   9. 最終關：重返 1F 西門路大門 手動搖桿畫圈逃脫
-============================================================================ */
-function inspectShutterChainBox() {
-  if (!state.crankCollected) {
-    openModal('1F 手動鐵捲門鏈條盒', `
-      <p style="font-size:0.88rem; color:#d6c8b8;">鐵捲門右側牆上的金屬鏈條盒生鏽封死，且裡面缺少專用搖桿。必須先去樓上找到【外科手術刀】與【鐵捲門手動搖桿】。</p>
-    `);
-    return;
-  }
-  openShutterEscapeModal();
-}
-
-function inspectShutter1F() {
-  if (!state.crankCollected) {
-    setNarrative('生鏽的綠色鐵捲門緊緊封死，外頭就是台南西門路一段。必須找到工務室留下的【鐵捲門手動搖桿】才能拉開它。');
-    return;
-  }
-  openShutterEscapeModal();
-}
-
-let crankPrevAngle = null;
-let crankAngleAccum = 0;
-
-function openShutterEscapeModal() {
-  openModal('最終關：1F 西門路一段鐵捲門手動逃生', `
-    <div id="escape-steps-box" style="font-size:0.85rem; color:#c8d6ce; margin-bottom:10px;">
-      ${!state.chainBoxPried
-        ? `<p style="margin-bottom:8px;">步驟 1：鐵捲門右側的「手動鏈條盒」被鐵鏽封死。</p>
-           <button class="action-btn" onclick="pryChainBox()">🔪 使用【外科手術刀】撬開手動鏈條盒</button>`
-        : (!state.crankInserted
-          ? `<p style="margin-bottom:8px;">步驟 2：鏈條盒已撬開，露出內部的六角轉軸孔。</p>
-             <button class="action-btn" onclick="insertShutterCrank()">🔧 將【鐵捲門手動搖桿】插入轉軸孔</button>`
-          : `<p>步驟 3：<strong>請在下方搖桿轉盤上持續快速畫圈旋轉</strong>，將生鏽的鐵捲門拉起至 <strong>50 公分</strong> 縫隙！</p>`
-        )
-      }
-    </div>
-
-    <!-- 鐵捲門縫隙與西門路陽光視覺 -->
-    <div style="position:relative; width:100%; height:130px; background:#0c120f; border:2px solid #485e52; border-radius:6px; overflow:hidden; margin-bottom:12px;">
-      <!-- 底部透出的台南西門路陽光與柏油路 -->
-      <div style="position:absolute; inset:0; background:linear-gradient(to top, #f7d788 0%, #f0b659 60%, #789c88 100%); display:flex; align-items:flex-end; justify-content:center; padding-bottom:8px;">
-        <span style="color:#2b1b06; font-weight:bold; font-size:0.9rem;">☀️ 台南西門路一段（陽光與車流聲）</span>
-      </div>
-      <!-- 往上拉起的綠色鐵捲門 -->
-      <div id="shutter-door-visual" style="position:absolute; top:0; left:0; right:0; height:${100 - (state.shutterHeightCm * 1.4)}%; background:repeating-linear-gradient(to bottom, #233d2f 0px, #233d2f 12px, #16261d 12px, #16261d 16px); border-bottom:4px solid #6e3524; transition:height 0.1s;"></div>
-    </div>
-
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:0.9rem;">
-      <span>鐵捲門拉起高度：</span>
-      <strong id="shutter-cm-text" style="color:#ffcf40;">${Math.floor(state.shutterHeightCm)} cm / 50 cm</strong>
-    </div>
-
-    ${state.crankInserted ? `
-      <div style="text-align:center;">
-        <svg id="crank-wheel-svg" width="190" height="190" viewBox="0 0 190 190" style="background:#17211c; border-radius:50%; border:3px dashed #5d7a6b; touch-action:none; cursor:grab;">
-          <circle cx="95" cy="95" r="70" fill="none" stroke="#3c5247" stroke-width="10"/>
-          <g id="crank-arm-group" transform="rotate(${crankAngleAccum}, 95, 95)">
-            <circle cx="95" cy="95" r="14" fill="#7c8c84"/>
-            <rect x="89" y="22" width="12" height="73" rx="5" fill="#b89872" stroke="#42321f" stroke-width="2"/>
-            <circle cx="95" cy="26" r="16" fill="#8f3424" stroke="#e0c6b8" stroke-width="2"/>
-          </g>
-          <text x="95" y="176" fill="#9ab3a6" font-size="11" text-anchor="middle">手指按住紅柄畫圈轉動</text>
-        </svg>
-      </div>
-    ` : ''}
-
-    <div id="crawl-out-wrap" style="display:${state.shutterHeightCm >= 50 ? 'block' : 'none'}; margin-top:12px;">
-      <button class="action-btn" style="width:100%; background:#d48b28; border-color:#ffe099; color:#1c1204; font-weight:bold; font-size:1.05rem; padding:12px;" onclick="triggerFinalEscape()">
-        🌅 點擊 50 公分縫隙・俯身鑽出逃離杏林醫院！
-      </button>
-    </div>
-  `);
-
-  if (state.crankInserted) bindCrankWheelEvents();
-}
-
-function pryChainBox() {
-  initAudio();
-  playSound('Switch');
-  state.chainBoxPried = true;
-  openShutterEscapeModal();
-  setNarrative('🔪 用手術刀撬開了生鏽的手動鐵捲門鏈條盒！');
-}
-
-function insertShutterCrank() {
-  initAudio();
-  playSound('unlock');
-  state.crankInserted = true;
-  openShutterEscapeModal();
-  setNarrative('🔧 已將【鐵捲門手動搖桿】插入轉軸孔！快在螢幕上持續畫圈轉動搖桿拉起鐵捲門！');
-}
-
-function bindCrankWheelEvents() {
-  const svgEl = document.getElementById('crank-wheel-svg');
-  if (!svgEl) return;
-
-  const onMove = e => {
-    if (state.shutterHeightCm >= 50) return;
-    const ang = getSvgAngle(e, svgEl);
-    if (crankPrevAngle !== null) {
-      let delta = ang - crankPrevAngle;
-      if (delta > 180) delta -= 360;
-      if (delta < -180) delta += 360;
-      if (Math.abs(delta) > 2 && Math.abs(delta) < 90) {
-        crankAngleAccum += delta;
-        state.shutterHeightCm = Math.min(50, state.shutterHeightCm + Math.abs(delta) * 0.045);
-
-        const arm = document.getElementById('crank-arm-group');
-        if (arm) arm.setAttribute('transform', `rotate(${crankAngleAccum}, 95, 95)`);
-
-        const door = document.getElementById('shutter-door-visual');
-        if (door) door.style.height = `${100 - (state.shutterHeightCm * 1.4)}%`;
-
-        const txt = document.getElementById('shutter-cm-text');
-        if (txt) txt.textContent = `${Math.floor(state.shutterHeightCm)} cm / 50 cm`;
-
-        if (Math.random() < 0.25) playSound('crank');
-
-        if (state.shutterHeightCm >= 50) {
-          playSound('unlock');
-          document.getElementById('crawl-out-wrap').style.display = 'block';
-          setNarrative('☀️ 鐵捲門已拉開至 50 公分縫隙！台南西門路的陽光與車水馬龍聲透入大廳，快點擊縫隙鑽出逃生！');
+  monsters.forEach(mob => {
+    if (mob.dead) return;
+    const distToPlayer = BABYLON.Vector3.Distance(mob.mesh.position, playerRoot.position);
+    // 若玩家靠近且在地面附近，怪物主動追擊並攻擊
+    if (distToPlayer < 7.5 && playerRoot.position.y < 3.0) {
+      const dir = playerRoot.position.subtract(mob.mesh.position);
+      dir.y = 0;
+      if (dir.length() > 1.8) {
+        dir.normalize().scaleInPlace(0.06);
+        mob.mesh.position.addInPlace(dir);
+      } else {
+        mob.atkCooldown -= dt;
+        if (mob.atkCooldown <= 0) {
+          mob.atkCooldown = 2.0;
+          const mobDmg = mob.lv * 6;
+          serverState.hp = Math.max(1, serverState.hp - mobDmg);
+          spawnFloatingText(playerRoot.position.add(new BABYLON.Vector3(0, 1.8, 0)), `-${mobDmg}`, '#fb7185');
+          updatePlayerHUD();
         }
       }
     }
-    crankPrevAngle = ang;
-  };
+  });
 
-  const onEnd = () => { crankPrevAngle = null; };
+  scene.render();
+});
 
-  svgEl.addEventListener('mousedown', e => { crankPrevAngle = getSvgAngle(e, svgEl); });
-  window.addEventListener('mousemove', e => { if (e.buttons === 1 && crankPrevAngle !== null) onMove(e); });
-  window.addEventListener('mouseup', onEnd);
-
-  svgEl.addEventListener('touchstart', e => { crankPrevAngle = getSvgAngle(e, svgEl); }, { passive: true });
-  svgEl.addEventListener('touchmove', e => { e.preventDefault(); onMove(e); }, { passive: false });
-  svgEl.addEventListener('touchend', onEnd);
-}
-
-function triggerFinalEscape() {
-  initAudio();
-  playSound('unlock');
-  closeModal();
-  state.started = false;
-  document.getElementById('ending-screen').style.display = 'flex';
-}
+window.addEventListener('resize', () => engine.resize());
 </script>
 </body>
 </html>
