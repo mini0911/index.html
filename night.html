@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TPE 桃園國際機場 — 真實 GPS 衛星實景與 GLTF 3D 模型引擎</title>
+<title>TPE 桃園國際機場 — 真實衛星 GIS 與多模型 (.glb) 實景引擎</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <style>
   :root {
-    --bg-panel: rgba(10, 14, 22, 0.88);
-    --border-glow: rgba(148, 163, 184, 0.35);
+    --bg-panel: rgba(9, 13, 22, 0.9);
+    --border-glow: rgba(56, 189, 248, 0.4);
     --accent: #38bdf8;
     --accent-gold: #fbbf24;
     --accent-green: #10b981;
@@ -30,59 +30,48 @@
     display: flex; align-items: center; justify-content: space-between;
     background: var(--bg-panel); backdrop-filter: blur(16px);
     border: 1px solid var(--border-glow); border-radius: 10px;
-    padding: 8px 14px; box-shadow: 0 12px 32px rgba(0,0,0,0.7);
+    padding: 8px 14px; box-shadow: 0 12px 32px rgba(0,0,0,0.75);
     flex-wrap: wrap; gap: 8px;
   }
   .brand-box { display: flex; align-items: center; gap: 10px; }
   .airport-code {
     background: #0f172a; border: 1px solid #38bdf8;
-    color: #38bdf8; font-weight: 900; font-size: 15px; letter-spacing: 1px;
+    color: #38bdf8; font-weight: 900; font-size: 14px;
     padding: 6px 10px; border-radius: 6px;
   }
   .brand-title h1 { font-size: 14px; font-weight: 800; color: #fff; }
   .brand-title p { font-size: 11px; color: #94a3b8; margin-top: 1px; }
 
-  .stats-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .stat-item {
-    display: flex; flex-direction: column;
-    background: rgba(255,255,255,0.04); padding: 4px 10px;
-    border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);
-  }
-  .stat-label { font-size: 10px; color: var(--text-sub); }
-  .stat-value { font-size: 13px; font-weight: 800; color: #fff; }
-  .stat-value.gold { color: #fbbf24; }
-  .stat-value.green { color: #34d399; }
-
   .top-controls { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .btn {
     background: rgba(30, 41, 59, 0.92); color: var(--text-main);
-    border: 1px solid rgba(148, 163, 184, 0.35);
+    border: 1px solid rgba(148, 163, 184, 0.38);
     padding: 6px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 600;
     cursor: pointer; transition: all 0.16s; display: inline-flex; align-items: center; gap: 4px;
   }
   .btn:hover { background: rgba(56, 189, 248, 0.22); border-color: var(--accent); }
-  .btn.active { background: #0284c7; border-color: #7dd3fc; color: #fff; }
   .btn.gold { background: #b45309; border-color: #fbbf24; color: #fff; }
   .btn.green { background: #047857; border-color: #34d399; color: #fff; }
+  .btn.blue { background: #0284c7; border-color: #7dd3fc; color: #fff; }
   .btn-xs { padding: 4px 8px; font-size: 10.5px; border-radius: 5px; }
 
   .left-dock {
-    position: absolute; top: 70px; left: 12px; bottom: 58px; width: 320px; z-index: 10;
+    position: absolute; top: 70px; left: 12px; bottom: 58px; width: 325px; z-index: 10;
     display: flex; flex-direction: column; gap: 8px; pointer-events: none;
   }
   .right-dock {
-    position: absolute; top: 70px; right: 12px; bottom: 58px; width: 360px; z-index: 10;
+    position: absolute; top: 70px; right: 12px; bottom: 58px; width: 365px; z-index: 10;
     display: flex; flex-direction: column; gap: 8px; pointer-events: none;
   }
   .panel {
     background: var(--bg-panel); backdrop-filter: blur(16px);
     border: 1px solid var(--border-glow); border-radius: 10px;
     padding: 10px 12px; pointer-events: auto; display: flex; flex-direction: column;
-    box-shadow: 0 10px 28px rgba(0,0,0,0.6);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.65);
   }
   .panel-header {
     display: flex; justify-content: space-between; align-items: center;
-    padding-bottom: 6px; margin-bottom: 6px;
+    padding-bottom: 6px; margin-bottom: 8px;
     border-bottom: 1px solid rgba(255,255,255,0.1);
   }
   .panel-title { font-size: 12.5px; font-weight: 700; color: var(--accent); }
@@ -102,8 +91,14 @@
     background: rgba(56, 189, 248, 0.18); color: #7dd3fc;
   }
   .fids-sub { font-size: 11px; color: var(--text-sub); display: flex; justify-content: space-between; margin-bottom: 5px; }
-  .progress-wrap { width: 100%; height: 5px; background: rgba(255,255,255,0.08); border-radius: 99px; overflow: hidden; margin-bottom: 5px; }
+  .progress-wrap { width: 100%; height: 5px; background: rgba(255,255,255,0.08); border-radius: 99px; overflow: hidden; }
   .progress-bar { height: 100%; background: linear-gradient(90deg, #38bdf8, #10b981); }
+
+  .slot-card {
+    background: rgba(15, 23, 42, 0.85); border: 1px dashed rgba(148, 163, 184, 0.4);
+    border-radius: 8px; padding: 9px 10px; display: flex; flex-direction: column; gap: 5px;
+  }
+  .slot-card.loaded { border-style: solid; border-color: #10b981; background: rgba(6, 78, 59, 0.25); }
 
   .bottom-hud {
     position: absolute; bottom: 10px; left: 12px; right: 12px; z-index: 10;
@@ -141,98 +136,120 @@
 
 <div id="canvas-container"></div>
 <div id="labels-container"></div>
-<input type="file" id="glb-upload" accept=".glb,.gltf" style="display:none" onchange="handleCustomGLB(event)">
+
+<!-- 隱藏的 4 組真實 .glb 檔案上傳器 -->
+<input type="file" id="glb-plane" accept=".glb,.gltf" style="display:none" onchange="uploadGLBSlot('plane', event)">
+<input type="file" id="glb-catering" accept=".glb,.gltf" style="display:none" onchange="uploadGLBSlot('catering', event)">
+<input type="file" id="glb-tug" accept=".glb,.gltf" style="display:none" onchange="uploadGLBSlot('tug', event)">
+<input type="file" id="glb-bridge" accept=".glb,.gltf" style="display:none" onchange="uploadGLBSlot('bridge', event)">
 
 <!-- 頂部資訊列 -->
 <div class="top-hud">
   <div class="brand-box">
-    <div class="airport-code">25.0777°N, 121.2325°E</div>
+    <div class="airport-code">RCTP / TPE 真實衛星</div>
     <div class="brand-title">
-      <h1>臺灣桃園國際機場 (RCTP) — 真實衛星航拍圖資與 GLTF 引擎</h1>
-      <p id="tile-status">正在載入 Esri World Imagery 桃園國際機場真實衛星航拍圖磚...</p>
-    </div>
-  </div>
-
-  <div class="stats-bar">
-    <div class="stat-item">
-      <span class="stat-label">機場建設基金</span>
-      <span class="stat-value gold" id="ui-money">$85,000</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-label">今日旅運量</span>
-      <span class="stat-value" id="ui-pax">4,120 人</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-label">真實航向角</span>
-      <span class="stat-value green">051° / 231°</span>
+      <h1>桃園國際機場 — 100% 真實空拍圖資 ＋ 照片級 .glb 模型掛載中心</h1>
+      <p id="tile-status">正在載入桃園國際機場高解析度真實衛星航拍圖磚...</p>
     </div>
   </div>
 
   <div class="top-controls">
-    <button class="btn gold" onclick="document.getElementById('glb-upload').click()">📦 匯入真實 .glb 飛機/車輛模型</button>
-    <button class="btn" id="btn-3dbld" onclick="toggle3DBuildings()">🏢 3D 示意建築：隱藏 (純看真實衛星圖)</button>
-    <button class="btn active" onclick="spawnRealGPSFlight()">✈ 派遣航班降落 05L</button>
+    <button class="btn gold" onclick="document.getElementById('glb-plane').click()">✈ 匯入真實飛機 .glb</button>
+    <button class="btn green" onclick="document.getElementById('glb-catering').click()">🚚 匯入真實空廚車 .glb</button>
+    <button class="btn blue" onclick="document.getElementById('glb-tug').click()">🚜 匯入真實後推車 .glb</button>
+    <button class="btn" onclick="spawnRealGPSFlight()">🛬 派遣航班降落 05L</button>
   </div>
 </div>
 
-<!-- 左側真實 GPS 航班面板 -->
+<!-- 左側航班動態 -->
 <div class="left-dock">
   <div class="panel" style="flex:1;">
     <div class="panel-header">
-      <div class="panel-title">📡 桃園機場真實經緯度航班動態</div>
+      <div class="panel-title">📡 桃園機場真實 GPS 停機位與起降航班</div>
       <span style="font-size:11px;color:var(--text-sub);" id="flight-count">0 架</span>
     </div>
     <div class="fids-list" id="fids-list"></div>
   </div>
 </div>
 
-<!-- 右側真實模型與機坪控制面板 -->
+<!-- 右側：4 大真實 3D 模型 (.glb) 插槽管理與尺寸微調 -->
 <div class="right-dock">
-  <div class="panel" style="flex:1;">
+  <div class="panel" style="flex:1; gap:8px; overflow-y:auto;">
     <div class="panel-header">
-      <div class="panel-title">🔍 為什麼要使用真實衛星圖資與 .glb 模型？</div>
+      <div class="panel-title">📦 照片級 .glb 3D 模型插槽（可隨時替換）</div>
     </div>
-    <div style="font-size:11.5px; color:#cbd5e1; line-height:1.55; display:flex; flex-direction:column; gap:8px; overflow-y:auto;">
-      <div style="background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); padding:8px; border-radius:6px;">
-        <b style="color:#38bdf8;">1. 地板已是 100% 真實桃園機場空拍照片：</b><br>
-        現在畫面下方的跑道（05L/23R 與 05R/23L）、第一航廈、第二航廈、第三航廈工地、WC 跨區滑行道橋與國道二號，全部是直接從衛星伺服器抓取的<b>真實桃園機場空拍照片</b>，不再是程式碼畫的假馬路。
+
+    <div class="slot-card" id="slot-plane">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <b style="font-size:12px;">1. 客機模型 (A350 / B787)</b>
+        <button class="btn btn-xs gold" onclick="document.getElementById('glb-plane').click()">選擇 .glb 檔案</button>
       </div>
-      <div style="background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.3); padding:8px; border-radius:6px;">
-        <b style="color:#fbbf24;">2. 如何讓飛機跟車子也 100% 像照片一樣真實？</b><br>
-        網頁單一程式碼無法內建幾十 MB 的真實照片級 3D 飛機檔案。但只要你從免費 3D 模型網站（例如 <b>Sketchfab.com</b> 搜尋 <code>Airbus A350</code> 或 <code>Airport Truck</code>）下載 <code>.glb</code> 檔案，點擊上方<b>「📦 匯入真實 .glb 飛機/車輛模型」</b>，就能立刻把畫面上的飛機換成電影級真實 3D 模型！
+      <div style="font-size:11px;color:var(--text-sub);" id="status-plane">目前狀態：內建擬真曲面模型（上傳 .glb 後將100%替換為真實模型）</div>
+    </div>
+
+    <div class="slot-card" id="slot-catering">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <b style="font-size:12px;">2. 華膳/長榮空廚升降卡車</b>
+        <button class="btn btn-xs green" onclick="document.getElementById('glb-catering').click()">選擇 .glb 檔案</button>
       </div>
-      <div id="ops-detail-box" style="margin-top:4px;"></div>
+      <div style="font-size:11px;color:var(--text-sub);" id="status-catering">目前狀態：內建車廂模型（支援替換為真實卡車 .glb）</div>
+    </div>
+
+    <div class="slot-card" id="slot-tug">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <b style="font-size:12px;">3. 桃勤後推車 / 地勤車隊</b>
+        <button class="btn btn-xs blue" onclick="document.getElementById('glb-tug').click()">選擇 .glb 檔案</button>
+      </div>
+      <div style="font-size:11px;color:var(--text-sub);" id="status-tug">目前狀態：內建拖車模型（支援替換為真實拖車 .glb）</div>
+    </div>
+
+    <div class="slot-card" id="slot-bridge">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <b style="font-size:12px;">4. 停機坪伸縮空橋 (Jetbridge)</b>
+        <button class="btn btn-xs" onclick="document.getElementById('glb-bridge').click()">選擇 .glb 檔案</button>
+      </div>
+      <div style="font-size:11px;color:var(--text-sub);" id="status-bridge">目前狀態：對齊真實衛星圖空橋位置</div>
+    </div>
+
+    <div style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.3);padding:8px;border-radius:6px;font-size:11px;line-height:1.5;color:#cbd5e1;">
+      💡 <b>微調模型大小與方向：</b><br>
+      匯入外部 <code>.glb</code> 模型後，若想放大或旋轉模型方向，可使用下方滑桿即時調整：
+      <div style="margin-top:6px;display:flex;align-items:center;justify-content:space-between;">
+        <span>模型縮放比例：</span>
+        <input type="range" min="0.3" max="3.0" step="0.1" value="1.0" oninput="adjustCustomScale(this.value)">
+      </div>
+      <div style="margin-top:4px;display:flex;align-items:center;justify-content:space-between;">
+        <span>模型車頭/機頭旋轉：</span>
+        <input type="range" min="-3.14" max="3.14" step="0.1" value="0" oninput="adjustCustomRot(this.value)">
+      </div>
     </div>
   </div>
 </div>
 
-<!-- 底部真實 GPS 地標鏡頭切換 -->
+<!-- 底部真實 GPS 地標鏡頭 -->
 <div class="bottom-hud">
   <div class="cam-group">
-    <span style="font-size:11px; color:var(--text-sub); font-weight:700;">📍 真實桃機 GPS 鏡頭：</span>
-    <button class="btn btn-xs active" onclick="focusGPS(25.0777, 121.2325, 380)">🌐 桃園機場真實衛星全景</button>
-    <button class="btn btn-xs" onclick="focusGPS(25.0792, 121.2312, 75)">🌉 T2 北機坪 (Gate C2 真實位置)</button>
-    <button class="btn btn-xs" onclick="focusGPS(25.0835, 121.2378, 75)">🌉 T1 北機坪 (Gate A6 真實位置)</button>
-    <button class="btn btn-xs" onclick="focusGPS(25.0725, 121.2135, 95)">🛬 05L 北跑道頭真實座標</button>
-    <button class="btn btn-xs" onclick="focusGPS(25.0732, 121.2255, 85)">🛣 WC 跨區滑行橋 (飛機過馬路真實位置)</button>
-    <button class="btn btn-xs" onclick="focusGPS(25.0845, 121.2465, 110)">🔧 東側華航修護/長榮航太真實位置</button>
+    <span style="font-size:11px; color:var(--text-sub); font-weight:700;">📍 真實桃機衛星鏡頭：</span>
+    <button class="btn btn-xs" onclick="focusGPS(25.0794, 121.2314, 34)">🔍 T2 Gate C2 機坪近拍</button>
+    <button class="btn btn-xs" onclick="focusGPS(25.0836, 121.2378, 34)">🔍 T1 Gate A6 機坪近拍</button>
+    <button class="btn btn-xs" onclick="focusGPS(25.0725, 121.2135, 85)">🛬 05L 北跑道頭真實座標</button>
+    <button class="btn btn-xs" onclick="focusGPS(25.0732, 121.2255, 75)">🛣 WC 滑行道橋(飛機過馬路)</button>
+    <button class="btn btn-xs" onclick="focusGPS(25.0777, 121.2325, 340)">🌐 桃園機場真實衛星全景</button>
   </div>
   <div class="atc-ticker" id="atc-log">
-    [RCTP Real-GIS] 已對齊桃園國際機場真實經緯度 (25.0777°N, 121.2325°E) 與磁航向 051°/231°。
+    [RCTP Real-GIS] 地面已使用 100% 真實桃園機場衛星航拍照片！點擊上方按鈕即可載入您下載的照片級 .glb 飛機與地勤車模型。
   </div>
 </div>
 
 <script>
 // ============================================================================
-// 1. 桃園國際機場 (RCTP) 真實 Web Mercator 衛星圖磚與 GPS 座標轉換系統
+// 1. 桃園國際機場 (RCTP) 真實 Web Mercator 衛星圖磚與經緯度座標系統
 // ============================================================================
-// 中心瓦片：Zoom 16, X = 54837, Y = 28054 (正對桃園機場第二航廈與雙跑道中心)
 const ZOOM = 16;
 const CENTER_TILE_X = 54837;
 const CENTER_TILE_Y = 28054;
-const TILE_SIZE_WORLD = 120; // 每個 Zoom 16 瓦片在 3D 世界的寬度
+const TILE_SIZE_WORLD = 120;
 
-// 將真實世界經緯度 (Lat, Lon) 轉換為以瓦片中心為原點的 3D 座標 (X: 東西, Z: 南北)
 function latLonToTileXY(lat, lon, z) {
   const n = Math.pow(2, z);
   const x = (lon + 180) / 360 * n;
@@ -248,7 +265,6 @@ function gpsToWorld(lat, lon) {
   return new THREE.Vector3(wx, 0, wz);
 }
 
-// 桃園國際機場真實跑道與停機位 GPS 座標點
 const TPE_GPS = {
   rwy05L_start: gpsToWorld(25.0725, 121.2135),
   rwy23R_end:   gpsToWorld(25.0912, 121.2428),
@@ -262,39 +278,37 @@ const TPE_GPS = {
   tower:        gpsToWorld(25.0798, 121.2348)
 };
 
-// 計算桃園機場 05L 跑道真實方向向量與角度 (約北偏東 51 度)
 const rwyVec = new THREE.Vector3().subVectors(TPE_GPS.rwy23R_end, TPE_GPS.rwy05L_start).normalize();
 const RWY_ANGLE_Y = Math.atan2(-rwyVec.z, rwyVec.x);
 
 // ============================================================================
-// 2. Three.js 3D 場景與真實 Esri World Imagery 衛星圖磚拼接
+// 2. Three.js 場景與 Esri World Imagery 桃園機場高解析度衛星圖磚
 // ============================================================================
 const container = document.getElementById('canvas-container');
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87a8c4);
-scene.fog = new THREE.FogExp2(0x87a8c4, 0.00045);
+scene.fog = new THREE.FogExp2(0x87a8c4, 0.0004);
 
-const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.5, 4000);
+const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.5, 4000);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.05;
+renderer.toneMappingExposure = 1.08;
 container.appendChild(renderer.domElement);
 
-const hemiLight = new THREE.HemisphereLight(0xffffff, 0x475569, 0.85);
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0x475569, 0.9);
 scene.add(hemiLight);
 
-const sunLight = new THREE.DirectionalLight(0xfffbeb, 1.35);
-sunLight.position.set(180, 320, -140);
+const sunLight = new THREE.DirectionalLight(0xfffbeb, 1.45);
+sunLight.position.set(160, 280, -120);
 sunLight.castShadow = true;
 sunLight.shadow.mapSize.width = 2048;
 sunLight.shadow.mapSize.height = 2048;
 scene.add(sunLight);
 
-// 載入桃園國際機場周邊 7x5 共 35 張高解析度真實衛星航拍圖磚 (Esri World Imagery)
 const satelliteGroup = new THREE.Group();
 scene.add(satelliteGroup);
 
@@ -310,60 +324,28 @@ for (let dx = -3; dx <= 3; dx++) {
     const url = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${ZOOM}/${ty}/${tx}`;
 
     const tileGeo = new THREE.PlaneGeometry(TILE_SIZE_WORLD, TILE_SIZE_WORLD);
-    const tileMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.88, metalness: 0.05 });
+    const tileMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.9, metalness: 0.02 });
     const tileMesh = new THREE.Mesh(tileGeo, tileMat);
     tileMesh.rotation.x = -Math.PI / 2;
     tileMesh.position.set(dx * TILE_SIZE_WORLD, 0, dy * TILE_SIZE_WORLD);
     tileMesh.receiveShadow = true;
     satelliteGroup.add(tileMesh);
 
-    texLoader.load(
-      url,
-      tex => {
-        tex.encoding = THREE.sRGBEncoding;
-        tex.anisotropy = 8;
-        tileMat.map = tex;
-        tileMat.color.setHex(0xffffff);
-        tileMat.needsUpdate = true;
-        loadedTiles++;
-        document.getElementById('tile-status').textContent =
-          loadedTiles >= totalTiles
-            ? '✅ 桃園國際機場 100% 真實衛星實景圖資載入完成（Esri World Imagery）'
-            : `正在載入桃園機場真實衛星圖磚 (${loadedTiles}/${totalTiles})...`;
-      }
-    );
+    texLoader.load(url, tex => {
+      tex.encoding = THREE.sRGBEncoding;
+      tex.anisotropy = 8;
+      tileMat.map = tex;
+      tileMat.color.setHex(0xffffff);
+      tileMat.needsUpdate = true;
+      loadedTiles++;
+      document.getElementById('tile-status').textContent =
+        loadedTiles >= totalTiles
+          ? '✅ 桃園國際機場 100% 真實衛星航拍圖資已就緒（Esri World Imagery）'
+          : `正在載入桃園機場真實衛星圖磚 (${loadedTiles}/${totalTiles})...`;
+    });
   }
 }
 
-// 可切換顯示/隱藏的 3D 輔助航廈建築 (預設隱藏，讓玩家直接看最真實的衛星照片，不被方塊遮擋)
-const optional3DBuildings = new THREE.Group();
-optional3DBuildings.visible = false;
-scene.add(optional3DBuildings);
-
-function buildOptional3DHelpers() {
-  const glassMat = new THREE.MeshPhysicalMaterial({ color: 0x93c5fd, transparent: true, opacity: 0.55, roughness: 0.1 });
-  const t2Pos = gpsToWorld(25.0775, 121.2322);
-  const t2Box = new THREE.Mesh(new THREE.BoxGeometry(28, 6, 18), glassMat);
-  t2Box.position.set(t2Pos.x, 3, t2Pos.z);
-  t2Box.rotation.y = RWY_ANGLE_Y;
-  optional3DBuildings.add(t2Box);
-
-  const t1Pos = gpsToWorld(25.0815, 121.2382);
-  const t1Box = new THREE.Mesh(new THREE.BoxGeometry(24, 5, 15), glassMat);
-  t1Box.position.set(t1Pos.x, 2.5, t1Pos.z);
-  t1Box.rotation.y = RWY_ANGLE_Y;
-  optional3DBuildings.add(t1Box);
-}
-buildOptional3DHelpers();
-
-function toggle3DBuildings() {
-  optional3DBuildings.visible = !optional3DBuildings.visible;
-  document.getElementById('btn-3dbld').textContent = optional3DBuildings.visible
-    ? '🏢 3D 示意建築：顯示中'
-    : '🏢 3D 示意建築：隱藏 (純看真實衛星圖)';
-}
-
-// 建立真實 GPS 地標釘選標籤
 const GPS_LANDMARKS = [
   { name: '🛫 05L 北跑道頭', pos: TPE_GPS.rwy05L_start },
   { name: '🛫 23R 北跑道頭', pos: TPE_GPS.rwy23R_end },
@@ -382,41 +364,80 @@ const gpsPinEls = GPS_LANDMARKS.map(lm => {
 });
 
 // ============================================================================
-// 3. 支援真實 .glb / .gltf 3D 模型匯入系統 + 精緻比例機隊與機坪作業車隊
+// 3. 多插槽真實 .glb 模型載入器 (支援飛機、空廚車、後推車、空橋分別替換)
 // ============================================================================
-let customLoadedGLBTemplate = null;
+const customModels = {
+  plane: null,
+  catering: null,
+  tug: null,
+  bridge: null,
+  userScale: 1.0,
+  userRotY: 0
+};
 
-function handleCustomGLB(event) {
+const TARGET_SIZES = {
+  plane: 15.5,
+  catering: 3.2,
+  tug: 2.6,
+  bridge: 6.5
+};
+
+function uploadGLBSlot(slotType, event) {
   const file = event.target.files[0];
   if (!file) return;
   const url = URL.createObjectURL(file);
   const loader = new THREE.GLTFLoader();
-  document.getElementById('atc-log').textContent = `[GLTF Loader] 正在載入您上傳的真實 3D 模型 ${file.name}...`;
+  document.getElementById('atc-log').textContent = `[GLTF 引擎] 正在解析真實 3D 模型檔 ${file.name}...`;
 
   loader.load(url, gltf => {
-    const model = gltf.scene;
-    // 自動計算邊界並縮放至桃園機場真實機坪比例
-    const box = new THREE.Box3().setFromObject(model);
-    const size = new THREE.Vector3();
-    box.getSize(size);
-    const maxDim = Math.max(size.x, size.y, size.z) || 1;
-    const scale = 16 / maxDim;
-    model.scale.setScalar(scale);
-
-    customLoadedGLBTemplate = model;
-    // 立即替換場上所有飛機為您匯入的真實 .glb 3D 模型！
-    flights.forEach(f => {
-      const cloned = customLoadedGLBTemplate.clone();
-      f.mesh.Clear?.();
-      while (f.mesh.children.length > 0) f.mesh.remove(f.mesh.children[0]);
-      f.mesh.add(cloned);
+    const raw = gltf.scene;
+    raw.traverse(node => {
+      if (node.isMesh) {
+        node.castShadow = true;
+        node.receiveShadow = true;
+      }
     });
-    document.getElementById('atc-log').textContent =
-      `✅ 已成功載入真實 3D 模型「${file.name}」並套用至桃園機場機坪航班！`;
+
+    const box = new THREE.Box3().setFromObject(raw);
+    const size = new THREE.Vector3();
+    const center = new THREE.Vector3();
+    box.getSize(size);
+    box.getCenter(center);
+
+    const maxDim = Math.max(size.x, size.y, size.z) || 1;
+    const baseScale = TARGET_SIZES[slotType] / maxDim;
+    raw.scale.setScalar(baseScale);
+    raw.position.y = -box.min.y * baseScale;
+
+    const wrapper = new THREE.Group();
+    wrapper.add(raw);
+    customModels[slotType] = wrapper;
+
+    document.getElementById('slot-' + slotType).classList.add('loaded');
+    document.getElementById('status-' + slotType).textContent = `✅ 已載入真實模型：${file.name}`;
+    document.getElementById('atc-log').textContent = `🎉 已將「${file.name}」套用至桃園機場所有 ${slotType.toUpperCase()} 實體！`;
+
+    rebuildAllFlightMeshes();
   });
 }
 
-// 預設精緻比例客機與機坪地勤車隊 (比例對齊真實衛星照片上的機坪停機線)
+function adjustCustomScale(val) {
+  customModels.userScale = parseFloat(val);
+  flights.forEach(f => {
+    if (f.planeSlot) f.planeSlot.scale.setScalar(customModels.userScale);
+  });
+}
+
+function adjustCustomRot(val) {
+  customModels.userRotY = parseFloat(val);
+  flights.forEach(f => {
+    if (f.planeSlot) f.planeSlot.rotation.y = customModels.userRotY;
+  });
+}
+
+// ============================================================================
+// 4. 建立具備 4 個獨立模型容器 (Plane / Catering / Tug / Bridge) 的機坪單元
+// ============================================================================
 const AIRLINES = [
   { code: 'JX', name: '星宇航空 A350-900', reg: 'B-58501', color: 0xf8fafc, tailColor: 0x18181b, badge: '#78350f' },
   { code: 'CI', name: '中華航空 A350-900', reg: 'B-18901', color: 0xffffff, tailColor: 0xe11d48, badge: '#be185d' },
@@ -424,15 +445,8 @@ const AIRLINES = [
   { code: 'IT', name: '台灣虎航 A320neo',  reg: 'B-50001', color: 0xffffff, tailColor: 0xfacc15, badge: '#ca8a04' }
 ];
 
-function createScaledAircraftWithGSE(airline) {
-  const root = new THREE.Group();
-
-  if (customLoadedGLBTemplate) {
-    root.add(customLoadedGLBTemplate.clone());
-    return root;
-  }
-
-  // 對齊真實衛星圖比例的精細客機 (翼展約 14 單位，剛好吻合衛星照片上的停機格)
+function createDefaultPlaneMesh(airline) {
+  const g = new THREE.Group();
   const bodyMat = new THREE.MeshPhysicalMaterial({ color: airline.color, clearcoat: 0.9, roughness: 0.2 });
   const tailMat = new THREE.MeshPhysicalMaterial({ color: airline.tailColor, clearcoat: 0.8, roughness: 0.25 });
   const wingMat = new THREE.MeshStandardMaterial({ color: 0xdce2ea, metalness: 0.5, roughness: 0.3 });
@@ -441,24 +455,23 @@ function createScaledAircraftWithGSE(airline) {
   fuselage.rotation.z = -Math.PI / 2;
   fuselage.position.y = 1.6;
   fuselage.castShadow = true;
-  root.add(fuselage);
+  g.add(fuselage);
 
   const nose = new THREE.Mesh(new THREE.SphereGeometry(0.95, 20, 16), bodyMat);
   nose.scale.set(1.9, 0.95, 1);
   nose.position.set(5.7, 1.56, 0);
-  root.add(nose);
+  g.add(nose);
 
   const cockpit = new THREE.Mesh(new THREE.SphereGeometry(0.78, 16, 12), new THREE.MeshBasicMaterial({ color: 0x090d16 }));
   cockpit.scale.set(1.6, 0.55, 0.9);
   cockpit.position.set(6.2, 1.9, 0);
-  root.add(cockpit);
+  g.add(cockpit);
 
   const tailCone = new THREE.Mesh(new THREE.ConeGeometry(0.95, 3.8, 20), bodyMat);
   tailCone.rotation.z = Math.PI / 2;
   tailCone.position.set(-7.6, 1.68, 0);
-  root.add(tailCone);
+  g.add(tailCone);
 
-  // 32度後掠主翼
   const wingShape = new THREE.Shape();
   wingShape.moveTo(2.0, 0); wingShape.lineTo(-2.2, 7.6); wingShape.lineTo(-3.3, 7.6);
   wingShape.lineTo(-1.2, 0); wingShape.lineTo(-3.3, -7.6); wingShape.lineTo(-2.2, -7.6); wingShape.closePath();
@@ -467,77 +480,114 @@ function createScaledAircraftWithGSE(airline) {
   const wings = new THREE.Mesh(wingGeo, wingMat);
   wings.position.set(0.4, 1.45, 0);
   wings.castShadow = true;
-  root.add(wings);
+  g.add(wings);
 
-  // 後掠垂直尾翼
   const vShape = new THREE.Shape();
   vShape.moveTo(0, 0); vShape.lineTo(-2.4, 3.6); vShape.lineTo(-3.8, 3.6); vShape.lineTo(-2.8, 0); vShape.closePath();
   const vGeo = new THREE.ExtrudeGeometry(vShape, { depth: 0.16, bevelEnabled: false });
   const vTail = new THREE.Mesh(vGeo, tailMat);
   vTail.position.set(-4.8, 2.1, -0.08);
-  vTail.castShadow = true;
-  root.add(vTail);
+  g.add(vTail);
 
-  // 雙發動機與可掀開維修外罩
-  let cowlPivot = null;
-  [-2.9, 2.9].forEach((ez, idx) => {
-    const eng = new THREE.Group();
-    eng.position.set(0.8, 0.9, ez);
-    const core = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.36, 1.7, 16), new THREE.MeshStandardMaterial({ color: 0xb45309, metalness: 0.8 }));
-    core.rotation.z = Math.PI / 2;
-    const cowl = new THREE.Mesh(new THREE.CylinderGeometry(0.54, 0.48, 1.9, 20, 1, false, 0, idx === 0 ? Math.PI : Math.PI * 2), tailMat);
+  [-2.9, 2.9].forEach(ez => {
+    const cowl = new THREE.Mesh(new THREE.CylinderGeometry(0.54, 0.48, 1.9, 20), tailMat);
     cowl.rotation.z = Math.PI / 2;
-    eng.add(core, cowl);
-    if (idx === 0) {
-      cowlPivot = new THREE.Group();
-      cowlPivot.position.y = 0.5;
-      const topCowl = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.49, 1.9, 16, 1, false, Math.PI, Math.PI), tailMat);
-      topCowl.rotation.z = Math.PI / 2;
-      topCowl.position.y = -0.5;
-      cowlPivot.add(topCowl);
-      eng.add(cowlPivot);
-    }
-    root.add(eng);
+    cowl.position.set(0.8, 0.9, ez);
+    g.add(cowl);
   });
-
-  // 機坪空廚升降車、中油油罐車、桃勤行李輸送車與機務人員
-  const gseGroup = new THREE.Group();
-  // 空廚升降車
-  const catLift = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.95, 1.0), new THREE.MeshStandardMaterial({ color: 0xf8fafc }));
-  catLift.position.set(2.8, 1.55, 2.1);
-  const catCab = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.95), new THREE.MeshStandardMaterial({ color: 0x0284c7 }));
-  catCab.position.set(4.1, 0.5, 2.1);
-  // 中油航油車
-  const fuelTruck = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 2.6, 16), new THREE.MeshStandardMaterial({ color: 0xf59e0b }));
-  fuelTruck.rotation.z = Math.PI / 2;
-  fuelTruck.position.set(0.5, 0.65, 4.6);
-  // 桃勤行李輸送車與後推車
-  const beltLoader = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.45, 0.85), new THREE.MeshStandardMaterial({ color: 0x38bdf8 }));
-  beltLoader.position.set(-2.5, 0.35, 2.2);
-  const pushTug = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.55, 1.2), new THREE.MeshStandardMaterial({ color: 0xeab308 }));
-  pushTug.position.set(7.2, 0.3, 0);
-
-  gseGroup.add(catLift, catCab, fuelTruck, beltLoader, pushTug);
-  root.add(gseGroup);
-  root.userData = { gseGroup, catLift, cowlPivot };
-  return root;
+  return g;
 }
 
-// ============================================================================
-// 4. 真實衛星座標上的航班起降、滑行與停機坪作業
-// ============================================================================
+function buildFlightUnit(airline) {
+  const root = new THREE.Group();
+
+  // 1. 飛機插槽
+  const planeSlot = new THREE.Group();
+  if (customModels.plane) {
+    planeSlot.add(customModels.plane.clone());
+  } else {
+    planeSlot.add(createDefaultPlaneMesh(airline));
+  }
+  planeSlot.scale.setScalar(customModels.userScale);
+  planeSlot.rotation.y = customModels.userRotY;
+  root.add(planeSlot);
+
+  // 2. 地勤與空橋插槽群組
+  const gseGroup = new THREE.Group();
+
+  // 空廚車插槽
+  const cateringSlot = new THREE.Group();
+  cateringSlot.position.set(2.8, 0, 2.3);
+  if (customModels.catering) {
+    cateringSlot.add(customModels.catering.clone());
+  } else {
+    const catBox = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.1, 1.0), new THREE.MeshStandardMaterial({ color: 0xf8fafc }));
+    catBox.position.y = 1.4;
+    const catCab = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.95), new THREE.MeshStandardMaterial({ color: 0x0284c7 }));
+    catCab.position.set(1.3, 0.5, 0);
+    cateringSlot.add(catBox, catCab);
+  }
+  gseGroup.add(cateringSlot);
+
+  // 後推車插槽
+  const tugSlot = new THREE.Group();
+  tugSlot.position.set(7.4, 0, 0);
+  if (customModels.tug) {
+    tugSlot.add(customModels.tug.clone());
+  } else {
+    const pushTug = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.55, 1.2), new THREE.MeshStandardMaterial({ color: 0xeab308 }));
+    pushTug.position.y = 0.3;
+    tugSlot.add(pushTug);
+  }
+  gseGroup.add(tugSlot);
+
+  // 空橋插槽
+  const bridgeSlot = new THREE.Group();
+  bridgeSlot.position.set(2.5, 0, -4.2);
+  if (customModels.bridge) {
+    bridgeSlot.add(customModels.bridge.clone());
+  } else {
+    const jb = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.2, 5.5), new THREE.MeshStandardMaterial({ color: 0xcbd5e1 }));
+    jb.position.set(0, 1.6, 1.2);
+    bridgeSlot.add(jb);
+  }
+  gseGroup.add(bridgeSlot);
+
+  root.add(gseGroup);
+  return { root, planeSlot, gseGroup, cateringSlot, tugSlot, bridgeSlot };
+}
+
 const flights = [];
 let flightSeq = 801;
 let selectedFlight = null;
 
+function rebuildAllFlightMeshes() {
+  flights.forEach(f => {
+    const pos = f.mesh.position.clone();
+    const rot = f.mesh.rotation.clone();
+    const gseVis = f.gseGroup ? f.gseGroup.visible : true;
+    scene.remove(f.mesh);
+
+    const built = buildFlightUnit(f.airline);
+    built.root.position.copy(pos);
+    built.root.rotation.copy(rot);
+    built.gseGroup.visible = gseVis;
+    scene.add(built.root);
+
+    f.mesh = built.root;
+    f.planeSlot = built.planeSlot;
+    f.gseGroup = built.gseGroup;
+    f.cateringSlot = built.cateringSlot;
+  });
+}
+
 function createParkFlightAtRealGate(airlineIdx, gateVec, gateName) {
   const airline = AIRLINES[airlineIdx];
   const id = `${airline.code}${flightSeq++}`;
-  const mesh = createScaledAircraftWithGSE(airline);
-  mesh.position.copy(gateVec);
-  // 對齊桃園機場北機坪真實停機角度 (垂直於航廈長廊)
-  mesh.rotation.y = RWY_ANGLE_Y - Math.PI / 2;
-  scene.add(mesh);
+  const built = buildFlightUnit(airline);
+  built.root.position.copy(gateVec);
+  built.root.rotation.y = RWY_ANGLE_Y - Math.PI / 2;
+  scene.add(built.root);
 
   const labelEl = document.createElement('div');
   labelEl.className = 'aircraft-label';
@@ -547,8 +597,12 @@ function createParkFlightAtRealGate(airlineIdx, gateVec, gateName) {
   const fl = {
     id, airline, gateName,
     state: 'TURNAROUND',
-    progress: 25 + Math.random() * 30,
-    mesh, labelEl
+    progress: 20 + Math.random() * 40,
+    mesh: built.root,
+    planeSlot: built.planeSlot,
+    gseGroup: built.gseGroup,
+    cateringSlot: built.cateringSlot,
+    labelEl
   };
   flights.push(fl);
   if (!selectedFlight) selectedFlight = fl;
@@ -557,15 +611,14 @@ function createParkFlightAtRealGate(airlineIdx, gateVec, gateName) {
 function spawnRealGPSFlight() {
   const airline = AIRLINES[Math.floor(Math.random() * AIRLINES.length)];
   const id = `${airline.code}${flightSeq++}`;
-  const mesh = createScaledAircraftWithGSE(airline);
-  if (mesh.userData.gseGroup) mesh.userData.gseGroup.visible = false;
+  const built = buildFlightUnit(airline);
+  built.gseGroup.visible = false;
 
-  // 從 05L 跑道西南方外海五邊進場
   const approachStart = TPE_GPS.rwy05L_start.clone().addScaledVector(rwyVec, -95);
   approachStart.y = 26;
-  mesh.position.copy(approachStart);
-  mesh.rotation.y = RWY_ANGLE_Y;
-  scene.add(mesh);
+  built.root.position.copy(approachStart);
+  built.root.rotation.y = RWY_ANGLE_Y;
+  scene.add(built.root);
 
   const labelEl = document.createElement('div');
   labelEl.className = 'aircraft-label';
@@ -576,7 +629,11 @@ function spawnRealGPSFlight() {
     id, airline, gateName: '05L 跑道進場',
     state: 'LANDING_05L',
     progress: 0,
-    mesh, labelEl
+    mesh: built.root,
+    planeSlot: built.planeSlot,
+    gseGroup: built.gseGroup,
+    cateringSlot: built.cateringSlot,
+    labelEl
   };
   flights.push(fl);
   focusFlight(id);
@@ -588,7 +645,7 @@ function focusFlight(id) {
   if (!fl) return;
   selectedFlight = fl;
   camControl.target.copy(fl.mesh.position);
-  camControl.spherical.radius = 38;
+  camControl.spherical.radius = 32;
   camControl.spherical.phi = 1.05;
   renderFIDS();
 }
@@ -602,11 +659,11 @@ function focusGPS(lat, lon, radius) {
 }
 
 // ============================================================================
-// 5. 攝影機控制與每幀更新
+// 5. 攝影機控制與渲染迴圈
 // ============================================================================
 const camControl = {
   target: TPE_GPS.gate_C2.clone(),
-  spherical: { radius: 62, phi: 1.02, theta: 0.45 },
+  spherical: { radius: 42, phi: 1.02, theta: 0.45 },
   isDragging: false,
   isPanning: false,
   prevX: 0,
@@ -636,7 +693,7 @@ window.addEventListener('mousemove', e => {
   }
 });
 renderer.domElement.addEventListener('wheel', e => {
-  camControl.spherical.radius = Math.max(12, Math.min(750, camControl.spherical.radius + e.deltaY * 0.18));
+  camControl.spherical.radius = Math.max(10, Math.min(750, camControl.spherical.radius + e.deltaY * 0.16));
 });
 
 function renderFIDS() {
@@ -649,7 +706,7 @@ function renderFIDS() {
           <span class="airline-tag" style="background:${f.airline.badge};color:#fff;">${f.airline.code}</span>
           ${f.id}
         </div>
-        <span class="status-badge">${f.state === 'TURNAROUND' ? '機坪維護與空廚作業' : '05L 真實跑道起降'}</span>
+        <span class="status-badge">${f.state === 'TURNAROUND' ? '機坪過站維護' : '05L 跑道進場'}</span>
       </div>
       <div class="fids-sub">
         <span>${f.airline.name} (${f.airline.reg})</span>
@@ -662,7 +719,6 @@ function renderFIDS() {
   `).join('');
 }
 
-// 初始在真實衛星照片上的 Gate C2、Gate C5、Gate A6、Gate D3 停放飛機進行地勤與機務維護
 createParkFlightAtRealGate(0, TPE_GPS.gate_C2, 'T2 Gate C2');
 createParkFlightAtRealGate(1, TPE_GPS.gate_A6, 'T1 Gate A6');
 createParkFlightAtRealGate(2, TPE_GPS.gate_C5, 'T2 Gate C5');
@@ -680,7 +736,6 @@ function animate(now) {
   requestAnimationFrame(animate);
   const dt = Math.min(0.05, (now - lastTime) / 1000);
   lastTime = now;
-  const nowSec = now * 0.001;
 
   if (selectedFlight && selectedFlight.mesh) {
     camControl.target.lerp(selectedFlight.mesh.position, 0.1);
@@ -696,18 +751,9 @@ function animate(now) {
     const m = f.mesh;
     if (f.state === 'TURNAROUND') {
       f.progress = (f.progress + dt * 2.5) % 100;
-      if (m.userData.catLift) {
-        m.userData.catLift.position.y = 1.1 + Math.abs(Math.sin(nowSec * 1.2)) * 0.65;
-      }
-      if (m.userData.cowlPivot) {
-        m.userData.cowlPivot.rotation.x = 0.95; // 發動機蓋掀起檢修中
-      }
     } else if (f.state === 'LANDING_05L') {
-      // 沿著真實衛星照片上的 05L 跑道中心線降落並滾行！
       m.position.addScaledVector(rwyVec, dt * 32);
-      if (m.position.y > 0) {
-        m.position.y = Math.max(0, m.position.y - dt * 9.5);
-      }
+      if (m.position.y > 0) m.position.y = Math.max(0, m.position.y - dt * 9.5);
       f.progress = Math.min(100, f.progress + dt * 12);
       if (f.progress >= 100) {
         scene.remove(m);
