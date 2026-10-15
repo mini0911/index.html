@@ -27,7 +27,7 @@
     <!-- 表單本體 -->
     <form id="worksheetForm" class="p-6 sm:p-10 space-y-8">
       
-      <!-- 基本資料 (已將班級與學號獨立分開) -->
+      <!-- 基本資料 (班級與學號獨立) -->
       <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-4 gap-4">
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">班級 *</label>
@@ -56,17 +56,20 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-semibold text-slate-700 mb-1">影片名稱 *</label>
-            <input type="text" id="videoTitle" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="輸入影片或短片名稱">
+            <input type="text" id="videoTitle" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="輸入電影名稱">
           </div>
           <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-1">影片類型/主題</label>
+            <label class="block text-sm font-semibold text-slate-700 mb-1">影片類型 *</label>
             <select id="videoType" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
-              <option value="紀錄片">紀錄片</option>
-              <option value="劇情片">劇情片</option>
-              <option value="動畫短片">動畫短片</option>
-              <option value="TED 演說">TED 演說</option>
-              <option value="商業廣告/宣導片">商業廣告/宣導片</option>
-              <option value="其他">其他</option>
+              <option value="科幻片">科幻片 (Sci-Fi)</option>
+              <option value="驚悚懸疑">驚悚懸疑 (Thriller & Mystery)</option>
+              <option value="動作冒險">動作冒險 (Action & Adventure)</option>
+              <option value="奇幻史詩">奇幻史詩 (Fantasy & Epic)</option>
+              <option value="恐怖驚駭">恐怖驚駭 (Horror)</option>
+              <option value="劇情文藝">劇情文藝 (Drama)</option>
+              <option value="動畫電影">動畫電影 (Animation)</option>
+              <option value="紀錄/紀實">紀錄/紀實 (Documentary)</option>
+              <option value="其他類型">其他類型 (Other)</option>
             </select>
           </div>
         </div>
@@ -91,12 +94,12 @@
         </h2>
         
         <div class="space-y-3">
-          <label class="block text-sm font-semibold text-slate-700">2. 核心衝突：影片中的主角（或講者）遇到了什麼主要問題或挑戰？他是怎麼面對的？</label>
+          <label class="block text-sm font-semibold text-slate-700">2. 核心衝突：影片中的主角遇到了什麼主要危機、威脅或挑戰？他是怎麼應對的？</label>
           <textarea id="q2" rows="3" required class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="描述主角面臨的困境與應對方式..."></textarea>
         </div>
 
         <div class="space-y-3">
-          <label class="block text-sm font-semibold text-slate-700">3. 印象最深刻的一幕：請寫下對你視覺 or 心理衝擊最大的一個畫面，並說明原因：</label>
+          <label class="block text-sm font-semibold text-slate-700">3. 印象最深刻的一幕：請寫下對你視覺或心理衝擊最大的一個畫面（或轉折點），並說明原因：</label>
           <textarea id="q3" rows="3" required class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="畫面描述與觸動原因..."></textarea>
         </div>
       </div>
@@ -108,12 +111,12 @@
         </h2>
         
         <div class="space-y-3">
-          <label class="block text-sm font-semibold text-slate-700">4. 觀點碰撞：影片中是否有哪個觀點是你最認同或最不認同的？為什麼？</label>
+          <label class="block text-sm font-semibold text-slate-700">4. 觀點碰撞：影片中是否有哪個情節、科學設定或角色價值觀讓你感到震撼、認同或質疑？為什麼？</label>
           <textarea id="q4" rows="3" required class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="寫下你的贊同或批判觀點..."></textarea>
         </div>
 
         <div class="space-y-3">
-          <label class="block text-sm font-semibold text-slate-700">5. 角色抉擇：如果今天換作是你處在主角的位子，你會做出一樣的選擇嗎？你會怎麼做？</label>
+          <label class="block text-sm font-semibold text-slate-700">5. 角色抉擇：如果今天換作是你處在主角面臨絕境的位子，你會做出一樣的選擇嗎？你會怎麼做？</label>
           <textarea id="q5" rows="3" required class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="假如是你，你會採取什麼不同的行動？"></textarea>
         </div>
       </div>
@@ -125,18 +128,18 @@
         </h2>
         
         <div class="space-y-3">
-          <label class="block text-sm font-semibold text-slate-700">6. 金句摘錄：請抄下一句影片中最觸動你心弦的話（或自己寫一句總結）：</label>
-          <input type="text" id="q6" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="「觸動人心的話語...」">
+          <label class="block text-sm font-semibold text-slate-700">6. 金句摘錄：請抄下一句電影中最觸動你心弦或最具哲理的一句台詞（或自己寫一句總結）：</label>
+          <input type="text" id="q6" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="「觸動人心的電影台詞...」">
         </div>
 
         <div class="space-y-3">
-          <label class="block text-sm font-semibold text-slate-700">7. 生活連結：看完這部影片後，它如何改變了你看待某件事的眼光或態度？</label>
-          <textarea id="q7" rows="3" required class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="對個人或日常生活的啟發..."></textarea>
+          <label class="block text-sm font-semibold text-slate-700">7. 生活連結：這部科幻/驚悚片所探討的世界觀或危機，對現實社會或未來的我們有什麼警示與啟發？</label>
+          <textarea id="q7" rows="3" required class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="對現實世界或未來的省思..."></textarea>
         </div>
 
         <div class="space-y-3">
-          <label class="block text-sm font-semibold text-slate-700">8. 我的下一步：接下來的這週，你可以在生活中實踐的一個小改變或行動是什麼？</label>
-          <textarea id="q8" rows="3" required class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="具體想嘗試的行動..."></textarea>
+          <label class="block text-sm font-semibold text-slate-700">8. 我的下一步：看完這部電影後，你對於相關科學議題、人性或是自己的人生，有什麼想進一步了解或改變的事嗎？</label>
+          <textarea id="q8" rows="3" required class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="具體想嘗試的行動或探索..."></textarea>
         </div>
       </div>
 
@@ -176,7 +179,7 @@
       statusMsg.textContent = "正在將作答資料寫入後台試算表，請稍候...";
       statusMsg.className = "text-sm font-medium text-indigo-600";
 
-      // 蒐集所有欄位資料（包含獨立的班級與學號）
+      // 蒐集所有欄位資料
       const formData = {
         studentClass: document.getElementById('studentClass').value,
         studentId: document.getElementById('studentId').value,
@@ -227,7 +230,7 @@
       
       html2canvas(document.querySelector('.max-w-3xl'), { scale: 2 }).then(canvas => {
         const link = document.createElement('a');
-        link.download = `${document.getElementById('studentClass').value}_${document.getElementById('studentId').value}_${document.getElementById('studentName').value || '學生'}_影片學習單.png`;
+        link.download = `${document.getElementById('studentClass').value}_${document.getElementById('studentId').value}_${document.getElementById('studentName').value || '學生'}_電影學習單.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
         statusMsg.textContent = "📸 截圖已成功下載到您的裝置！";
