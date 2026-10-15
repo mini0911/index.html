@@ -11,6 +11,9 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
     body { font-family: 'Noto Sans TC', sans-serif; }
+    .word-badge { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 9999px; }
+    .word-badge.needed { background-color: #fee2e2; color: #b91c1c; }
+    .word-badge.ok { background-color: #dcfce7; color: #15803d; }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased py-8 px-4 sm:px-6">
@@ -21,13 +24,13 @@
     <div class="bg-gradient-to-r from-indigo-600 to-blue-600 px-6 py-8 text-white text-center">
       <span class="inline-block bg-white/20 text-xs font-semibold px-3 py-1 rounded-full mb-2 tracking-wide">🎬 互動學習單</span>
       <h1 class="text-2xl sm:text-3xl font-bold">南港高工電影欣賞社-影片欣賞學習單</h1>
-      <p class="text-indigo-100 text-sm mt-2">請帶著思考觀賞影片，認真記錄你的觀點與收穫</p>
+      <p class="text-indigo-100 text-sm mt-2">請帶著思考觀賞影片，認真記錄你的觀點與收穫（深思題需至少填寫 100 字）</p>
     </div>
 
     <!-- 表單本體 -->
     <form id="worksheetForm" class="p-6 sm:p-10 space-y-8">
       
-      <!-- 基本資料 (班級與學號獨立) -->
+      <!-- 基本資料 -->
       <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-4 gap-4">
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">班級 *</label>
@@ -52,7 +55,6 @@
         <h2 class="text-lg font-bold text-indigo-900 border-b pb-2 flex items-center gap-2">
           <span class="w-2 h-6 bg-indigo-600 rounded-full inline-block"></span> 影片基本資料
         </h2>
-        
         <div>
           <label class="block text-sm font-semibold text-slate-700 mb-1">影片名稱 *</label>
           <input type="text" id="videoTitle" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="輸入電影名稱">
@@ -65,65 +67,103 @@
           <span class="w-2 h-6 bg-indigo-600 rounded-full inline-block"></span> 第一部分：觀影前熱身
         </h2>
         
-        <div class="space-y-3">
-          <label class="block text-sm font-semibold text-slate-700">1. 看到這個影片標題或簡介，你覺得這部片最想探討的是什麼？你對這個主題原本有什麼既定印象？</label>
-          <textarea id="q1" rows="3" required class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="請寫下你的預測與既有認知..."></textarea>
+        <div class="space-y-2">
+          <div class="flex justify-between items-start gap-2">
+            <label class="block text-sm font-semibold text-slate-700 leading-snug">
+              1. 看到這個影片標題或簡介，你覺得這部片最想探討的是什麼？你對這個主題原本有什麼既定印象？ <span class="text-rose-500 font-bold">* (限 100 字以上)</span>
+            </label>
+            <span id="badge-q1" class="word-badge needed shrink-0">0 / 100 字</span>
+          </div>
+          <textarea id="q1" rows="4" required data-min="100" class="min-limit-input w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="請詳細寫下你的預測與既有認知（需滿 100 字）..."></textarea>
         </div>
       </div>
 
       <!-- 第二部分：觀影中捕捉 -->
-      <div class="space-y-4">
+      <div class="space-y-6">
         <h2 class="text-lg font-bold text-indigo-900 border-b pb-2 flex items-center gap-2">
           <span class="w-2 h-6 bg-indigo-600 rounded-full inline-block"></span> 第二部分：觀影中捕捉
         </h2>
         
-        <div class="space-y-3">
-          <label class="block text-sm font-semibold text-slate-700">2. 核心衝突：影片中的主角遇到了什麼主要危機、威脅或挑戰？他是怎麼應對的？</label>
-          <textarea id="q2" rows="3" required class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="描述主角面臨的困境與應對方式..."></textarea>
+        <div class="space-y-2">
+          <div class="flex justify-between items-start gap-2">
+            <label class="block text-sm font-semibold text-slate-700 leading-snug">
+              2. 核心衝突：影片中的主角遇到了什麼主要危機、威脅或挑戰？他是怎麼應對的？ <span class="text-rose-500 font-bold">* (限 100 字以上)</span>
+            </label>
+            <span id="badge-q2" class="word-badge needed shrink-0">0 / 100 字</span>
+          </div>
+          <textarea id="q2" rows="4" required data-min="100" class="min-limit-input w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="描述主角面臨的困境與應對方式（需滿 100 字）..."></textarea>
         </div>
 
-        <div class="space-y-3">
-          <label class="block text-sm font-semibold text-slate-700">3. 印象最深刻的一幕：請寫下對你視覺或心理衝擊最大的一個畫面（或轉折點），並說明原因：</label>
-          <textarea id="q3" rows="3" required class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="畫面描述與觸動原因..."></textarea>
+        <div class="space-y-2">
+          <div class="flex justify-between items-start gap-2">
+            <label class="block text-sm font-semibold text-slate-700 leading-snug">
+              3. 印象最深刻的一幕：請寫下對你視覺或心理衝擊最大的一個畫面（或轉折點），並說明原因： <span class="text-rose-500 font-bold">* (限 100 字以上)</span>
+            </label>
+            <span id="badge-q3" class="word-badge needed shrink-0">0 / 100 字</span>
+          </div>
+          <textarea id="q3" rows="4" required data-min="100" class="min-limit-input w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="畫面描寫與心靈震撼原因（需滿 100 字）..."></textarea>
         </div>
       </div>
 
       <!-- 第三部分：深度思考與對話 -->
-      <div class="space-y-4">
+      <div class="space-y-6">
         <h2 class="text-lg font-bold text-indigo-900 border-b pb-2 flex items-center gap-2">
           <span class="w-2 h-6 bg-indigo-600 rounded-full inline-block"></span> 第三部分：深度思考與對話
         </h2>
         
-        <div class="space-y-3">
-          <label class="block text-sm font-semibold text-slate-700">4. 觀點碰撞：影片中是否有哪個情節、科學設定或角色價值觀讓你感到震撼、認同或質疑？為什麼？</label>
-          <textarea id="q4" rows="3" required class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="寫下你的贊同或批判觀點..."></textarea>
+        <div class="space-y-2">
+          <div class="flex justify-between items-start gap-2">
+            <label class="block text-sm font-semibold text-slate-700 leading-snug">
+              4. 觀點碰撞：影片中是否有哪個情節、科學設定或角色價值觀讓你感到震撼、認同或質疑？為什麼？ <span class="text-rose-500 font-bold">* (限 100 字以上)</span>
+            </label>
+            <span id="badge-q4" class="word-badge needed shrink-0">0 / 100 字</span>
+          </div>
+          <textarea id="q4" rows="4" required data-min="100" class="min-limit-input w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="提出你的贊同觀點或批判思考（需滿 100 字）..."></textarea>
         </div>
 
-        <div class="space-y-3">
-          <label class="block text-sm font-semibold text-slate-700">5. 角色抉擇：如果今天換作是你處在主角面臨絕境的位子，你會做出一樣的選擇嗎？你會怎麼做？</label>
-          <textarea id="q5" rows="3" required class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="假如是你，你會採取什麼不同的行動？"></textarea>
+        <div class="space-y-2">
+          <div class="flex justify-between items-start gap-2">
+            <label class="block text-sm font-semibold text-slate-700 leading-snug">
+              5. 角色抉擇：如果今天換作是你處在主角面臨絕境的位子，你會做出一樣的選擇嗎？你會怎麼做？ <span class="text-rose-500 font-bold">* (限 100 字以上)</span>
+            </label>
+            <span id="badge-q5" class="word-badge needed shrink-0">0 / 100 字</span>
+          </div>
+          <textarea id="q5" rows="4" required data-min="100" class="min-limit-input w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="假如是你，你會做出什麼不同的行動與原因（需滿 100 字）..."></textarea>
         </div>
       </div>
 
       <!-- 第四部分：行動與反思 -->
-      <div class="space-y-4">
+      <div class="space-y-6">
         <h2 class="text-lg font-bold text-indigo-900 border-b pb-2 flex items-center gap-2">
           <span class="w-2 h-6 bg-indigo-600 rounded-full inline-block"></span> 第四部分：行動與反思
         </h2>
         
-        <div class="space-y-3">
-          <label class="block text-sm font-semibold text-slate-700">6. 金句摘錄：請抄下一句電影中最觸動你心弦或最具哲理的一句台詞（或自己寫一句總結）：</label>
+        <!-- 第 6 題維持台詞佳句（不限百字） -->
+        <div class="space-y-2">
+          <label class="block text-sm font-semibold text-slate-700">
+            6. 金句摘錄：請抄下一句電影中最觸動你心弦或最具哲理的一句台詞（或自己寫一句總結）： <span class="text-rose-500 font-bold">*</span>
+          </label>
           <input type="text" id="q6" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="「觸動人心的電影台詞...」">
         </div>
 
-        <div class="space-y-3">
-          <label class="block text-sm font-semibold text-slate-700">7. 生活連結：這部片對現實社會或未來的我們有什麼警示與啟發？</label>
-          <textarea id="q7" rows="3" required class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="對現實世界或未來的省思..."></textarea>
+        <div class="space-y-2">
+          <div class="flex justify-between items-start gap-2">
+            <label class="block text-sm font-semibold text-slate-700 leading-snug">
+              7. 生活連結：這部片所探討的世界觀或危機，對現實社會或未來的我們有什麼警示與啟發？ <span class="text-rose-500 font-bold">* (限 100 字以上)</span>
+            </label>
+            <span id="badge-q7" class="word-badge needed shrink-0">0 / 100 字</span>
+          </div>
+          <textarea id="q7" rows="4" required data-min="100" class="min-limit-input w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="對現實世界或未來的省思與啟示（需滿 100 字）..."></textarea>
         </div>
 
-        <div class="space-y-3">
-          <label class="block text-sm font-semibold text-slate-700">8. 我的下一步：看完這部電影後，你對於相關議題、人性或是自己的人生，有什麼想進一步了解或改變的事嗎？</label>
-          <textarea id="q8" rows="3" required class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="具體想嘗試的行動或探索..."></textarea>
+        <div class="space-y-2">
+          <div class="flex justify-between items-start gap-2">
+            <label class="block text-sm font-semibold text-slate-700 leading-snug">
+              8. 我的下一步：看完這部電影後，你對於相關議題、人性或是自己的人生，有什麼想進一步了解或改變的事嗎？ <span class="text-rose-500 font-bold">* (限 100 字以上)</span>
+            </label>
+            <span id="badge-q8" class="word-badge needed shrink-0">0 / 100 字</span>
+          </div>
+          <textarea id="q8" rows="4" required data-min="100" class="min-limit-input w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="具體想嘗試的探索、思考或生活行動（需滿 100 字）..."></textarea>
         </div>
       </div>
 
@@ -143,16 +183,50 @@
     </form>
   </div>
 
-  <!-- JavaScript 邏輯與串接 -->
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzdEfYKr78Kw6aokCfmPjjv3dPKOTEtI_Yj3HxkW3gVP9fE4vwHvNCyg7wlZm0lAN1lbQ/exec";
 
     // 自動帶入今天日期
     document.getElementById('watchDate').valueAsDate = new Date();
 
+    // 需限定 100 字的題目清單 (q1, q2, q3, q4, q5, q7, q8)
+    const monitoredFields = ['q1', 'q2', 'q3', 'q4', 'q5', 'q7', 'q8'];
+
+    // 即時字數統計監聽
+    monitoredFields.forEach(id => {
+      const field = document.getElementById(id);
+      const badge = document.getElementById(`badge-${id}`);
+      
+      field.addEventListener('input', function() {
+        const len = this.value.trim().length;
+        if (len >= 100) {
+          badge.textContent = `✓ 已達標 (${len} 字)`;
+          badge.className = "word-badge ok shrink-0";
+          this.classList.remove('border-rose-400');
+          this.classList.add('border-emerald-400');
+        } else {
+          badge.textContent = `${len} / 100 字`;
+          badge.className = "word-badge needed shrink-0";
+          this.classList.remove('border-emerald-400');
+        }
+      });
+    });
+
     // 提交表單事件
     document.getElementById('worksheetForm').addEventListener('submit', function(e) {
       e.preventDefault();
+
+      // 檢查所有指定題目的字數是否達標 (>= 100)
+      for (let id of monitoredFields) {
+        const field = document.getElementById(id);
+        const len = field.value.trim().length;
+        if (len < 100) {
+          alert(`⚠️ 第 ${id.replace('q', '')} 題未滿 100 字（目前僅 ${len} 字），請再補充思考心得後再繳交！`);
+          field.focus();
+          field.classList.add('border-rose-500', 'ring-2', 'ring-rose-200');
+          return;
+        }
+      }
       
       const submitBtn = document.getElementById('submitBtn');
       const statusMsg = document.getElementById('statusMsg');
@@ -162,7 +236,6 @@
       statusMsg.textContent = "正在將作答資料寫入後台試算表，請稍候...";
       statusMsg.className = "text-sm font-medium text-indigo-600";
 
-      // 蒐集所有欄位資料
       const formData = {
         studentClass: document.getElementById('studentClass').value,
         studentId: document.getElementById('studentId').value,
@@ -179,17 +252,14 @@
         q8: document.getElementById('q8').value
       };
 
-      // 透過 fetch 發送 POST 請求至 Google Apps Script
       fetch(SCRIPT_URL, {
         method: 'POST',
         mode: 'no-cors',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       })
       .then(() => {
-        statusMsg.textContent = "🎉 作業繳交成功！資料已自動收錄至老師的試算表後台。";
+        statusMsg.textContent = "🎉 作業繳交成功！資料已即時寫入試算表。";
         statusMsg.className = "text-sm font-bold text-emerald-600";
         submitBtn.textContent = "已成功繳交";
         submitBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700', 'shadow-indigo-200');
@@ -197,7 +267,7 @@
       })
       .catch((error) => {
         console.error('Error:', error);
-        statusMsg.textContent = "❌ 傳送失敗，請檢查網路連線或聯絡老師。";
+        statusMsg.textContent = "❌ 傳送失敗，請檢查網路連線。";
         statusMsg.className = "text-sm font-bold text-rose-600";
         submitBtn.disabled = false;
         submitBtn.textContent = "🚀 重新傳送繳交";
