@@ -1,335 +1,234 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎬 數位影片欣賞學習單</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts Inter & Noto Sans TC -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-    <!-- html2canvas for image export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
-        body {
-            font-family: 'Noto Sans TC', sans-serif;
-        }
-        /* 自訂美觀捲軸 */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>影音思維探索：影片欣賞數位學習單</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- html2canvas for export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+    body { font-family: 'Noto Sans TC', sans-serif; }
+  </style>
 </head>
-<body class="bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/40 min-h-screen text-slate-800 antialiased py-8 px-4 sm:px-6">
+<body class="bg-slate-50 text-slate-800 antialiased py-8 px-4 sm:px-6">
 
-    <!-- 主容器 -->
-    <div class="max-w-3xl mx-auto">
-        
-        <!-- 頂部標題卡片 -->
-        <header class="bg-white/80 backdrop-blur-md rounded-3xl shadow-xl shadow-indigo-100/50 p-6 sm:p-8 mb-6 border border-white">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700 mb-2">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                        互動式學習單
-                    </span>
-                    <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">影片欣賞深度探索</h1>
-                    <p class="text-sm text-slate-500 mt-1">用心感受影像，記錄你的獨立思考與思辨收穫。</p>
-                </div>
-                <!-- 狀態指示器 -->
-                <div id="saveStatus" class="flex items-center gap-2 text-xs font-medium text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    已自動儲存草稿
-                </div>
-            </div>
-        </header>
-
-        <!-- 學習單主表單 (這塊會被 html2canvas 截圖) -->
-        <main id="worksheetContent" class="bg-white rounded-3xl shadow-xl shadow-slate-100 p-6 sm:p-10 space-y-8 border border-slate-100 relative overflow-hidden">
-            
-            <!-- 裝飾背景漸層邊條 -->
-            <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
-
-            <!-- 學生基本資料 -->
-            <section class="space-y-4 pt-2">
-                <div class="flex items-center gap-2 text-indigo-600 font-bold text-lg border-b border-slate-100 pb-3">
-                    <span class="flex items-center justify-center w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 text-sm">00</span>
-                    <h2>基本資料</h2>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">班級</label>
-                        <input type="text" id="className" placeholder="例如：高中二年級 A 班" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-slate-50/50 transition">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">姓名</label>
-                        <input type="text" id="studentName" placeholder="請輸入你的姓名" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-slate-50/50 transition">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">座號</label>
-                        <input type="text" id="studentId" placeholder="例如：15" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-slate-50/50 transition">
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-                    <div class="sm:col-span-2">
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">影片名稱</label>
-                        <input type="text" id="videoTitle" placeholder="請輸入影片全名" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-slate-50/50 transition">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">影片類型</label>
-                        <select id="videoType" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-slate-50/50 transition">
-                            <option value="">請選擇類型</option>
-                            <option value="劇情片">劇情片</option>
-                            <option value="紀錄片">紀錄片</option>
-                            <option value="動畫片">動畫片</option>
-                            <option value="TED 演說">TED 演說</option>
-                            <option value="短片/廣告">短片 / 廣告</option>
-                            <option value="其他">其他</option>
-                        </select>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 第一部分：觀影前熱身 -->
-            <section class="space-y-4">
-                <div class="flex items-center gap-2 text-indigo-600 font-bold text-lg border-b border-slate-100 pb-3">
-                    <span class="flex items-center justify-center w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 text-sm">01</span>
-                    <h2>觀影前熱身 (Before Watching)</h2>
-                </div>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">1. 看到這個影片標題或簡介，你覺得這部片最想探討的核心主題是什麼？預測看看：</label>
-                        <textarea id="q1" rows="3" placeholder="寫下你的預測..." class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-slate-50/50 transition"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">2. 在看這部片之前，你對這個主題原本就有什麼了解或既定印象嗎？</label>
-                        <textarea id="q2" rows="3" placeholder="寫下你既有的經驗或想法..." class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-slate-50/50 transition"></textarea>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 第二部分：觀影中捕捉 -->
-            <section class="space-y-4">
-                <div class="flex items-center gap-2 text-indigo-600 font-bold text-lg border-b border-slate-100 pb-3">
-                    <span class="flex items-center justify-center w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 text-sm">02</span>
-                    <h2>觀影中捕捉 (While Watching)</h2>
-                </div>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">3. 核心衝突：主角（或講者）在片中面臨了什麼最大的挑戰或難題？他是如何應對的？</label>
-                        <textarea id="q3" rows="3" placeholder="描述核心衝突與主角的應對方式..." class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-slate-50/50 transition"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">4. 印象最深刻的一幕：哪一個畫面、台詞或情節對你的衝擊最大？請描述並說明原因：</label>
-                        <textarea id="q4" rows="3" placeholder="畫面描述與觸動原因..." class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-slate-50/50 transition"></textarea>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 第三部分：深度思考與對話 -->
-            <section class="space-y-4">
-                <div class="flex items-center gap-2 text-indigo-600 font-bold text-lg border-b border-slate-100 pb-3">
-                    <span class="flex items-center justify-center w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 text-sm">03</span>
-                    <h2>深度思考與對話 (Critical Thinking)</h2>
-                </div>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">5. 觀點碰撞：片中有哪個觀點是你最認同，或是感到最意外/不認同的？為什麼？</label>
-                        <textarea id="q5" rows="3" placeholder="寫下你的思辨與分析..." class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-slate-50/50 transition"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">6. 角色抉擇：如果今天換作是你處在主角的處境，你會做出一樣的選擇嗎？你會怎麼做？</label>
-                        <textarea id="q6" rows="3" placeholder="同理心思考與另類選擇..." class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-slate-50/50 transition"></textarea>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 第四部分：行動與反思 -->
-            <section class="space-y-4">
-                <div class="flex items-center gap-2 text-indigo-600 font-bold text-lg border-b border-slate-100 pb-3">
-                    <span class="flex items-center justify-center w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 text-sm">04</span>
-                    <h2>行動與反思 (Reflection & Action)</h2>
-                </div>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">7. 金句摘錄：請抄下一句影片中最觸動你心弦的話（或自己寫一句總結）：</label>
-                        <div class="relative">
-                            <span class="absolute left-3 top-3 text-slate-400 font-serif text-xl">“</span>
-                            <input type="text" id="q7" placeholder="輸入金句或一句話心得..." class="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-slate-50/50 transition font-medium italic">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">8. 生活連結：看完這部影片後，它如何改變了你看待某個人事物或社會議題的眼光？</label>
-                        <textarea id="q8" rows="3" placeholder="個人領悟與世界觀連結..." class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-slate-50/50 transition"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">9. 我的下一步：接下來的這週或這陣子，你可以在生活中實踐的一個小改變或行動是什麼？</label>
-                        <textarea id="q9" rows="3" placeholder="具體的行動方案..." class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-slate-50/50 transition"></textarea>
-                    </div>
-                </div>
-            </section>
-
-        </main>
-
-        <!-- 底部互動按鈕操作列 -->
-        <footer class="mt-6 bg-white/80 backdrop-blur-md rounded-3xl shadow-xl shadow-indigo-100/50 p-6 border border-white flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="text-xs text-slate-500 text-center sm:text-left">
-                💡 填寫完畢後，您可以直接複製內容或匯出成圖片繳交。
-            </div>
-            <div class="flex items-center gap-3 w-full sm:w-auto">
-                <button onclick="copyContent()" class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm transition shadow-sm active:scale-95">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
-                    一鍵複製內容
-                </button>
-                <button onclick="exportImage()" id="exportBtn" class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold text-sm transition shadow-lg shadow-indigo-200 active:scale-95">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                    匯出成圖片
-                </button>
-            </div>
-        </footer>
-
+  <div class="max-w-3xl mx-auto bg-white shadow-xl rounded-2xl overflow-hidden border border-slate-100">
+    
+    <!-- 頂部標題區 -->
+    <div class="bg-gradient-to-r from-indigo-600 to-blue-600 px-6 py-8 text-white text-center">
+      <span class="inline-block bg-white/20 text-xs font-semibold px-3 py-1 rounded-full mb-2 tracking-wide">🎬 互動學習單</span>
+      <h1 class="text-2xl sm:text-3xl font-bold">影音思維探索學習單</h1>
+      <p class="text-indigo-100 text-sm mt-2">請帶著思考觀賞影片，認真記錄你的觀點與收穫</p>
     </div>
 
-    <!-- 自訂美觀訊息提示框 (取代 alert) -->
-    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
-        <div id="toastContent" class="flex items-center gap-3 px-5 py-3 rounded-2xl shadow-xl bg-slate-900 text-white text-sm font-medium border border-slate-700">
-            <span id="toastIcon">✨</span>
-            <span id="toastText">訊息提示</span>
+    <!-- 表單本體 -->
+    <form id="worksheetForm" class="p-6 sm:p-10 space-y-8">
+      
+      <!-- 基本資料 -->
+      <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">學生姓名 *</label>
+          <input type="text" id="studentName" required class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="請輸入姓名">
         </div>
-    </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">學號 / 班級 *</label>
+          <input type="text" id="studentId" required class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="例：3年2班 05號">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">觀看日期 *</label>
+          <input type="date" id="watchDate" required class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        </div>
+      </div>
 
-    <!-- JavaScript 互動與匯出邏輯 -->
-    <script>
-        // 欄位自動儲存至 LocalStorage
-        const fields = ['className', 'studentName', 'studentId', 'videoTitle', 'videoType', 'q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8', 'q9'];
+      <!-- 影片基本資料 -->
+      <div class="space-y-4">
+        <h2 class="text-lg font-bold text-indigo-900 border-b pb-2 flex items-center gap-2">
+          <span class="w-2 h-6 bg-indigo-600 rounded-full inline-block"></span> 影片基本資料
+        </h2>
         
-        window.addEventListener('DOMContentLoaded', () => {
-            fields.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    const saved = localStorage.getItem('worksheet_' + id);
-                    if (saved) el.value = saved;
-                    el.addEventListener('input', () => {
-                        localStorage.setItem('worksheet_' + id, el.value);
-                        showSaveStatus();
-                    });
-                }
-            });
-        });
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1">影片名稱 *</label>
+            <input type="text" id="videoTitle" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="輸入影片或短片名稱">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1">影片類型/主題</label>
+            <select id="videoType" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+              <option value="紀錄片">紀錄片</option>
+              <option value="劇情片">劇情片</option>
+              <option value="動畫短片">動畫短片</option>
+              <option value="TED 演說">TED 演說</option>
+              <option value="商業廣告/宣導片">商業廣告/宣導片</option>
+              <option value="其他">其他</option>
+            </select>
+          </div>
+        </div>
+      </div>
 
-        function showSaveStatus() {
-            const status = document.getElementById('saveStatus');
-            status.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> 正在儲存...`;
-            setTimeout(() => {
-                status.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span> 已自動儲存草稿`;
-            }, 600);
-        }
+      <!-- 第一部分：觀影前熱身 -->
+      <div class="space-y-4">
+        <h2 class="text-lg font-bold text-indigo-900 border-b pb-2 flex items-center gap-2">
+          <span class="w-2 h-6 bg-indigo-600 rounded-full inline-block"></span> 第一部分：觀影前熱身
+        </h2>
+        
+        <div class="space-y-3">
+          <label class="block text-sm font-semibold text-slate-700">1. 看到這個影片標題或簡介，你覺得這部片最想探討的是什麼？你對這個主題原本有什麼既定印象？</label>
+          <textarea id="q1" rows="3" required class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="請寫下你的預測與既有認知..."></textarea>
+        </div>
+      </div>
 
-        // 顯示自訂訊息框
-        function showToast(text, type = 'success') {
-            const toast = document.getElementById('toast');
-            const textEl = document.getElementById('toastText');
-            const iconEl = document.getElementById('toastIcon');
-            
-            textEl.textContent = text;
-            iconEl.textContent = type === 'success' ? '✅' : '📌';
-            
-            toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
-            setTimeout(() => {
-                toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
-            }, 3000);
-        }
+      <!-- 第二部分：觀影中捕捉 -->
+      <div class="space-y-4">
+        <h2 class="text-lg font-bold text-indigo-900 border-b pb-2 flex items-center gap-2">
+          <span class="w-2 h-6 bg-indigo-600 rounded-full inline-block"></span> 第二部分：觀影中捕捉
+        </h2>
+        
+        <div class="space-y-3">
+          <label class="block text-sm font-semibold text-slate-700">2. 核心衝突：影片中的主角（或講者）遇到了什麼主要問題或挑戰？他是怎麼面對的？</label>
+          <textarea id="q2" rows="3" required class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="描述主角面臨的困境與應對方式..."></textarea>
+        </div>
 
-        // 整理文字內容
-        function getFormattedText() {
-            return `【影片欣賞學習單】\n` +
-                   `-----------------------------------\n` +
-                   `班級：${document.getElementById('className').value || '未填寫'}\n` +
-                   `姓名：${document.getElementById('studentName').value || '未填寫'}\n` +
-                   `座號：${document.getElementById('studentId').value || '未填寫'}\n` +
-                   `影片名稱：${document.getElementById('videoTitle').value || '未填寫'}\n` +
-                   `影片類型：${document.getElementById('videoType').value || '未填寫'}\n` +
-                   `-----------------------------------\n\n` +
-                   `【一、觀影前熱身】\n` +
-                   `1. 核心主題預測：\n${document.getElementById('q1').value || '（未填寫）'}\n\n` +
-                   `2. 既有認知/印象：\n${document.getElementById('q2').value || '（未填寫）'}\n\n` +
-                   `【二、觀影中捕捉】\n` +
-                   `3. 核心衝突與應對：\n${document.getElementById('q3').value || '（未填寫）'}\n\n` +
-                   `4. 印象最深刻的一幕：\n${document.getElementById('q4').value || '（未填寫）'}\n\n` +
-                   `【三、深度思考與對話】\n` +
-                   `5. 觀點碰撞：\n${document.getElementById('q5').value || '（未填寫）'}\n\n` +
-                   `6. 角色抉擇：\n${document.getElementById('q6').value || '（未填寫）'}\n\n` +
-                   `【四、行動與反思】\n` +
-                   `7. 金句摘錄：\n「${document.getElementById('q7').value || '（未填寫）'}」\n\n` +
-                   `8. 生活連結：\n${document.getElementById('q8').value || '（未填寫）'}\n\n` +
-                   `9. 我的下一步行動：\n${document.getElementById('q9').value || '（未填寫）'}`;
-        }
+        <div class="space-y-3">
+          <label class="block text-sm font-semibold text-slate-700">3. 印象最深刻的一幕：請寫下對你視覺或心理衝擊最大的一個畫面，並說明原因：</label>
+          <textarea id="q3" rows="3" required class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="畫面描述與觸動原因..."></textarea>
+        </div>
+      </div>
 
-        // 一鍵複製內容 (使用相容性較佳的 execCommand)
-        function copyContent() {
-            const text = getFormattedText();
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            textarea.style.position = 'fixed';  // 避免頁面滾動
-            document.body.appendChild(textarea);
-            textarea.focus();
-            textarea.select();
-            
-            try {
-                const successful = document.execCommand('copy');
-                if (successful) {
-                    showToast('已成功複製完整學習單內容！');
-                } else {
-                    showToast('複製失敗，請手動複製', 'error');
-                }
-            } catch (err) {
-                showToast('瀏覽器不支援自動複製', 'error');
-            }
-            document.body.removeChild(textarea);
-        }
+      <!-- 第三部分：深度思考與對話 -->
+      <div class="space-y-4">
+        <h2 class="text-lg font-bold text-indigo-900 border-b pb-2 flex items-center gap-2">
+          <span class="w-2 h-6 bg-indigo-600 rounded-full inline-block"></span> 第三部分：深度思考與對話
+        </h2>
+        
+        <div class="space-y-3">
+          <label class="block text-sm font-semibold text-slate-700">4. 觀點碰撞：影片中是否有哪個觀點是你最認同或最不認同的？為什麼？</label>
+          <textarea id="q4" rows="3" required class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="寫下你的贊同或批判觀點..."></textarea>
+        </div>
 
-        // 匯出成圖片 (html2canvas)
-        function exportImage() {
-            const btn = document.getElementById('exportBtn');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> 產生圖片中...`;
-            btn.disabled = true;
+        <div class="space-y-3">
+          <label class="block text-sm font-semibold text-slate-700">5. 角色抉擇：如果今天換作是你處在主角的位子，你會做出一樣的選擇嗎？你會怎麼做？</label>
+          <textarea id="q5" rows="3" required class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="假如是你，你會採取什麼不同的行動？"></textarea>
+        </div>
+      </div>
 
-            const element = document.getElementById('worksheetContent');
-            
-            html2canvas(element, {
-                scale: 2, // 提高圖片解析度
-                useCORS: true,
-                backgroundColor: '#ffffff'
-            }).then(canvas => {
-                const link = document.createElement('a');
-                const studentName = document.getElementById('studentName').value || '學生';
-                const videoTitle = document.getElementById('videoTitle').value || '影片欣賞';
-                link.download = `${studentName}_${videoTitle}_學習單.png`;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-                
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-                showToast('圖片已成功下載！');
-            }).catch(err => {
-                console.error(err);
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-                showToast('圖片產生失敗，請再試一次', 'error');
-            });
-        }
-    </script>
+      <!-- 第四部分：行動與反思 -->
+      <div class="space-y-4">
+        <h2 class="text-lg font-bold text-indigo-900 border-b pb-2 flex items-center gap-2">
+          <span class="w-2 h-6 bg-indigo-600 rounded-full inline-block"></span> 第四部分：行動與反思
+        </h2>
+        
+        <div class="space-y-3">
+          <label class="block text-sm font-semibold text-slate-700">6. 金句摘錄：請抄下一句影片中最觸動你心弦的話（或自己寫一句總結）：</label>
+          <input type="text" id="q6" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="「觸動人心的話語...」">
+        </div>
 
+        <div class="space-y-3">
+          <label class="block text-sm font-semibold text-slate-700">7. 生活連結：看完這部影片後，它如何改變了你看待某件事的眼光或態度？</label>
+          <textarea id="q7" rows="3" required class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="對個人或日常生活的啟發..."></textarea>
+        </div>
+
+        <div class="space-y-3">
+          <label class="block text-sm font-semibold text-slate-700">8. 我的下一步：接下來的這週，你可以在生活中實踐的一個小改變或行動是什麼？</label>
+          <textarea id="q8" rows="3" required class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="具體想嘗試的行動..."></textarea>
+        </div>
+      </div>
+
+      <!-- 提交按鈕區 -->
+      <div class="pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p id="statusMsg" class="text-sm font-medium text-slate-500"></p>
+        <div class="flex items-center gap-3 w-full sm:w-auto">
+          <button type="button" id="exportBtn" class="w-full sm:w-auto px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm transition-all text-center">
+            📸 截圖儲存
+          </button>
+          <button type="submit" id="submitBtn" class="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm shadow-lg shadow-indigo-200 transition-all text-center">
+            🚀 傳送繳交作業
+          </button>
+        </div>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- JavaScript 邏輯與串接 -->
+  <script>
+    // ⚠️ 請將下方引號中的網址替換為你的 Google Apps Script 網頁應用程式網址
+    const SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE";
+
+    // 自動帶入今天日期
+    document.getElementById('watchDate').valueAsDate = new Date();
+
+    // 提交表單事件
+    document.getElementById('worksheetForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const submitBtn = document.getElementById('submitBtn');
+      const statusMsg = document.getElementById('statusMsg');
+      
+      submitBtn.disabled = true;
+      submitBtn.textContent = "傳送中...";
+      statusMsg.textContent = "正在將作答資料寫入後台試算表，請稍候...";
+      statusMsg.className = "text-sm font-medium text-indigo-600";
+
+      // 蒐集所有欄位資料
+      const formData = {
+        studentName: document.getElementById('studentName').value,
+        studentId: document.getElementById('studentId').value,
+        watchDate: document.getElementById('watchDate').value,
+        videoTitle: document.getElementById('videoTitle').value,
+        videoType: document.getElementById('videoType').value,
+        q1: document.getElementById('q1').value,
+        q2: document.getElementById('q2').value,
+        q3: document.getElementById('q3').value,
+        q4: document.getElementById('q4').value,
+        q5: document.getElementById('q5').value,
+        q6: document.getElementById('q6').value,
+        q7: document.getElementById('q7').value,
+        q8: document.getElementById('q8').value
+      };
+
+      // 透過 fetch 發送 POST 請求至 Google Apps Script
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors', // Google Apps Script 跨域標準設定
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      })
+      .then(() => {
+        statusMsg.textContent = "🎉 作業繳交成功！資料已自動收錄至老師的試算表後台。";
+        statusMsg.className = "text-sm font-bold text-emerald-600";
+        submitBtn.textContent = "已成功繳交";
+        submitBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700', 'shadow-indigo-200');
+        submitBtn.classList.add('bg-emerald-600', 'cursor-not-allowed');
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        statusMsg.textContent = "❌ 傳送失敗，請檢查網路連線或聯絡老師。";
+        statusMsg.className = "text-sm font-bold text-rose-600";
+        submitBtn.disabled = false;
+        submitBtn.textContent = "🚀 重新傳送繳交";
+      });
+    });
+
+    // 截圖功能
+    document.getElementById('exportBtn').addEventListener('click', function() {
+      const statusMsg = document.getElementById('statusMsg');
+      statusMsg.textContent = "正在產生學習單截圖，請稍候...";
+      statusMsg.className = "text-sm font-medium text-indigo-600";
+      
+      html2canvas(document.querySelector('.max-w-3xl'), { scale: 2 }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `${document.getElementById('studentName').value || '學生'}_影片學習單.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        statusMsg.textContent = "📸 截圖已成功下載到您的裝置！";
+        statusMsg.className = "text-sm font-bold text-emerald-600";
+      });
+    });
+  </script>
 </body>
 </html>
