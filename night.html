@@ -1,794 +1,1613 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TPE 桃園國際機場 — 真實衛星 GIS 與多模型 (.glb) 實景引擎</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-<style>
-  :root {
-    --bg-panel: rgba(9, 13, 22, 0.9);
-    --border-glow: rgba(56, 189, 248, 0.4);
-    --accent: #38bdf8;
-    --accent-gold: #fbbf24;
-    --accent-green: #10b981;
-    --text-main: #f8fafc;
-    --text-sub: #94a3b8;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-  body, html {
-    width: 100%; height: 100%; overflow: hidden;
-    font-family: 'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
-    background: #05080f; color: var(--text-main);
-  }
-  #canvas-container { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
-  #labels-container { position: absolute; inset: 0; pointer-events: none; z-index: 5; overflow: hidden; }
-
-  .top-hud {
-    position: absolute; top: 10px; left: 12px; right: 12px; z-index: 10;
-    display: flex; align-items: center; justify-content: space-between;
-    background: var(--bg-panel); backdrop-filter: blur(16px);
-    border: 1px solid var(--border-glow); border-radius: 10px;
-    padding: 8px 14px; box-shadow: 0 12px 32px rgba(0,0,0,0.75);
-    flex-wrap: wrap; gap: 8px;
-  }
-  .brand-box { display: flex; align-items: center; gap: 10px; }
-  .airport-code {
-    background: #0f172a; border: 1px solid #38bdf8;
-    color: #38bdf8; font-weight: 900; font-size: 14px;
-    padding: 6px 10px; border-radius: 6px;
-  }
-  .brand-title h1 { font-size: 14px; font-weight: 800; color: #fff; }
-  .brand-title p { font-size: 11px; color: #94a3b8; margin-top: 1px; }
-
-  .top-controls { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-  .btn {
-    background: rgba(30, 41, 59, 0.92); color: var(--text-main);
-    border: 1px solid rgba(148, 163, 184, 0.38);
-    padding: 6px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 600;
-    cursor: pointer; transition: all 0.16s; display: inline-flex; align-items: center; gap: 4px;
-  }
-  .btn:hover { background: rgba(56, 189, 248, 0.22); border-color: var(--accent); }
-  .btn.gold { background: #b45309; border-color: #fbbf24; color: #fff; }
-  .btn.green { background: #047857; border-color: #34d399; color: #fff; }
-  .btn.blue { background: #0284c7; border-color: #7dd3fc; color: #fff; }
-  .btn-xs { padding: 4px 8px; font-size: 10.5px; border-radius: 5px; }
-
-  .left-dock {
-    position: absolute; top: 70px; left: 12px; bottom: 58px; width: 325px; z-index: 10;
-    display: flex; flex-direction: column; gap: 8px; pointer-events: none;
-  }
-  .right-dock {
-    position: absolute; top: 70px; right: 12px; bottom: 58px; width: 365px; z-index: 10;
-    display: flex; flex-direction: column; gap: 8px; pointer-events: none;
-  }
-  .panel {
-    background: var(--bg-panel); backdrop-filter: blur(16px);
-    border: 1px solid var(--border-glow); border-radius: 10px;
-    padding: 10px 12px; pointer-events: auto; display: flex; flex-direction: column;
-    box-shadow: 0 10px 28px rgba(0,0,0,0.65);
-  }
-  .panel-header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding-bottom: 6px; margin-bottom: 8px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-  }
-  .panel-title { font-size: 12.5px; font-weight: 700; color: var(--accent); }
-
-  .fids-list { overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 7px; padding-right: 4px; }
-  .fids-card {
-    background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255,255,255,0.1);
-    border-left: 4px solid var(--accent); border-radius: 7px; padding: 8px 10px;
-    cursor: pointer; transition: all 0.15s;
-  }
-  .fids-card.selected { background: rgba(14, 116, 144, 0.35); border-color: #38bdf8; }
-  .fids-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
-  .flight-no { font-weight: 800; font-size: 12.5px; color: #fff; display: flex; align-items: center; gap: 5px; }
-  .airline-tag { font-size: 10px; padding: 1px 6px; border-radius: 3px; font-weight: 800; }
-  .status-badge {
-    font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px;
-    background: rgba(56, 189, 248, 0.18); color: #7dd3fc;
-  }
-  .fids-sub { font-size: 11px; color: var(--text-sub); display: flex; justify-content: space-between; margin-bottom: 5px; }
-  .progress-wrap { width: 100%; height: 5px; background: rgba(255,255,255,0.08); border-radius: 99px; overflow: hidden; }
-  .progress-bar { height: 100%; background: linear-gradient(90deg, #38bdf8, #10b981); }
-
-  .slot-card {
-    background: rgba(15, 23, 42, 0.85); border: 1px dashed rgba(148, 163, 184, 0.4);
-    border-radius: 8px; padding: 9px 10px; display: flex; flex-direction: column; gap: 5px;
-  }
-  .slot-card.loaded { border-style: solid; border-color: #10b981; background: rgba(6, 78, 59, 0.25); }
-
-  .bottom-hud {
-    position: absolute; bottom: 10px; left: 12px; right: 12px; z-index: 10;
-    display: flex; justify-content: space-between; align-items: center;
-    background: var(--bg-panel); backdrop-filter: blur(16px);
-    border: 1px solid var(--border-glow); border-radius: 10px;
-    padding: 7px 14px; gap: 10px; flex-wrap: wrap;
-  }
-  .cam-group { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
-  .atc-ticker {
-    flex: 1; font-family: 'Consolas', monospace; font-size: 11.5px;
-    color: #34d399; background: rgba(0, 0, 0, 0.65);
-    padding: 5px 10px; border-radius: 5px; border-left: 3px solid #10b981;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-
-  .aircraft-label {
-    position: absolute; transform: translate(-50%, -130%);
-    background: rgba(9, 14, 24, 0.92); color: #fff;
-    border: 1px solid rgba(56, 189, 248, 0.7); border-radius: 5px;
-    padding: 3px 8px; font-size: 11px; font-weight: 700;
-    white-space: nowrap; pointer-events: auto; cursor: pointer;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.8);
-  }
-  .gps-pin {
-    position: absolute; transform: translate(-50%, -50%);
-    background: rgba(15, 23, 42, 0.85); color: #f8fafc;
-    border: 1px solid rgba(251, 191, 36, 0.6); border-radius: 4px;
-    padding: 2px 6px; font-size: 10px; font-weight: 700;
-    white-space: nowrap; pointer-events: none;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>轉生百職物語：Q版3D無限轉生RPG</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Three.js r128 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background: linear-gradient(135deg, #fff5f7 0%, #fef3c7 50%, #e0f2fe 100%);
+      user-select: none;
+      overflow-x: hidden;
+    }
+    .cute-card {
+      background: rgba(255, 255, 255, 0.92);
+      border: 3px solid #f472b6;
+      border-radius: 20px;
+      box-shadow: 0 8px 0 #fbcfe8, 0 12px 20px rgba(0,0,0,0.06);
+    }
+    .cute-btn {
+      transition: all 0.12s ease;
+      box-shadow: 0 4px 0 rgba(0,0,0,0.18);
+    }
+    .cute-btn:active:not(:disabled) {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.18);
+    }
+    @keyframes floatUp {
+      0% { opacity: 1; transform: translateY(0) scale(0.8); }
+      30% { transform: translateY(-18px) scale(1.15); }
+      100% { opacity: 0; transform: translateY(-55px) scale(0.95); }
+    }
+    .dmg-popup {
+      position: absolute;
+      pointer-events: none;
+      animation: floatUp 0.85s ease-out forwards;
+      font-family: 'Fredoka', 'Noto Sans TC', sans-serif;
+      text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+      z-index: 30;
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #fce7f3; border-radius: 8px; }
+    ::-webkit-scrollbar-thumb { background: #f472b6; border-radius: 8px; }
+  </style>
 </head>
-<body>
+<body class="min-h-screen p-3 md:p-5 text-slate-800">
 
-<div id="canvas-container"></div>
-<div id="labels-container"></div>
-
-<!-- 隱藏的 4 組真實 .glb 檔案上傳器 -->
-<input type="file" id="glb-plane" accept=".glb,.gltf" style="display:none" onchange="uploadGLBSlot('plane', event)">
-<input type="file" id="glb-catering" accept=".glb,.gltf" style="display:none" onchange="uploadGLBSlot('catering', event)">
-<input type="file" id="glb-tug" accept=".glb,.gltf" style="display:none" onchange="uploadGLBSlot('tug', event)">
-<input type="file" id="glb-bridge" accept=".glb,.gltf" style="display:none" onchange="uploadGLBSlot('bridge', event)">
-
-<!-- 頂部資訊列 -->
-<div class="top-hud">
-  <div class="brand-box">
-    <div class="airport-code">RCTP / TPE 真實衛星</div>
-    <div class="brand-title">
-      <h1>桃園國際機場 — 100% 真實空拍圖資 ＋ 照片級 .glb 模型掛載中心</h1>
-      <p id="tile-status">正在載入桃園國際機場高解析度真實衛星航拍圖磚...</p>
-    </div>
-  </div>
-
-  <div class="top-controls">
-    <button class="btn gold" onclick="document.getElementById('glb-plane').click()">✈ 匯入真實飛機 .glb</button>
-    <button class="btn green" onclick="document.getElementById('glb-catering').click()">🚚 匯入真實空廚車 .glb</button>
-    <button class="btn blue" onclick="document.getElementById('glb-tug').click()">🚜 匯入真實後推車 .glb</button>
-    <button class="btn" onclick="spawnRealGPSFlight()">🛬 派遣航班降落 05L</button>
-  </div>
-</div>
-
-<!-- 左側航班動態 -->
-<div class="left-dock">
-  <div class="panel" style="flex:1;">
-    <div class="panel-header">
-      <div class="panel-title">📡 桃園機場真實 GPS 停機位與起降航班</div>
-      <span style="font-size:11px;color:var(--text-sub);" id="flight-count">0 架</span>
-    </div>
-    <div class="fids-list" id="fids-list"></div>
-  </div>
-</div>
-
-<!-- 右側：4 大真實 3D 模型 (.glb) 插槽管理與尺寸微調 -->
-<div class="right-dock">
-  <div class="panel" style="flex:1; gap:8px; overflow-y:auto;">
-    <div class="panel-header">
-      <div class="panel-title">📦 照片級 .glb 3D 模型插槽（可隨時替換）</div>
-    </div>
-
-    <div class="slot-card" id="slot-plane">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <b style="font-size:12px;">1. 客機模型 (A350 / B787)</b>
-        <button class="btn btn-xs gold" onclick="document.getElementById('glb-plane').click()">選擇 .glb 檔案</button>
-      </div>
-      <div style="font-size:11px;color:var(--text-sub);" id="status-plane">目前狀態：內建擬真曲面模型（上傳 .glb 後將100%替換為真實模型）</div>
-    </div>
-
-    <div class="slot-card" id="slot-catering">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <b style="font-size:12px;">2. 華膳/長榮空廚升降卡車</b>
-        <button class="btn btn-xs green" onclick="document.getElementById('glb-catering').click()">選擇 .glb 檔案</button>
-      </div>
-      <div style="font-size:11px;color:var(--text-sub);" id="status-catering">目前狀態：內建車廂模型（支援替換為真實卡車 .glb）</div>
-    </div>
-
-    <div class="slot-card" id="slot-tug">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <b style="font-size:12px;">3. 桃勤後推車 / 地勤車隊</b>
-        <button class="btn btn-xs blue" onclick="document.getElementById('glb-tug').click()">選擇 .glb 檔案</button>
-      </div>
-      <div style="font-size:11px;color:var(--text-sub);" id="status-tug">目前狀態：內建拖車模型（支援替換為真實拖車 .glb）</div>
-    </div>
-
-    <div class="slot-card" id="slot-bridge">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <b style="font-size:12px;">4. 停機坪伸縮空橋 (Jetbridge)</b>
-        <button class="btn btn-xs" onclick="document.getElementById('glb-bridge').click()">選擇 .glb 檔案</button>
-      </div>
-      <div style="font-size:11px;color:var(--text-sub);" id="status-bridge">目前狀態：對齊真實衛星圖空橋位置</div>
-    </div>
-
-    <div style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.3);padding:8px;border-radius:6px;font-size:11px;line-height:1.5;color:#cbd5e1;">
-      💡 <b>微調模型大小與方向：</b><br>
-      匯入外部 <code>.glb</code> 模型後，若想放大或旋轉模型方向，可使用下方滑桿即時調整：
-      <div style="margin-top:6px;display:flex;align-items:center;justify-content:space-between;">
-        <span>模型縮放比例：</span>
-        <input type="range" min="0.3" max="3.0" step="0.1" value="1.0" oninput="adjustCustomScale(this.value)">
-      </div>
-      <div style="margin-top:4px;display:flex;align-items:center;justify-content:space-between;">
-        <span>模型車頭/機頭旋轉：</span>
-        <input type="range" min="-3.14" max="3.14" step="0.1" value="0" oninput="adjustCustomRot(this.value)">
+  <!-- Top Header Bar -->
+  <header class="max-w-7xl mx-auto mb-4 cute-card px-5 py-3 flex flex-wrap items-center justify-between gap-3 border-pink-400">
+    <div class="flex items-center gap-3">
+      <span class="text-3xl">🌟</span>
+      <div>
+        <h1 class="text-xl md:text-2xl font-black text-pink-600 tracking-wide">轉生百職物語 <span class="text-xs bg-amber-400 text-slate-900 px-2.5 py-0.5 rounded-full align-middle font-bold">Q版3D無限轉生</span></h1>
+        <p class="text-xs text-slate-500">練滿 Lv.10 點亮職業大師刻印，繼承前世被動技，解鎖跨界隱藏複合職！</p>
       </div>
     </div>
-  </div>
-</div>
 
-<!-- 底部真實 GPS 地標鏡頭 -->
-<div class="bottom-hud">
-  <div class="cam-group">
-    <span style="font-size:11px; color:var(--text-sub); font-weight:700;">📍 真實桃機衛星鏡頭：</span>
-    <button class="btn btn-xs" onclick="focusGPS(25.0794, 121.2314, 34)">🔍 T2 Gate C2 機坪近拍</button>
-    <button class="btn btn-xs" onclick="focusGPS(25.0836, 121.2378, 34)">🔍 T1 Gate A6 機坪近拍</button>
-    <button class="btn btn-xs" onclick="focusGPS(25.0725, 121.2135, 85)">🛬 05L 北跑道頭真實座標</button>
-    <button class="btn btn-xs" onclick="focusGPS(25.0732, 121.2255, 75)">🛣 WC 滑行道橋(飛機過馬路)</button>
-    <button class="btn btn-xs" onclick="focusGPS(25.0777, 121.2325, 340)">🌐 桃園機場真實衛星全景</button>
-  </div>
-  <div class="atc-ticker" id="atc-log">
-    [RCTP Real-GIS] 地面已使用 100% 真實桃園機場衛星航拍照片！點擊上方按鈕即可載入您下載的照片級 .glb 飛機與地勤車模型。
-  </div>
-</div>
-
-<script>
-// ============================================================================
-// 1. 桃園國際機場 (RCTP) 真實 Web Mercator 衛星圖磚與經緯度座標系統
-// ============================================================================
-const ZOOM = 16;
-const CENTER_TILE_X = 54837;
-const CENTER_TILE_Y = 28054;
-const TILE_SIZE_WORLD = 120;
-
-function latLonToTileXY(lat, lon, z) {
-  const n = Math.pow(2, z);
-  const x = (lon + 180) / 360 * n;
-  const latRad = lat * Math.PI / 180;
-  const y = (1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * n;
-  return { x, y };
-}
-
-function gpsToWorld(lat, lon) {
-  const t = latLonToTileXY(lat, lon, ZOOM);
-  const wx = (t.x - (CENTER_TILE_X + 0.5)) * TILE_SIZE_WORLD;
-  const wz = (t.y - (CENTER_TILE_Y + 0.5)) * TILE_SIZE_WORLD;
-  return new THREE.Vector3(wx, 0, wz);
-}
-
-const TPE_GPS = {
-  rwy05L_start: gpsToWorld(25.0725, 121.2135),
-  rwy23R_end:   gpsToWorld(25.0912, 121.2428),
-  rwy05R_start: gpsToWorld(25.0608, 121.2248),
-  rwy23L_end:   gpsToWorld(25.0798, 121.2548),
-  gate_C2:      gpsToWorld(25.0794, 121.2314),
-  gate_C5:      gpsToWorld(25.0780, 121.2292),
-  gate_A6:      gpsToWorld(25.0836, 121.2378),
-  gate_D3:      gpsToWorld(25.0752, 121.2335),
-  wc_bridge:    gpsToWorld(25.0732, 121.2255),
-  tower:        gpsToWorld(25.0798, 121.2348)
-};
-
-const rwyVec = new THREE.Vector3().subVectors(TPE_GPS.rwy23R_end, TPE_GPS.rwy05L_start).normalize();
-const RWY_ANGLE_Y = Math.atan2(-rwyVec.z, rwyVec.x);
-
-// ============================================================================
-// 2. Three.js 場景與 Esri World Imagery 桃園機場高解析度衛星圖磚
-// ============================================================================
-const container = document.getElementById('canvas-container');
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x87a8c4);
-scene.fog = new THREE.FogExp2(0x87a8c4, 0.0004);
-
-const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.5, 4000);
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.shadowMap.enabled = true;
-renderer.outputEncoding = THREE.sRGBEncoding;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.08;
-container.appendChild(renderer.domElement);
-
-const hemiLight = new THREE.HemisphereLight(0xffffff, 0x475569, 0.9);
-scene.add(hemiLight);
-
-const sunLight = new THREE.DirectionalLight(0xfffbeb, 1.45);
-sunLight.position.set(160, 280, -120);
-sunLight.castShadow = true;
-sunLight.shadow.mapSize.width = 2048;
-sunLight.shadow.mapSize.height = 2048;
-scene.add(sunLight);
-
-const satelliteGroup = new THREE.Group();
-scene.add(satelliteGroup);
-
-let loadedTiles = 0;
-const totalTiles = 7 * 5;
-const texLoader = new THREE.TextureLoader();
-texLoader.setCrossOrigin('anonymous');
-
-for (let dx = -3; dx <= 3; dx++) {
-  for (let dy = -2; dy <= 2; dy++) {
-    const tx = CENTER_TILE_X + dx;
-    const ty = CENTER_TILE_Y + dy;
-    const url = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${ZOOM}/${ty}/${tx}`;
-
-    const tileGeo = new THREE.PlaneGeometry(TILE_SIZE_WORLD, TILE_SIZE_WORLD);
-    const tileMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.9, metalness: 0.02 });
-    const tileMesh = new THREE.Mesh(tileGeo, tileMat);
-    tileMesh.rotation.x = -Math.PI / 2;
-    tileMesh.position.set(dx * TILE_SIZE_WORLD, 0, dy * TILE_SIZE_WORLD);
-    tileMesh.receiveShadow = true;
-    satelliteGroup.add(tileMesh);
-
-    texLoader.load(url, tex => {
-      tex.encoding = THREE.sRGBEncoding;
-      tex.anisotropy = 8;
-      tileMat.map = tex;
-      tileMat.color.setHex(0xffffff);
-      tileMat.needsUpdate = true;
-      loadedTiles++;
-      document.getElementById('tile-status').textContent =
-        loadedTiles >= totalTiles
-          ? '✅ 桃園國際機場 100% 真實衛星航拍圖資已就緒（Esri World Imagery）'
-          : `正在載入桃園機場真實衛星圖磚 (${loadedTiles}/${totalTiles})...`;
-    });
-  }
-}
-
-const GPS_LANDMARKS = [
-  { name: '🛫 05L 北跑道頭', pos: TPE_GPS.rwy05L_start },
-  { name: '🛫 23R 北跑道頭', pos: TPE_GPS.rwy23R_end },
-  { name: '🛫 05R 南跑道頭', pos: TPE_GPS.rwy05R_start },
-  { name: '🌉 T2 北機坪 Gate C2', pos: TPE_GPS.gate_C2 },
-  { name: '🌉 T1 北機坪 Gate A6', pos: TPE_GPS.gate_A6 },
-  { name: '🗼 桃園機場塔台', pos: TPE_GPS.tower },
-  { name: '🛣 WC 西側跨區滑行道橋', pos: TPE_GPS.wc_bridge }
-];
-const gpsPinEls = GPS_LANDMARKS.map(lm => {
-  const el = document.createElement('div');
-  el.className = 'gps-pin';
-  el.textContent = lm.name;
-  document.getElementById('labels-container').appendChild(el);
-  return { ...lm, el };
-});
-
-// ============================================================================
-// 3. 多插槽真實 .glb 模型載入器 (支援飛機、空廚車、後推車、空橋分別替換)
-// ============================================================================
-const customModels = {
-  plane: null,
-  catering: null,
-  tug: null,
-  bridge: null,
-  userScale: 1.0,
-  userRotY: 0
-};
-
-const TARGET_SIZES = {
-  plane: 15.5,
-  catering: 3.2,
-  tug: 2.6,
-  bridge: 6.5
-};
-
-function uploadGLBSlot(slotType, event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const url = URL.createObjectURL(file);
-  const loader = new THREE.GLTFLoader();
-  document.getElementById('atc-log').textContent = `[GLTF 引擎] 正在解析真實 3D 模型檔 ${file.name}...`;
-
-  loader.load(url, gltf => {
-    const raw = gltf.scene;
-    raw.traverse(node => {
-      if (node.isMesh) {
-        node.castShadow = true;
-        node.receiveShadow = true;
-      }
-    });
-
-    const box = new THREE.Box3().setFromObject(raw);
-    const size = new THREE.Vector3();
-    const center = new THREE.Vector3();
-    box.getSize(size);
-    box.getCenter(center);
-
-    const maxDim = Math.max(size.x, size.y, size.z) || 1;
-    const baseScale = TARGET_SIZES[slotType] / maxDim;
-    raw.scale.setScalar(baseScale);
-    raw.position.y = -box.min.y * baseScale;
-
-    const wrapper = new THREE.Group();
-    wrapper.add(raw);
-    customModels[slotType] = wrapper;
-
-    document.getElementById('slot-' + slotType).classList.add('loaded');
-    document.getElementById('status-' + slotType).textContent = `✅ 已載入真實模型：${file.name}`;
-    document.getElementById('atc-log').textContent = `🎉 已將「${file.name}」套用至桃園機場所有 ${slotType.toUpperCase()} 實體！`;
-
-    rebuildAllFlightMeshes();
-  });
-}
-
-function adjustCustomScale(val) {
-  customModels.userScale = parseFloat(val);
-  flights.forEach(f => {
-    if (f.planeSlot) f.planeSlot.scale.setScalar(customModels.userScale);
-  });
-}
-
-function adjustCustomRot(val) {
-  customModels.userRotY = parseFloat(val);
-  flights.forEach(f => {
-    if (f.planeSlot) f.planeSlot.rotation.y = customModels.userRotY;
-  });
-}
-
-// ============================================================================
-// 4. 建立具備 4 個獨立模型容器 (Plane / Catering / Tug / Bridge) 的機坪單元
-// ============================================================================
-const AIRLINES = [
-  { code: 'JX', name: '星宇航空 A350-900', reg: 'B-58501', color: 0xf8fafc, tailColor: 0x18181b, badge: '#78350f' },
-  { code: 'CI', name: '中華航空 A350-900', reg: 'B-18901', color: 0xffffff, tailColor: 0xe11d48, badge: '#be185d' },
-  { code: 'BR', name: '長榮航空 B787-10',  reg: 'B-16781', color: 0xffffff, tailColor: 0x065f46, badge: '#065f46' },
-  { code: 'IT', name: '台灣虎航 A320neo',  reg: 'B-50001', color: 0xffffff, tailColor: 0xfacc15, badge: '#ca8a04' }
-];
-
-function createDefaultPlaneMesh(airline) {
-  const g = new THREE.Group();
-  const bodyMat = new THREE.MeshPhysicalMaterial({ color: airline.color, clearcoat: 0.9, roughness: 0.2 });
-  const tailMat = new THREE.MeshPhysicalMaterial({ color: airline.tailColor, clearcoat: 0.8, roughness: 0.25 });
-  const wingMat = new THREE.MeshStandardMaterial({ color: 0xdce2ea, metalness: 0.5, roughness: 0.3 });
-
-  const fuselage = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 0.95, 11.5, 24), bodyMat);
-  fuselage.rotation.z = -Math.PI / 2;
-  fuselage.position.y = 1.6;
-  fuselage.castShadow = true;
-  g.add(fuselage);
-
-  const nose = new THREE.Mesh(new THREE.SphereGeometry(0.95, 20, 16), bodyMat);
-  nose.scale.set(1.9, 0.95, 1);
-  nose.position.set(5.7, 1.56, 0);
-  g.add(nose);
-
-  const cockpit = new THREE.Mesh(new THREE.SphereGeometry(0.78, 16, 12), new THREE.MeshBasicMaterial({ color: 0x090d16 }));
-  cockpit.scale.set(1.6, 0.55, 0.9);
-  cockpit.position.set(6.2, 1.9, 0);
-  g.add(cockpit);
-
-  const tailCone = new THREE.Mesh(new THREE.ConeGeometry(0.95, 3.8, 20), bodyMat);
-  tailCone.rotation.z = Math.PI / 2;
-  tailCone.position.set(-7.6, 1.68, 0);
-  g.add(tailCone);
-
-  const wingShape = new THREE.Shape();
-  wingShape.moveTo(2.0, 0); wingShape.lineTo(-2.2, 7.6); wingShape.lineTo(-3.3, 7.6);
-  wingShape.lineTo(-1.2, 0); wingShape.lineTo(-3.3, -7.6); wingShape.lineTo(-2.2, -7.6); wingShape.closePath();
-  const wingGeo = new THREE.ExtrudeGeometry(wingShape, { depth: 0.16, bevelEnabled: false });
-  wingGeo.rotateX(Math.PI / 2);
-  const wings = new THREE.Mesh(wingGeo, wingMat);
-  wings.position.set(0.4, 1.45, 0);
-  wings.castShadow = true;
-  g.add(wings);
-
-  const vShape = new THREE.Shape();
-  vShape.moveTo(0, 0); vShape.lineTo(-2.4, 3.6); vShape.lineTo(-3.8, 3.6); vShape.lineTo(-2.8, 0); vShape.closePath();
-  const vGeo = new THREE.ExtrudeGeometry(vShape, { depth: 0.16, bevelEnabled: false });
-  const vTail = new THREE.Mesh(vGeo, tailMat);
-  vTail.position.set(-4.8, 2.1, -0.08);
-  g.add(vTail);
-
-  [-2.9, 2.9].forEach(ez => {
-    const cowl = new THREE.Mesh(new THREE.CylinderGeometry(0.54, 0.48, 1.9, 20), tailMat);
-    cowl.rotation.z = Math.PI / 2;
-    cowl.position.set(0.8, 0.9, ez);
-    g.add(cowl);
-  });
-  return g;
-}
-
-function buildFlightUnit(airline) {
-  const root = new THREE.Group();
-
-  // 1. 飛機插槽
-  const planeSlot = new THREE.Group();
-  if (customModels.plane) {
-    planeSlot.add(customModels.plane.clone());
-  } else {
-    planeSlot.add(createDefaultPlaneMesh(airline));
-  }
-  planeSlot.scale.setScalar(customModels.userScale);
-  planeSlot.rotation.y = customModels.userRotY;
-  root.add(planeSlot);
-
-  // 2. 地勤與空橋插槽群組
-  const gseGroup = new THREE.Group();
-
-  // 空廚車插槽
-  const cateringSlot = new THREE.Group();
-  cateringSlot.position.set(2.8, 0, 2.3);
-  if (customModels.catering) {
-    cateringSlot.add(customModels.catering.clone());
-  } else {
-    const catBox = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.1, 1.0), new THREE.MeshStandardMaterial({ color: 0xf8fafc }));
-    catBox.position.y = 1.4;
-    const catCab = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.95), new THREE.MeshStandardMaterial({ color: 0x0284c7 }));
-    catCab.position.set(1.3, 0.5, 0);
-    cateringSlot.add(catBox, catCab);
-  }
-  gseGroup.add(cateringSlot);
-
-  // 後推車插槽
-  const tugSlot = new THREE.Group();
-  tugSlot.position.set(7.4, 0, 0);
-  if (customModels.tug) {
-    tugSlot.add(customModels.tug.clone());
-  } else {
-    const pushTug = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.55, 1.2), new THREE.MeshStandardMaterial({ color: 0xeab308 }));
-    pushTug.position.y = 0.3;
-    tugSlot.add(pushTug);
-  }
-  gseGroup.add(tugSlot);
-
-  // 空橋插槽
-  const bridgeSlot = new THREE.Group();
-  bridgeSlot.position.set(2.5, 0, -4.2);
-  if (customModels.bridge) {
-    bridgeSlot.add(customModels.bridge.clone());
-  } else {
-    const jb = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.2, 5.5), new THREE.MeshStandardMaterial({ color: 0xcbd5e1 }));
-    jb.position.set(0, 1.6, 1.2);
-    bridgeSlot.add(jb);
-  }
-  gseGroup.add(bridgeSlot);
-
-  root.add(gseGroup);
-  return { root, planeSlot, gseGroup, cateringSlot, tugSlot, bridgeSlot };
-}
-
-const flights = [];
-let flightSeq = 801;
-let selectedFlight = null;
-
-function rebuildAllFlightMeshes() {
-  flights.forEach(f => {
-    const pos = f.mesh.position.clone();
-    const rot = f.mesh.rotation.clone();
-    const gseVis = f.gseGroup ? f.gseGroup.visible : true;
-    scene.remove(f.mesh);
-
-    const built = buildFlightUnit(f.airline);
-    built.root.position.copy(pos);
-    built.root.rotation.copy(rot);
-    built.gseGroup.visible = gseVis;
-    scene.add(built.root);
-
-    f.mesh = built.root;
-    f.planeSlot = built.planeSlot;
-    f.gseGroup = built.gseGroup;
-    f.cateringSlot = built.cateringSlot;
-  });
-}
-
-function createParkFlightAtRealGate(airlineIdx, gateVec, gateName) {
-  const airline = AIRLINES[airlineIdx];
-  const id = `${airline.code}${flightSeq++}`;
-  const built = buildFlightUnit(airline);
-  built.root.position.copy(gateVec);
-  built.root.rotation.y = RWY_ANGLE_Y - Math.PI / 2;
-  scene.add(built.root);
-
-  const labelEl = document.createElement('div');
-  labelEl.className = 'aircraft-label';
-  labelEl.onclick = () => focusFlight(id);
-  document.getElementById('labels-container').appendChild(labelEl);
-
-  const fl = {
-    id, airline, gateName,
-    state: 'TURNAROUND',
-    progress: 20 + Math.random() * 40,
-    mesh: built.root,
-    planeSlot: built.planeSlot,
-    gseGroup: built.gseGroup,
-    cateringSlot: built.cateringSlot,
-    labelEl
-  };
-  flights.push(fl);
-  if (!selectedFlight) selectedFlight = fl;
-}
-
-function spawnRealGPSFlight() {
-  const airline = AIRLINES[Math.floor(Math.random() * AIRLINES.length)];
-  const id = `${airline.code}${flightSeq++}`;
-  const built = buildFlightUnit(airline);
-  built.gseGroup.visible = false;
-
-  const approachStart = TPE_GPS.rwy05L_start.clone().addScaledVector(rwyVec, -95);
-  approachStart.y = 26;
-  built.root.position.copy(approachStart);
-  built.root.rotation.y = RWY_ANGLE_Y;
-  scene.add(built.root);
-
-  const labelEl = document.createElement('div');
-  labelEl.className = 'aircraft-label';
-  labelEl.onclick = () => focusFlight(id);
-  document.getElementById('labels-container').appendChild(labelEl);
-
-  const fl = {
-    id, airline, gateName: '05L 跑道進場',
-    state: 'LANDING_05L',
-    progress: 0,
-    mesh: built.root,
-    planeSlot: built.planeSlot,
-    gseGroup: built.gseGroup,
-    cateringSlot: built.cateringSlot,
-    labelEl
-  };
-  flights.push(fl);
-  focusFlight(id);
-  renderFIDS();
-}
-
-function focusFlight(id) {
-  const fl = flights.find(f => f.id === id);
-  if (!fl) return;
-  selectedFlight = fl;
-  camControl.target.copy(fl.mesh.position);
-  camControl.spherical.radius = 32;
-  camControl.spherical.phi = 1.05;
-  renderFIDS();
-}
-
-function focusGPS(lat, lon, radius) {
-  selectedFlight = null;
-  const pos = gpsToWorld(lat, lon);
-  camControl.target.copy(pos);
-  camControl.spherical.radius = radius;
-  camControl.spherical.phi = radius > 200 ? 0.75 : 1.08;
-}
-
-// ============================================================================
-// 5. 攝影機控制與渲染迴圈
-// ============================================================================
-const camControl = {
-  target: TPE_GPS.gate_C2.clone(),
-  spherical: { radius: 42, phi: 1.02, theta: 0.45 },
-  isDragging: false,
-  isPanning: false,
-  prevX: 0,
-  prevY: 0
-};
-
-renderer.domElement.addEventListener('mousedown', e => {
-  if (e.button === 0) camControl.isDragging = true;
-  if (e.button === 2) camControl.isPanning = true;
-  camControl.prevX = e.clientX;
-  camControl.prevY = e.clientY;
-});
-window.addEventListener('mouseup', () => { camControl.isDragging = false; camControl.isPanning = false; });
-window.addEventListener('contextmenu', e => e.preventDefault());
-window.addEventListener('mousemove', e => {
-  const dx = e.clientX - camControl.prevX;
-  const dy = e.clientY - camControl.prevY;
-  camControl.prevX = e.clientX;
-  camControl.prevY = e.clientY;
-  if (camControl.isDragging) {
-    camControl.spherical.theta -= dx * 0.006;
-    camControl.spherical.phi = Math.max(0.15, Math.min(1.48, camControl.spherical.phi - dy * 0.006));
-  } else if (camControl.isPanning) {
-    const panSpeed = camControl.spherical.radius * 0.0015;
-    camControl.target.x -= dx * panSpeed;
-    camControl.target.z -= dy * panSpeed;
-  }
-});
-renderer.domElement.addEventListener('wheel', e => {
-  camControl.spherical.radius = Math.max(10, Math.min(750, camControl.spherical.radius + e.deltaY * 0.16));
-});
-
-function renderFIDS() {
-  document.getElementById('flight-count').textContent = `${flights.length} 架`;
-  const box = document.getElementById('fids-list');
-  box.innerHTML = flights.map(f => `
-    <div class="fids-card ${selectedFlight && selectedFlight.id === f.id ? 'selected' : ''}" onclick="focusFlight('${f.id}')">
-      <div class="fids-top">
-        <div class="flight-no">
-          <span class="airline-tag" style="background:${f.airline.badge};color:#fff;">${f.airline.code}</span>
-          ${f.id}
+    <!-- Global Currencies & Rebirth Multipliers -->
+    <div class="flex flex-wrap items-center gap-3">
+      <div class="bg-amber-50 border-2 border-amber-300 px-3.5 py-1.5 rounded-xl flex items-center gap-2">
+        <span class="text-xl">🪙</span>
+        <div>
+          <div class="text-[10px] text-amber-700 font-bold">持有金幣</div>
+          <div id="ui-gold" class="font-black text-amber-600 text-base leading-none">0</div>
         </div>
-        <span class="status-badge">${f.state === 'TURNAROUND' ? '機坪過站維護' : '05L 跑道進場'}</span>
       </div>
-      <div class="fids-sub">
-        <span>${f.airline.name} (${f.airline.reg})</span>
-        <span>座標：<b>${f.gateName}</b></span>
+
+      <div class="bg-purple-50 border-2 border-purple-300 px-3.5 py-1.5 rounded-xl flex items-center gap-2">
+        <span class="text-xl">🔮</span>
+        <div>
+          <div class="text-[10px] text-purple-700 font-bold">轉生魂晶</div>
+          <div id="ui-souls" class="font-black text-purple-600 text-base leading-none">0</div>
+        </div>
       </div>
-      <div class="progress-wrap">
-        <div class="progress-bar" style="width:${f.progress.toFixed(0)}%;"></div>
+
+      <div class="bg-pink-50 border-2 border-pink-300 px-3.5 py-1.5 rounded-xl flex items-center gap-2">
+        <span class="text-xl">🔄</span>
+        <div>
+          <div class="text-[10px] text-pink-700 font-bold">轉生次數 / 經驗倍率</div>
+          <div class="font-black text-pink-600 text-base leading-none">
+            <span id="ui-rebirths">0</span> 世 <span class="text-xs text-rose-500">(<span id="ui-exp-mult">100</span>%)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-emerald-50 border-2 border-emerald-300 px-3.5 py-1.5 rounded-xl flex items-center gap-2">
+        <span class="text-xl">📖</span>
+        <div>
+          <div class="text-[10px] text-emerald-700 font-bold">大師圖鑑達成</div>
+          <div id="ui-mastery-count" class="font-black text-emerald-600 text-base leading-none">0 / 14</div>
+        </div>
       </div>
     </div>
-  `).join('');
-}
+  </header>
 
-createParkFlightAtRealGate(0, TPE_GPS.gate_C2, 'T2 Gate C2');
-createParkFlightAtRealGate(1, TPE_GPS.gate_A6, 'T1 Gate A6');
-createParkFlightAtRealGate(2, TPE_GPS.gate_C5, 'T2 Gate C5');
-createParkFlightAtRealGate(3, TPE_GPS.gate_D3, 'T2 Gate D3');
-renderFIDS();
+  <!-- Main 3-Column Layout -->
+  <main class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4">
 
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
+    <!-- LEFT COLUMN: Hero Stats, Past-Life Passive Slots & Equipment Upgrades (3 cols) -->
+    <section class="lg:col-span-3 flex flex-col gap-4">
+      <!-- Current Job & Stats Card -->
+      <div class="cute-card p-4 border-sky-400" style="box-shadow: 0 8px 0 #bae6fd;">
+        <div class="flex items-center justify-between mb-2">
+          <span id="ui-job-tier" class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-700">初心者</span>
+          <span id="ui-job-master-badge" class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-400">未達成大師 (Lv.10)</span>
+        </div>
 
-let lastTime = performance.now();
-function animate(now) {
-  requestAnimationFrame(animate);
-  const dt = Math.min(0.05, (now - lastTime) / 1000);
-  lastTime = now;
+        <div class="flex items-center gap-2.5 mb-3">
+          <div id="ui-job-icon" class="w-12 h-12 rounded-2xl bg-sky-50 border-2 border-sky-200 flex items-center justify-center text-2xl">🌱</div>
+          <div>
+            <h2 id="ui-job-name" class="text-lg font-black text-slate-800">呆萌見習生</h2>
+            <p id="ui-job-desc" class="text-xs text-slate-500">拿著木枝的可愛新人，充滿無限可能！</p>
+          </div>
+        </div>
 
-  if (selectedFlight && selectedFlight.mesh) {
-    camControl.target.lerp(selectedFlight.mesh.position, 0.1);
-  }
-  const { radius, phi, theta } = camControl.spherical;
-  camera.position.x = camControl.target.x + radius * Math.sin(phi) * Math.sin(theta);
-  camera.position.y = camControl.target.y + radius * Math.cos(phi);
-  camera.position.z = camControl.target.z + radius * Math.sin(phi) * Math.cos(theta);
-  camera.lookAt(camControl.target);
+        <!-- Level & EXP Bar -->
+        <div class="mb-3 bg-slate-100 p-2.5 rounded-xl border border-slate-200">
+          <div class="flex justify-between items-baseline mb-1">
+            <span class="font-black text-sm text-sky-700">Lv. <span id="ui-level" class="text-lg">1</span> <span class="text-xs text-slate-400">/ 10 滿等可轉職</span></span>
+            <span id="ui-exp-text" class="text-xs font-bold text-slate-500">0 / 50 EXP</span>
+          </div>
+          <div class="w-full h-3.5 bg-slate-200 rounded-full overflow-hidden">
+            <div id="ui-exp-bar" class="h-full bg-gradient-to-r from-sky-400 to-indigo-500 transition-all duration-200" style="width: 0%"></div>
+          </div>
+        </div>
 
-  for (let i = flights.length - 1; i >= 0; i--) {
-    const f = flights[i];
-    const m = f.mesh;
-    if (f.state === 'TURNAROUND') {
-      f.progress = (f.progress + dt * 2.5) % 100;
-    } else if (f.state === 'LANDING_05L') {
-      m.position.addScaledVector(rwyVec, dt * 32);
-      if (m.position.y > 0) m.position.y = Math.max(0, m.position.y - dt * 9.5);
-      f.progress = Math.min(100, f.progress + dt * 12);
-      if (f.progress >= 100) {
-        scene.remove(m);
-        f.labelEl.remove();
-        flights.splice(i, 1);
-        renderFIDS();
-        continue;
+        <!-- Detailed Stats Grid -->
+        <div class="grid grid-cols-2 gap-2 text-xs mb-3">
+          <div class="bg-rose-50 border border-rose-200 p-2 rounded-xl">
+            <div class="text-rose-400 font-bold">❤️ 最大生命</div>
+            <div id="ui-stat-hp" class="font-black text-sm text-rose-600">120</div>
+          </div>
+          <div class="bg-orange-50 border border-orange-200 p-2 rounded-xl">
+            <div class="text-orange-400 font-bold">⚔️ 攻擊力</div>
+            <div id="ui-stat-atk" class="font-black text-sm text-orange-600">15</div>
+          </div>
+          <div class="bg-amber-50 border border-amber-200 p-2 rounded-xl">
+            <div class="text-amber-500 font-bold">⚡ 暴擊率</div>
+            <div id="ui-stat-crit" class="font-black text-sm text-amber-600">10%</div>
+          </div>
+          <div class="bg-emerald-50 border border-emerald-200 p-2 rounded-xl">
+            <div class="text-emerald-500 font-bold">🛡️ 減傷 / 回血</div>
+            <div id="ui-stat-def" class="font-black text-sm text-emerald-600">5%</div>
+          </div>
+        </div>
+
+        <!-- Active Job Innate Trait -->
+        <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-2.5 text-xs">
+          <div class="font-black text-indigo-700 mb-0.5">✨ 本職招牌特質（達 Lv.10 可永久繼承）</div>
+          <div id="ui-job-passive" class="text-indigo-900 font-medium">【初心潛能】全屬性獲得 +10% 成長獎勵</div>
+        </div>
+      </div>
+
+      <!-- Equipped Past-Life Memory Cards -->
+      <div class="cute-card p-4 border-purple-400" style="box-shadow: 0 8px 0 #e9d5ff;">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="font-black text-sm text-purple-700 flex items-center gap-1.5">
+            <span>🃏</span> 前世記憶卡槽 (自由混搭流派)
+          </h3>
+          <span id="ui-slot-count" class="text-xs font-bold text-purple-500">0 / 4 槽</span>
+        </div>
+        <p class="text-[11px] text-slate-500 mb-2.5">將任何職業練至 Lv.10 大師後，即可在右側【前世技能庫】裝備其被動神技！</p>
+        <div id="ui-equipped-passives" class="flex flex-col gap-2">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- Gold & Soul Permanent Training -->
+      <div class="cute-card p-4 border-amber-400" style="box-shadow: 0 8px 0 #fde68a;">
+        <h3 class="font-black text-sm text-amber-700 mb-2.5 flex items-center gap-1.5">
+          <span>🔨</span> 永久強化鍛造（跨轉生保留）
+        </h3>
+        <div class="flex flex-col gap-2">
+          <button onclick="buyUpgrade('weapon')" class="cute-btn w-full bg-amber-100 hover:bg-amber-200 border-2 border-amber-400 rounded-xl p-2 flex items-center justify-between text-left">
+            <div>
+              <div class="font-black text-xs text-slate-800">🗡️ 鍛造神兵 <span id="upg-weapon-lv" class="text-amber-600">Lv.0</span></div>
+              <div class="text-[11px] text-slate-500">永久基礎攻擊 +8</div>
+            </div>
+            <span id="upg-weapon-cost" class="bg-amber-400 text-slate-900 font-black text-xs px-2.5 py-1 rounded-lg">🪙 30</span>
+          </button>
+
+          <button onclick="buyUpgrade('armor')" class="cute-btn w-full bg-rose-100 hover:bg-rose-200 border-2 border-rose-400 rounded-xl p-2 flex items-center justify-between text-left">
+            <div>
+              <div class="font-black text-xs text-slate-800">🧸 棉花糖護甲 <span id="upg-armor-lv" class="text-rose-600">Lv.0</span></div>
+              <div class="text-[11px] text-slate-500">永久最大生命 +45 & 每秒回血</div>
+            </div>
+            <span id="upg-armor-cost" class="bg-rose-400 text-white font-black text-xs px-2.5 py-1 rounded-lg">🪙 30</span>
+          </button>
+
+          <button onclick="buyUpgrade('expRing')" class="cute-btn w-full bg-purple-100 hover:bg-purple-200 border-2 border-purple-400 rounded-xl p-2 flex items-center justify-between text-left">
+            <div>
+              <div class="font-black text-xs text-slate-800">💍 智慧轉生戒 <span id="upg-exp-lv" class="text-purple-600">Lv.0</span></div>
+              <div class="text-[11px] text-slate-500">經驗值與金幣獲取 +30%</div>
+            </div>
+            <span id="upg-exp-cost" class="bg-purple-500 text-white font-black text-xs px-2.5 py-1 rounded-lg">🔮 1 魂晶</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- CENTER COLUMN: 3D Q-Version Chibi Stage & Combat Controls (5 cols) -->
+    <section class="lg:col-span-5 flex flex-col gap-4">
+      <div class="cute-card p-3 border-pink-400 flex flex-col relative overflow-hidden">
+        <!-- Stage Zone Selector -->
+        <div class="flex items-center justify-between gap-2 mb-2 z-10">
+          <div class="flex items-center gap-1.5">
+            <button onclick="changeZone(-1)" class="cute-btn bg-pink-100 hover:bg-pink-200 text-pink-700 font-black px-2.5 py-1 rounded-lg text-xs">◀</button>
+            <div class="bg-pink-50 border-2 border-pink-300 px-3 py-1 rounded-xl text-center">
+              <div id="ui-zone-name" class="font-black text-xs md:text-sm text-pink-700">1-1 軟綿綿草莓草原</div>
+              <div id="ui-zone-rec" class="text-[10px] text-slate-500">推薦戰力：新手練功區 (EXP x1.0)</div>
+            </div>
+            <button onclick="changeZone(1)" class="cute-btn bg-pink-100 hover:bg-pink-200 text-pink-700 font-black px-2.5 py-1 rounded-lg text-xs">▶</button>
+          </div>
+
+          <button onclick="resetCameraView()" class="cute-btn bg-white/90 border border-slate-300 text-slate-600 px-2.5 py-1 rounded-lg text-xs font-bold">
+            🎥 視角重置
+          </button>
+        </div>
+
+        <!-- 3D WebGL Canvas Container -->
+        <div id="canvas-wrapper" class="relative w-full h-[360px] md:h-[390px] rounded-2xl overflow-hidden border-2 border-pink-200 bg-gradient-to-b from-sky-200 via-sky-100 to-emerald-100 cursor-pointer" onclick="manualPlayerStrike(event)">
+          <!-- Floating Overlay HUD inside 3D view -->
+          <div class="absolute top-3 left-3 right-3 flex justify-between items-start pointer-events-none z-20">
+            <!-- Hero HP Pill -->
+            <div class="bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl border-2 border-sky-400 shadow-sm w-40">
+              <div class="flex justify-between text-[11px] font-black text-sky-800 mb-0.5">
+                <span id="hud-hero-title">呆萌見習生</span>
+                <span id="hud-hero-hp-text">120/120</span>
+              </div>
+              <div class="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden">
+                <div id="hud-hero-hp-bar" class="h-full bg-emerald-500 transition-all duration-150" style="width: 100%"></div>
+              </div>
+            </div>
+
+            <!-- Monster HP Pill -->
+            <div class="bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl border-2 border-rose-400 shadow-sm w-44">
+              <div class="flex justify-between text-[11px] font-black text-rose-800 mb-0.5">
+                <span id="hud-mob-name">草莓果凍史萊姆</span>
+                <span id="hud-mob-hp-text">60/60</span>
+              </div>
+              <div class="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden">
+                <div id="hud-mob-hp-bar" class="h-full bg-rose-500 transition-all duration-150" style="width: 100%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive Tip Banner -->
+          <div class="absolute bottom-2.5 left-3 right-3 flex justify-between items-center pointer-events-none z-20">
+            <span class="bg-slate-900/70 text-white text-[11px] font-bold px-3 py-1 rounded-full">
+              👆 點擊 3D 畫面可發動【手動支援重擊】！拖曳可旋轉 3D 角色
+            </span>
+            <span id="ui-sleep-indicator" class="hidden bg-indigo-600 text-white text-[11px] font-bold px-3 py-1 rounded-full animate-bounce">
+              💤 夢遊施法狀態中 (暴擊+回血)
+            </span>
+          </div>
+
+          <!-- Damage popups container -->
+          <div id="dmg-container" class="absolute inset-0 pointer-events-none overflow-hidden z-30"></div>
+        </div>
+
+        <!-- Quick Action Skill & Rebirth Prompt Bar -->
+        <div class="mt-3 grid grid-cols-2 gap-2.5">
+          <button id="btn-active-skill" onclick="castUltimateSkill()" class="cute-btn bg-gradient-to-r from-amber-400 to-orange-400 text-slate-900 font-black py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-sm border-2 border-amber-500">
+            <span>💥</span>
+            <span id="ui-ult-name">職業必殺技 (就緒)</span>
+          </button>
+
+          <button id="btn-quick-rebirth" onclick="switchRightTab('jobs')" class="cute-btn bg-gradient-to-r from-pink-500 to-purple-500 text-white font-black py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-sm border-2 border-pink-600">
+            <span>🦋</span>
+            <span id="ui-rebirth-btn-text">前往轉生神殿 (Lv.10 解鎖)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Adventure & Combo Log -->
+      <div class="cute-card p-3.5 border-emerald-400 flex-1 flex flex-col" style="box-shadow: 0 8px 0 #a7f3d0;">
+        <div class="flex items-center justify-between mb-1.5">
+          <h3 class="font-black text-xs text-emerald-700 flex items-center gap-1">
+            <span>📜</span> 即時冒險與流派觸發日誌
+          </h3>
+          <span class="text-[11px] text-slate-400">自動戰鬥進行中</span>
+        </div>
+        <div id="ui-combat-log" class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 h-32 overflow-y-auto text-xs space-y-1 font-medium">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT COLUMN: Rebirth Temple (14 Jobs), Past-Life Skills & 3D Wardrobe (4 cols) -->
+    <section class="lg:col-span-4 flex flex-col">
+      <div class="cute-card p-4 border-pink-400 flex-1 flex flex-col">
+        <!-- Navigation Tabs -->
+        <div class="grid grid-cols-3 gap-1.5 bg-pink-50 p-1.5 rounded-2xl border border-pink-200 mb-3">
+          <button id="tab-btn-jobs" onclick="switchRightTab('jobs')" class="py-2 rounded-xl font-black text-xs bg-pink-500 text-white shadow-sm transition-all">
+            🦋 轉職與轉生 (14)
+          </button>
+          <button id="tab-btn-passives" onclick="switchRightTab('passives')" class="py-2 rounded-xl font-black text-xs text-pink-700 hover:bg-pink-100 transition-all">
+            🃏 前世技能庫
+          </button>
+          <button id="tab-btn-wardrobe" onclick="switchRightTab('wardrobe')" class="py-2 rounded-xl font-black text-xs text-pink-700 hover:bg-pink-100 transition-all">
+            👗 3D外觀衣櫃
+          </button>
+        </div>
+
+        <!-- TAB 1: Job Tree & Infinite Rebirth -->
+        <div id="tab-panel-jobs" class="flex-1 flex flex-col">
+          <div class="bg-gradient-to-r from-pink-50 to-purple-50 border border-pink-200 rounded-xl p-2.5 mb-3 text-xs">
+            <div class="font-black text-pink-700">💡 無限轉生規則：</div>
+            <ul class="list-disc list-inside text-[11px] text-slate-600 mt-0.5 space-y-0.5">
+              <li>角色達到 <b>Lv.5</b> 可進行同世進階轉職；達到 <b>Lv.10</b> 即可<b>「轉生」</b>並點亮該職業<b>★大師刻印</b>！</li>
+              <li>每次轉生回到 Lv.1，永久獲得 <b>經驗倍率 +35%</b>、<b>+1 轉生魂晶</b>，並解鎖該職業的前世被動卡！</li>
+            </ul>
+          </div>
+
+          <!-- Filter pills -->
+          <div class="flex gap-1.5 mb-2.5 overflow-x-auto pb-1">
+            <button onclick="filterJobs('all')" id="flt-all" class="px-2.5 py-1 rounded-full text-xs font-black bg-slate-800 text-white">全部 (14)</button>
+            <button onclick="filterJobs('combat')" id="flt-combat" class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-700">⚔️ 武鬥系</button>
+            <button onclick="filterJobs('magic')" id="flt-magic" class="px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700">🔮 魔導系</button>
+            <button onclick="filterJobs('life')" id="flt-life" class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700">🍰 生活系</button>
+            <button onclick="filterJobs('hybrid')" id="flt-hybrid" class="px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700">🌟 隱藏複合</button>
+          </div>
+
+          <!-- Scrollable Job List -->
+          <div id="ui-job-list" class="space-y-2.5 overflow-y-auto pr-1 max-h-[470px]">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- TAB 2: Past-Life Passive Skill Deck -->
+        <div id="tab-panel-passives" class="hidden flex-1 flex flex-col">
+          <div class="bg-purple-50 border border-purple-200 rounded-xl p-2.5 mb-3 text-xs text-purple-900">
+            <div class="font-black mb-0.5">🔥 推薦神級混搭流派（Build）：</div>
+            <div class="text-[11px] space-y-1 text-slate-600">
+              <div>• <b>【全自動印鈔機流】</b>：算盤小商人 + 守財倉鼠大亨 + 貓耳雙刀流（連擊噴金幣、錢越多傷害越高！）</div>
+              <div>• <b>【夢遊反傷不死流】</b>：鍋蓋小盾兵 + 實習小廚娘 + 黑眼圈死靈師（睡覺每秒回血+高減傷反擊！）</div>
+            </div>
+          </div>
+          <div id="ui-passive-library" class="space-y-2 overflow-y-auto pr-1 max-h-[480px]">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- TAB 3: 3D Chibi Wardrobe Mix & Match -->
+        <div id="tab-panel-wardrobe" class="hidden flex-1 flex flex-col space-y-3">
+          <div class="bg-sky-50 border border-sky-200 rounded-xl p-2.5 text-xs text-sky-900">
+            <b>🎨 Q版 3D 紙娃娃混搭：</b> 你可以維持當前職業的強大數值，同時混搭任何「已轉職或已大師」的 3D 可愛頭飾與武器！（例如：戴著廚師帽、拿著死靈魔杖的狂戰士）
+          </div>
+
+          <div>
+            <label class="block font-black text-xs text-slate-700 mb-1.5">🎩 選擇 3D 頭飾造型</label>
+            <div id="wardrobe-hats" class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1"></div>
+          </div>
+
+          <div>
+            <label class="block font-black text-xs text-slate-700 mb-1.5">🍳 選擇 3D 武器造型</label>
+            <div id="wardrobe-weapons" class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1"></div>
+          </div>
+
+          <button onclick="resetWardrobeToJob()" class="cute-btn w-full py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-black text-xs">
+            🔄 恢復為當前職業預設 3D 外觀
+          </button>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <script>
+    /********************************************************************
+     * 1. 遊戲資料庫：14 種可愛職業（含 4 大隱藏跨界複合職）與 3D 外觀定義
+     ********************************************************************/
+    const JOBS = [
+      {
+        id: 'novice',
+        name: '呆萌見習生',
+        tier: '初心者',
+        branch: 'life',
+        icon: '🌱',
+        minLvToSwitch: 1,
+        reqMasteries: [],
+        desc: '頭頂長著小嫩芽的呆萌新人，潛力無窮。',
+        passiveName: '初心潛能',
+        passiveDesc: '全基礎屬性 +15%，獲得經驗值額外 +20%',
+        baseHp: 120, baseAtk: 16, crit: 0.10, def: 0.05,
+        visual: { bodyColor: 0x60a5fa, hat: 'sprout', weapon: 'stick', face: 'happy', companion: 'none', hatName: '🌱 初心小嫩芽', weaponName: '🪵 森林小木枝' }
+      },
+      // --- 一階職業 (Lv.5 可轉職) ---
+      {
+        id: 'sword',
+        name: '木劍小戰士',
+        tier: '一階職',
+        branch: 'combat',
+        icon: '🗡️',
+        minLvToSwitch: 5,
+        reqMasteries: [],
+        desc: '充滿元氣的近戰見習生，揮劍速度飛快。',
+        passiveName: '元氣連斬',
+        passiveDesc: '攻擊力 +25%，普攻有 30% 機率觸發二連擊',
+        baseHp: 160, baseAtk: 26, crit: 0.15, def: 0.08,
+        visual: { bodyColor: 0xef4444, hat: 'bandana', weapon: 'sword', face: 'confident', companion: 'none', hatName: '🧣 熱血頭巾', weaponName: '🗡️ 勇者寬刃劍' }
+      },
+      {
+        id: 'shield',
+        name: '鍋蓋小盾兵',
+        tier: '一階職',
+        branch: 'combat',
+        icon: '🛡️',
+        minLvToSwitch: 5,
+        reqMasteries: [],
+        desc: '把廚房大鍋蓋當作盾牌，挨打時會發出清脆響聲。',
+        passiveName: '鍋蓋反震',
+        passiveDesc: '受到傷害減少 15%，挨打時反彈 120% 攻擊力傷害',
+        baseHp: 240, baseAtk: 18, crit: 0.08, def: 0.22,
+        visual: { bodyColor: 0x3b82f6, hat: 'pothelmet', weapon: 'shield', face: 'happy', companion: 'none', hatName: '🪖 圓圓鐵鍋盔', weaponName: '🛡️ 皇家大鍋蓋' }
+      },
+      {
+        id: 'mage',
+        name: '火花學徒',
+        tier: '一階職',
+        branch: 'magic',
+        icon: '🔥',
+        minLvToSwitch: 5,
+        reqMasteries: [],
+        desc: '喜歡研究爆炸魔法的魔法少女，偶爾會把眉毛燒焦。',
+        passiveName: '魔力火花',
+        passiveDesc: '暴擊傷害提升 +60%，每次攻擊附帶 35% 火花灼燒',
+        baseHp: 135, baseAtk: 32, crit: 0.22, def: 0.05,
+        visual: { bodyColor: 0x8b5cf6, hat: 'wizard', weapon: 'staff', face: 'confident', companion: 'fireball', hatName: '🧙 星月巫師帽', weaponName: '🪄 紅寶石魔杖' }
+      },
+      {
+        id: 'chef',
+        name: '實習小廚娘',
+        tier: '一階職',
+        branch: 'life',
+        icon: '🍳',
+        minLvToSwitch: 5,
+        reqMasteries: [],
+        desc: '深信迷宮裡的魔物只要煎熟了都很好吃！',
+        passiveName: '美味加餐',
+        passiveDesc: '每秒自動回復 8% 最大生命，最大生命值 +30%',
+        baseHp: 210, baseAtk: 22, crit: 0.15, def: 0.12,
+        visual: { bodyColor: 0xf472b6, hat: 'chef', weapon: 'pan', face: 'happy', companion: 'egg', hatName: '👩‍🍳 高聳主廚帽', weaponName: '🍳 荷包蛋平底鍋' }
+      },
+      {
+        id: 'merchant',
+        name: '算盤小商人',
+        tier: '一階職',
+        branch: 'life',
+        icon: '🪙',
+        minLvToSwitch: 5,
+        reqMasteries: [],
+        desc: '帶著金算盤闖蕩地下城，連揮刀都在計算利潤。',
+        passiveName: '點石成金',
+        passiveDesc: '每次普攻直接噴出金幣，戰鬥金幣獲取量 +65%',
+        baseHp: 155, baseAtk: 21, crit: 0.18, def: 0.10,
+        visual: { bodyColor: 0xf59e0b, hat: 'beret', weapon: 'abacus', face: 'happy', companion: 'coin', hatName: '💰 招財金貝雷帽', weaponName: '🧮 純金大算盤' }
+      },
+
+      // --- 二階職業 (需曾練滿至少 1 個一階職 或 當前 Lv.8+) ---
+      {
+        id: 'berserker',
+        name: '草莓狂戰士',
+        tier: '二階職',
+        branch: 'combat',
+        icon: '🍓',
+        minLvToSwitch: 7,
+        reqMasteries: ['sword'],
+        desc: '喝草莓牛奶就會陷入狂暴，攻擊力與攻速突破天際！',
+        passiveName: '草莓狂熱',
+        passiveDesc: '最終攻擊力 +40%，血量越低暴擊率越高 (最高+35%)',
+        baseHp: 260, baseAtk: 46, crit: 0.25, def: 0.10,
+        visual: { bodyColor: 0xe11d48, hat: 'horns', weapon: 'greatsword', face: 'angry', companion: 'strawberry', hatName: '🍓 草莓惡魔角', weaponName: '⚔️ 雙手草莓巨劍' }
+      },
+      {
+        id: 'catninja',
+        name: '貓耳雙刀流',
+        tier: '二階職',
+        branch: 'combat',
+        icon: '🐱',
+        minLvToSwitch: 7,
+        reqMasteries: ['sword'],
+        desc: '頭頂毛茸茸貓耳的高速劍客，出招快到看不見殘影。',
+        passiveName: '九命疾風',
+        passiveDesc: '普攻必定額外追加 1~2 次貓爪連擊，暴擊率 +20%',
+        baseHp: 220, baseAtk: 38, crit: 0.35, def: 0.14,
+        visual: { bodyColor: 0xec4899, hat: 'catears', weapon: 'dualblades', face: 'cat', companion: 'none', hatName: '🐱 軟萌粉紅貓耳', weaponName: '⚔️ 疾風雙短刀' }
+      },
+      {
+        id: 'necromancer',
+        name: '黑眼圈死靈師',
+        tier: '二階職',
+        branch: 'magic',
+        icon: '👻',
+        minLvToSwitch: 7,
+        reqMasteries: ['mage'],
+        desc: '常年熬夜練等導致帶著濃濃黑眼圈，邊打瞌睡邊召喚幽靈。',
+        passiveName: '夢遊死靈術',
+        passiveDesc: '進入夢遊狀態：每秒回血 6%，且攻擊召喚幽靈造成 160% 暗影傷害',
+        baseHp: 230, baseAtk: 48, crit: 0.28, def: 0.15,
+        visual: { bodyColor: 0x4c1d95, hat: 'skullpin', weapon: 'scythe', face: 'sleepy', companion: 'ghost', hatName: '💀 熬夜骷髏髮夾', weaponName: '🌙 夢遊死神鐮刀' }
+      },
+      {
+        id: 'hamster',
+        name: '守財倉鼠大亨',
+        tier: '二階職',
+        branch: 'life',
+        icon: '🐹',
+        minLvToSwitch: 7,
+        reqMasteries: ['merchant'],
+        desc: '把亮晶晶的金幣塞滿雙頰，財力就是最狂暴的戰鬥力！',
+        passiveName: '鈔能力增幅',
+        passiveDesc: '每持有 100 金幣，攻擊力額外 +8%（無上限疊加！）',
+        baseHp: 280, baseAtk: 36, crit: 0.25, def: 0.18,
+        visual: { bodyColor: 0xd97706, hat: 'hamstercrown', weapon: 'goldbag', face: 'chubby', companion: 'coin', hatName: '🐹 倉鼠耳朵金冠', weaponName: '💰 塞滿金幣寶袋' }
+      },
+
+      // --- 跨界隱藏複合職 (需同時點亮 2 個指定職業大師刻印！) ---
+      {
+        id: 'caramel_paladin',
+        name: '焦糖聖盾使',
+        tier: '🌟隱藏複合',
+        branch: 'hybrid',
+        icon: '🍮',
+        minLvToSwitch: 1,
+        reqMasteries: ['shield', 'chef'],
+        desc: '【鍋蓋小盾兵＋實習小廚娘】跨界覺醒！用焦糖布丁鑄造絕對防禦聖盾。',
+        passiveName: '焦糖絕對領域',
+        passiveDesc: '減傷 +25%，每次回血時對怪物噴發 200% 焦糖聖光傷害',
+        baseHp: 450, baseAtk: 62, crit: 0.25, def: 0.38,
+        visual: { bodyColor: 0xfbbf24, hat: 'chef', weapon: 'shield', face: 'confident', companion: 'egg', hatName: '🍮 皇家焦糖聖冠', weaponName: '🛡️ 布丁聖光大盾' }
+      },
+      {
+        id: 'coin_gunner',
+        name: '金幣機關槍手',
+        tier: '🌟隱藏複合',
+        branch: 'hybrid',
+        icon: '🔫',
+        minLvToSwitch: 1,
+        reqMasteries: ['merchant', 'catninja'],
+        desc: '【算盤小商人＋貓耳雙刀流】跨界覺醒！將金幣化為加特林機槍瘋狂掃射。',
+        passiveName: '黃金加特林',
+        passiveDesc: '普攻化為 3 段黃金彈幕，且每次暴擊獲得雙倍金幣',
+        baseHp: 360, baseAtk: 78, crit: 0.42, def: 0.20,
+        visual: { bodyColor: 0xfacc15, hat: 'catears', weapon: 'bazooka', face: 'cat', companion: 'coin', hatName: '🐱 黃金財閥貓耳', weaponName: '🔫 純金機關重砲' }
+      },
+      {
+        id: 'dark_chef',
+        name: '暗黑料理死靈',
+        tier: '🌟隱藏複合',
+        branch: 'hybrid',
+        icon: '☠️',
+        minLvToSwitch: 1,
+        reqMasteries: ['necromancer', 'chef'],
+        desc: '【黑眼圈死靈師＋實習小廚娘】跨界覺醒！復活食材化為馬卡龍骷髏大軍。',
+        passiveName: '禁忌仰望星空派',
+        passiveDesc: '攻擊使敵人中毒並附帶 220% 靈魂灼燒，擊殺怪物瞬間回滿生命',
+        baseHp: 420, baseAtk: 88, crit: 0.35, def: 0.25,
+        visual: { bodyColor: 0x7e22ce, hat: 'chef', weapon: 'pan', face: 'sleepy', companion: 'ghost', hatName: '👻 幽靈主廚高帽', weaponName: '🍳 紫焰暗黑平底鍋' }
+      },
+      {
+        id: 'tycoon_mage',
+        name: '鈔能力時空魔導',
+        tier: '👑終極神職',
+        branch: 'hybrid',
+        icon: '💎',
+        minLvToSwitch: 1,
+        reqMasteries: ['hamster', 'mage', 'berserker'],
+        desc: '【倉鼠大亨＋火花學徒＋草莓狂戰士】終極覺醒！用無盡財富扭曲時空法則。',
+        passiveName: '神之鈔能力法則',
+        passiveDesc: '全傷害翻倍 (x2.0)，所有獲得的經驗值與金幣額外 +100%！',
+        baseHp: 680, baseAtk: 135, crit: 0.50, def: 0.40,
+        visual: { bodyColor: 0xec4899, hat: 'hamstercrown', weapon: 'staff', face: 'confident', companion: 'coin', hatName: '👑 鑽石時空皇冠', weaponName: '💎 鈔能力星辰杖' }
+      }
+    ];
+
+    const ZONES = [
+      { name: '1-1 軟綿綿草莓草原', rec: '新手練功區 (EXP x1.0)', hpMult: 1, atkMult: 1, expMult: 1, goldMult: 1, mobs: [
+        { name: '草莓果凍史萊姆', color: 0xf43f5e, shape: 'slime' },
+        { name: '迷路小蘑菇', color: 0xf97316, shape: 'mushroom' }
+      ]},
+      { name: '2-1 焦糖布丁遺跡', rec: '推薦一階職 (EXP x2.4)', hpMult: 3.2, atkMult: 2.2, expMult: 2.4, goldMult: 2.5, mobs: [
+        { name: '焦糖布丁魔像', color: 0xfbbf24, shape: 'cube' },
+        { name: '暴走平底鍋怪', color: 0x64748b, shape: 'slime' }
+      ]},
+      { name: '3-1 黑眼圈午夜圖書館', rec: '推薦二階職 (EXP x5.5)', hpMult: 8.5, atkMult: 4.5, expMult: 5.5, goldMult: 6.0, mobs: [
+        { name: '熬夜幽靈書僮', color: 0xa855f7, shape: 'ghost' },
+        { name: '黃金咬人寶箱怪', color: 0xeab308, shape: 'cube' }
+      ]},
+      { name: '4-1 棉花糖巨龍神殿', rec: '推薦隱藏複合職 (EXP x15.0)', hpMult: 26, atkMult: 10, expMult: 15, goldMult: 18, mobs: [
+        { name: '棉花糖守護巨龍', color: 0xec4899, shape: 'boss' },
+        { name: '鈔能力黃金魔王', color: 0xfacc15, shape: 'boss' }
+      ]}
+    ];
+
+    /********************************************************************
+     * 2. 玩家狀態 State
+     ********************************************************************/
+    const state = {
+      currentJobId: 'novice',
+      level: 1,
+      exp: 0,
+      maxExp: 40,
+      gold: 50,
+      souls: 0,
+      rebirthCount: 0,
+      masteredJobs: [],         // 已達 Lv.10 的職業 ID
+      unlockedJobs: ['novice'], // 曾經變身過的職業 ID（解鎖衣櫃用）
+      equippedPassives: [],     // 最多 4 個前世記憶卡 ID
+      upgrades: { weapon: 0, armor: 0, expRing: 0 },
+      wardrobe: { hat: null, weapon: null }, // 若非 null 則覆蓋 3D 外觀
+      zoneIndex: 0,
+      jobFilter: 'all',
+      // Combat state
+      heroHp: 120,
+      heroMaxHp: 120,
+      mobName: '草莓果凍史萊姆',
+      mobHp: 60,
+      mobMaxHp: 60,
+      ultCooldown: 0
+    };
+
+    function getJob(id) {
+      return JOBS.find(j => j.id === id) || JOBS[0];
+    }
+
+    function hasPassive(jobId) {
+      // 本職自帶 + 前世記憶槽掛載
+      return state.currentJobId === jobId || state.equippedPassives.includes(jobId);
+    }
+
+    function getMaxPassiveSlots() {
+      // 初始 2 槽，轉生 1 次變 3 槽，轉生 3 次變 4 槽
+      if (state.rebirthCount >= 3) return 4;
+      if (state.rebirthCount >= 1) return 3;
+      return 2;
+    }
+
+    function calcStats() {
+      const job = getJob(state.currentJobId);
+      // 大師圖鑑永久加成：每點亮 1 個職業大師，全屬性 +12%
+      const masteryBonus = 1 + state.masteredJobs.length * 0.12;
+      const lvScale = 1 + (state.level - 1) * 0.22;
+
+      let hp = (job.baseHp * lvScale + state.upgrades.armor * 45) * masteryBonus;
+      let atk = (job.baseAtk * lvScale + state.upgrades.weapon * 8) * masteryBonus;
+      let crit = job.crit + state.masteredJobs.length * 0.01;
+      let def = job.def;
+
+      if (hasPassive('novice')) { hp *= 1.15; atk *= 1.15; }
+      if (hasPassive('sword')) { atk *= 1.25; }
+      if (hasPassive('chef')) { hp *= 1.30; }
+      if (hasPassive('berserker')) {
+        atk *= 1.40;
+        const missingRatio = 1 - (state.heroHp / Math.max(1, hp));
+        crit += missingRatio * 0.35;
+      }
+      if (hasPassive('catninja')) { crit += 0.20; }
+      if (hasPassive('hamster')) {
+        atk *= (1 + (state.gold / 100) * 0.08);
+      }
+      if (hasPassive('shield')) { def += 0.15; }
+      if (hasPassive('caramel_paladin')) { def += 0.25; }
+      if (hasPassive('tycoon_mage')) { atk *= 2.0; hp *= 1.5; }
+
+      return {
+        maxHp: Math.round(hp),
+        atk: Math.round(atk),
+        crit: Math.min(0.95, crit),
+        def: Math.min(0.75, def)
+      };
+    }
+
+    function getExpMultiplier() {
+      let mult = 1 + state.rebirthCount * 0.35 + state.upgrades.expRing * 0.30;
+      if (hasPassive('novice')) mult *= 1.20;
+      if (hasPassive('tycoon_mage')) mult *= 2.0;
+      return mult;
+    }
+
+    /********************************************************************
+     * 3. THREE.JS Q版 3D 角色與怪物渲染引擎
+     ********************************************************************/
+    let scene, camera, renderer;
+    let heroGroup, heroHeadGroup, heroHatGroup, heroWeaponGroup, heroCompanionGroup;
+    let monsterGroup;
+    let isDragging = false, prevMouseX = 0;
+    let heroAnimJump = 0, mobHitShake = 0;
+    let clock = new THREE.Clock();
+
+    function initThreeJS() {
+      const container = document.getElementById('canvas-wrapper');
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+
+      scene = new THREE.Scene();
+
+      camera = new THREE.PerspectiveCamera(42, w / h, 0.1, 100);
+      camera.position.set(0, 2.7, 6.8);
+      camera.lookAt(0, 1.0, 0);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(w, h);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      container.appendChild(renderer.domElement);
+
+      // Lights
+      const hemiLight = new THREE.HemisphereLight(0xffffff, 0xfbcfe8, 0.95);
+      scene.add(hemiLight);
+
+      const dirLight = new THREE.DirectionalLight(0xfffbeb, 0.9);
+      dirLight.position.set(5, 10, 7);
+      dirLight.castShadow = true;
+      scene.add(dirLight);
+
+      // Cute Floating Island Stage Floor
+      const stageGroup = new THREE.Group();
+      const grassGeo = new THREE.CylinderGeometry(3.8, 3.5, 0.5, 32);
+      const grassMat = new THREE.MeshToonMaterial({ color: 0x86efac });
+      const grassMesh = new THREE.Mesh(grassGeo, grassMat);
+      grassMesh.position.y = -0.25;
+      grassMesh.receiveShadow = true;
+      stageGroup.add(grassMesh);
+
+      const soilGeo = new THREE.CylinderGeometry(3.4, 2.4, 0.9, 24);
+      const soilMat = new THREE.MeshToonMaterial({ color: 0xfbbf24 });
+      const soilMesh = new THREE.Mesh(soilGeo, soilMat);
+      soilMesh.position.y = -0.8;
+      stageGroup.add(soilMesh);
+      scene.add(stageGroup);
+
+      // Build Hero & Monster Groups
+      heroGroup = new THREE.Group();
+      heroGroup.position.set(-1.35, 0, 0.3);
+      heroGroup.rotation.y = 0.55;
+      scene.add(heroGroup);
+
+      monsterGroup = new THREE.Group();
+      monsterGroup.position.set(1.45, 0, -0.1);
+      monsterGroup.rotation.y = -0.55;
+      scene.add(monsterGroup);
+
+      buildChibiHero3D();
+      spawnNewMonster(true);
+
+      // Mouse drag to rotate hero & stage view
+      container.addEventListener('mousedown', e => { isDragging = true; prevMouseX = e.clientX; });
+      window.addEventListener('mouseup', () => { isDragging = false; });
+      window.addEventListener('mousemove', e => {
+        if (!isDragging) return;
+        const delta = (e.clientX - prevMouseX) * 0.01;
+        heroGroup.rotation.y += delta;
+        prevMouseX = e.clientX;
+      });
+
+      window.addEventListener('resize', () => {
+        if (!container) return;
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+      });
+
+      animate3D();
+    }
+
+    function clearGroup(group) {
+      while (group.children.length > 0) {
+        const obj = group.children[0];
+        group.remove(obj);
       }
     }
 
-    const p = m.position.clone().add(new THREE.Vector3(0, 4.5, 0)).project(camera);
-    if (p.z < 1) {
-      f.labelEl.style.display = 'block';
-      f.labelEl.style.left = `${(p.x * 0.5 + 0.5) * window.innerWidth}px`;
-      f.labelEl.style.top = `${(-(p.y * 0.5) + 0.5) * window.innerHeight}px`;
-      f.labelEl.innerHTML = `<span style="background:${f.airline.badge};padding:1px 4px;border-radius:3px;margin-right:4px;">${f.id}</span>${f.gateName}`;
-    } else {
-      f.labelEl.style.display = 'none';
-    }
-  }
+    // Build Q-Version 2-Head-Tall 3D Chibi Character
+    function buildChibiHero3D() {
+      clearGroup(heroGroup);
+      const job = getJob(state.currentJobId);
+      const hatType = state.wardrobe.hat || job.visual.hat;
+      const weaponType = state.wardrobe.weapon || job.visual.weapon;
+      const bodyColor = job.visual.bodyColor;
 
-  gpsPinEls.forEach(lm => {
-    const p = lm.pos.clone().add(new THREE.Vector3(0, 2, 0)).project(camera);
-    if (p.z < 1) {
-      lm.el.style.display = 'block';
-      lm.el.style.left = `${(p.x * 0.5 + 0.5) * window.innerWidth}px`;
-      lm.el.style.top = `${(-(p.y * 0.5) + 0.5) * window.innerHeight}px`;
-    } else {
-      lm.el.style.display = 'none';
-    }
-  });
+      // 1. Stubby Chibi Legs
+      const legGeo = new THREE.CylinderGeometry(0.16, 0.14, 0.45, 16);
+      const shoeMat = new THREE.MeshToonMaterial({ color: 0x475569 });
+      const leftLeg = new THREE.Mesh(legGeo, shoeMat);
+      leftLeg.position.set(-0.22, 0.22, 0);
+      const rightLeg = new THREE.Mesh(legGeo, shoeMat);
+      rightLeg.position.set(0.22, 0.22, 0);
+      heroGroup.add(leftLeg, rightLeg);
 
-  renderer.render(scene, camera);
-}
-requestAnimationFrame(animate);
-</script>
+      // 2. Cute Tunic / Armor Body
+      const bodyGeo = new THREE.CylinderGeometry(0.36, 0.48, 0.78, 24);
+      const bodyMat = new THREE.MeshToonMaterial({ color: bodyColor });
+      const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+      bodyMesh.position.y = 0.72;
+      bodyMesh.castShadow = true;
+      heroGroup.add(bodyMesh);
+
+      // White collar scarf
+      const scarfGeo = new THREE.TorusGeometry(0.34, 0.08, 12, 24);
+      const scarfMat = new THREE.MeshToonMaterial({ color: 0xffffff });
+      const scarf = new THREE.Mesh(scarfGeo, scarfMat);
+      scarf.rotation.x = Math.PI / 2;
+      scarf.position.y = 1.08;
+      heroGroup.add(scarf);
+
+      // 3. Oversized Chibi Head (2-head proportion)
+      heroHeadGroup = new THREE.Group();
+      heroHeadGroup.position.y = 1.65;
+      heroGroup.add(heroHeadGroup);
+
+      const headGeo = new THREE.SphereGeometry(0.62, 32, 32);
+      const skinMat = new THREE.MeshToonMaterial({ color: 0xffe4d6 });
+      const headMesh = new THREE.Mesh(headGeo, skinMat);
+      headMesh.scale.set(1.06, 0.96, 1.0);
+      headMesh.castShadow = true;
+      heroHeadGroup.add(headMesh);
+
+      // Cute Chibi Eyes & Blush
+      const eyeGeo = new THREE.SphereGeometry(0.085, 16, 16);
+      const eyeMat = new THREE.MeshBasicMaterial({ color: 0x1e293b });
+      const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
+      leftEye.position.set(-0.22, 0.02, 0.56);
+      leftEye.scale.set(0.85, 1.25, 0.5);
+      const rightEye = leftEye.clone();
+      rightEye.position.x = 0.22;
+      heroHeadGroup.add(leftEye, rightEye);
+
+      // Eye shine highlights
+      const shineGeo = new THREE.SphereGeometry(0.03, 8, 8);
+      const shineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      const lShine = new THREE.Mesh(shineGeo, shineMat);
+      lShine.position.set(-0.20, 0.07, 0.60);
+      const rShine = lShine.clone();
+      rShine.position.x = 0.24;
+      heroHeadGroup.add(lShine, rShine);
+
+      // Rosy Blushes
+      const blushGeo = new THREE.SphereGeometry(0.09, 12, 12);
+      const blushMat = new THREE.MeshBasicMaterial({ color: 0xfb7185 });
+      const lBlush = new THREE.Mesh(blushGeo, blushMat);
+      lBlush.position.set(-0.36, -0.09, 0.50);
+      lBlush.scale.set(1.2, 0.6, 0.3);
+      const rBlush = lBlush.clone();
+      rBlush.position.x = 0.36;
+      heroHeadGroup.add(lBlush, rBlush);
+
+      // Special Face Details (Sleepy snot bubble for Necromancer, Chubby cheeks for Hamster)
+      if (job.visual.face === 'sleepy') {
+        // Dark eye circles + Sleepy snot bubble
+        const bubbleGeo = new THREE.SphereGeometry(0.16, 16, 16);
+        const bubbleMat = new THREE.MeshToonMaterial({ color: 0xbae6fd, transparent: true, opacity: 0.78 });
+        const snotBubble = new THREE.Mesh(bubbleGeo, bubbleMat);
+        snotBubble.position.set(0.12, -0.05, 0.68);
+        heroHeadGroup.add(snotBubble);
+        document.getElementById('ui-sleep-indicator').classList.remove('hidden');
+      } else {
+        document.getElementById('ui-sleep-indicator').classList.add('hidden');
+      }
+
+      if (job.visual.face === 'chubby') {
+        // Hamster stuffed cheeks
+        const cheekGeo = new THREE.SphereGeometry(0.22, 16, 16);
+        const lCheek = new THREE.Mesh(cheekGeo, skinMat);
+        lCheek.position.set(-0.46, -0.18, 0.32);
+        const rCheek = lCheek.clone();
+        rCheek.position.x = 0.46;
+        heroHeadGroup.add(lCheek, rCheek);
+      }
+
+      // 4. 3D Hat Attachment
+      heroHatGroup = new THREE.Group();
+      heroHatGroup.position.y = 0.52;
+      heroHeadGroup.add(heroHatGroup);
+      buildHat3D(hatType);
+
+      // 5. Chibi Arms & 3D Weapon Attachment
+      const armGeo = new THREE.CylinderGeometry(0.12, 0.10, 0.45, 12);
+      const leftArm = new THREE.Mesh(armGeo, skinMat);
+      leftArm.position.set(-0.52, 0.82, 0.1);
+      leftArm.rotation.z = 0.45;
+      heroGroup.add(leftArm);
+
+      heroWeaponGroup = new THREE.Group();
+      heroWeaponGroup.position.set(0.55, 0.85, 0.25);
+      heroGroup.add(heroWeaponGroup);
+
+      const rightArm = new THREE.Mesh(armGeo, skinMat);
+      rightArm.rotation.x = Math.PI / 3;
+      heroWeaponGroup.add(rightArm);
+
+      buildWeapon3D(weaponType);
+
+      // 6. Floating Companion
+      heroCompanionGroup = new THREE.Group();
+      heroCompanionGroup.position.set(-0.95, 1.85, -0.2);
+      heroGroup.add(heroCompanionGroup);
+      buildCompanion3D(job.visual.companion);
+    }
+
+    function buildHat3D(hatType) {
+      if (hatType === 'sprout') {
+        const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.28, 8), new THREE.MeshToonMaterial({ color: 0x22c55e }));
+        stem.position.y = 0.12;
+        const leaf1 = new THREE.Mesh(new THREE.SphereGeometry(0.14, 12, 12), new THREE.MeshToonMaterial({ color: 0x4ade80 }));
+        leaf1.scale.set(1.4, 0.4, 0.8);
+        leaf1.position.set(0.12, 0.25, 0);
+        const leaf2 = leaf1.clone();
+        leaf2.position.set(-0.12, 0.25, 0);
+        heroHatGroup.add(stem, leaf1, leaf2);
+      } else if (hatType === 'chef') {
+        const base = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.40, 0.35, 20), new THREE.MeshToonMaterial({ color: 0xffffff }));
+        base.position.y = 0.12;
+        const puff = new THREE.Mesh(new THREE.SphereGeometry(0.48, 20, 20), new THREE.MeshToonMaterial({ color: 0xffffff }));
+        puff.scale.set(1.05, 0.75, 1.05);
+        puff.position.y = 0.42;
+        heroHatGroup.add(base, puff);
+      } else if (hatType === 'wizard') {
+        const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.78, 0.78, 0.06, 24), new THREE.MeshToonMaterial({ color: 0x6d28d9 }));
+        const cone = new THREE.Mesh(new THREE.ConeGeometry(0.44, 0.85, 20), new THREE.MeshToonMaterial({ color: 0x7c3aed }));
+        cone.position.y = 0.42;
+        heroHatGroup.add(brim, cone);
+      } else if (hatType === 'catears') {
+        const earGeo = new THREE.ConeGeometry(0.22, 0.42, 4);
+        const earMat = new THREE.MeshToonMaterial({ color: 0xf472b6 });
+        const lEar = new THREE.Mesh(earGeo, earMat);
+        lEar.position.set(-0.34, 0.12, 0);
+        lEar.rotation.z = 0.35;
+        const rEar = new THREE.Mesh(earGeo, earMat);
+        rEar.position.set(0.34, 0.12, 0);
+        rEar.rotation.z = -0.35;
+        heroHatGroup.add(lEar, rEar);
+      } else if (hatType === 'pothelmet') {
+        const dome = new THREE.Mesh(new THREE.SphereGeometry(0.55, 20, 16, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshToonMaterial({ color: 0x94a3b8 }));
+        dome.position.y = -0.15;
+        const knob = new THREE.Mesh(new THREE.SphereGeometry(0.12, 12, 12), new THREE.MeshToonMaterial({ color: 0xf59e0b }));
+        knob.position.y = 0.42;
+        heroHatGroup.add(dome, knob);
+      } else if (hatType === 'horns') {
+        const hornGeo = new THREE.ConeGeometry(0.14, 0.45, 12);
+        const hornMat = new THREE.MeshToonMaterial({ color: 0xf43f5e });
+        const lH = new THREE.Mesh(hornGeo, hornMat);
+        lH.position.set(-0.32, 0.16, 0.1);
+        lH.rotation.z = 0.4;
+        const rH = lH.clone();
+        rH.position.x = 0.32;
+        rH.rotation.z = -0.4;
+        heroHatGroup.add(lH, rH);
+      } else if (hatType === 'hamstercrown' || hatType === 'beret') {
+        const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.28, 0.32, 8), new THREE.MeshToonMaterial({ color: 0xfacc15 }));
+        crown.position.y = 0.14;
+        const gem = new THREE.Mesh(new THREE.OctahedronGeometry(0.16), new THREE.MeshToonMaterial({ color: 0xec4899 }));
+        gem.position.y = 0.38;
+        heroHatGroup.add(crown, gem);
+      } else {
+        // Bandana / Skullpin default cute headband
+        const band = new THREE.Mesh(new THREE.TorusGeometry(0.54, 0.07, 12, 24), new THREE.MeshToonMaterial({ color: 0xef4444 }));
+        band.rotation.x = Math.PI / 2;
+        band.position.y = -0.18;
+        heroHatGroup.add(band);
+      }
+    }
+
+    function buildWeapon3D(weaponType) {
+      if (weaponType === 'pan') {
+        // Frying pan + Sunny-side-up egg!
+        const panBody = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.32, 0.08, 20), new THREE.MeshToonMaterial({ color: 0x334155 }));
+        panBody.position.set(0, 0.1, 0.48);
+        const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.45, 8), new THREE.MeshToonMaterial({ color: 0x78350f }));
+        handle.rotation.x = Math.PI / 2;
+        handle.position.set(0, 0.1, 0.15);
+        const eggWhite = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.03, 16), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+        eggWhite.position.set(0, 0.15, 0.48);
+        const yolk = new THREE.Mesh(new THREE.SphereGeometry(0.09, 12, 12), new THREE.MeshToonMaterial({ color: 0xf59e0b }));
+        yolk.position.set(0, 0.18, 0.48);
+        heroWeaponGroup.add(panBody, handle, eggWhite, yolk);
+      } else if (weaponType === 'sword' || weaponType === 'greatsword' || weaponType === 'dualblades') {
+        const isBig = weaponType === 'greatsword';
+        const blade = new THREE.Mesh(
+          new THREE.BoxGeometry(isBig ? 0.24 : 0.14, isBig ? 1.15 : 0.85, 0.06),
+          new THREE.MeshToonMaterial({ color: isBig ? 0xf43f5e : 0xe2e8f0 })
+        );
+        blade.position.set(0, 0.55, 0.25);
+        const guard = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.08, 0.12), new THREE.MeshToonMaterial({ color: 0xfbbf24 }));
+        guard.position.set(0, 0.12, 0.25);
+        heroWeaponGroup.add(blade, guard);
+      } else if (weaponType === 'shield') {
+        const lid = new THREE.Mesh(new THREE.CylinderGeometry(0.52, 0.52, 0.10, 24), new THREE.MeshToonMaterial({ color: 0xfbbf24 }));
+        lid.rotation.x = Math.PI / 2;
+        lid.position.set(0.1, 0.2, 0.38);
+        heroWeaponGroup.add(lid);
+      } else if (weaponType === 'staff' || weaponType === 'scythe') {
+        const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.25, 10), new THREE.MeshToonMaterial({ color: 0x78350f }));
+        pole.position.set(0, 0.4, 0.25);
+        const orb = new THREE.Mesh(new THREE.OctahedronGeometry(0.22), new THREE.MeshToonMaterial({ color: 0xc084fc }));
+        orb.position.set(0, 1.08, 0.25);
+        heroWeaponGroup.add(pole, orb);
+      } else if (weaponType === 'bazooka' || weaponType === 'abacus' || weaponType === 'goldbag') {
+        const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.26, 0.75, 16), new THREE.MeshToonMaterial({ color: 0xfacc15 }));
+        barrel.rotation.x = Math.PI / 2;
+        barrel.position.set(0, 0.22, 0.35);
+        heroWeaponGroup.add(barrel);
+      } else {
+        // Cute wooden branch with a leaf
+        const stick = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 0.75, 8), new THREE.MeshToonMaterial({ color: 0x92400e }));
+        stick.position.set(0, 0.35, 0.22);
+        heroWeaponGroup.add(stick);
+      }
+    }
+
+    function buildCompanion3D(type) {
+      if (type === 'none') return;
+      let mesh;
+      if (type === 'ghost') {
+        mesh = new THREE.Mesh(new THREE.ConeGeometry(0.24, 0.48, 16), new THREE.MeshToonMaterial({ color: 0xe2e8f0 }));
+        mesh.rotation.x = Math.PI;
+      } else if (type === 'coin') {
+        mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.07, 20), new THREE.MeshToonMaterial({ color: 0xfacc15 }));
+        mesh.rotation.x = Math.PI / 2;
+      } else {
+        mesh = new THREE.Mesh(new THREE.SphereGeometry(0.22, 16, 16), new THREE.MeshToonMaterial({ color: 0xfb7185 }));
+      }
+      heroCompanionGroup.add(mesh);
+    }
+
+    // Build 3D Cute Monster
+    function spawnNewMonster(initial = false) {
+      clearGroup(monsterGroup);
+      const zone = ZONES[state.zoneIndex];
+      const mobTemplate = zone.mobs[Math.floor(Math.random() * zone.mobs.length)];
+      state.mobName = mobTemplate.name;
+      state.mobMaxHp = Math.round(55 * zone.hpMult * (1 + state.level * 0.18));
+      state.mobHp = state.mobMaxHp;
+
+      const mat = new THREE.MeshToonMaterial({ color: mobTemplate.color });
+      let body;
+      if (mobTemplate.shape === 'cube') {
+        body = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.0, 1.1), mat);
+        body.position.y = 0.55;
+      } else if (mobTemplate.shape === 'boss') {
+        body = new THREE.Mesh(new THREE.SphereGeometry(0.95, 24, 24), mat);
+        body.scale.set(1.1, 0.95, 1.1);
+        body.position.y = 0.85;
+        // Crown on boss
+        const crown = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.45, 6), new THREE.MeshToonMaterial({ color: 0xfacc15 }));
+        crown.position.y = 1.75;
+        monsterGroup.add(crown);
+      } else {
+        // Slime / Mushroom default bouncy sphere
+        body = new THREE.Mesh(new THREE.SphereGeometry(0.68, 24, 24), mat);
+        body.scale.set(1.15, 0.82, 1.15);
+        body.position.y = 0.52;
+      }
+      body.castShadow = true;
+      monsterGroup.add(body);
+
+      // Cute Monster Eyes
+      const eyeGeo = new THREE.SphereGeometry(0.09, 12, 12);
+      const eyeMat = new THREE.MeshBasicMaterial({ color: 0x0f172a });
+      const lEye = new THREE.Mesh(eyeGeo, eyeMat);
+      lEye.position.set(-0.22, 0.62, 0.58);
+      const rEye = lEye.clone();
+      rEye.position.x = 0.22;
+      monsterGroup.add(lEye, rEye);
+
+      if (!initial) updateHUD();
+    }
+
+    function resetCameraView() {
+      heroGroup.rotation.y = 0.55;
+    }
+
+    function animate3D() {
+      requestAnimationFrame(animate3D);
+      const t = clock.getElapsedTime();
+
+      // Cute Chibi Breathing & Attack Jump
+      if (heroGroup) {
+        if (heroAnimJump > 0) {
+          heroAnimJump = Math.max(0, heroAnimJump - 0.08);
+          heroGroup.position.x = -1.35 + Math.sin(heroAnimJump * Math.PI) * 0.85;
+          heroGroup.position.y = Math.sin(heroAnimJump * Math.PI) * 0.55;
+          if (heroWeaponGroup) heroWeaponGroup.rotation.x = Math.sin(heroAnimJump * Math.PI) * 1.4;
+        } else {
+          heroGroup.position.x = -1.35;
+          heroGroup.position.y = Math.abs(Math.sin(t * 3.2)) * 0.08;
+          if (heroWeaponGroup) heroWeaponGroup.rotation.x = Math.sin(t * 3.2) * 0.15;
+        }
+        if (heroCompanionGroup) {
+          heroCompanionGroup.position.y = 1.85 + Math.sin(t * 4) * 0.18;
+          heroCompanionGroup.rotation.y += 0.03;
+        }
+      }
+
+      // Monster bounce & hit shake
+      if (monsterGroup) {
+        if (mobHitShake > 0) {
+          mobHitShake = Math.max(0, mobHitShake - 0.1);
+          monsterGroup.position.x = 1.45 + (Math.random() - 0.5) * 0.28;
+          monsterGroup.scale.set(1.18, 0.82, 1.18);
+        } else {
+          monsterGroup.position.x = 1.45;
+          const s = 1 + Math.sin(t * 4.2) * 0.06;
+          monsterGroup.scale.set(s, 2 - s, s);
+        }
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    /********************************************************************
+     * 4. 戰鬥迴圈、手動點擊暴擊、轉職與無限轉生邏輯
+     ********************************************************************/
+    function spawnFloatingText(text, colorClass = 'text-amber-300', isRightSide = true) {
+      const container = document.getElementById('dmg-container');
+      const el = document.createElement('div');
+      el.className = `dmg-popup font-black text-lg md:text-2xl ${colorClass}`;
+      const baseLeft = isRightSide ? 64 : 24;
+      el.style.left = `${baseLeft + (Math.random() * 14 - 7)}%`;
+      el.style.top = `${36 + (Math.random() * 16 - 8)}%`;
+      el.textContent = text;
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 850);
+    }
+
+    function addLog(msg, color = 'text-slate-700') {
+      const box = document.getElementById('ui-combat-log');
+      const div = document.createElement('div');
+      div.className = color;
+      div.innerHTML = msg;
+      box.prepend(div);
+      while (box.children.length > 25) box.lastChild.remove();
+    }
+
+    function performPlayerAttack(mult = 1.0, label = '') {
+      const stats = calcStats();
+      heroAnimJump = 1.0;
+
+      // 計算連擊次數
+      let hits = 1;
+      if (hasPassive('sword') && Math.random() < 0.30) hits += 1;
+      if (hasPassive('catninja')) hits += 1;
+      if (hasPassive('coin_gunner')) hits = 3;
+
+      for (let i = 0; i < hits; i++) {
+        const isCrit = Math.random() < stats.crit;
+        let critMult = isCrit ? (hasPassive('mage') ? 2.2 : 1.65) : 1.0;
+        let dmg = Math.round(stats.atk * mult * critMult * (0.92 + Math.random() * 0.16));
+
+        if (hasPassive('necromancer')) dmg = Math.round(dmg * 1.35);
+        if (hasPassive('dark_chef')) dmg = Math.round(dmg * 1.45);
+
+        state.mobHp = Math.max(0, state.mobHp - dmg);
+        mobHitShake = 1.0;
+
+        setTimeout(() => {
+          spawnFloatingText(
+            `${label}${isCrit ? '💥暴擊 ' : ''}-${dmg}`,
+            isCrit ? 'text-yellow-300 text-2xl' : 'text-white',
+            true
+          );
+        }, i * 110);
+
+        // 算盤小商人：攻擊噴金幣
+        if (hasPassive('merchant')) {
+          const bonusCoin = Math.max(1, Math.round(ZONES[state.zoneIndex].goldMult * (isCrit && hasPassive('coin_gunner') ? 6 : 3)));
+          state.gold += bonusCoin;
+        }
+      }
+
+      if (state.mobHp <= 0) {
+        onMonsterDefeated();
+      }
+      updateHUD();
+    }
+
+    function manualPlayerStrike() {
+      performPlayerAttack(1.35, '👆重擊 ');
+    }
+
+    function castUltimateSkill() {
+      if (state.ultCooldown > 0) return;
+      const job = getJob(state.currentJobId);
+      state.ultCooldown = 5;
+      addLog(`🌟 施放【${job.name}】招牌必殺技！造成毀滅性打擊！`, 'text-amber-600 font-bold');
+      performPlayerAttack(3.2, `✨${job.icon}必殺 `);
+      updateHUD();
+    }
+
+    function onMonsterDefeated() {
+      const zone = ZONES[state.zoneIndex];
+      const expGain = Math.round(18 * zone.expMult * getExpMultiplier());
+      let goldGain = Math.round(12 * zone.goldMult * (1 + state.upgrades.expRing * 0.3));
+      if (hasPassive('merchant')) goldGain = Math.round(goldGain * 1.65);
+      if (hasPassive('tycoon_mage')) goldGain *= 2;
+
+      state.exp += expGain;
+      state.gold += goldGain;
+
+      if (hasPassive('dark_chef')) {
+        state.heroHp = calcStats().maxHp;
+      }
+
+      spawnFloatingText(`+${expGain} EXP / +${goldGain}🪙`, 'text-emerald-300 text-sm', true);
+
+      // Check Level Up
+      while (state.exp >= state.maxExp) {
+        state.exp -= state.maxExp;
+        state.level += 1;
+        state.maxExp = Math.round(40 * Math.pow(1.28, state.level - 1));
+        const stats = calcStats();
+        state.heroHp = stats.maxHp;
+
+        spawnFloatingText(`🎉 Lv.${state.level} 升級！`, 'text-pink-300 text-2xl', false);
+        addLog(`🎉 恭喜升級至 <b>Lv.${state.level}</b>！全能力大幅提升！`, 'text-pink-600 font-bold');
+
+        // 達到 Lv.10 自動點亮該職業的大師刻印！
+        if (state.level >= 10 && !state.masteredJobs.includes(state.currentJobId)) {
+          state.masteredJobs.push(state.currentJobId);
+          const job = getJob(state.currentJobId);
+          addLog(`🏆 達成【${job.name}】Lv.10 大師刻印！永久解鎖前世被動【${job.passiveName}】與全屬性 +12%！`, 'text-purple-700 font-black');
+          renderRightPanels();
+        }
+      }
+
+      spawnNewMonster();
+      renderRightPanels();
+    }
+
+    // Automatic Combat Tick (Every 900ms)
+    setInterval(() => {
+      const stats = calcStats();
+      state.heroMaxHp = stats.maxHp;
+
+      // Cooldown tick
+      if (state.ultCooldown > 0) state.ultCooldown--;
+
+      // Chef / Necromancer / Armor Regen
+      let regen = state.upgrades.armor * 4;
+      if (hasPassive('chef')) regen += Math.round(stats.maxHp * 0.08);
+      if (hasPassive('necromancer')) regen += Math.round(stats.maxHp * 0.06);
+      if (regen > 0) {
+        state.heroHp = Math.min(stats.maxHp, state.heroHp + regen);
+        if (hasPassive('caramel_paladin')) {
+          // 焦糖聖盾使：回血時對怪物噴發聖光傷害
+          const holyDmg = Math.round(stats.atk * 1.5);
+          state.mobHp = Math.max(0, state.mobHp - holyDmg);
+          spawnFloatingText(`🍮聖光 -${holyDmg}`, 'text-amber-200 text-sm', true);
+        }
+      }
+
+      // Hero Auto Attack
+      performPlayerAttack(1.0);
+
+      // Monster Counter-attack
+      if (state.mobHp > 0) {
+        const zone = ZONES[state.zoneIndex];
+        let mobAtk = Math.round(8 * zone.atkMult * (1 - stats.def));
+        state.heroHp = Math.max(1, state.heroHp - mobAtk);
+
+        // Shield reflect
+        if (hasPassive('shield')) {
+          const reflectDmg = Math.round(stats.atk * 1.2);
+          state.mobHp = Math.max(0, state.mobHp - reflectDmg);
+          if (state.mobHp <= 0) onMonsterDefeated();
+        }
+      }
+
+      updateHUD();
+    }, 950);
+
+    /********************************************************************
+     * 5. 轉職、無限轉生、前世技能卡裝備與鍛造升級
+     ********************************************************************/
+    function canUnlockJob(job) {
+      // 檢查前置大師刻印要求
+      for (const reqId of job.reqMasteries) {
+        if (!state.masteredJobs.includes(reqId)) return false;
+      }
+      return true;
+    }
+
+    function selectJobOrRebirth(targetJobId) {
+      const job = getJob(targetJobId);
+      if (!canUnlockJob(job)) return;
+
+      const isRebirth = state.level >= 10;
+      if (!isRebirth && state.level < job.minLvToSwitch) return;
+
+      if (isRebirth) {
+        // 執行轉生！
+        if (!state.masteredJobs.includes(state.currentJobId)) {
+          state.masteredJobs.push(state.currentJobId);
+        }
+        state.rebirthCount += 1;
+        state.souls += 1;
+        state.level = 1;
+        state.exp = 0;
+        state.maxExp = 40;
+        addLog(`🦋 <b>第 ${state.rebirthCount} 次轉生成功！</b>轉生為【${job.name}】，經驗倍率永久提升至 ${Math.round(getExpMultiplier()*100)}%，獲得 🔮1 轉生魂晶！`, 'text-pink-600 font-black');
+      } else {
+        addLog(`✨ 成功轉職為【${job.name}】！換上全新 3D 職業造型！`, 'text-sky-700 font-bold');
+      }
+
+      state.currentJobId = targetJobId;
+      if (!state.unlockedJobs.includes(targetJobId)) {
+        state.unlockedJobs.push(targetJobId);
+      }
+
+      // Reset custom wardrobe so user immediately sees the new job's cute 3D model
+      state.wardrobe.hat = null;
+      state.wardrobe.weapon = null;
+
+      const stats = calcStats();
+      state.heroHp = stats.maxHp;
+      buildChibiHero3D();
+      updateHUD();
+      renderRightPanels();
+    }
+
+    function togglePassiveCard(jobId) {
+      const idx = state.equippedPassives.indexOf(jobId);
+      if (idx >= 0) {
+        state.equippedPassives.splice(idx, 1);
+      } else {
+        const maxSlots = getMaxPassiveSlots();
+        if (state.equippedPassives.length >= maxSlots) {
+          alert(`目前已達前世記憶槽上限 (${maxSlots} 槽)！多轉生幾次可解鎖至 4 槽，或先卸下其他卡片。`);
+          return;
+        }
+        state.equippedPassives.push(jobId);
+      }
+      updateHUD();
+      renderRightPanels();
+    }
+
+    function buyUpgrade(type) {
+      if (type === 'weapon') {
+        const cost = Math.round(30 * Math.pow(1.55, state.upgrades.weapon));
+        if (state.gold < cost) return;
+        state.gold -= cost;
+        state.upgrades.weapon++;
+      } else if (type === 'armor') {
+        const cost = Math.round(30 * Math.pow(1.55, state.upgrades.armor));
+        if (state.gold < cost) return;
+        state.gold -= cost;
+        state.upgrades.armor++;
+      } else if (type === 'expRing') {
+        const cost = state.upgrades.expRing + 1;
+        if (state.souls < cost) return;
+        state.souls -= cost;
+        state.upgrades.expRing++;
+      }
+      updateHUD();
+    }
+
+    function changeZone(delta) {
+      state.zoneIndex = Math.max(0, Math.min(ZONES.length - 1, state.zoneIndex + delta));
+      spawnNewMonster();
+      updateHUD();
+    }
+
+    /********************************************************************
+     * 6. UI 渲染與分頁切換
+     ********************************************************************/
+    function updateHUD() {
+      const job = getJob(state.currentJobId);
+      const stats = calcStats();
+      const zone = ZONES[state.zoneIndex];
+
+      document.getElementById('ui-gold').textContent = state.gold.toLocaleString();
+      document.getElementById('ui-souls').textContent = state.souls;
+      document.getElementById('ui-rebirths').textContent = state.rebirthCount;
+      document.getElementById('ui-exp-mult').textContent = Math.round(getExpMultiplier() * 100);
+      document.getElementById('ui-mastery-count').textContent = `${state.masteredJobs.length} / ${JOBS.length}`;
+
+      // Left Card
+      document.getElementById('ui-job-tier').textContent = job.tier;
+      const isMastered = state.masteredJobs.includes(job.id);
+      const masterBadge = document.getElementById('ui-job-master-badge');
+      masterBadge.textContent = isMastered ? '★ 已點亮大師刻印' : '未達成大師 (Lv.10)';
+      masterBadge.className = isMastered
+        ? 'text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-amber-300 text-slate-900'
+        : 'text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500';
+
+      document.getElementById('ui-job-icon').textContent = job.icon;
+      document.getElementById('ui-job-name').textContent = job.name;
+      document.getElementById('ui-job-desc').textContent = job.desc;
+      document.getElementById('ui-level').textContent = state.level;
+      document.getElementById('ui-exp-text').textContent = `${state.exp} / ${state.maxExp} EXP`;
+      document.getElementById('ui-exp-bar').style.width = `${Math.min(100, (state.exp / state.maxExp) * 100)}%`;
+
+      document.getElementById('ui-stat-hp').textContent = stats.maxHp.toLocaleString();
+      document.getElementById('ui-stat-atk').textContent = stats.atk.toLocaleString();
+      document.getElementById('ui-stat-crit').textContent = `${Math.round(stats.crit * 100)}%`;
+      document.getElementById('ui-stat-def').textContent = `${Math.round(stats.def * 100)}%`;
+      document.getElementById('ui-job-passive').textContent = `【${job.passiveName}】${job.passiveDesc}`;
+
+      // Upgrades
+      document.getElementById('upg-weapon-lv').textContent = `Lv.${state.upgrades.weapon}`;
+      document.getElementById('upg-weapon-cost').textContent = `🪙 ${Math.round(30 * Math.pow(1.55, state.upgrades.weapon))}`;
+      document.getElementById('upg-armor-lv').textContent = `Lv.${state.upgrades.armor}`;
+      document.getElementById('upg-armor-cost').textContent = `🪙 ${Math.round(30 * Math.pow(1.55, state.upgrades.armor))}`;
+      document.getElementById('upg-exp-lv').textContent = `Lv.${state.upgrades.expRing}`;
+      document.getElementById('upg-exp-cost').textContent = `🔮 ${state.upgrades.expRing + 1} 魂晶`;
+
+      // Center Stage HUD
+      document.getElementById('ui-zone-name').textContent = zone.name;
+      document.getElementById('ui-zone-rec').textContent = zone.rec;
+      document.getElementById('hud-hero-title').textContent = `Lv.${state.level} ${job.name}`;
+      document.getElementById('hud-hero-hp-text').textContent = `${state.heroHp}/${stats.maxHp}`;
+      document.getElementById('hud-hero-hp-bar').style.width = `${Math.min(100, (state.heroHp / stats.maxHp) * 100)}%`;
+
+      document.getElementById('hud-mob-name').textContent = state.mobName;
+      document.getElementById('hud-mob-hp-text').textContent = `${state.mobHp}/${state.mobMaxHp}`;
+      document.getElementById('hud-mob-hp-bar').style.width = `${Math.min(100, (state.mobHp / state.mobMaxHp) * 100)}%`;
+
+      document.getElementById('ui-ult-name').textContent = state.ultCooldown > 0
+        ? `必殺技冷卻中 (${state.ultCooldown}s)`
+        : `${job.icon} 施放職業必殺技！`;
+
+      const rbBtnText = document.getElementById('ui-rebirth-btn-text');
+      rbBtnText.textContent = state.level >= 10
+        ? '🔥 已滿等！立即點右側轉生！'
+        : `轉生神殿 (Lv.${state.level}/10)`;
+
+      // Equipped Passives Left Box
+      const maxSlots = getMaxPassiveSlots();
+      document.getElementById('ui-slot-count').textContent = `${state.equippedPassives.length} / ${maxSlots} 槽`;
+      const eqBox = document.getElementById('ui-equipped-passives');
+      eqBox.innerHTML = '';
+      for (let i = 0; i < maxSlots; i++) {
+        const pid = state.equippedPassives[i];
+        if (pid) {
+          const pJob = getJob(pid);
+          eqBox.innerHTML += `
+            <div class="bg-purple-50 border border-purple-300 rounded-xl p-2 flex items-center justify-between text-xs">
+              <div>
+                <div class="font-black text-purple-800">${pJob.icon} 【${pJob.passiveName}】</div>
+                <div class="text-[10px] text-slate-600">${pJob.passiveDesc}</div>
+              </div>
+              <button onclick="togglePassiveCard('${pid}')" class="text-rose-500 font-bold px-2 py-0.5 hover:bg-rose-50 rounded">卸下</button>
+            </div>`;
+        } else {
+          eqBox.innerHTML += `
+            <div onclick="switchRightTab('passives')" class="cursor-pointer border-2 border-dashed border-purple-200 hover:border-purple-400 rounded-xl p-2 text-center text-xs text-purple-400 font-bold">
+              ＋ 點擊裝備前世記憶卡 (槽位 ${i + 1})
+            </div>`;
+        }
+      }
+    }
+
+    function switchRightTab(tab) {
+      ['jobs', 'passives', 'wardrobe'].forEach(t => {
+        document.getElementById(`tab-panel-${t}`).classList.toggle('hidden', t !== tab);
+        const btn = document.getElementById(`tab-btn-${t}`);
+        if (t === tab) {
+          btn.className = 'py-2 rounded-xl font-black text-xs bg-pink-500 text-white shadow-sm transition-all';
+        } else {
+          btn.className = 'py-2 rounded-xl font-black text-xs text-pink-700 hover:bg-pink-100 transition-all';
+        }
+      });
+      renderRightPanels();
+    }
+
+    function filterJobs(branch) {
+      state.jobFilter = branch;
+      ['all', 'combat', 'magic', 'life', 'hybrid'].forEach(b => {
+        const el = document.getElementById(`flt-${b}`);
+        if (b === branch) {
+          el.className = 'px-2.5 py-1 rounded-full text-xs font-black bg-slate-800 text-white';
+        } else {
+          el.className = 'px-2.5 py-1 rounded-full text-xs font-bold bg-pink-100 text-pink-700';
+        }
+      });
+      renderRightPanels();
+    }
+
+    function setWardrobeItem(part, val) {
+      state.wardrobe[part] = val;
+      buildChibiHero3D();
+      renderRightPanels();
+    }
+
+    function resetWardrobeToJob() {
+      state.wardrobe.hat = null;
+      state.wardrobe.weapon = null;
+      buildChibiHero3D();
+      renderRightPanels();
+    }
+
+    function renderRightPanels() {
+      // 1. Render Job Tree List
+      const listEl = document.getElementById('ui-job-list');
+      listEl.innerHTML = '';
+
+      const filtered = JOBS.filter(j => state.jobFilter === 'all' || j.branch === state.jobFilter);
+      filtered.forEach(job => {
+        const isCurrent = state.currentJobId === job.id;
+        const isMastered = state.masteredJobs.includes(job.id);
+        const unlocked = canUnlockJob(job);
+        const canRebirthNow = state.level >= 10 && unlocked;
+        const canSwitchNow = !isCurrent && unlocked && (state.level >= job.minLvToSwitch || state.level >= 10);
+
+        let reqText = '';
+        if (job.reqMasteries.length > 0) {
+          const names = job.reqMasteries.map(id => {
+            const m = state.masteredJobs.includes(id);
+            return `<span class="${m ? 'text-emerald-600 font-bold' : 'text-rose-500 font-bold'}">${m ? '✓' : '✗'}${getJob(id).name}大師</span>`;
+          }).join(' + ');
+          reqText = `<div class="text-[11px] mt-1">🔒 需點亮前世：${names}</div>`;
+        }
+
+        let btnHtml = '';
+        if (isCurrent && state.level < 10) {
+          btnHtml = `<span class="text-xs font-black text-sky-600 bg-sky-100 px-3 py-1.5 rounded-xl">修練中 (Lv.${state.level}/10)</span>`;
+        } else if (canRebirthNow) {
+          btnHtml = `<button onclick="selectJobOrRebirth('${job.id}')" class="cute-btn bg-gradient-to-r from-pink-500 to-purple-600 text-white font-black text-xs px-3 py-1.5 rounded-xl">🦋 轉生為此職 (+35%經驗)</button>`;
+        } else if (canSwitchNow) {
+          btnHtml = `<button onclick="selectJobOrRebirth('${job.id}')" class="cute-btn bg-sky-500 hover:bg-sky-600 text-white font-black text-xs px-3 py-1.5 rounded-xl">✨ 立即轉職</button>`;
+        } else {
+          btnHtml = `<span class="text-[11px] font-bold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-xl">${unlocked ? `需 Lv.${job.minLvToSwitch}` : '條件未達成'}</span>`;
+        }
+
+        listEl.innerHTML += `
+          <div class="p-3 rounded-2xl border-2 transition-all ${isCurrent ? 'bg-sky-50 border-sky-400' : isMastered ? 'bg-amber-50/60 border-amber-300' : 'bg-white border-slate-200'}">
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <div class="text-2xl w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shadow-sm">${job.icon}</div>
+                <div>
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="font-black text-sm text-slate-800">${job.name}</span>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">${job.tier}</span>
+                    ${isMastered ? '<span class="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-300 text-slate-900">★大師</span>' : ''}
+                  </div>
+                  <div class="text-[11px] text-slate-500 mt-0.5">${job.desc}</div>
+                </div>
+              </div>
+              <div class="shrink-0">${btnHtml}</div>
+            </div>
+            <div class="mt-2 text-[11px] bg-white/80 px-2.5 py-1 rounded-lg border border-slate-100 text-indigo-800">
+              <b>被動【${job.passiveName}】：</b>${job.passiveDesc}
+            </div>
+            ${reqText}
+          </div>`;
+      });
+
+      // 2. Render Passive Library
+      const passEl = document.getElementById('ui-passive-library');
+      passEl.innerHTML = '';
+      JOBS.forEach(job => {
+        const isMastered = state.masteredJobs.includes(job.id);
+        const isEquipped = state.equippedPassives.includes(job.id);
+        const isCurrent = state.currentJobId === job.id;
+
+        passEl.innerHTML += `
+          <div class="p-2.5 rounded-xl border-2 flex items-center justify-between gap-2 ${isEquipped ? 'bg-purple-50 border-purple-400' : isMastered ? 'bg-white border-slate-200' : 'bg-slate-50 border-slate-200 opacity-60'}">
+            <div>
+              <div class="font-black text-xs text-slate-800">${job.icon} 【${job.passiveName}】 <span class="text-[10px] text-slate-400">(${job.name})</span></div>
+              <div class="text-[11px] text-slate-600">${job.passiveDesc}</div>
+            </div>
+            <div class="shrink-0">
+              ${isCurrent ? '<span class="text-[11px] font-bold text-sky-600">本職生效中</span>' :
+                isMastered ? `<button onclick="togglePassiveCard('${job.id}')" class="cute-btn px-3 py-1 rounded-lg font-black text-xs ${isEquipped ? 'bg-rose-500 text-white' : 'bg-purple-500 text-white'}">${isEquipped ? '卸下' : '裝備'}</button>` :
+                '<span class="text-[11px] text-slate-400 font-bold">🔒 需練至 Lv.10</span>'}
+            </div>
+          </div>`;
+      });
+
+      // 3. Render 3D Wardrobe
+      const hatsEl = document.getElementById('wardrobe-hats');
+      const wepsEl = document.getElementById('wardrobe-weapons');
+      hatsEl.innerHTML = '';
+      wepsEl.innerHTML = '';
+
+      JOBS.forEach(job => {
+        const isUnlocked = state.unlockedJobs.includes(job.id) || state.masteredJobs.includes(job.id);
+        const activeHat = (state.wardrobe.hat || getJob(state.currentJobId).visual.hat) === job.visual.hat;
+        const activeWep = (state.wardrobe.weapon || getJob(state.currentJobId).visual.weapon) === job.visual.weapon;
+
+        hatsEl.innerHTML += `
+          <button ${!isUnlocked ? 'disabled' : ''} onclick="setWardrobeItem('hat', '${job.visual.hat}')"
+            class="p-2 rounded-xl border-2 text-left text-xs font-bold transition-all ${activeHat ? 'bg-pink-100 border-pink-500 text-pink-900' : isUnlocked ? 'bg-white border-slate-200 hover:border-pink-300' : 'bg-slate-100 border-slate-200 opacity-50'}">
+            <div>${job.visual.hatName}</div>
+            <div class="text-[10px] text-slate-400">${isUnlocked ? job.name : '🔒 尚未轉職'}</div>
+          </button>`;
+
+        wepsEl.innerHTML += `
+          <button ${!isUnlocked ? 'disabled' : ''} onclick="setWardrobeItem('weapon', '${job.visual.weapon}')"
+            class="p-2 rounded-xl border-2 text-left text-xs font-bold transition-all ${activeWep ? 'bg-sky-100 border-sky-500 text-sky-900' : isUnlocked ? 'bg-white border-slate-200 hover:border-sky-300' : 'bg-slate-100 border-slate-200 opacity-50'}">
+            <div>${job.visual.weaponName}</div>
+            <div class="text-[10px] text-slate-400">${isUnlocked ? job.name : '🔒 尚未轉職'}</div>
+          </button>`;
+      });
+    }
+
+    // Boot Game
+    window.addEventListener('DOMContentLoaded', () => {
+      initThreeJS();
+      updateHUD();
+      renderRightPanels();
+      addLog('🌱 歡迎來到《轉生百職物語》！點擊中央 3D 舞台可幫忙重擊怪物，練到 Lv.5 可轉職、Lv.10 可無限轉生！', 'text-pink-600 font-bold');
+    });
+  </script>
 </body>
 </html>
