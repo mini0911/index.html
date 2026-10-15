@@ -13,6 +13,7 @@
     body { font-family: 'Noto Sans TC', sans-serif; }
     .word-badge { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 9999px; }
     .word-badge.needed { background-color: #fee2e2; color: #b91c1c; }
+    .word-badge.warn { background-color: #fef3c7; color: #b45309; }
     .word-badge.ok { background-color: #dcfce7; color: #15803d; }
   </style>
 </head>
@@ -24,7 +25,7 @@
     <div class="bg-gradient-to-r from-indigo-600 to-blue-600 px-6 py-8 text-white text-center">
       <span class="inline-block bg-white/20 text-xs font-semibold px-3 py-1 rounded-full mb-2 tracking-wide">🎬 互動學習單</span>
       <h1 class="text-2xl sm:text-3xl font-bold">南港高工電影欣賞社-影片欣賞學習單</h1>
-      <p class="text-indigo-100 text-sm mt-2">請帶著思考觀賞影片，認真記錄你的觀點與收穫（深思題需至少填寫 100 字）</p>
+      <p class="text-indigo-100 text-sm mt-2">請認真記錄你的觀點與收穫（深思題需滿 100 字，系統將自動過濾亂碼與重複灌水）</p>
     </div>
 
     <!-- 表單本體 -->
@@ -74,7 +75,7 @@
             </label>
             <span id="badge-q1" class="word-badge needed shrink-0">0 / 100 字</span>
           </div>
-          <textarea id="q1" rows="4" required data-min="100" class="min-limit-input w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="請詳細寫下你的預測與既有認知（需滿 100 字）..."></textarea>
+          <textarea id="q1" rows="4" required class="min-limit-input w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="請詳細寫下你的預測與既有認知（需滿 100 字，勿填寫純數字或重複贅字）..."></textarea>
         </div>
       </div>
 
@@ -91,7 +92,7 @@
             </label>
             <span id="badge-q2" class="word-badge needed shrink-0">0 / 100 字</span>
           </div>
-          <textarea id="q2" rows="4" required data-min="100" class="min-limit-input w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="描述主角面臨的困境與應對方式（需滿 100 字）..."></textarea>
+          <textarea id="q2" rows="4" required class="min-limit-input w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="描述主角面臨的困境與應對方式（需滿 100 字）..."></textarea>
         </div>
 
         <div class="space-y-2">
@@ -101,7 +102,7 @@
             </label>
             <span id="badge-q3" class="word-badge needed shrink-0">0 / 100 字</span>
           </div>
-          <textarea id="q3" rows="4" required data-min="100" class="min-limit-input w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="畫面描寫與心靈震撼原因（需滿 100 字）..."></textarea>
+          <textarea id="q3" rows="4" required class="min-limit-input w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="畫面描寫與心靈震撼原因（需滿 100 字）..."></textarea>
         </div>
       </div>
 
@@ -118,7 +119,7 @@
             </label>
             <span id="badge-q4" class="word-badge needed shrink-0">0 / 100 字</span>
           </div>
-          <textarea id="q4" rows="4" required data-min="100" class="min-limit-input w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="提出你的贊同觀點或批判思考（需滿 100 字）..."></textarea>
+          <textarea id="q4" rows="4" required class="min-limit-input w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="提出你的贊同觀點或批判思考（需滿 100 字）..."></textarea>
         </div>
 
         <div class="space-y-2">
@@ -128,7 +129,7 @@
             </label>
             <span id="badge-q5" class="word-badge needed shrink-0">0 / 100 字</span>
           </div>
-          <textarea id="q5" rows="4" required data-min="100" class="min-limit-input w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="假如是你，你會做出什麼不同的行動與原因（需滿 100 字）..."></textarea>
+          <textarea id="q5" rows="4" required class="min-limit-input w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="假如是你，你會做出什麼不同的行動與原因（需滿 100 字）..."></textarea>
         </div>
       </div>
 
@@ -138,7 +139,6 @@
           <span class="w-2 h-6 bg-indigo-600 rounded-full inline-block"></span> 第四部分：行動與反思
         </h2>
         
-        <!-- 第 6 題維持台詞佳句（不限百字） -->
         <div class="space-y-2">
           <label class="block text-sm font-semibold text-slate-700">
             6. 金句摘錄：請抄下一句電影中最觸動你心弦或最具哲理的一句台詞（或自己寫一句總結）： <span class="text-rose-500 font-bold">*</span>
@@ -153,7 +153,7 @@
             </label>
             <span id="badge-q7" class="word-badge needed shrink-0">0 / 100 字</span>
           </div>
-          <textarea id="q7" rows="4" required data-min="100" class="min-limit-input w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="對現實世界或未來的省思與啟示（需滿 100 字）..."></textarea>
+          <textarea id="q7" rows="4" required class="min-limit-input w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="對現實世界或未來的省思與啟示（需滿 100 字）..."></textarea>
         </div>
 
         <div class="space-y-2">
@@ -163,7 +163,7 @@
             </label>
             <span id="badge-q8" class="word-badge needed shrink-0">0 / 100 字</span>
           </div>
-          <textarea id="q8" rows="4" required data-min="100" class="min-limit-input w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="具體想嘗試的探索、思考或生活行動（需滿 100 字）..."></textarea>
+          <textarea id="q8" rows="4" required class="min-limit-input w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="具體想嘗試的探索、思考或生活行動（需滿 100 字）..."></textarea>
         </div>
       </div>
 
@@ -186,42 +186,84 @@
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzdEfYKr78Kw6aokCfmPjjv3dPKOTEtI_Yj3HxkW3gVP9fE4vwHvNCyg7wlZm0lAN1lbQ/exec";
 
-    // 自動帶入今天日期
     document.getElementById('watchDate').valueAsDate = new Date();
-
-    // 需限定 100 字的題目清單 (q1, q2, q3, q4, q5, q7, q8)
     const monitoredFields = ['q1', 'q2', 'q3', 'q4', 'q5', 'q7', 'q8'];
 
-    // 即時字數統計監聽
+    // 智能防灌水檢核函式
+    function validateTextQuality(text) {
+      const clean = text.trim();
+      const len = clean.length;
+      if (len < 100) return { valid: false, reason: `字數不足（目前 ${len} 字，需滿 100 字）` };
+
+      // 1. 檢測數字比例（若數字佔全文 30% 以上視為亂打）
+      const digits = (clean.match(/\d/g) || []).length;
+      if (digits / len > 0.3) {
+        return { valid: false, reason: "內容包含過多數字或亂碼，請以中文完整表達心得" };
+      }
+
+      // 2. 檢測連續重複字元（同一個字連續重複 5 次以上，例如：哈哈哈哈哈、好好好好好）
+      if (/(.)\1{4,}/.test(clean)) {
+        return { valid: false, reason: "偵測到連續重複相同字元，請勿灌水" };
+      }
+
+      // 3. 檢測單一字元佔比（最常見的字元佔總字數超過 25%）
+      const charCounts = {};
+      for (let ch of clean) {
+        if (!/\s/.test(ch)) {
+          charCounts[ch] = (charCounts[ch] || 0) + 1;
+        }
+      }
+      const maxRepeat = Math.max(...Object.values(charCounts));
+      if (maxRepeat / len > 0.25) {
+        return { valid: false, reason: "重複相同字元過多，請具體敘述完整內容" };
+      }
+
+      // 4. 檢測相異字元數（滿 100 字至少要有 20 個以上不同字元）
+      const uniqueCharCount = Object.keys(charCounts).length;
+      if (uniqueCharCount < 20) {
+        return { valid: false, reason: "詞彙重複率過高，請充實心得內容" };
+      }
+
+      return { valid: true };
+    }
+
+    // 即時字數與品質更新
     monitoredFields.forEach(id => {
       const field = document.getElementById(id);
       const badge = document.getElementById(`badge-${id}`);
       
       field.addEventListener('input', function() {
-        const len = this.value.trim().length;
-        if (len >= 100) {
-          badge.textContent = `✓ 已達標 (${len} 字)`;
-          badge.className = "word-badge ok shrink-0";
-          this.classList.remove('border-rose-400');
-          this.classList.add('border-emerald-400');
-        } else {
+        const val = this.value;
+        const len = val.trim().length;
+        const check = validateTextQuality(val);
+
+        if (len < 100) {
           badge.textContent = `${len} / 100 字`;
           badge.className = "word-badge needed shrink-0";
+          this.classList.remove('border-emerald-400', 'border-amber-400');
+        } else if (!check.valid) {
+          badge.textContent = `⚠️ 格式異常 (${len}字)`;
+          badge.className = "word-badge warn shrink-0";
+          this.classList.add('border-amber-400');
           this.classList.remove('border-emerald-400');
+        } else {
+          badge.textContent = `✓ 已達標 (${len} 字)`;
+          badge.className = "word-badge ok shrink-0";
+          this.classList.remove('border-rose-400', 'border-amber-400');
+          this.classList.add('border-emerald-400');
         }
       });
     });
 
-    // 提交表單事件
+    // 提交驗證
     document.getElementById('worksheetForm').addEventListener('submit', function(e) {
       e.preventDefault();
 
-      // 檢查所有指定題目的字數是否達標 (>= 100)
       for (let id of monitoredFields) {
         const field = document.getElementById(id);
-        const len = field.value.trim().length;
-        if (len < 100) {
-          alert(`⚠️ 第 ${id.replace('q', '')} 題未滿 100 字（目前僅 ${len} 字），請再補充思考心得後再繳交！`);
+        const check = validateTextQuality(field.value);
+        if (!check.valid) {
+          alert(`⚠️ 第 ${id.replace('q', '')} 題未通過檢核：\n${check.reason}！`);
           field.focus();
           field.classList.add('border-rose-500', 'ring-2', 'ring-rose-200');
           return;
@@ -274,7 +316,7 @@
       });
     });
 
-    // 截圖功能
+    // 截圖下載
     document.getElementById('exportBtn').addEventListener('click', function() {
       const statusMsg = document.getElementById('statusMsg');
       statusMsg.textContent = "正在產生學習單截圖，請稍候...";
