@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>影音思維探索：影片欣賞數位學習單</title>
+  <title>南港高工電影欣賞社-影片欣賞學習單</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- html2canvas for export -->
@@ -20,22 +20,26 @@
     <!-- 頂部標題區 -->
     <div class="bg-gradient-to-r from-indigo-600 to-blue-600 px-6 py-8 text-white text-center">
       <span class="inline-block bg-white/20 text-xs font-semibold px-3 py-1 rounded-full mb-2 tracking-wide">🎬 互動學習單</span>
-      <h1 class="text-2xl sm:text-3xl font-bold">影音思維探索學習單</h1>
+      <h1 class="text-2xl sm:text-3xl font-bold">南港高工電影欣賞社-影片欣賞學習單</h1>
       <p class="text-indigo-100 text-sm mt-2">請帶著思考觀賞影片，認真記錄你的觀點與收穫</p>
     </div>
 
     <!-- 表單本體 -->
     <form id="worksheetForm" class="p-6 sm:p-10 space-y-8">
       
-      <!-- 基本資料 -->
-      <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <!-- 基本資料 (已將班級與學號獨立分開) -->
+      <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">班級 *</label>
+          <input type="text" id="studentClass" required class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="例：3年2班">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">學號 *</label>
+          <input type="text" id="studentId" required class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="例：05">
+        </div>
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">學生姓名 *</label>
           <input type="text" id="studentName" required class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="請輸入姓名">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">學號 / 班級 *</label>
-          <input type="text" id="studentId" required class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="例：3年2班 05號">
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">觀看日期 *</label>
@@ -92,7 +96,7 @@
         </div>
 
         <div class="space-y-3">
-          <label class="block text-sm font-semibold text-slate-700">3. 印象最深刻的一幕：請寫下對你視覺或心理衝擊最大的一個畫面，並說明原因：</label>
+          <label class="block text-sm font-semibold text-slate-700">3. 印象最深刻的一幕：請寫下對你視覺 or 心理衝擊最大的一個畫面，並說明原因：</label>
           <textarea id="q3" rows="3" required class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="畫面描述與觸動原因..."></textarea>
         </div>
       </div>
@@ -172,10 +176,11 @@
       statusMsg.textContent = "正在將作答資料寫入後台試算表，請稍候...";
       statusMsg.className = "text-sm font-medium text-indigo-600";
 
-      // 蒐集所有欄位資料
+      // 蒐集所有欄位資料（包含獨立的班級與學號）
       const formData = {
-        studentName: document.getElementById('studentName').value,
+        studentClass: document.getElementById('studentClass').value,
         studentId: document.getElementById('studentId').value,
+        studentName: document.getElementById('studentName').value,
         watchDate: document.getElementById('watchDate').value,
         videoTitle: document.getElementById('videoTitle').value,
         videoType: document.getElementById('videoType').value,
@@ -222,7 +227,7 @@
       
       html2canvas(document.querySelector('.max-w-3xl'), { scale: 2 }).then(canvas => {
         const link = document.createElement('a');
-        link.download = `${document.getElementById('studentName').value || '學生'}_影片學習單.png`;
+        link.download = `${document.getElementById('studentClass').value}_${document.getElementById('studentId').value}_${document.getElementById('studentName').value || '學生'}_影片學習單.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
         statusMsg.textContent = "📸 截圖已成功下載到您的裝置！";
