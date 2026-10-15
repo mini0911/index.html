@@ -3,215 +3,200 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TPE 桃園國際機場 3D 模擬經營 — SkyHub RCTP</title>
+<title>TPE 臺灣桃園國際機場 3D 真實模擬經營 — RCTP Real Layout Edition</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
   :root {
-    --bg-dark: rgba(10, 16, 28, 0.85);
-    --bg-panel: rgba(15, 23, 42, 0.88);
-    --border-glow: rgba(56, 189, 248, 0.35);
+    --bg-panel: rgba(11, 19, 35, 0.88);
+    --border-glow: rgba(56, 189, 248, 0.38);
     --accent: #38bdf8;
-    --accent-gold: #f59e0b;
+    --accent-gold: #fbbf24;
     --accent-green: #10b981;
-    --accent-red: #ef4444;
-    --text-main: #f1f5f9;
+    --text-main: #f8fafc;
     --text-sub: #94a3b8;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
   body, html {
     width: 100%; height: 100%; overflow: hidden;
     font-family: 'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
-    background: #070b14; color: var(--text-main);
+    background: #07101e; color: var(--text-main);
   }
-  #canvas-container {
-    position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1;
-  }
+  #canvas-container { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
+  #labels-container { position: absolute; inset: 0; pointer-events: none; z-index: 5; overflow: hidden; }
 
   /* 頂部資訊列 */
   .top-hud {
-    position: absolute; top: 12px; left: 16px; right: 16px; z-index: 10;
+    position: absolute; top: 10px; left: 14px; right: 14px; z-index: 10;
     display: flex; align-items: center; justify-content: space-between;
-    background: var(--bg-panel); backdrop-filter: blur(12px);
-    border: 1px solid var(--border-glow); border-radius: 14px;
-    padding: 10px 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    background: var(--bg-panel); backdrop-filter: blur(14px);
+    border: 1px solid var(--border-glow); border-radius: 12px;
+    padding: 9px 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.55);
     flex-wrap: wrap; gap: 10px;
   }
-  .brand-box {
-    display: flex; align-items: center; gap: 12px;
-  }
+  .brand-box { display: flex; align-items: center; gap: 12px; }
   .airport-code {
-    background: linear-gradient(135deg, #0284c7, #2563eb);
-    color: #fff; font-weight: 900; font-size: 20px; letter-spacing: 1px;
+    background: linear-gradient(135deg, #0284c7, #1d4ed8);
+    color: #fff; font-weight: 900; font-size: 18px; letter-spacing: 1px;
     padding: 6px 12px; border-radius: 8px;
-    box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+    box-shadow: 0 0 14px rgba(56, 189, 248, 0.45);
   }
-  .brand-title h1 { font-size: 16px; font-weight: 700; color: #fff; }
-  .brand-title p { font-size: 11px; color: var(--accent); letter-spacing: 0.5px; }
+  .brand-title h1 { font-size: 15px; font-weight: 800; color: #fff; }
+  .brand-title p { font-size: 11px; color: var(--accent); margin-top: 1px; }
 
-  .stats-bar {
-    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
-  }
+  .stats-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .stat-item {
     display: flex; flex-direction: column;
-    background: rgba(255,255,255,0.04); padding: 5px 12px;
+    background: rgba(255,255,255,0.04); padding: 4px 11px;
     border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);
   }
-  .stat-label { font-size: 10px; color: var(--text-sub); text-transform: uppercase; }
-  .stat-value { font-size: 15px; font-weight: 800; color: #fff; margin-top: 1px; }
+  .stat-label { font-size: 10px; color: var(--text-sub); }
+  .stat-value { font-size: 14px; font-weight: 800; color: #fff; }
   .stat-value.gold { color: #fbbf24; }
   .stat-value.green { color: #34d399; }
   .stat-value.cyan { color: #38bdf8; }
 
-  .top-controls {
-    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-  }
+  .top-controls { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .btn {
-    background: rgba(30, 41, 59, 0.9); color: var(--text-main);
-    border: 1px solid rgba(148, 163, 184, 0.3);
-    padding: 7px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;
-    cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(30, 41, 59, 0.92); color: var(--text-main);
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    padding: 6px 11px; border-radius: 7px; font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: all 0.18s; display: inline-flex; align-items: center; gap: 4px;
   }
-  .btn:hover { background: rgba(56, 189, 248, 0.2); border-color: var(--accent); transform: translateY(-1px); }
+  .btn:hover { background: rgba(56, 189, 248, 0.22); border-color: var(--accent); transform: translateY(-1px); }
   .btn.active { background: linear-gradient(135deg, #0284c7, #2563eb); border-color: #60a5fa; color: #fff; }
   .btn.gold { background: linear-gradient(135deg, #d97706, #b45309); border-color: #fbbf24; color: #fff; }
   .btn.green { background: linear-gradient(135deg, #059669, #047857); border-color: #34d399; color: #fff; }
-  .btn.red { background: linear-gradient(135deg, #dc2626, #991b1b); border-color: #f87171; color: #fff; }
   .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-xs { padding: 4px 8px; font-size: 11px; border-radius: 5px; }
 
-  /* 左側 FIDS 航班動態與攝影機視角 */
+  /* 左右側邊欄 */
   .left-dock {
-    position: absolute; top: 82px; left: 16px; bottom: 72px; width: 350px; z-index: 10;
-    display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+    position: absolute; top: 76px; left: 14px; bottom: 66px; width: 345px; z-index: 10;
+    display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+  }
+  .right-dock {
+    position: absolute; top: 76px; right: 14px; bottom: 66px; width: 395px; z-index: 10;
+    display: flex; flex-direction: column; gap: 8px; pointer-events: none;
   }
   .panel {
-    background: var(--bg-panel); backdrop-filter: blur(12px);
+    background: var(--bg-panel); backdrop-filter: blur(14px);
     border: 1px solid var(--border-glow); border-radius: 12px;
-    padding: 12px; pointer-events: auto; display: flex; flex-direction: column;
+    padding: 11px; pointer-events: auto; display: flex; flex-direction: column;
     box-shadow: 0 8px 25px rgba(0,0,0,0.45);
   }
   .panel-header {
     display: flex; justify-content: space-between; align-items: center;
-    padding-bottom: 8px; margin-bottom: 8px;
+    padding-bottom: 7px; margin-bottom: 7px;
     border-bottom: 1px solid rgba(255,255,255,0.1);
   }
   .panel-title { font-size: 13px; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 6px; }
 
   /* FIDS 航班卡片 */
   .fids-list {
-    overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 8px;
-    padding-right: 4px; max-height: 460px;
+    overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 7px;
+    padding-right: 4px;
   }
   .fids-card {
-    background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(255,255,255,0.1);
-    border-left: 4px solid var(--accent); border-radius: 8px; padding: 9px 10px;
-    cursor: pointer; transition: all 0.18s;
+    background: rgba(15, 23, 42, 0.78); border: 1px solid rgba(255,255,255,0.1);
+    border-left: 4px solid var(--accent); border-radius: 8px; padding: 8px 10px;
+    cursor: pointer; transition: all 0.15s;
   }
   .fids-card:hover { background: rgba(30, 41, 59, 0.95); border-color: var(--accent); }
-  .fids-card.selected { background: rgba(14, 116, 144, 0.3); border-color: #38bdf8; box-shadow: 0 0 12px rgba(56,189,248,0.25); }
-  .fids-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-  .flight-no { font-weight: 800; font-size: 13px; color: #fff; display: flex; align-items: center; gap: 6px; }
-  .airline-tag {
-    font-size: 10px; padding: 1px 6px; border-radius: 4px; font-weight: 700;
-  }
+  .fids-card.selected { background: rgba(14, 116, 144, 0.32); border-color: #38bdf8; box-shadow: 0 0 12px rgba(56,189,248,0.28); }
+  .fids-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+  .flight-no { font-weight: 800; font-size: 12.5px; color: #fff; display: flex; align-items: center; gap: 5px; }
+  .airline-tag { font-size: 10px; padding: 1px 6px; border-radius: 4px; font-weight: 800; }
   .status-badge {
     font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 99px;
     background: rgba(56, 189, 248, 0.2); color: #7dd3fc;
   }
-  .fids-sub { font-size: 11px; color: var(--text-sub); display: flex; justify-content: space-between; margin-bottom: 6px; }
+  .fids-sub { font-size: 11px; color: var(--text-sub); display: flex; justify-content: space-between; margin-bottom: 5px; }
   .progress-wrap {
     width: 100%; height: 5px; background: rgba(255,255,255,0.08);
-    border-radius: 99px; overflow: hidden; margin-bottom: 6px;
+    border-radius: 99px; overflow: hidden; margin-bottom: 5px;
   }
   .progress-bar { height: 100%; background: linear-gradient(90deg, #38bdf8, #10b981); transition: width 0.2s; }
   .fids-actions { display: flex; gap: 5px; flex-wrap: wrap; }
-  .btn-xs {
-    padding: 4px 8px; font-size: 11px; border-radius: 5px;
-  }
 
-  /* 右側多功能經營面板 */
-  .right-dock {
-    position: absolute; top: 82px; right: 16px; bottom: 72px; width: 410px; z-index: 10;
-    display: flex; flex-direction: column; gap: 10px; pointer-events: none;
-  }
+  /* 右側分頁與卡片 */
   .tab-bar {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
-    background: var(--bg-panel); padding: 6px; border-radius: 12px;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px;
+    background: var(--bg-panel); padding: 5px; border-radius: 11px;
     border: 1px solid var(--border-glow); pointer-events: auto;
   }
   .tab-btn {
     background: transparent; color: var(--text-sub); border: none;
-    padding: 8px 4px; border-radius: 8px; font-size: 12px; font-weight: 700;
-    cursor: pointer; transition: all 0.2s;
+    padding: 7px 4px; border-radius: 7px; font-size: 12px; font-weight: 700;
+    cursor: pointer; transition: all 0.18s;
   }
   .tab-btn.active {
     background: linear-gradient(135deg, #0284c7, #1d4ed8); color: #fff;
-    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+    box-shadow: 0 3px 10px rgba(2, 132, 199, 0.4);
   }
   .tab-content {
-    flex: 1; overflow-y: auto; display: none; flex-direction: column; gap: 10px;
+    flex: 1; overflow-y: auto; display: none; flex-direction: column; gap: 8px;
     padding-right: 4px;
   }
   .tab-content.active { display: flex; }
 
-  /* 擴建與升級卡片 */
   .upgrade-card, .staff-card {
-    background: rgba(15, 23, 42, 0.78); border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 10px; padding: 11px; display: flex; flex-direction: column; gap: 6px;
+    background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 9px; padding: 10px; display: flex; flex-direction: column; gap: 5px;
   }
-  .upgrade-card.built { border-color: rgba(16, 185, 129, 0.5); background: rgba(6, 78, 59, 0.25); }
+  .upgrade-card.built { border-color: rgba(16, 185, 129, 0.55); background: rgba(6, 78, 59, 0.28); }
   .card-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-  .card-title { font-size: 13px; font-weight: 700; color: #fff; }
-  .card-desc { font-size: 11px; color: var(--text-sub); line-height: 1.4; }
+  .card-title { font-size: 12.5px; font-weight: 700; color: #fff; }
+  .card-desc { font-size: 11px; color: var(--text-sub); line-height: 1.38; }
   .skill-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 2px; }
   .skill-tag {
     font-size: 10px; background: rgba(56, 189, 248, 0.14); color: #7dd3fc;
-    padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(56, 189, 248, 0.25);
+    padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(56, 189, 248, 0.25);
   }
-  .energy-bar-wrap {
-    width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 99px; overflow: hidden;
-  }
+  .energy-bar-wrap { width: 100%; height: 5px; background: rgba(255,255,255,0.1); border-radius: 99px; overflow: hidden; }
 
-  /* 底部攝影機視角與 ATC 廣播 */
+  /* 底部賞機視角與 ATC 廣播 */
   .bottom-hud {
-    position: absolute; bottom: 12px; left: 16px; right: 16px; z-index: 10;
+    position: absolute; bottom: 10px; left: 14px; right: 14px; z-index: 10;
     display: flex; justify-content: space-between; align-items: center;
-    background: var(--bg-panel); backdrop-filter: blur(12px);
+    background: var(--bg-panel); backdrop-filter: blur(14px);
     border: 1px solid var(--border-glow); border-radius: 12px;
-    padding: 8px 16px; gap: 12px; flex-wrap: wrap;
+    padding: 7px 14px; gap: 10px; flex-wrap: wrap;
   }
-  .cam-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .cam-group { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
   .atc-ticker {
-    flex: 1; font-family: 'Courier New', monospace; font-size: 12px;
-    color: #34d399; background: rgba(0, 0, 0, 0.45);
-    padding: 6px 12px; border-radius: 6px; border-left: 3px solid #10b981;
+    flex: 1; font-family: 'Courier New', monospace; font-size: 11.5px;
+    color: #34d399; background: rgba(0, 0, 0, 0.5);
+    padding: 5px 10px; border-radius: 6px; border-left: 3px solid #10b981;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
 
-  /* 3D 浮動標籤 (HTML Overlay) */
-  #labels-container {
-    position: absolute; inset: 0; pointer-events: none; z-index: 5; overflow: hidden;
-  }
+  /* 3D 空間標籤與地標名牌 */
   .aircraft-label {
-    position: absolute; transform: translate(-50%, -120%);
-    background: rgba(15, 23, 42, 0.88); color: #fff;
-    border: 1px solid rgba(56, 189, 248, 0.6); border-radius: 6px;
-    padding: 3px 7px; font-size: 11px; font-weight: 700;
+    position: absolute; transform: translate(-50%, -125%);
+    background: rgba(11, 19, 35, 0.9); color: #fff;
+    border: 1px solid rgba(56, 189, 248, 0.65); border-radius: 6px;
+    padding: 2px 7px; font-size: 11px; font-weight: 700;
     white-space: nowrap; pointer-events: auto; cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5); transition: transform 0.1s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.55);
   }
-  .aircraft-label:hover { transform: translate(-50%, -125%) scale(1.08); border-color: #fbbf24; }
+  .aircraft-label:hover { border-color: #fbbf24; transform: translate(-50%, -132%) scale(1.06); }
+  .landmark-label {
+    position: absolute; transform: translate(-50%, -50%);
+    background: rgba(15, 23, 42, 0.72); color: #cbd5e1;
+    border: 1px solid rgba(148, 163, 184, 0.35); border-radius: 4px;
+    padding: 1px 6px; font-size: 10px; font-weight: 700;
+    white-space: nowrap; pointer-events: none;
+  }
   .float-money {
     position: absolute; transform: translate(-50%, -50%);
-    font-weight: 900; font-size: 14px; color: #fbbf24;
-    text-shadow: 0 2px 6px rgba(0,0,0,0.85);
+    font-weight: 900; font-size: 13px; color: #fbbf24;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.9);
     animation: floatUp 1.6s ease-out forwards; pointer-events: none;
   }
   @keyframes floatUp {
     0% { opacity: 1; margin-top: 0px; }
-    100% { opacity: 0; margin-top: -42px; }
+    100% { opacity: 0; margin-top: -40px; }
   }
-
-  /* 自訂捲軸 */
   ::-webkit-scrollbar { width: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.35); border-radius: 99px; }
@@ -219,7 +204,6 @@
 </head>
 <body>
 
-<!-- 3D 場景容器 -->
 <div id="canvas-container"></div>
 <div id="labels-container"></div>
 
@@ -228,47 +212,48 @@
   <div class="brand-box">
     <div class="airport-code">TPE / RCTP</div>
     <div class="brand-title">
-      <h1>臺灣桃園國際機場 3D 營運中心</h1>
-      <p id="airport-tier-text">等級 1：雙航廈區域樞紐（北跑道 05L/23R 單跑道運作）</p>
+      <h1>臺灣桃園國際機場 3D 真實場域營運中心</h1>
+      <p id="airport-tier-text">真實夾心配置：北跑道 05L/23R ‧ T1/T2/T3 中央航廈軸線 ‧ WC 跨區滑行橋 ‧ 南跑道 05R/23L</p>
     </div>
   </div>
 
   <div class="stats-bar">
     <div class="stat-item">
       <span class="stat-label">機場建設基金 (NTD)</span>
-      <span class="stat-value gold" id="ui-money">$48,500</span>
+      <span class="stat-value gold" id="ui-money">$56,000</span>
     </div>
     <div class="stat-item">
-      <span class="stat-label">今日服務旅客</span>
-      <span class="stat-value cyan" id="ui-pax">1,240 人</span>
+      <span class="stat-label">今日旅運量</span>
+      <span class="stat-value cyan" id="ui-pax">2,480 人</span>
     </div>
     <div class="stat-item">
-      <span class="stat-label">準點率 / 評級</span>
-      <span class="stat-value green" id="ui-rep">96% (4.8★)</span>
+      <span class="stat-label">準點評級</span>
+      <span class="stat-value green" id="ui-rep">97% (4.9★)</span>
     </div>
     <div class="stat-item">
-      <span class="stat-label">在職機師 / 地勤</span>
-      <span class="stat-value" id="ui-staff-count">4 機師 / 6 地勤</span>
+      <span class="stat-label">駐場機師 / 地勤</span>
+      <span class="stat-value" id="ui-staff-count">4 機師 / 4 地勤組</span>
     </div>
     <div class="stat-item">
-      <span class="stat-label">台北時間 (CST)</span>
-      <span class="stat-value" id="ui-clock">08:30</span>
+      <span class="stat-label">桃園時間 (CST)</span>
+      <span class="stat-value" id="ui-clock">09:40</span>
     </div>
   </div>
 
   <div class="top-controls">
     <button class="btn active" id="btn-auto-atc" onclick="toggleAutoATC()">📡 塔台：自動排程</button>
     <button class="btn" id="btn-weather" onclick="cycleTimeWeather()">☀ 晴朗日航</button>
-    <button class="btn gold" onclick="spawnImmediateFlight()">✈ 申請加班機進場</button>
-    <button class="btn" id="btn-sound" onclick="toggleSound()">🔊 音效：開</button>
+    <button class="btn" id="btn-landmarks" onclick="toggleLandmarks()">🏷 地標名牌：開</button>
+    <button class="btn gold" onclick="spawnImmediateFlight()">✈ 申請航班進場</button>
+    <button class="btn" id="btn-sound" onclick="toggleSound()">🔊 音效</button>
   </div>
 </div>
 
-<!-- 左側 FIDS 航班動態看板與航廈旅客狀況 -->
+<!-- 左側 FIDS 航班動態看板與航廈即時數據 -->
 <div class="left-dock">
   <div class="panel" style="flex: 1;">
     <div class="panel-header">
-      <div class="panel-title">🛫 TPE 航班動態看板 (FIDS)</div>
+      <div class="panel-title">🛫 桃園機場航班動態 (FIDS)</div>
       <span style="font-size:11px; color:var(--text-sub);" id="active-flights-count">0 架執飛中</span>
     </div>
     <div class="fids-list" id="fids-container"></div>
@@ -276,262 +261,270 @@
 
   <div class="panel">
     <div class="panel-header">
-      <div class="panel-title">🏢 航廈即時動線與免稅商場</div>
-      <span style="font-size:11px; color:#fbbf24;" id="retail-rate-label">消費抽成 $18/人</span>
+      <div class="panel-title">🏢 T1 / T2 / T3 航廈旅客與免稅營收</div>
+      <span style="font-size:11px; color:#fbbf24;" id="retail-rate-label">免稅抽成 $22/人</span>
     </div>
     <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; font-size:11px; text-align:center;">
-      <div style="background:rgba(255,255,255,0.04); padding:6px; border-radius:6px;">
-        <div style="color:var(--text-sub);">報到/安檢排隊</div>
-        <div style="font-size:14px; font-weight:800; color:#38bdf8;" id="pax-security">18 人</div>
+      <div style="background:rgba(255,255,255,0.04); padding:5px; border-radius:6px;">
+        <div style="color:var(--text-sub);">e-Gate 查驗安檢</div>
+        <div style="font-size:13px; font-weight:800; color:#38bdf8;" id="pax-security">26 人</div>
       </div>
-      <div style="background:rgba(255,255,255,0.04); padding:6px; border-radius:6px;">
-        <div style="color:var(--text-sub);">免稅店/貴賓室</div>
-        <div style="font-size:14px; font-weight:800; color:#fbbf24;" id="pax-dutyfree">34 人</div>
+      <div style="background:rgba(255,255,255,0.04); padding:5px; border-radius:6px;">
+        <div style="color:var(--text-sub);">昇恆昌/采盟/貴賓室</div>
+        <div style="font-size:13px; font-weight:800; color:#fbbf24;" id="pax-dutyfree">54 人</div>
       </div>
-      <div style="background:rgba(255,255,255,0.04); padding:6px; border-radius:6px;">
-        <div style="color:var(--text-sub);">候機室登機中</div>
-        <div style="font-size:14px; font-weight:800; color:#34d399;" id="pax-boarding">42 人</div>
+      <div style="background:rgba(255,255,255,0.04); padding:5px; border-radius:6px;">
+        <div style="color:var(--text-sub);">A/B/C/D 廊廳候機</div>
+        <div style="font-size:13px; font-weight:800; color:#34d399;" id="pax-boarding">68 人</div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- 右側：機場擴建、招募機師、招募地勤、機坪檢查 -->
+<!-- 右側：桃園機場建設、找機師、找地勤、航空塗裝 -->
 <div class="right-dock">
   <div class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab('build')">🏗 機場擴建</button>
+    <button class="tab-btn active" onclick="switchTab('build')">🏗 桃機擴建</button>
     <button class="tab-btn" onclick="switchTab('pilots')">👨‍✈️ 找機師</button>
     <button class="tab-btn" onclick="switchTab('ground')">🦺 找地勤</button>
-    <button class="tab-btn" onclick="switchTab('airlines')">🌏 航空塗裝</button>
+    <button class="tab-btn" onclick="switchTab('airlines')">🌏 真實塗裝</button>
   </div>
 
-  <!-- 分頁 1：機場擴建與設施投資 -->
+  <!-- 分頁 1：桃園機場擴建藍圖 -->
   <div class="tab-content active panel" id="tab-build">
     <div class="panel-header">
-      <div class="panel-title">🏗 桃園國際機場建設藍圖（點擊投資建設）</div>
+      <div class="panel-title">🏗 桃園國際機場重大工程與擴建計畫</div>
     </div>
     <div id="expansion-list" style="display:flex; flex-direction:column; gap:8px;"></div>
   </div>
 
-  <!-- 分頁 2：找機師 (Pilot Center) -->
+  <!-- 分頁 2：找機師 -->
   <div class="tab-content panel" id="tab-pilots">
     <div class="panel-header">
-      <div class="panel-title">👨‍✈️ 飛航組員招募與派遣中心</div>
-      <button class="btn btn-xs gold" onclick="refreshPilotMarket()">🔄 刷新人才庫 ($800)</button>
+      <div class="panel-title">👨‍✈️ 飛航組員簽派與招募中心</div>
+      <button class="btn btn-xs gold" onclick="refreshPilotMarket()">🔄 刷新人才 ($800)</button>
     </div>
     <div style="font-size:11px; color:var(--text-sub); margin-bottom:4px;">
-      機師負責執行航前繞機檢查（Walkaround）與駕駛離場航班，高階機師可提升惡劣天氣準點率並獲得航空公司額外獎金。
+      機師會在機坪執行 3D 航前繞機檢查（Walkaround）並負責駕駛班機起降，高技術機師可加速簽派並提升準點率。
     </div>
-    <div id="pilot-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+    <div id="pilot-list" style="display:flex; flex-direction:column; gap:7px;"></div>
   </div>
 
-  <!-- 分頁 3：找地勤 (Ground Crew Center) -->
+  <!-- 分頁 3：找地勤 -->
   <div class="tab-content panel" id="tab-ground">
     <div class="panel-header">
-      <div class="panel-title">🦺 桃勤/長榮航勤招募與機坪調度</div>
-      <button class="btn btn-xs gold" onclick="refreshGroundMarket()">🔄 刷新人力 ($600)</button>
+      <div class="panel-title">🦺 桃勤 (TIAS) / 長榮航勤 / 星宇地勤招募</div>
+      <button class="btn btn-xs gold" onclick="refreshGroundMarket()">🔄 刷新班組 ($600)</button>
     </div>
     <div style="font-size:11px; color:var(--text-sub); margin-bottom:4px;">
-      地勤小隊負責「揮棒引導、空橋接靠、航空加油、行李裝卸與空廚補給」。人數越多、等級越高，飛機過站（Turnaround）速度越快！
+      派遣地勤車隊（中油航油車、桃勤行李車、空廚升降車、後推車與揮棒員）圍繞飛機作業，大幅縮短過站時間！
     </div>
-    <div id="ground-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+    <div id="ground-list" style="display:flex; flex-direction:column; gap:7px;"></div>
   </div>
 
-  <!-- 分頁 4：真實航空公司合約與塗裝圖鑑 -->
+  <!-- 分頁 4：真實航空公司塗裝圖鑑 -->
   <div class="tab-content panel" id="tab-airlines">
     <div class="panel-header">
-      <div class="panel-title">🌏 駐場航空公司真實塗裝與合約</div>
+      <div class="panel-title">🌏 桃園機場駐場航空公司真實 3D 塗裝</div>
     </div>
-    <div id="airline-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+    <div id="airline-list" style="display:flex; flex-direction:column; gap:7px;"></div>
   </div>
 </div>
 
-<!-- 底部攝影機視角與 ATC 塔台即時通訊 -->
+<!-- 底部真實桃機賞機視角與 ATC 廣播 -->
 <div class="bottom-hud">
   <div class="cam-group">
-    <span style="font-size:11px; color:var(--text-sub); font-weight:700;">🎥 3D 視角：</span>
-    <button class="btn btn-xs active" id="cam-overview" onclick="setCameraPreset('overview')">🌐 桃機全景</button>
-    <button class="btn btn-xs" id="cam-runway05L" onclick="setCameraPreset('runway05L')">🛬 05L 跑道頭賞機</button>
-    <button class="btn btn-xs" id="cam-apron" onclick="setCameraPreset('apron')">🌉 T2/T3 空橋機坪</button>
-    <button class="btn btn-xs" id="cam-tower" onclick="setCameraPreset('tower')">🗼 塔台俯瞰</button>
-    <button class="btn btn-xs" id="cam-follow" onclick="setCameraPreset('follow')">🎯 跟隨選中班機</button>
-    <span style="font-size:11px; color:var(--text-sub); margin-left:6px;">(滑鼠左鍵旋轉 / 右鍵平移 / 滾輪縮放)</span>
+    <span style="font-size:11px; color:var(--text-sub); font-weight:700;">🎥 桃機賞機視角：</span>
+    <button class="btn btn-xs active" id="cam-overview" onclick="setCameraPreset('overview')">🌐 桃機夾心全景</button>
+    <button class="btn btn-xs" id="cam-t2deck" onclick="setCameraPreset('t2deck')">🔭 T2 北側觀景台</button>
+    <button class="btn btn-xs" id="cam-rwy05L" onclick="setCameraPreset('rwy05L')">☕ 05L 跑道頭賞機</button>
+    <button class="btn btn-xs" id="cam-wcbridge" onclick="setCameraPreset('wcbridge')">🌉 WC 滑行道橋(飛機過馬路)</button>
+    <button class="btn btn-xs" id="cam-tower" onclick="setCameraPreset('tower')">🗼 紅白塔台視角</button>
+    <button class="btn btn-xs" id="cam-follow" onclick="setCameraPreset('follow')">🎯 跟隨班機</button>
   </div>
   <div class="atc-ticker" id="atc-log">
-    [RCTP TWR 118.7] 歡迎來到桃園國際機場 3D 營運中心！北跑道 05L 開放起降，請調度機師與地勤支援過站。
+    [Taipei Tower 118.7] 桃園國際機場真實配置已載入：北跑道 05L/23R 運作中，南跑道 05R/23L 與第三航廈可於右側面板投資啟用！
   </div>
 </div>
 
 <script>
 // ============================================================================
-// 1. 遊戲核心資料：真實航空公司塗裝 (Real-World Liveries) 與機隊設定
+// 1. 桃園機場真實駐場航空公司塗裝與機隊資料 (Real-World TPE Liveries)
 // ============================================================================
 const AIRLINES = [
   {
-    code: 'CI', icao: 'CAL', name: '中華航空 China Airlines',
-    hub: 'TPE 主基地', aircraft: 'A350-900',
+    code: 'CI', icao: 'CAL', reg: 'B-18901', name: '中華航空 China Airlines',
+    aircraft: 'A350-900', isA350: true,
     bodyColor: '#ffffff', bellyColor: '#e2e8f0',
     tailBg: '#ffffff', tailEmblem: 'plum', // 紅梅揚姿
-    stripeColor: '#1e3a8a', engineColor: '#f8fafc',
-    badgeBg: '#be185d', badgeText: '#fff',
-    feeBonus: 1.25, unlocked: true,
-    desc: '桃園機場主力國籍航空，經典「紅梅揚姿」尾翼塗裝與藍色機身字樣。'
+    stripeColor: '#1d4ed8', engineColor: '#f8fafc',
+    titleColor: '#1e3a8a', titleText: 'CHINA AIRLINES',
+    badgeBg: '#be185d', badgeText: '#ffffff',
+    preferSide: 'NORTH', feeBonus: 1.3,
+    desc: '桃園機場最大基地國籍航空，A350-900 搭配黑眼圈駕駛艙窗與經典「紅梅揚姿」尾翼。'
   },
   {
-    code: 'JX', icao: 'SJX', name: '星宇航空 STARLUX',
-    hub: 'TPE 主基地', aircraft: 'A350-900',
+    code: 'JX', icao: 'SJX', reg: 'B-58501', name: '星宇航空 STARLUX',
+    aircraft: 'A350-900', isA350: true,
     bodyColor: '#f8fafc', bellyColor: '#27272a',
-    tailBg: '#18181b', tailEmblem: 'starlux', // 曜石灰配大地金北極星
+    tailBg: '#18181b', tailEmblem: 'starlux', // 曜石灰配北極星
     stripeColor: '#d4af37', engineColor: '#27272a',
-    badgeBg: '#92400e', badgeText: '#fef08a',
-    feeBonus: 1.35, unlocked: true,
-    desc: '精品國籍航空，珍珠白機身搭配曜石灰機腹、玫瑰金飄帶與北極星尾翼。'
+    titleColor: '#a16207', titleText: 'STARLUX',
+    badgeBg: '#78350f', badgeText: '#fef08a',
+    preferSide: 'NORTH', feeBonus: 1.4,
+    desc: '精品國籍航空旗艦 A350-900，曜石灰機腹、大地金飄帶、北極星尾翼與 A350 墨鏡窗。'
   },
   {
-    code: 'BR', icao: 'EVA', name: '長榮航空 EVA Air',
-    hub: 'TPE 主基地', aircraft: 'B787-10',
+    code: 'BR', icao: 'EVA', reg: 'B-16781', name: '長榮航空 EVA Air',
+    aircraft: 'B787-10', isA350: false,
     bodyColor: '#ffffff', bellyColor: '#064e3b',
-    tailBg: '#064e3b', tailEmblem: 'eva', // 深綠羅盤尾翼與橘綠曲線
-    stripeColor: '#f97316', engineColor: '#047857',
+    tailBg: '#064e3b', tailEmblem: 'eva', // 深綠尾翼與橘綠曲線
+    stripeColor: '#f97316', engineColor: '#065f46',
+    titleColor: '#065f46', titleText: 'EVA AIR',
     badgeBg: '#065f46', badgeText: '#a7f3d0',
-    feeBonus: 1.25, unlocked: true,
-    desc: '星空聯盟成員，深綠色尾翼搭配橘綠雙色飄帶與潔白機身。'
+    preferSide: 'NORTH', feeBonus: 1.3,
+    desc: '桃園機場第二航廈主力，B787-10 夢幻客機搭配深綠羅盤尾翼與橘綠雙色機身曲線。'
   },
   {
-    code: 'IT', icao: 'TTW', name: '台灣虎航 Tigerair Taiwan',
-    hub: 'TPE 主基地', aircraft: 'A320neo',
+    code: 'IT', icao: 'TTW', reg: 'B-50001', name: '台灣虎航 Tigerair Taiwan',
+    aircraft: 'A320neo', isA350: false,
     bodyColor: '#ffffff', bellyColor: '#f1f5f9',
-    tailBg: '#facc15', tailEmblem: 'tiger', // 黑黃虎斑尾翼
+    tailBg: '#facc15', tailEmblem: 'tiger', // 黑黃虎斑
     stripeColor: '#eab308', engineColor: '#facc15',
-    badgeBg: '#ca8a04', badgeText: '#000',
-    feeBonus: 1.0, unlocked: true,
-    desc: '台灣高人氣平價航空，過站翻桌率高，鮮明黑黃虎斑尾翼塗裝。'
+    titleColor: '#18181b', titleText: 'tigerair TAIWAN',
+    badgeBg: '#ca8a04', badgeText: '#000000',
+    preferSide: 'NORTH', feeBonus: 1.05,
+    desc: '台灣第一平價航空，A320neo 窄體客機，鮮明黑黃虎斑尾翼與黃色發動機整流罩。'
   },
   {
-    code: 'CX', icao: 'CPA', name: '國泰航空 Cathay Pacific',
-    hub: '台港高密度航線', aircraft: 'A350-1000',
+    code: 'CX', icao: 'CPA', reg: 'B-LXA', name: '國泰航空 Cathay Pacific',
+    aircraft: 'A350-1000', isA350: true,
     bodyColor: '#f8fafc', bellyColor: '#cbd5e1',
     tailBg: '#0f5156', tailEmblem: 'cathay', // 翠綠翹首振翅
     stripeColor: '#0f5156', engineColor: '#0f5156',
+    titleColor: '#0f5156', titleText: 'CATHAY PACIFIC',
     badgeBg: '#115e59', badgeText: '#99f6e4',
-    feeBonus: 1.3, unlocked: true,
-    desc: '經典「翹首振翅」翠綠尾翼塗裝，台港線商務旅客消費力極高。'
+    preferSide: 'SOUTH', feeBonus: 1.32,
+    desc: '第一航廈 B 區與南跑道常客，翠綠「翹首振翅」尾翼塗裝，台港黃金航線主力。'
   },
   {
-    code: 'JL', icao: 'JAL', name: '日本航空 Japan Airlines',
-    hub: '東京羽田/成田', aircraft: 'B787-9',
+    code: 'JL', icao: 'JAL', reg: 'JA873J', name: '日本航空 Japan Airlines',
+    aircraft: 'B787-9', isA350: false,
     bodyColor: '#ffffff', bellyColor: '#e2e8f0',
-    tailBg: '#ffffff', tailEmblem: 'jal', // 經典紅鶴丸 Tsurumaru
+    tailBg: '#ffffff', tailEmblem: 'jal', // 經典紅鶴丸
     stripeColor: '#dc2626', engineColor: '#ffffff',
-    badgeBg: '#b91c1c', badgeText: '#fff',
-    feeBonus: 1.3, unlocked: true,
-    desc: '純白機身搭配日本傳統「鶴丸 (Tsurumaru)」鮮紅尾翼標誌。'
+    titleColor: '#1e293b', titleText: 'JAPAN AIRLINES',
+    badgeBg: '#b91c1c', badgeText: '#ffffff',
+    preferSide: 'SOUTH', feeBonus: 1.32,
+    desc: '第二航廈 D 區常客，純白機身搭配日本傳統鮮紅「鶴丸 (Tsurumaru)」尾翼。'
   }
 ];
 
 const DESTINATIONS = [
-  'NRT 東京成田', 'KIX 大阪關西', 'HKG 香港', 'BKK 曼谷蘇凡納布',
-  'SIN 新加坡樟宜', 'ICN 首爾仁川', 'DPS 峇里島', 'LAX 洛杉磯', 'SFO 舊金山', 'FRA 法蘭克福'
+  'NRT 東京成田', 'KIX 大阪關西', 'HND 東京羽田', 'HKG 香港',
+  'BKK 曼谷', 'SIN 新加坡', 'ICN 首爾仁川', 'DPS 峇里島', 'LAX 洛杉磯', 'SFO 舊金山'
 ];
 
 // ============================================================================
-// 2. 機場擴建項目 (Capital Expansion Projects)
+// 2. 桃園國際機場真實擴建工程 (TPE Real-World Expansion Projects)
 // ============================================================================
 const EXPANSIONS = [
   {
     id: 'south_runway',
-    name: '開放南跑道 05R/23L 雙跑道平行起降',
+    name: '啟用南跑道 05R/23L 全天候雙跑道起降',
     cost: 22000,
     built: false,
-    desc: '啟用桃園機場南跑道（05R/23L），實現「北降南起」平行分流，起降容量與調度效率提升 100%！',
-    effectText: '解鎖 05R/23L 南跑道 + 起降流量倍增'
+    desc: '完成南跑道 (05R/23L) 剛性道面整備並撤除工程車，實現桃機「南北雙跑道平行起降」，並讓飛機經由西側 WC 滑行道橋跨越航站道路！',
+    effectText: '啟用 05R/23L 南跑道 + 飛機跨橋滑行'
   },
   {
     id: 'terminal_3',
-    name: '興建第三航廈 (T3) 雲頂波浪航廈與 D6-D8 機位',
-    cost: 35000,
+    name: '完工啟用第三航廈 (T3 雲頂花瓣屋頂) 與北登機廊廳',
+    cost: 34000,
     built: false,
-    desc: '在 3D 場景西側興建桃園機場地標「第三航廈波浪屋頂」與全新雙空橋廣體機位（Gate D6、D7），可同時接待 5 架巨無霸客機！',
-    effectText: '新增 Gate D6/D7 + 航廈容量大增'
+    desc: '移除西側施工塔吊，正式落成英國 RSHP 設計之「T3 波浪屋頂、雲頂花瓣柱與北登機廊廳」，新增 D11、D12 雙空橋廣體機位！',
+    effectText: '落成 T3 第三航廈 + 解鎖 Gate D11/D12'
   },
   {
     id: 'vip_lounge',
-    name: '星宇 GALACTIC / 華航梅苑 / 長榮花園貴賓室群',
-    cost: 15000,
+    name: '星宇 GALACTIC / 華航梅苑 / 長榮花園貴賓室與免稅城',
+    cost: 16000,
     built: false,
-    desc: '於航廈二樓增設頂級國籍航空旗艦貴賓室與精品免稅大街，每位通關旅客平均免稅消費由 $18 提升至 $32！',
-    effectText: '旅客免稅與貴賓室收益 +78%'
+    desc: '升級 T1/T2 出境大廳昇恆昌、采盟精品免稅大街與三大國籍航空旗艦貴賓室，每位旅客免稅抽成由 $22 提升至 $38！',
+    effectText: '旅客免稅與貴賓室消費 +73%'
   },
   {
-    id: 'smart_baggage',
-    name: '桃勤自動化行李分揀與雙空橋快速接靠系統',
-    cost: 12000,
+    id: 'smart_apron',
+    name: '桃勤/長榮航勤 A-SMGCS 智慧機坪與雙空橋系統',
+    cost: 14000,
     built: false,
-    desc: '升級全機坪自動導引行李車與雙空橋同步作業，所有地勤過站作業速度提升 30%！',
-    effectText: '全機坪過站時間縮短 30%'
+    desc: '導入桃園機場 A-SMGCS 先進地面活動導引系統與自動化行李裝卸車隊，全機坪過站作業速度提升 35%！',
+    effectText: '全機坪過站時間縮短 35%'
   },
   {
-    id: 'hangar_mro',
-    name: '長榮/華航/星宇 巨型機務維修棚廠 (MRO Hangar)',
-    cost: 18000,
+    id: 'east_hangar',
+    name: '擴建東側華航修護工廠 & 長榮航太 (EGAT) 巨型棚廠',
+    cost: 19000,
     built: false,
-    desc: '在機場東北角增建大型 3D 飛機維修棚廠，機師繞機檢查發現小故障可立即排解，並定期產生機務外包收入。',
-    effectText: '每分鐘固定機務收益 +$1,200 & 準點率提升'
+    desc: '擴充機場東側機務維修專區，承接亞太區廣體客機大修業務，每分鐘自動產生固定機務收益並提升準點率。',
+    effectText: '每週期機務外包收入 +$550'
   }
 ];
 
 // ============================================================================
-// 3. 遊戲全域狀態與機師、地勤資料庫
+// 3. 桃園機場真實機位配置 (T1 A/B 廊廳、T2 C/D 廊廳、T3 北廊廳)
 // ============================================================================
+// 座標系：X 軸為東西向 (東 +X 往 T1/棚廠，西 -X 往 T2/T3/WC滑行橋)
+// Z 軸為南北向 (北 -Z 往北跑道 05L/台灣海峽，中央 Z=0 為航廈主軸，南 +Z 往南跑道 05R)
 const state = {
-  money: 48500,
-  totalPax: 1240,
-  reputation: 96,
-  retailPerPax: 18,
+  money: 56000,
+  totalPax: 2480,
+  reputation: 97,
+  retailPerPax: 22,
   autoATC: true,
   soundEnabled: true,
-  timeMinutes: 8 * 60 + 30, // 08:30
-  weatherMode: 0, // 0: 晴朗日航, 1: 黃昏夕照, 2: 璀璨夜航, 3: 雷雨側風
+  showLandmarks: true,
+  timeMinutes: 9 * 60 + 40,
+  weatherMode: 0,
   selectedFlightId: null,
   cameraPreset: 'overview',
-  paxStats: { security: 18, dutyfree: 34, boarding: 42 },
 
-  // 停機坪登機門 (T2: C1~C3, 擴建 T3 解鎖 D6~D7)
   gates: [
-    { id: 'C1', x: -75, z: 18, terminal: 'T2', unlocked: true, occupiedBy: null, jetbridgeAngle: 0 },
-    { id: 'C2', x: -25, z: 18, terminal: 'T2', unlocked: true, occupiedBy: null, jetbridgeAngle: 0 },
-    { id: 'C3', x:  25, z: 18, terminal: 'T2', unlocked: true, occupiedBy: null, jetbridgeAngle: 0 },
-    { id: 'D6', x:  75, z: 18, terminal: 'T3', unlocked: false, occupiedBy: null, jetbridgeAngle: 0 },
-    { id: 'D7', x: 125, z: 18, terminal: 'T3', unlocked: false, occupiedBy: null, jetbridgeAngle: 0 }
+    // 北側機坪 (面向北跑道 05L，機鼻朝南 +Z 停靠空橋)
+    { id: 'A6 (T1北)', shortId: 'A6', x: 92,  z: -62, side: 'NORTH', terminal: 'T1', unlocked: true,  occupiedBy: null },
+    { id: 'C2 (T2北)', shortId: 'C2', x: -12, z: -62, side: 'NORTH', terminal: 'T2', unlocked: true,  occupiedBy: null },
+    { id: 'C5 (T2北)', shortId: 'C5', x: -64, z: -62, side: 'NORTH', terminal: 'T2', unlocked: true,  occupiedBy: null },
+    { id: 'D11 (T3北)',shortId: 'D11',x: -135,z: -62, side: 'NORTH', terminal: 'T3', unlocked: false, occupiedBy: null },
+    { id: 'D12 (T3北)',shortId: 'D12',x: -185,z: -62, side: 'NORTH', terminal: 'T3', unlocked: false, occupiedBy: null },
+    // 南側機坪 (面向南跑道 05R，機鼻朝北 -Z 停靠空橋)
+    { id: 'B5 (T1南)', shortId: 'B5', x: 92,  z: 62,  side: 'SOUTH', terminal: 'T1', unlocked: true,  occupiedBy: null },
+    { id: 'D3 (T2南)', shortId: 'D3', x: -12, z: 62,  side: 'SOUTH', terminal: 'T2', unlocked: true,  occupiedBy: null },
+    { id: 'D6 (T2南)', shortId: 'D6', x: -64, z: 62,  side: 'SOUTH', terminal: 'T2', unlocked: true,  occupiedBy: null }
   ],
 
-  // 在職機師名單
   pilots: [
-    { id: 'P1', name: '林郁銘 總機長', rank: 'A350 檢定機長', skill: 98, speedBonus: 1.25, salary: 650, fatigue: 10, status: 'IDLE', assignedFlight: null },
-    { id: 'P2', name: '陳冠宇 教官機長', rank: 'B777/B787 機長', skill: 92, speedBonus: 1.18, salary: 550, fatigue: 15, status: 'IDLE', assignedFlight: null },
-    { id: 'P3', name: '張哲瑋 正機師', rank: 'A320/A330 機長', skill: 85, speedBonus: 1.10, salary: 420, fatigue: 20, status: 'IDLE', assignedFlight: null },
-    { id: 'P4', name: '王語彤 巡航副機師', rank: '資深副機師 (FO)', skill: 80, speedBonus: 1.05, salary: 320, fatigue: 5, status: 'IDLE', assignedFlight: null }
+    { id: 'P1', name: '林郁銘 總機長', rank: 'A350-900 檢定機長', skill: 98, speedBonus: 1.28, salary: 650, fatigue: 8,  status: 'IDLE', assignedFlight: null },
+    { id: 'P2', name: '陳冠宇 教官機長', rank: 'B787/B777 教師機師', skill: 93, speedBonus: 1.20, salary: 560, fatigue: 14, status: 'IDLE', assignedFlight: null },
+    { id: 'P3', name: '張哲瑋 正機師', rank: 'A350/A330 正機師', skill: 87, speedBonus: 1.12, salary: 440, fatigue: 18, status: 'IDLE', assignedFlight: null },
+    { id: 'P4', name: '王語彤 資深副駕', rank: 'A320neo 巡航機師', skill: 82, speedBonus: 1.08, salary: 340, fatigue: 5,  status: 'IDLE', assignedFlight: null }
   ],
   pilotCandidates: [],
 
-  // 在職地勤名單
   groundCrews: [
-    { id: 'G1', name: '桃勤機坪督導 A 組', role: '揮棒引導 & 空橋', efficiency: 1.25, salary: 300, energy: 95, status: 'IDLE', assignedFlight: null },
-    { id: 'G2', name: '長榮航勤裝載組', role: '行李裝卸 & 貨艙', efficiency: 1.20, salary: 280, energy: 90, status: 'IDLE', assignedFlight: null },
-    { id: 'G3', name: '中油航空加油車隊', role: '機翼高壓油車', efficiency: 1.18, salary: 260, energy: 88, status: 'IDLE', assignedFlight: null },
-    { id: 'G4', name: '空廚升降餐車組', role: '商務艙精品空廚', efficiency: 1.15, salary: 240, energy: 92, status: 'IDLE', assignedFlight: null }
+    { id: 'G1', name: '桃勤 (TIAS) 第一機坪特遣隊', role: '空橋 & 揮棒引導', efficiency: 1.28, salary: 320, energy: 96, status: 'IDLE', assignedFlight: null },
+    { id: 'G2', name: '長榮航勤 (EGAS) 廣體裝載組', role: '自動化貨艙行李', efficiency: 1.22, salary: 290, energy: 92, status: 'IDLE', assignedFlight: null },
+    { id: 'G3', name: '星宇自辦地勤機坪菁英班', role: '精品過站全能組', efficiency: 1.25, salary: 310, energy: 94, status: 'IDLE', assignedFlight: null },
+    { id: 'G4', name: '中油航油 & 華膳/長榮空廚隊', role: '高壓油車與空廚', efficiency: 1.18, salary: 260, energy: 90, status: 'IDLE', assignedFlight: null }
   ],
   groundCandidates: [],
-
   flights: []
 };
 
-// 初始化應徵者名單
 function generatePilotCandidates() {
   const names = ['趙子豪 機長', '劉宇軒 教官', '黃柏翰 機長', '許瑋甯 正機師', '鄭凱文 資深副駕', '周品妤 檢定機長'];
-  const ranks = ['A350 總機師', 'B787 資深機長', 'A330neo 機長', '全天候儀降教官'];
+  const ranks = ['A350 總機師', 'B787 檢定機長', 'B777 教官機長', 'A321neo 機長'];
   state.pilotCandidates = Array.from({ length: 3 }, (_, i) => {
-    const skill = 82 + Math.floor(Math.random() * 17);
+    const skill = 84 + Math.floor(Math.random() * 15);
     return {
       id: 'PC_' + Date.now() + '_' + i,
       name: names[Math.floor(Math.random() * names.length)],
@@ -548,10 +541,10 @@ function generatePilotCandidates() {
 }
 
 function generateGroundCandidates() {
-  const names = ['桃勤特級機坪班', '星宇自辦地勤菁英組', '機務航電快修班', 'VIP 電動車接駁小隊', '雙空橋重型操作組'];
-  const roles = ['全能過站加速', '快速行李裝卸', '精密航機引導', '高壓油車與空廚'];
+  const names = ['桃勤重型推車班', '星宇機坪星級車隊', '長榮航勤快修組', '華膳空廚極速升降隊'];
+  const roles = ['全能過站加速', '雙空橋快速接靠', '高速行李分揀', '航機加油與清艙'];
   state.groundCandidates = Array.from({ length: 3 }, (_, i) => {
-    const eff = +(1.15 + Math.random() * 0.25).toFixed(2);
+    const eff = +(1.16 + Math.random() * 0.24).toFixed(2);
     return {
       id: 'GC_' + Date.now() + '_' + i,
       name: names[Math.floor(Math.random() * names.length)],
@@ -569,7 +562,7 @@ generatePilotCandidates();
 generateGroundCandidates();
 
 // ============================================================================
-// 4. Web Audio 合成音效系統 (不依賴外部音檔)
+// 4. Web Audio 音效合成器
 // ============================================================================
 let audioCtx = null;
 function playTone(type) {
@@ -581,41 +574,40 @@ function playTone(type) {
     const gain = audioCtx.createGain();
     osc.connect(gain);
     gain.connect(audioCtx.destination);
-
     if (type === 'cash') {
       osc.type = 'sine';
       osc.frequency.setValueAtTime(880, now);
       osc.frequency.exponentialRampToValueAtTime(1320, now + 0.12);
-      gain.gain.setValueAtTime(0.08, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-      osc.start(now); osc.stop(now + 0.25);
+      gain.gain.setValueAtTime(0.07, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+      osc.start(now); osc.stop(now + 0.24);
     } else if (type === 'atc') {
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(520, now);
-      osc.frequency.setValueAtTime(680, now + 0.06);
-      gain.gain.setValueAtTime(0.06, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
-      osc.start(now); osc.stop(now + 0.18);
+      osc.frequency.setValueAtTime(540, now);
+      osc.frequency.setValueAtTime(720, now + 0.06);
+      gain.gain.setValueAtTime(0.05, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+      osc.start(now); osc.stop(now + 0.16);
     } else if (type === 'chime') {
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(659.25, now); // E5
-      osc.frequency.setValueAtTime(523.25, now + 0.18); // C5
-      gain.gain.setValueAtTime(0.09, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
-      osc.start(now); osc.stop(now + 0.45);
+      osc.frequency.setValueAtTime(659.25, now);
+      osc.frequency.setValueAtTime(523.25, now + 0.18);
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.42);
+      osc.start(now); osc.stop(now + 0.42);
     }
   } catch (e) {}
 }
 
 // ============================================================================
-// 5. Three.js 3D 桃園國際機場場景建構
+// 5. Three.js 桃園國際機場 1:1 夾心結構 3D 場景建置
 // ============================================================================
 const container = document.getElementById('canvas-container');
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0b1528);
-scene.fog = new THREE.FogExp2(0x0b1528, 0.0011);
+scene.background = new THREE.Color(0x1a365d);
+scene.fog = new THREE.FogExp2(0x1a365d, 0.00085);
 
-const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2500);
+const camera = new THREE.PerspectiveCamera(44, window.innerWidth / window.innerHeight, 1, 3000);
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -623,355 +615,625 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 container.appendChild(renderer.domElement);
 
-// 燈光系統
-const ambientLight = new THREE.AmbientLight(0xdbeafe, 0.75);
+const ambientLight = new THREE.AmbientLight(0xe0f2fe, 0.85);
 scene.add(ambientLight);
 
-const sunLight = new THREE.DirectionalLight(0xfffbeb, 1.15);
-sunLight.position.set(160, 260, 120);
+const sunLight = new THREE.DirectionalLight(0xfffbeb, 1.25);
+sunLight.position.set(180, 310, -140);
 sunLight.castShadow = true;
 sunLight.shadow.mapSize.width = 2048;
 sunLight.shadow.mapSize.height = 2048;
-sunLight.shadow.camera.near = 10;
-sunLight.shadow.camera.far = 700;
-const d = 240;
+const d = 320;
 sunLight.shadow.camera.left = -d;
 sunLight.shadow.camera.right = d;
 sunLight.shadow.camera.top = d;
 sunLight.shadow.camera.bottom = -d;
+sunLight.shadow.camera.near = 10;
+sunLight.shadow.camera.far = 850;
 scene.add(sunLight);
 
-// 動態跑道文字貼圖產生器
-function createRunwayTexture(leftDesignator, rightDesignator) {
+// 5.1 大園廠區綠地與北方台灣海峽海岸線 (竹圍漁港外海與風力發電機)
+const groundMesh = new THREE.Mesh(
+  new THREE.PlaneGeometry(2200, 1600),
+  new THREE.MeshLambertMaterial({ color: 0x1b3b2b })
+);
+groundMesh.rotation.x = -Math.PI / 2;
+groundMesh.receiveShadow = true;
+scene.add(groundMesh);
+
+// 北側台灣海峽海域 (Z = -380 以北)
+const seaMesh = new THREE.Mesh(
+  new THREE.PlaneGeometry(2200, 420),
+  new THREE.MeshPhongMaterial({ color: 0x0369a1, shininess: 90 })
+);
+seaMesh.rotation.x = -Math.PI / 2;
+seaMesh.position.set(0, 0.08, -490);
+scene.add(seaMesh);
+
+// 大園/蘆竹海岸防風林與白色風力發電機群
+const windTurbines = [];
+for (let x = -380; x <= 380; x += 95) {
+  const wtGroup = new THREE.Group();
+  wtGroup.position.set(x, 0, -285);
+  const mast = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.7, 1.4, 38, 10),
+    new THREE.MeshLambertMaterial({ color: 0xf8fafc })
+  );
+  mast.position.y = 19;
+  wtGroup.add(mast);
+
+  const rotor = new THREE.Group();
+  rotor.position.set(0, 38, 1.2);
+  for (let b = 0; b < 3; b++) {
+    const blade = new THREE.Mesh(
+      new THREE.BoxGeometry(1.0, 16, 0.3),
+      new THREE.MeshBasicMaterial({ color: 0xffffff })
+    );
+    blade.position.y = 8;
+    const pivot = new THREE.Group();
+    pivot.rotation.z = (b * Math.PI * 2) / 3;
+    pivot.add(blade);
+    rotor.add(pivot);
+  }
+  wtGroup.add(rotor);
+  scene.add(wtGroup);
+  windTurbines.push(rotor);
+}
+
+// 5.2 真實 ICAO 跑道貼圖產生器 (05L/23R 與 05R/23L 含快速脫離道標線與觸地區)
+function createAuthenticRunwayTexture(leftText, rightText, isConcrete) {
   const c = document.createElement('canvas');
   c.width = 2048; c.height = 256;
   const ctx = c.getContext('2d');
-  ctx.fillStyle = '#1e293b';
+
+  // 道面基底 (05L 瀝青深灰 / 05R 剛性水泥灰)
+  ctx.fillStyle = isConcrete ? '#334155' : '#1e293b';
   ctx.fillRect(0, 0, c.width, c.height);
 
-  // 瀝青顆粒質感与輪胎痕跡
-  ctx.fillStyle = 'rgba(15, 23, 42, 0.45)';
-  ctx.fillRect(200, 70, 1648, 116);
+  // 輪胎觸地黑痕 (Touchdown Rubber Marks)
+  const gradL = ctx.createLinearGradient(220, 0, 680, 0);
+  gradL.addColorStop(0, 'rgba(15,23,42,0.0)');
+  gradL.addColorStop(0.4, 'rgba(9,13,22,0.68)');
+  gradL.addColorStop(1, 'rgba(15,23,42,0.0)');
+  ctx.fillStyle = gradL;
+  ctx.fillRect(220, 52, 520, 152);
 
-  // 跑道邊線
+  const gradR = ctx.createLinearGradient(c.width - 740, 0, c.width - 220, 0);
+  gradR.addColorStop(0, 'rgba(15,23,42,0.0)');
+  gradR.addColorStop(0.6, 'rgba(9,13,22,0.68)');
+  gradR.addColorStop(1, 'rgba(15,23,42,0.0)');
+  ctx.fillStyle = gradR;
+  ctx.fillRect(c.width - 740, 52, 520, 152);
+
+  // 跑道白色邊線
   ctx.fillStyle = '#f8fafc';
-  ctx.fillRect(0, 8, c.width, 6);
-  ctx.fillRect(0, c.height - 14, c.width, 6);
+  ctx.fillRect(16, 10, c.width - 32, 6);
+  ctx.fillRect(16, c.height - 16, c.width - 32, 6);
+
+  // 跑道頭斑馬線 (16 條標準國際跑道閾值線)
+  for (let y = 24; y <= c.height - 34; y += 13) {
+    if (Math.abs(y - c.height / 2) < 10) continue;
+    ctx.fillRect(28, y, 68, 7);
+    ctx.fillRect(c.width - 96, y, 68, 7);
+  }
 
   // 跑道中心虛線
-  for (let x = 220; x < c.width - 220; x += 90) {
-    ctx.fillRect(x, c.height / 2 - 4, 50, 8);
+  for (let x = 210; x < c.width - 210; x += 78) {
+    ctx.fillRect(x, c.height / 2 - 3, 44, 6);
   }
 
-  // 跑道頭斑馬線 (Threshold Piano Keys)
-  for (let y = 26; y < c.height - 26; y += 22) {
-    ctx.fillRect(30, y, 75, 12);
-    ctx.fillRect(c.width - 105, y, 75, 12);
-  }
+  // 觸地區標誌 (TDZ Bars) 與瞄準點 (Aiming Point)
+  [260, 330, 480, 550].forEach(offset => {
+    ctx.fillRect(offset, 48, 42, 18);
+    ctx.fillRect(offset, c.height - 66, 42, 18);
+    ctx.fillRect(c.width - offset - 42, 48, 42, 18);
+    ctx.fillRect(c.width - offset - 42, c.height - 66, 42, 18);
+  });
+  // 瞄準點大白塊
+  ctx.fillRect(390, 42, 72, 34);
+  ctx.fillRect(390, c.height - 76, 72, 34);
+  ctx.fillRect(c.width - 462, 42, 72, 34);
+  ctx.fillRect(c.width - 462, c.height - 76, 72, 34);
 
-  // 觸地區標誌 (Aiming Point)
-  ctx.fillRect(320, 42, 95, 36);
-  ctx.fillRect(320, c.height - 78, 95, 36);
-  ctx.fillRect(c.width - 415, 42, 95, 36);
-  ctx.fillRect(c.width - 415, c.height - 78, 95, 36);
-
-  // 跑道編號文字
+  // 跑道編號 (05L / 23R 或 05R / 23L)
   ctx.save();
-  ctx.translate(155, c.height / 2);
+  ctx.translate(148, c.height / 2);
   ctx.rotate(Math.PI / 2);
   ctx.fillStyle = '#f8fafc';
-  ctx.font = 'bold 52px monospace';
+  ctx.font = 'bold 50px monospace';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(leftDesignator, 0, 0);
+  ctx.fillText(leftText, 0, 0);
   ctx.restore();
 
   ctx.save();
-  ctx.translate(c.width - 155, c.height / 2);
+  ctx.translate(c.width - 148, c.height / 2);
   ctx.rotate(-Math.PI / 2);
   ctx.fillStyle = '#f8fafc';
-  ctx.font = 'bold 52px monospace';
+  ctx.font = 'bold 50px monospace';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(rightDesignator, 0, 0);
+  ctx.fillText(rightText, 0, 0);
   ctx.restore();
+
+  // 黃色快速脫離滑行道引導弧線
+  ctx.strokeStyle = '#facc15';
+  ctx.lineWidth = 4;
+  [780, 1150, 1480].forEach(tx => {
+    ctx.beginPath();
+    ctx.moveTo(tx - 90, c.height / 2);
+    ctx.quadraticCurveTo(tx, c.height / 2, tx + 55, c.height);
+    ctx.stroke();
+  });
 
   const tex = new THREE.CanvasTexture(c);
   tex.anisotropy = 4;
   return tex;
 }
 
-// 1. 地面草坪與機場基地
-const groundGeo = new THREE.PlaneGeometry(1600, 1200);
-const groundMat = new THREE.MeshLambertMaterial({ color: 0x143325 });
-const groundMesh = new THREE.Mesh(groundGeo, groundMat);
-groundMesh.rotation.x = -Math.PI / 2;
-groundMesh.receiveShadow = true;
-scene.add(groundMesh);
-
-// 2. 北跑道 05L / 23R (Z = -110)
-const rwyNorthGeo = new THREE.PlaneGeometry(520, 34);
-const rwyNorthMat = new THREE.MeshLambertMaterial({ map: createRunwayTexture('05L', '23R') });
-const rwyNorthMesh = new THREE.Mesh(rwyNorthGeo, rwyNorthMat);
+// 5.3 北跑道 05L/23R (Z = -170) 與南跑道 05R/23L (Z = +170)
+const rwyNorthMesh = new THREE.Mesh(
+  new THREE.PlaneGeometry(660, 36),
+  new THREE.MeshLambertMaterial({ map: createAuthenticRunwayTexture('05L', '23R', false) })
+);
 rwyNorthMesh.rotation.x = -Math.PI / 2;
-rwyNorthMesh.position.set(0, 0.15, -110);
+rwyNorthMesh.position.set(0, 0.18, -170);
 rwyNorthMesh.receiveShadow = true;
 scene.add(rwyNorthMesh);
 
-// 3. 南跑道 05R / 23L (Z = -175，初始施工鎖定，擴建後啟用)
-const rwySouthGroup = new THREE.Group();
-const rwySouthGeo = new THREE.PlaneGeometry(520, 34);
-const rwySouthMat = new THREE.MeshLambertMaterial({ map: createRunwayTexture('05R', '23L') });
-const rwySouthMesh = new THREE.Mesh(rwySouthGeo, rwySouthMat);
+const rwySouthMesh = new THREE.Mesh(
+  new THREE.PlaneGeometry(660, 36),
+  new THREE.MeshLambertMaterial({ map: createAuthenticRunwayTexture('05R', '23L', true) })
+);
 rwySouthMesh.rotation.x = -Math.PI / 2;
-rwySouthMesh.position.set(0, 0.15, -175);
+rwySouthMesh.position.set(0, 0.18, 170);
 rwySouthMesh.receiveShadow = true;
-rwySouthGroup.add(rwySouthMesh);
-rwySouthGroup.visible = false; // 擴建後顯示
-scene.add(rwySouthGroup);
+scene.add(rwySouthMesh);
 
-// 4. 滑行道與停機坪水泥鋪面
-const apronGeo = new THREE.PlaneGeometry(360, 95);
-const apronMat = new THREE.MeshLambertMaterial({ color: 0x334155 });
-const apronMesh = new THREE.Mesh(apronGeo, apronMat);
-apronMesh.rotation.x = -Math.PI / 2;
-apronMesh.position.set(20, 0.1, 5);
-apronMesh.receiveShadow = true;
-scene.add(apronMesh);
+// 南跑道整備施工封閉標記 (X 號與工程車，啟用南跑道擴建後移除)
+const southMaintenanceGroup = new THREE.Group();
+[-180, 0, 180].forEach(xPos => {
+  const xBar1 = new THREE.Mesh(new THREE.BoxGeometry(26, 0.5, 2.8), new THREE.MeshBasicMaterial({ color: 0xfacc15 }));
+  xBar1.rotation.y = Math.PI / 4;
+  const xBar2 = new THREE.Mesh(new THREE.BoxGeometry(26, 0.5, 2.8), new THREE.MeshBasicMaterial({ color: 0xfacc15 }));
+  xBar2.rotation.y = -Math.PI / 4;
+  const marker = new THREE.Group();
+  marker.position.set(xPos, 0.4, 170);
+  marker.add(xBar1, xBar2);
+  southMaintenanceGroup.add(marker);
+});
+scene.add(southMaintenanceGroup);
 
-// 主滑行道 (Z = -52)
-const taxiwayGeo = new THREE.PlaneGeometry(480, 16);
-const taxiwayMat = new THREE.MeshLambertMaterial({ color: 0x293548 });
-const taxiwayMesh = new THREE.Mesh(taxiwayGeo, taxiwayMat);
-taxiwayMesh.rotation.x = -Math.PI / 2;
-taxiwayMesh.position.set(0, 0.12, -52);
-scene.add(taxiwayMesh);
+// 5.4 平行滑行道 (N1/NP 與 S1/SP)、快速脫離道 (Rapid Exit Taxiways) 與西側 WC 跨區滑行道橋
+const taxiMat = new THREE.MeshLambertMaterial({ color: 0x2c384b });
+const apronMat = new THREE.MeshLambertMaterial({ color: 0x3b495e });
 
-// 聯絡滑行道
-[-210, -110, 0, 110, 210].forEach(tx => {
-  const linkGeo = new THREE.PlaneGeometry(14, 140);
-  const linkMesh = new THREE.Mesh(linkGeo, taxiwayMat);
-  linkMesh.rotation.x = -Math.PI / 2;
-  linkMesh.position.set(tx, 0.11, -105);
-  scene.add(linkMesh);
+// 北平行滑行道 N1 (Z = -118) 與南平行滑行道 S1 (Z = +118)
+[-118, 118].forEach(zPos => {
+  const tw = new THREE.Mesh(new THREE.PlaneGeometry(620, 15), taxiMat);
+  tw.rotation.x = -Math.PI / 2;
+  tw.position.set(0, 0.14, zPos);
+  scene.add(tw);
 });
 
-// 跑道助航邊燈與滑行道燈
-const runwayLights = [];
-function createAirfieldLights() {
-  const edgeGeo = new THREE.SphereGeometry(0.65, 8, 8);
+// 北跑道與南跑道聯絡道及 45 度高速脫離滑行道 (N2~N8, S2~S8)
+[-300, -180, -60, 45, 165, 285].forEach((xPos, idx) => {
+  const isRapid = idx === 2 || idx === 3;
+  // 北側聯絡道
+  const nLink = new THREE.Mesh(new THREE.PlaneGeometry(13, 58), taxiMat);
+  nLink.rotation.x = -Math.PI / 2;
+  if (isRapid) nLink.rotation.z = -0.52; // 高速斜角脫離道
+  nLink.position.set(xPos, 0.13, -144);
+  scene.add(nLink);
+
+  // 南側聯絡道
+  const sLink = new THREE.Mesh(new THREE.PlaneGeometry(13, 58), taxiMat);
+  sLink.rotation.x = -Math.PI / 2;
+  if (isRapid) sLink.rotation.z = 0.52;
+  sLink.position.set(xPos, 0.13, 144);
+  scene.add(sLink);
+});
+
+// 北側停機坪 (A/C/T3北 機坪區 Z = -76) 與南側停機坪 (B/D 機坪區 Z = +76)
+[-76, 76].forEach(zPos => {
+  const apron = new THREE.Mesh(new THREE.PlaneGeometry(460, 74), apronMat);
+  apron.rotation.x = -Math.PI / 2;
+  apron.position.set(-20, 0.12, zPos);
+  apron.receiveShadow = true;
+  scene.add(apron);
+});
+
+// 5.5 貫穿機場中央的「國道二號 / 航站南北路」與「西側 WC 跨區滑行道陸橋 (飛機過馬路)」
+const highwayMesh = new THREE.Mesh(
+  new THREE.PlaneGeometry(760, 22),
+  new THREE.MeshLambertMaterial({ color: 0x111827 })
+);
+highwayMesh.rotation.x = -Math.PI / 2;
+highwayMesh.position.set(0, 0.09, 0);
+scene.add(highwayMesh);
+
+// 西側 WC1 / WC2 跨區滑行道橋 (X = -245, 連接南北滑行道 Z = -118 至 +118，跨越航站南北路)
+const wcBridgeGroup = new THREE.Group();
+const wcDeck = new THREE.Mesh(
+  new THREE.BoxGeometry(28, 1.4, 240),
+  new THREE.MeshPhongMaterial({ color: 0x334155 })
+);
+wcDeck.position.set(-245, 0.7, 0);
+wcBridgeGroup.add(wcDeck);
+
+// 跨區滑行橋紅白護欄與橋墩 (飛機過馬路經典地標)
+[-258, -232].forEach(bx => {
+  const rail = new THREE.Mesh(
+    new THREE.BoxGeometry(1.2, 2.2, 42),
+    new THREE.MeshPhongMaterial({ color: 0xef4444 })
+  );
+  rail.position.set(bx, 2.0, 0);
+  wcBridgeGroup.add(rail);
+});
+// 東側 EC 跨區滑行道 (X = +165)
+const ecDeck = new THREE.Mesh(
+  new THREE.PlaneGeometry(18, 240),
+  taxiMat
+);
+ecDeck.rotation.x = -Math.PI / 2;
+ecDeck.position.set(165, 0.15, 0);
+wcBridgeGroup.add(ecDeck);
+scene.add(wcBridgeGroup);
+
+// 航站南北路上的動態車流 (巴士、計程車、小客車穿梭於航廈與 WC 滑行橋下)
+const highwayCars = [];
+function initHighwayTraffic() {
+  const carColors = [0xfacc15, 0x38bdf8, 0xf8fafc, 0xef4444, 0x10b981];
+  for (let i = 0; i < 18; i++) {
+    const isBus = i % 4 === 0;
+    const car = new THREE.Mesh(
+      new THREE.BoxGeometry(isBus ? 6.5 : 3.6, isBus ? 2.2 : 1.4, 1.9),
+      new THREE.MeshLambertMaterial({ color: carColors[i % carColors.length] })
+    );
+    const dir = i % 2 === 0 ? 1 : -1;
+    car.position.set(-320 + Math.random() * 640, 0.9, dir * 5.2);
+    scene.add(car);
+    highwayCars.push({ mesh: car, speed: dir * (28 + Math.random() * 14) });
+  }
+}
+initHighwayTraffic();
+
+// 5.6 跑道助航燈光系統 (PAPI 滑降燈、ALS 進場燈、跑道邊燈與滑行道綠燈)
+function buildAirfieldLighting() {
+  const whiteSphere = new THREE.SphereGeometry(0.55, 6, 6);
   const whiteMat = new THREE.MeshBasicMaterial({ color: 0xfffbeb });
   const greenMat = new THREE.MeshBasicMaterial({ color: 0x10b981 });
   const redMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
 
-  for (let x = -250; x <= 250; x += 20) {
-    // 05L 北跑道邊燈
-    const l1 = new THREE.Mesh(edgeGeo, whiteMat);
-    l1.position.set(x, 0.6, -110 - 18);
-    const l2 = new THREE.Mesh(edgeGeo, whiteMat);
-    l2.position.set(x, 0.6, -110 + 18);
-    scene.add(l1, l2);
-    runwayLights.push(l1, l2);
+  [-170, 170].forEach(rwyZ => {
+    for (let x = -320; x <= 320; x += 22) {
+      const e1 = new THREE.Mesh(whiteSphere, whiteMat);
+      e1.position.set(x, 0.6, rwyZ - 18.5);
+      const e2 = new THREE.Mesh(whiteSphere, whiteMat);
+      e2.position.set(x, 0.6, rwyZ + 18.5);
+      scene.add(e1, e2);
+    }
+    // 05L / 05R 跑道頭 ALS 進場燈橋與 PAPI 燈 (兩白兩紅)
+    for (let i = 1; i <= 7; i++) {
+      const als = new THREE.Mesh(whiteSphere, i % 2 === 0 ? whiteMat : redMat);
+      als.position.set(-325 - i * 14, 0.9, rwyZ);
+      scene.add(als);
+    }
+    for (let p = 0; p < 4; p++) {
+      const papi = new THREE.Mesh(new THREE.SphereGeometry(0.85, 8, 8), p < 2 ? whiteMat : redMat);
+      papi.position.set(-235, 0.8, rwyZ - 24 - p * 2.8);
+      scene.add(papi);
+    }
+  });
 
-    // 滑行道中心綠燈
-    const tg = new THREE.Mesh(edgeGeo, greenMat);
-    tg.position.set(x, 0.4, -52);
-    scene.add(tg);
-    runwayLights.push(tg);
-  }
-  // 跑道頭進場燈 (ALS)
-  for (let i = 1; i <= 6; i++) {
-    const als = new THREE.Mesh(edgeGeo, redMat);
-    als.position.set(-255 - i * 12, 0.8, -110);
-    scene.add(als);
-    runwayLights.push(als);
+  // 滑行道中心綠燈
+  for (let x = -300; x <= 300; x += 25) {
+    const gn = new THREE.Mesh(whiteSphere, greenMat);
+    gn.position.set(x, 0.35, -118);
+    const gs = new THREE.Mesh(whiteSphere, greenMat);
+    gs.position.set(x, 0.35, 118);
+    scene.add(gn, gs);
   }
 }
-createAirfieldLights();
+buildAirfieldLighting();
 
-// 5. 桃園國際機場航廈建築群 (T2、塔台、以及可擴建的 T3 波浪屋頂與維修棚廠)
-const buildingsGroup = new THREE.Group();
-scene.add(buildingsGroup);
-
-// 航廈玻璃帷幕貼圖
-function createTerminalGlassTexture() {
+// ============================================================================
+// 6. 桃園國際機場真實航廈建築群 (T1、紅白雙塔台、T2 觀景台、T3 波浪花瓣屋頂、東側維修棚廠)
+// ============================================================================
+function createFacadeTexture() {
   const c = document.createElement('canvas');
   c.width = 512; c.height = 128;
   const ctx = c.getContext('2d');
   ctx.fillStyle = '#0f172a';
   ctx.fillRect(0, 0, c.width, c.height);
-  for (let x = 8; x < c.width; x += 24) {
-    for (let y = 10; y < c.height - 10; y += 28) {
-      ctx.fillStyle = Math.random() > 0.2 ? '#38bdf8' : '#fef08a';
-      ctx.globalAlpha = 0.55 + Math.random() * 0.35;
-      ctx.fillRect(x, y, 18, 20);
+  for (let x = 6; x < c.width; x += 20) {
+    for (let y = 8; y < c.height - 8; y += 24) {
+      ctx.fillStyle = Math.random() > 0.22 ? '#38bdf8' : '#fef08a';
+      ctx.globalAlpha = 0.5 + Math.random() * 0.4;
+      ctx.fillRect(x, y, 14, 16);
     }
   }
   return new THREE.CanvasTexture(c);
 }
-const glassTex = createTerminalGlassTexture();
+const glassTex = createFacadeTexture();
 
-// 第二航廈 (T2 主體與南北廊廳)
-const t2Body = new THREE.Mesh(
-  new THREE.BoxGeometry(175, 18, 38),
+// 6.1 第一航廈 (Terminal 1, X = +92, Z = 0) —— 經典雙曲面懸索弧形屋頂 + A/B 南北登機長廊
+const t1Group = new THREE.Group();
+t1Group.position.set(92, 0, 0);
+const t1Main = new THREE.Mesh(
+  new THREE.BoxGeometry(68, 13, 38),
   new THREE.MeshPhongMaterial({ color: 0xe2e8f0, map: glassTex })
 );
-t2Body.position.set(-25, 9, 62);
-t2Body.castShadow = true;
-t2Body.receiveShadow = true;
-buildingsGroup.add(t2Body);
+t1Main.position.y = 6.5;
+t1Main.castShadow = true;
+t1Group.add(t1Main);
 
-const t2Roof = new THREE.Mesh(
-  new THREE.BoxGeometry(182, 3, 44),
-  new THREE.MeshPhongMaterial({ color: 0xcbd5e1 })
+// T1 經典下凹弧形屋頂與兩側斜張立柱
+const t1RoofCurve = new THREE.Mesh(
+  new THREE.CylinderGeometry(38, 38, 72, 20, 1, false, Math.PI * 0.32, Math.PI * 0.36),
+  new THREE.MeshPhongMaterial({ color: 0xd6d3d1, side: THREE.DoubleSide })
 );
-t2Roof.position.set(-25, 19.5, 62);
-buildingsGroup.add(t2Roof);
+t1RoofCurve.rotation.z = Math.PI / 2;
+t1RoofCurve.position.set(0, 48, 0);
+t1Group.add(t1RoofCurve);
 
-// 桃園機場經典紅白雙塔台 (Control Tower)
+// T1 A 廊廳 (北側) 與 B 廊廳 (南側)
+const t1ConcourseAB = new THREE.Mesh(
+  new THREE.BoxGeometry(58, 9, 98),
+  new THREE.MeshPhongMaterial({ color: 0xcbd5e1, map: glassTex })
+);
+t1ConcourseAB.position.set(0, 4.5, 0);
+t1Group.add(t1ConcourseAB);
+scene.add(t1Group);
+
+// 6.2 桃園機場經典「紅白雙塔台 (RCTP Control Tower)」(位於 T1 與 T2 中央 X = +34, Z = -8)
 const towerGroup = new THREE.Group();
-towerGroup.position.set(-140, 0, 58);
-const towerShaft = new THREE.Mesh(
-  new THREE.CylinderGeometry(3.8, 5.2, 62, 16),
-  new THREE.MeshPhongMaterial({ color: 0xf8fafc })
-);
-towerShaft.position.y = 31;
-towerShaft.castShadow = true;
-towerGroup.add(towerShaft);
-
+towerGroup.position.set(34, 0, -8);
+// 主塔柱與副塔柱 (桃園機場雙圓柱結構)
+[-2.4, 2.4].forEach(ox => {
+  const shaft = new THREE.Mesh(
+    new THREE.CylinderGeometry(2.6, 3.2, 58, 16),
+    new THREE.MeshPhongMaterial({ color: 0xf8fafc })
+  );
+  shaft.position.set(ox, 29, 0);
+  shaft.castShadow = true;
+  towerGroup.add(shaft);
+});
+// 塔台頂部紅白相間警告塗裝與 360 度管制玻璃艙
+for (let band = 0; band < 4; band++) {
+  const ring = new THREE.Mesh(
+    new THREE.CylinderGeometry(6.8, 6.8, 3.2, 20),
+    new THREE.MeshPhongMaterial({ color: band % 2 === 0 ? 0xdc2626 : 0xffffff })
+  );
+  ring.position.y = 48 + band * 3.2;
+  towerGroup.add(ring);
+}
 const towerCab = new THREE.Mesh(
-  new THREE.CylinderGeometry(7.5, 5.5, 9, 16),
-  new THREE.MeshPhongMaterial({ color: 0x0284c7, shininess: 100 })
+  new THREE.CylinderGeometry(8.2, 6.8, 6.5, 20),
+  new THREE.MeshPhongMaterial({ color: 0x0284c7, shininess: 120 })
 );
-towerCab.position.y = 64;
+towerCab.position.y = 63;
 towerGroup.add(towerCab);
-
-const towerTop = new THREE.Mesh(
-  new THREE.CylinderGeometry(8, 7.5, 2.5, 16),
-  new THREE.MeshPhongMaterial({ color: 0xdc2626 })
+const radarDome = new THREE.Mesh(
+  new THREE.SphereGeometry(2.6, 16, 12),
+  new THREE.MeshPhongMaterial({ color: 0xffffff })
 );
-towerTop.position.y = 69.5;
-towerGroup.add(towerTop);
-buildingsGroup.add(towerGroup);
+radarDome.position.y = 68.5;
+towerGroup.add(radarDome);
+scene.add(towerGroup);
 
-// 第三航廈 (T3 雲頂波浪造型航廈 - 擴建解鎖)
-const t3Group = new THREE.Group();
-const t3Body = new THREE.Mesh(
-  new THREE.BoxGeometry(125, 19, 40),
+// 6.3 第二航廈 (Terminal 2, X = -38, Z = 0) —— 含 C/D 登機長廊與南北 5F 戶外觀景台
+const t2Group = new THREE.Group();
+t2Group.position.set(-38, 0, 0);
+const t2Main = new THREE.Mesh(
+  new THREE.BoxGeometry(84, 16, 44),
+  new THREE.MeshPhongMaterial({ color: 0xf1f5f9, map: glassTex })
+);
+t2Main.position.y = 8;
+t2Main.castShadow = true;
+t2Group.add(t2Main);
+
+// T2 現代感金屬桁架屋頂
+const t2Roof = new THREE.Mesh(
+  new THREE.BoxGeometry(90, 2.5, 48),
+  new THREE.MeshPhongMaterial({ color: 0x94a3b8 })
+);
+t2Roof.position.y = 17.2;
+t2Group.add(t2Roof);
+
+// T2 C 廊廳 (北側) 與 D 廊廳 (南側)
+const t2ConcourseCD = new THREE.Mesh(
+  new THREE.BoxGeometry(88, 10, 102),
+  new THREE.MeshPhongMaterial({ color: 0xe2e8f0, map: glassTex })
+);
+t2ConcourseCD.position.y = 5;
+t2Group.add(t2ConcourseCD);
+
+// T2 北側與南側 5F 賞機觀景台木棧道 (Observation Decks)
+[-26, 26].forEach(oz => {
+  const deck = new THREE.Mesh(
+    new THREE.BoxGeometry(36, 1.2, 8),
+    new THREE.MeshLambertMaterial({ color: 0xb45309 })
+  );
+  deck.position.set(0, 11.5, oz);
+  t2Group.add(deck);
+});
+scene.add(t2Group);
+
+// 6.4 第三航廈 (Terminal 3, X = -158, Z = 0) —— 初期施工塔吊 vs 完工後 RSHP 雲頂波浪屋頂與北廊廳
+const t3ConstructionGroup = new THREE.Group();
+t3ConstructionGroup.position.set(-158, 0, 0);
+// 施工中地基與兩座大型黃色塔吊 (Tower Cranes)
+const t3BaseSlab = new THREE.Mesh(
+  new THREE.BoxGeometry(96, 3, 52),
+  new THREE.MeshLambertMaterial({ color: 0x475569 })
+);
+t3BaseSlab.position.y = 1.5;
+t3ConstructionGroup.add(t3BaseSlab);
+
+[-28, 28].forEach(cx => {
+  const craneMast = new THREE.Mesh(new THREE.BoxGeometry(2.2, 48, 2.2), new THREE.MeshLambertMaterial({ color: 0xfacc15 }));
+  craneMast.position.set(cx, 24, -10);
+  const craneJib = new THREE.Mesh(new THREE.BoxGeometry(46, 1.6, 1.6), new THREE.MeshLambertMaterial({ color: 0xfacc15 }));
+  craneJib.position.set(cx + 10, 47, -10);
+  t3ConstructionGroup.add(craneMast, craneJib);
+});
+scene.add(t3ConstructionGroup);
+
+// 完工後的第三航廈 (T3 雲頂波浪屋頂 + 北登機廊廳 D11/D12)
+const t3BuiltGroup = new THREE.Group();
+t3BuiltGroup.position.set(-158, 0, 0);
+const t3GlassHall = new THREE.Mesh(
+  new THREE.BoxGeometry(96, 17, 48),
   new THREE.MeshPhongMaterial({ color: 0xf8fafc, map: glassTex })
 );
-t3Body.position.set(105, 9.5, 62);
-t3Body.castShadow = true;
-t3Group.add(t3Body);
+t3GlassHall.position.y = 8.5;
+t3BuiltGroup.add(t3GlassHall);
 
-// T3 波浪屋頂造型
-for (let i = 0; i < 7; i++) {
-  const waveArch = new THREE.Mesh(
-    new THREE.CylinderGeometry(9, 9, 46, 16, 1, false, 0, Math.PI),
-    new THREE.MeshPhongMaterial({ color: 0xf1f5f9, side: THREE.DoubleSide })
+// T3 標誌性雙波浪飛鳥屋頂與白色花瓣柱
+for (let i = 0; i < 6; i++) {
+  const wave = new THREE.Mesh(
+    new THREE.CylinderGeometry(10, 10, 54, 16, 1, false, 0, Math.PI),
+    new THREE.MeshPhongMaterial({ color: 0xffffff, side: THREE.DoubleSide })
   );
-  waveArch.rotation.x = Math.PI / 2;
-  waveArch.scale.set(1, 0.45, 1);
-  waveArch.position.set(52 + i * 17.5, 18.5 + Math.sin(i * 0.9) * 1.6, 62);
-  t3Group.add(waveArch);
+  wave.rotation.x = Math.PI / 2;
+  wave.scale.set(1, 0.42, 1);
+  wave.position.set(-40 + i * 16, 17.5 + Math.sin(i * 0.9) * 1.8, 0);
+  t3BuiltGroup.add(wave);
 }
-t3Group.visible = false;
-buildingsGroup.add(t3Group);
-
-// 巨型機務維修棚廠 (MRO Hangar - 擴建解鎖)
-const hangarGroup = new THREE.Group();
-const hangarBox = new THREE.Mesh(
-  new THREE.BoxGeometry(68, 24, 48),
-  new THREE.MeshPhongMaterial({ color: 0x334155 })
+// T3 北登機廊廳 (North Concourse)
+const t3NorthConcourse = new THREE.Mesh(
+  new THREE.BoxGeometry(88, 10, 32),
+  new THREE.MeshPhongMaterial({ color: 0xbae6fd, map: glassTex })
 );
-hangarBox.position.set(205, 12, -8);
-hangarBox.castShadow = true;
-hangarGroup.add(hangarBox);
-const hangarRoof = new THREE.Mesh(
-  new THREE.CylinderGeometry(35, 35, 48, 16, 1, false, 0, Math.PI),
-  new THREE.MeshPhongMaterial({ color: 0x0ea5e9 })
-);
-hangarRoof.rotation.x = Math.PI / 2;
-hangarRoof.scale.set(1, 0.35, 1);
-hangarRoof.position.set(205, 24, -8);
-hangarGroup.add(hangarRoof);
-hangarGroup.visible = false;
-buildingsGroup.add(hangarGroup);
+t3NorthConcourse.position.set(-2, 5, -36);
+t3BuiltGroup.add(t3NorthConcourse);
+t3BuiltGroup.visible = false;
+scene.add(t3BuiltGroup);
 
-// 6. 建立停機坪空橋 (3D Jetbridges) 與地面停機線
+// 6.5 東側華航修護工廠 & 長榮航太 (EGAT) 巨型機務棚廠區 (X = +225, Z = -25)
+const eastHangarGroup = new THREE.Group();
+eastHangarGroup.position.set(225, 0, -25);
+const h1 = new THREE.Mesh(new THREE.BoxGeometry(58, 22, 46), new THREE.MeshPhongMaterial({ color: 0xcbd5e1 }));
+h1.position.set(0, 11, -24);
+const h1Door = new THREE.Mesh(new THREE.PlaneGeometry(52, 18), new THREE.MeshBasicMaterial({ color: 0x1e293b }));
+h1Door.position.set(-29.1, 9, -24);
+h1Door.rotation.y = -Math.PI / 2;
+eastHangarGroup.add(h1, h1Door);
+
+// EGAT 長榮航太綠色巨型拱頂棚廠 (擴建後更加壯觀)
+const h2 = new THREE.Mesh(new THREE.BoxGeometry(64, 24, 52), new THREE.MeshPhongMaterial({ color: 0x065f46 }));
+h2.position.set(0, 12, 34);
+eastHangarGroup.add(h2);
+scene.add(eastHangarGroup);
+
+// 6.6 停機坪空橋 (3D Jetbridges) 與地面黃色停機導引線
 const gateMeshes = {};
 state.gates.forEach(gate => {
   const gGroup = new THREE.Group();
   gGroup.position.set(gate.x, 0, gate.z);
+  const dir = gate.side === 'NORTH' ? 1 : -1;
 
-  // 地面黃色導引 T 字線
+  // 地面黃色 T 字停機線與紅白機位號碼地標
   const leadLine = new THREE.Mesh(
-    new THREE.PlaneGeometry(1.4, 34),
+    new THREE.PlaneGeometry(1.3, 30),
     new THREE.MeshBasicMaterial({ color: 0xfacc15 })
   );
   leadLine.rotation.x = -Math.PI / 2;
-  leadLine.position.set(0, 0.16, -6);
+  leadLine.position.set(0, 0.16, -dir * 8);
   gGroup.add(leadLine);
 
-  // 空橋固定座與伸縮橋身
+  // 空橋立柱與旋轉伸縮臂
   const pillar = new THREE.Mesh(
-    new THREE.CylinderGeometry(1.5, 1.5, 9, 12),
+    new THREE.CylinderGeometry(1.3, 1.3, 8, 12),
     new THREE.MeshLambertMaterial({ color: 0x94a3b8 })
   );
-  pillar.position.set(-12, 4.5, 18);
+  pillar.position.set(-10, 4, dir * 13);
   gGroup.add(pillar);
 
   const bridgePivot = new THREE.Group();
-  bridgePivot.position.set(-12, 7.2, 18);
+  bridgePivot.position.set(-10, 6.4, dir * 13);
   const bridgeArm = new THREE.Mesh(
-    new THREE.BoxGeometry(2.8, 2.8, 22),
-    new THREE.MeshPhongMaterial({ color: 0xe2e8f0 })
+    new THREE.BoxGeometry(2.4, 2.4, 18),
+    new THREE.MeshPhongMaterial({ color: 0xf1f5f9 })
   );
-  bridgeArm.position.set(0, 0, -10);
-  bridgeArm.castShadow = true;
+  bridgeArm.position.set(0, 0, -dir * 8);
   bridgePivot.add(bridgeArm);
   gGroup.add(bridgePivot);
 
   gGroup.visible = gate.unlocked;
   scene.add(gGroup);
-  gateMeshes[gate.id] = { group: gGroup, bridgePivot, bridgeArm };
+  gateMeshes[gate.id] = { group: gGroup, bridgePivot, dir };
 });
 
+// 地標 3D 浮動名牌
+const LANDMARKS = [
+  { name: '🛫 北跑道 05L / 23R', pos: new THREE.Vector3(0, 6, -170) },
+  { name: '🛫 南跑道 05R / 23L', pos: new THREE.Vector3(0, 6, 170) },
+  { name: '🏢 第一航廈 (T1 A/B廊廳)', pos: new THREE.Vector3(92, 22, 0) },
+  { name: '🗼 桃園機場紅白雙塔台', pos: new THREE.Vector3(34, 74, -8) },
+  { name: '🏢 第二航廈 (T2 C/D廊廳 & 觀景台)', pos: new THREE.Vector3(-38, 24, 0) },
+  { name: '🏗 第三航廈 (T3 雲頂波浪航廈)', pos: new THREE.Vector3(-158, 25, 0) },
+  { name: '🌉 WC 西側跨區滑行道橋 (飛機過馬路)', pos: new THREE.Vector3(-245, 10, 0) },
+  { name: '🔧 東側華航/長榮航太維修棚廠', pos: new THREE.Vector3(225, 28, 0) }
+];
+const landmarkEls = LANDMARKS.map(lm => {
+  const el = document.createElement('div');
+  el.className = 'landmark-label';
+  el.textContent = lm.name;
+  document.getElementById('labels-container').appendChild(el);
+  return { ...lm, el };
+});
+
+function toggleLandmarks() {
+  state.showLandmarks = !state.showLandmarks;
+  document.getElementById('btn-landmarks').textContent = state.showLandmarks ? '🏷 地標名牌：開' : '🏷 地標名牌：關';
+}
+
 // ============================================================================
-// 6. 真實航空公司 3D 客機模型與塗裝生成器
+// 7. 真實比例後掠翼 3D 廣體/窄體客機模型與真實航空塗裝生成器
 // ============================================================================
 const liveryCache = {};
 
 function getAirlineTextures(airline) {
   if (liveryCache[airline.code]) return liveryCache[airline.code];
 
-  // 1. 機身貼圖 (含窗戶、艙門、機腹顏色、航空公司英文名與飄帶)
+  // 1. 機身側面高解析塗裝貼圖 (含航空標準字、註冊編號、客艙窗、機腹色塊與金/橘/藍飄帶)
   const fc = document.createElement('canvas');
   fc.width = 1024; fc.height = 256;
   const fctx = fc.getContext('2d');
   fctx.fillStyle = airline.bodyColor;
   fctx.fillRect(0, 0, fc.width, fc.height);
 
-  // 機腹塗裝
+  // 機腹塗裝 (長榮深綠、星宇曜石灰、華航銀灰)
   fctx.fillStyle = airline.bellyColor;
-  fctx.fillRect(0, fc.height * 0.65, fc.width, fc.height * 0.35);
+  fctx.fillRect(0, fc.height * 0.64, fc.width, fc.height * 0.36);
 
-  // 機身裝飾飄帶
+  // 機身流線飄帶
   fctx.fillStyle = airline.stripeColor;
-  fctx.fillRect(0, fc.height * 0.61, fc.width, 8);
+  fctx.fillRect(0, fc.height * 0.60, fc.width, 9);
 
-  // 客艙窗戶點陣
-  fctx.fillStyle = '#1e293b';
-  for (let x = 160; x < 860; x += 18) {
-    fctx.fillRect(x, 118, 9, 13);
+  // 客艙窗戶與艙門
+  fctx.fillStyle = '#0f172a';
+  for (let x = 150; x < 870; x += 16) {
+    if (x === 310 || x === 610) {
+      // 登機艙門外框
+      fctx.strokeStyle = '#64748b';
+      fctx.lineWidth = 2;
+      fctx.strokeRect(x - 3, 102, 12, 34);
+    } else {
+      fctx.fillRect(x, 116, 8, 12);
+    }
   }
 
-  // 航空公司品牌字樣
-  fctx.fillStyle = airline.code === 'CI' ? '#1e3a8a' : (airline.code === 'JX' ? '#b45309' : '#0f172a');
+  // 航空公司標準大字與國籍編號 (B-18901 / B-58501 / B-16781)
+  fctx.fillStyle = airline.titleColor;
   fctx.font = '900 34px Arial';
-  fctx.fillText(airline.name.split(' ').slice(1).join(' ').toUpperCase(), 240, 102);
+  fctx.fillText(airline.titleText, 210, 98);
+  fctx.font = 'bold 20px monospace';
+  fctx.fillText(airline.reg, 740, 102);
 
-  // 2. 垂直尾翼專屬塗裝貼圖
+  // 2. 垂直尾翼專屬塗裝貼圖 (設定 repeat 與 UV 對應給 ExtrudeGeometry)
   const tc = document.createElement('canvas');
   tc.width = 256; tc.height = 256;
   const tctx = tc.getContext('2d');
@@ -979,190 +1241,275 @@ function getAirlineTextures(airline) {
   tctx.fillRect(0, 0, 256, 256);
 
   if (airline.tailEmblem === 'plum') {
-    // 華航紅梅揚姿
-    const grad = tctx.createRadialGradient(128, 128, 10, 128, 128, 90);
-    grad.addColorStop(0, '#f43f5e');
-    grad.addColorStop(0.7, '#ec4899');
+    // 中華航空「紅梅揚姿」五瓣漸層梅花
+    const grad = tctx.createRadialGradient(128, 128, 8, 128, 128, 92);
+    grad.addColorStop(0, '#be123c');
+    grad.addColorStop(0.55, '#fb7185');
     grad.addColorStop(1, '#ffffff');
     tctx.fillStyle = grad;
     for (let a = 0; a < 5; a++) {
-      const ang = (a * Math.PI * 2) / 5;
+      const ang = (a * Math.PI * 2) / 5 - Math.PI / 2;
       tctx.beginPath();
-      tctx.arc(128 + Math.cos(ang) * 34, 128 + Math.sin(ang) * 34, 30, 0, Math.PI * 2);
+      tctx.arc(128 + Math.cos(ang) * 34, 128 + Math.sin(ang) * 34, 32, 0, Math.PI * 2);
       tctx.fill();
     }
-  } else if (airline.tailEmblem === 'starlux') {
-    // 星宇曜石灰配大地金線條與北極星
-    tctx.strokeStyle = '#d4af37';
-    tctx.lineWidth = 14;
+    // 花蕊
+    tctx.fillStyle = '#9f1239';
     tctx.beginPath();
-    tctx.moveTo(30, 220);
-    tctx.quadraticCurveTo(120, 120, 220, 35);
+    tctx.arc(128, 128, 10, 0, Math.PI * 2);
+    tctx.fill();
+  } else if (airline.tailEmblem === 'starlux') {
+    // 星宇航空曜石灰底 + 金色弧線與北極星
+    tctx.strokeStyle = '#d4af37';
+    tctx.lineWidth = 16;
+    tctx.beginPath();
+    tctx.moveTo(25, 230);
+    tctx.quadraticCurveTo(115, 120, 230, 30);
     tctx.stroke();
     tctx.fillStyle = '#fef08a';
     tctx.beginPath();
-    tctx.arc(165, 80, 18, 0, Math.PI * 2);
+    tctx.moveTo(160, 42); tctx.lineTo(170, 74); tctx.lineTo(202, 84);
+    tctx.lineTo(170, 94); tctx.lineTo(160, 126); tctx.lineTo(150, 94);
+    tctx.lineTo(118, 84); tctx.lineTo(150, 74); tctx.closePath();
     tctx.fill();
   } else if (airline.tailEmblem === 'eva') {
-    // 長榮深綠配橘綠弧線
+    // 長榮航空深綠底 + 羅盤標誌與橘綠飄帶
     tctx.fillStyle = '#10b981';
     tctx.beginPath();
-    tctx.arc(128, 150, 75, 0, Math.PI * 2);
+    tctx.arc(128, 138, 68, 0, Math.PI * 2);
     tctx.fill();
     tctx.strokeStyle = '#f97316';
-    tctx.lineWidth = 12;
+    tctx.lineWidth = 14;
     tctx.stroke();
   } else if (airline.tailEmblem === 'tiger') {
-    // 台灣虎航黑黃虎斑
+    // 台灣虎航鮮黃底 + 黑色動感虎斑
     tctx.fillStyle = '#18181b';
-    for (let y = 20; y < 240; y += 45) {
+    for (let y = 24; y < 240; y += 44) {
       tctx.beginPath();
-      tctx.ellipse(128, y, 95, 14, -0.25, 0, Math.PI * 2);
+      tctx.ellipse(128, y, 98, 14, -0.22, 0, Math.PI * 2);
       tctx.fill();
     }
   } else if (airline.tailEmblem === 'cathay') {
-    // 國泰白色刷翅
+    // 國泰航空翠綠底 + 白色翹首振翅
     tctx.strokeStyle = '#ffffff';
-    tctx.lineWidth = 18;
+    tctx.lineWidth = 20;
     tctx.beginPath();
-    tctx.moveTo(45, 200);
-    tctx.quadraticCurveTo(130, 140, 210, 50);
+    tctx.moveTo(45, 205);
+    tctx.quadraticCurveTo(130, 140, 215, 45);
     tctx.stroke();
   } else if (airline.tailEmblem === 'jal') {
-    // 日航紅鶴丸
+    // 日本航空紅鶴丸 (Tsurumaru)
     tctx.fillStyle = '#dc2626';
     tctx.beginPath();
-    tctx.arc(128, 128, 72, 0, Math.PI * 2);
+    tctx.arc(128, 128, 76, 0, Math.PI * 2);
     tctx.fill();
     tctx.fillStyle = '#ffffff';
-    tctx.fillRect(108, 120, 40, 65);
+    tctx.fillRect(112, 118, 32, 74);
   }
+
+  const tailTex = new THREE.CanvasTexture(tc);
+  tailTex.wrapS = THREE.ClampToEdgeWrapping;
+  tailTex.wrapT = THREE.ClampToEdgeWrapping;
 
   liveryCache[airline.code] = {
     fuselageTex: new THREE.CanvasTexture(fc),
-    tailTex: new THREE.CanvasTexture(tc)
+    tailTex
   };
   return liveryCache[airline.code];
 }
 
-function create3DAircraftMesh(airline) {
+// 正規化 ExtrudeGeometry 的 UV 座標，確保尾翼標誌完美顯示在後掠尾翼上
+function normalizeGeometryUVs(geometry) {
+  geometry.computeBoundingBox();
+  const max = geometry.boundingBox.max;
+  const min = geometry.boundingBox.min;
+  const rangeX = (max.x - min.x) || 1;
+  const rangeY = (max.y - min.y) || 1;
+  const pos = geometry.attributes.position;
+  const uvs = [];
+  for (let i = 0; i < pos.count; i++) {
+    uvs.push(
+      (pos.getX(i) - min.x) / rangeX,
+      (pos.getY(i) - min.y) / rangeY
+    );
+  }
+  geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+}
+
+function createRealisticAircraftMesh(airline) {
   const { fuselageTex, tailTex } = getAirlineTextures(airline);
   const root = new THREE.Group();
 
-  // 機身 (沿 X 軸朝右為機頭方向 +X)
-  const bodyGeo = new THREE.CylinderGeometry(2.3, 2.3, 24, 20);
+  // 1. 圓柱機身 (+X 為機鼻方向)
+  const bodyGeo = new THREE.CylinderGeometry(2.15, 2.15, 23, 24);
   bodyGeo.rotateZ(-Math.PI / 2);
-  const bodyMat = new THREE.MeshPhongMaterial({ map: fuselageTex, shininess: 70 });
-  const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
-  bodyMesh.position.y = 3.6;
+  const bodyMesh = new THREE.Mesh(bodyGeo, new THREE.MeshPhongMaterial({ map: fuselageTex, shininess: 80 }));
+  bodyMesh.position.y = 3.5;
   bodyMesh.castShadow = true;
   root.add(bodyMesh);
 
-  // 機鼻整流罩與駕駛艙擋風玻璃
-  const noseGeo = new THREE.SphereGeometry(2.3, 20, 16);
-  noseGeo.scale(1.8, 0.95, 1);
-  const noseMesh = new THREE.Mesh(noseGeo, new THREE.MeshPhongMaterial({ color: airline.bodyColor }));
-  noseMesh.position.set(12, 3.5, 0);
+  // 2. 流線型機鼻整流罩與 A350 招牌黑眼圈擋風玻璃 (Zorro Mask)
+  const noseGeo = new THREE.SphereGeometry(2.15, 24, 18);
+  noseGeo.scale(1.95, 0.96, 1.0);
+  const noseMesh = new THREE.Mesh(noseGeo, new THREE.MeshPhongMaterial({ color: airline.bodyColor, shininess: 80 }));
+  noseMesh.position.set(11.5, 3.42, 0);
   root.add(noseMesh);
 
-  const cockpitGeo = new THREE.BoxGeometry(2.2, 0.85, 2.6);
-  const cockpitMesh = new THREE.Mesh(cockpitGeo, new THREE.MeshBasicMaterial({ color: 0x0f172a }));
-  cockpitMesh.position.set(13.2, 4.3, 0);
-  root.add(cockpitMesh);
+  // 駕駛艙擋風玻璃與黑眼圈塗裝
+  const cockpitWindow = new THREE.Mesh(
+    new THREE.SphereGeometry(1.75, 16, 12),
+    new THREE.MeshBasicMaterial({ color: 0x090d16 })
+  );
+  cockpitWindow.scale.set(1.65, 0.55, 0.92);
+  cockpitWindow.position.set(12.6, 4.18, 0);
+  root.add(cockpitWindow);
 
-  // 機尾收縮錐
-  const tailConeGeo = new THREE.ConeGeometry(2.3, 7, 20);
+  // 3. 機尾收縮錐與 APU 排氣口
+  const tailConeGeo = new THREE.ConeGeometry(2.15, 7.8, 22);
   tailConeGeo.rotateZ(Math.PI / 2);
   const tailCone = new THREE.Mesh(tailConeGeo, new THREE.MeshPhongMaterial({ color: airline.bodyColor }));
-  tailCone.position.set(-15.2, 3.8, 0);
+  tailCone.position.set(-15.3, 3.65, 0);
   root.add(tailCone);
 
-  // 主機翼 (後掠翼造型)
-  const wingGeo = new THREE.BoxGeometry(5.5, 0.35, 30);
-  const wingMat = new THREE.MeshPhongMaterial({ color: 0xe2e8f0 });
+  // 4. 真實 32° 後掠主機翼 (Swept Main Wings using ExtrudeGeometry)
+  const wingShape = new THREE.Shape();
+  wingShape.moveTo(4.2, 0);     // 翼根前緣
+  wingShape.lineTo(-4.8, 16.5); // 左翼尖前緣 (後掠)
+  wingShape.lineTo(-7.2, 16.5); // 左翼尖後緣
+  wingShape.lineTo(-2.5, 0);    // 翼根後緣
+  wingShape.lineTo(-7.2, -16.5);// 右翼尖後緣
+  wingShape.lineTo(-4.8, -16.5);// 右翼尖前緣
+  wingShape.closePath();
+
+  const wingGeo = new THREE.ExtrudeGeometry(wingShape, { depth: 0.32, bevelEnabled: true, bevelThickness: 0.08, bevelSize: 0.08 });
+  wingGeo.rotateX(Math.PI / 2);
+  const wingMat = new THREE.MeshPhongMaterial({ color: 0xe2e8f0, shininess: 60 });
   const wingMesh = new THREE.Mesh(wingGeo, wingMat);
-  wingMesh.position.set(0.5, 3.1, 0);
+  wingMesh.position.set(0.8, 3.1, 0);
   wingMesh.castShadow = true;
   root.add(wingMesh);
 
-  // 翼端帆 (Winglets)
-  [-15, 15].forEach(zPos => {
-    const wl = new THREE.Mesh(
-      new THREE.BoxGeometry(2.2, 2.4, 0.3),
-      new THREE.MeshPhongMaterial({ map: tailTex })
-    );
-    wl.position.set(-0.5, 4.2, zPos);
-    root.add(wl);
+  // 翼端帆 (Sharklets / Raked Wingtips 塗有航空公司尾翼代表色)
+  [-16.5, 16.5].forEach(zSide => {
+    const wlShape = new THREE.Shape();
+    wlShape.moveTo(0, 0);
+    wlShape.lineTo(-1.8, 2.5);
+    wlShape.lineTo(-3.1, 2.5);
+    wlShape.lineTo(-2.2, 0);
+    wlShape.closePath();
+    const wlGeo = new THREE.ExtrudeGeometry(wlShape, { depth: 0.2, bevelEnabled: false });
+    normalizeGeometryUVs(wlGeo);
+    const wlMesh = new THREE.Mesh(wlGeo, new THREE.MeshPhongMaterial({ map: tailTex }));
+    wlMesh.position.set(-4.0, 3.0, zSide);
+    root.add(wlMesh);
   });
 
-  // 垂直尾翼 (Vertical Stabilizer)
-  const vTailGeo = new THREE.BoxGeometry(5.2, 7.5, 0.45);
-  const vTailMesh = new THREE.Mesh(vTailGeo, new THREE.MeshPhongMaterial({ map: tailTex }));
-  vTailMesh.position.set(-14.5, 8.2, 0);
-  vTailMesh.rotation.z = 0.22;
+  // 5. 真實後掠垂直尾翼 (Swept Vertical Stabilizer 完美映射航空尾翼標誌)
+  const vTailShape = new THREE.Shape();
+  vTailShape.moveTo(0, 0);
+  vTailShape.lineTo(-5.2, 7.8);
+  vTailShape.lineTo(-8.4, 7.8);
+  vTailShape.lineTo(-6.2, 0);
+  vTailShape.closePath();
+  const vTailGeo = new THREE.ExtrudeGeometry(vTailShape, { depth: 0.36, bevelEnabled: true, bevelThickness: 0.06, bevelSize: 0.06 });
+  normalizeGeometryUVs(vTailGeo);
+  const vTailMesh = new THREE.Mesh(vTailGeo, new THREE.MeshPhongMaterial({ map: tailTex, shininess: 75 }));
+  vTailMesh.position.set(-10.2, 4.6, -0.18);
   vTailMesh.castShadow = true;
   root.add(vTailMesh);
 
-  // 水平尾翼
-  const hTailGeo = new THREE.BoxGeometry(3.2, 0.25, 11);
+  // 6. 後掠水平尾翼 (Swept Horizontal Stabilizers)
+  const hTailShape = new THREE.Shape();
+  hTailShape.moveTo(0, 0);
+  hTailShape.lineTo(-2.6, 5.8);
+  hTailShape.lineTo(-4.2, 5.8);
+  hTailShape.lineTo(-2.8, 0);
+  hTailShape.lineTo(-4.2, -5.8);
+  hTailShape.lineTo(-2.6, -5.8);
+  hTailShape.closePath();
+  const hTailGeo = new THREE.ExtrudeGeometry(hTailShape, { depth: 0.22, bevelEnabled: false });
+  hTailGeo.rotateX(Math.PI / 2);
   const hTailMesh = new THREE.Mesh(hTailGeo, wingMat);
-  hTailMesh.position.set(-15, 4.0, 0);
+  hTailMesh.position.set(-13.2, 3.9, 0);
   root.add(hTailMesh);
 
-  // 雙具渦輪扇引擎吊艙 (Engines)
-  [-6.8, 6.8].forEach(zPos => {
-    const engGeo = new THREE.CylinderGeometry(1.15, 1.05, 4.2, 16);
-    engGeo.rotateZ(Math.PI / 2);
-    const engMesh = new THREE.Mesh(
-      engGeo,
-      new THREE.MeshPhongMaterial({ color: airline.engineColor, shininess: 90 })
-    );
-    engMesh.position.set(2.2, 2.0, zPos);
-    engMesh.castShadow = true;
-    root.add(engMesh);
+  // 7. 雙具高旁通比渦輪扇發動機 (含銀色進氣環與黑色風扇葉片)
+  [-6.4, 6.4].forEach(zPos => {
+    const engGroup = new THREE.Group();
+    engGroup.position.set(1.6, 1.95, zPos);
+
+    const cowlGeo = new THREE.CylinderGeometry(1.15, 1.02, 4.0, 20);
+    cowlGeo.rotateZ(Math.PI / 2);
+    const cowl = new THREE.Mesh(cowlGeo, new THREE.MeshPhongMaterial({ color: airline.engineColor, shininess: 90 }));
+    cowl.castShadow = true;
+    engGroup.add(cowl);
+
+    // 銀色進氣口唇部
+    const lipGeo = new THREE.TorusGeometry(1.08, 0.12, 12, 24);
+    lipGeo.rotateY(Math.PI / 2);
+    const lip = new THREE.Mesh(lipGeo, new THREE.MeshPhongMaterial({ color: 0xe2e8f0, shininess: 120 }));
+    lip.position.x = 2.0;
+    engGroup.add(lip);
+
+    // 渦輪風扇黑盤
+    const fanGeo = new THREE.CircleGeometry(1.02, 16);
+    fanGeo.rotateY(Math.PI / 2);
+    const fan = new THREE.Mesh(fanGeo, new THREE.MeshBasicMaterial({ color: 0x0f172a }));
+    fan.position.x = 2.02;
+    engGroup.add(fan);
+
+    root.add(engGroup);
   });
 
-  // 航行燈 (紅左翼、綠右翼、機頂防撞閃燈)
-  const navRed = new THREE.Mesh(new THREE.SphereGeometry(0.45), new THREE.MeshBasicMaterial({ color: 0xef4444 }));
-  navRed.position.set(0, 3.5, -15.2);
-  const navGreen = new THREE.Mesh(new THREE.SphereGeometry(0.45), new THREE.MeshBasicMaterial({ color: 0x10b981 }));
-  navGreen.position.set(0, 3.5, 15.2);
-  const strobe = new THREE.Mesh(new THREE.SphereGeometry(0.55), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-  strobe.position.set(-14.8, 12.1, 0);
+  // 8. 鼻輪與主起落架輪組 (Landing Gear & Tires)
+  const wheelMat = new THREE.MeshLambertMaterial({ color: 0x111827 });
+  const strutMat = new THREE.MeshLambertMaterial({ color: 0x94a3b8 });
+  // 鼻輪
+  const noseStrut = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 1.8, 8), strutMat);
+  noseStrut.position.set(10.2, 0.9, 0);
+  const noseWheel = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 0.5, 12), wheelMat);
+  noseWheel.rotation.x = Math.PI / 2;
+  noseWheel.position.set(10.2, 0.45, 0);
+  root.add(noseStrut, noseWheel);
+  // 左右主起落架
+  [-2.8, 2.8].forEach(zGear => {
+    const mStrut = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 2.0, 8), strutMat);
+    mStrut.position.set(-0.5, 1.0, zGear);
+    const mBogie = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.55, 0.8), wheelMat);
+    mBogie.position.set(-0.5, 0.5, zGear);
+    root.add(mStrut, mBogie);
+  });
+
+  // 9. 航行燈與防撞閃燈
+  const navRed = new THREE.Mesh(new THREE.SphereGeometry(0.38), new THREE.MeshBasicMaterial({ color: 0xef4444 }));
+  navRed.position.set(-4.5, 3.3, -16.6);
+  const navGreen = new THREE.Mesh(new THREE.SphereGeometry(0.38), new THREE.MeshBasicMaterial({ color: 0x10b981 }));
+  navGreen.position.set(-4.5, 3.3, 16.6);
+  const strobe = new THREE.Mesh(new THREE.SphereGeometry(0.5), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+  strobe.position.set(-16.5, 12.6, 0);
   root.add(navRed, navGreen, strobe);
 
-  // 機坪服務車群組 (停靠在機位時顯示：油罐車、桃勤行李車、機師與揮棒地勤)
+  // 10. 桃園機場停機坪地勤作業車隊 (中油航油車、桃勤行李拖車、空廚車、後推車、揮棒員與機師)
   const serviceGroup = new THREE.Group();
-  // 油罐車
-  const fuelTruck = new THREE.Mesh(
-    new THREE.BoxGeometry(5, 2.2, 2.2),
-    new THREE.MeshLambertMaterial({ color: 0xf59e0b })
-  );
-  fuelTruck.position.set(2, 1.1, 9.5);
+  // 中油航空加油車
+  const fuelTruck = new THREE.Mesh(new THREE.BoxGeometry(4.8, 2.1, 2.1), new THREE.MeshLambertMaterial({ color: 0xf59e0b }));
+  fuelTruck.position.set(1.5, 1.05, 9.2);
   serviceGroup.add(fuelTruck);
-
-  // 桃勤行李拖車
-  const bagCart = new THREE.Mesh(
-    new THREE.BoxGeometry(6.5, 1.6, 2.0),
-    new THREE.MeshLambertMaterial({ color: 0x38bdf8 })
-  );
-  bagCart.position.set(-5, 0.8, -8.5);
-  serviceGroup.add(bagCart);
-
-  // 揮棒引導地勤 (穿螢光綠反光背心)
-  const marshaller = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.45, 0.45, 2.2, 8),
-    new THREE.MeshBasicMaterial({ color: 0x84cc16 })
-  );
-  marshaller.position.set(17, 1.1, 0);
+  // 桃勤行李拖車列
+  const bagTractor = new THREE.Mesh(new THREE.BoxGeometry(7.2, 1.5, 2.0), new THREE.MeshLambertMaterial({ color: 0x38bdf8 }));
+  bagTractor.position.set(-5.5, 0.75, -8.5);
+  serviceGroup.add(bagTractor);
+  // 華膳/長榮空廚升降餐車
+  const cateringTruck = new THREE.Mesh(new THREE.BoxGeometry(5.2, 3.2, 2.1), new THREE.MeshLambertMaterial({ color: 0x10b981 }));
+  cateringTruck.position.set(-7.5, 1.6, 5.2);
+  serviceGroup.add(cateringTruck);
+  // 機坪揮棒引導員
+  const marshaller = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 2.1, 8), new THREE.MeshBasicMaterial({ color: 0x84cc16 }));
+  marshaller.position.set(16.5, 1.05, 0);
   serviceGroup.add(marshaller);
-
-  // 執行繞機檢查 (Walkaround) 的機師 (深藍制服)
-  const pilotAvatar = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.45, 0.45, 2.3, 8),
-    new THREE.MeshBasicMaterial({ color: 0x1e40af })
-  );
-  pilotAvatar.position.set(11, 1.15, 4.5);
+  // 航前繞機檢查機師 (深藍機師制服)
+  const pilotAvatar = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 2.2, 8), new THREE.MeshBasicMaterial({ color: 0x1e40af }));
+  pilotAvatar.position.set(11.0, 1.1, 4.0);
   serviceGroup.add(pilotAvatar);
 
   serviceGroup.visible = false;
@@ -1172,46 +1519,26 @@ function create3DAircraftMesh(airline) {
   return root;
 }
 
-// 觸地白煙粒子特效系統
+// 觸地白煙粒子
 const smokeParticles = [];
 function spawnTouchdownSmoke(x, z) {
   for (let i = 0; i < 6; i++) {
     const p = new THREE.Mesh(
       new THREE.SphereGeometry(1.1 + Math.random() * 1.2, 8, 8),
-      new THREE.MeshBasicMaterial({ color: 0xf1f5f9, transparent: true, opacity: 0.75 })
+      new THREE.MeshBasicMaterial({ color: 0xf8fafc, transparent: true, opacity: 0.78 })
     );
-    p.position.set(x + (Math.random() - 0.5) * 4, 1.2, z + (Math.random() - 0.5) * 4);
+    p.position.set(x + (Math.random() - 0.5) * 4, 1.1, z + (Math.random() - 0.5) * 4);
     scene.add(p);
     smokeParticles.push({ mesh: p, life: 1.0 });
   }
 }
 
-// 航廈前與空橋動態旅客小人
-const paxAvatars = [];
-function initPassengerAvatars() {
-  const colors = [0x38bdf8, 0xfbbf24, 0xf43f5e, 0x34d399, 0xa78bfa];
-  for (let i = 0; i < 32; i++) {
-    const p = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.4, 0.4, 1.9, 8),
-      new THREE.MeshBasicMaterial({ color: colors[i % colors.length] })
-    );
-    p.position.set(-90 + Math.random() * 180, 1.0, 36 + Math.random() * 16);
-    scene.add(p);
-    paxAvatars.push({
-      mesh: p,
-      vx: (Math.random() - 0.5) * 0.25,
-      vz: (Math.random() - 0.5) * 0.15
-    });
-  }
-}
-initPassengerAvatars();
-
 // ============================================================================
-// 7. 3D 攝影機控制系統 (滑鼠旋轉、右鍵平移、滾輪縮放 + 預設視角平滑過渡)
+// 8. 桃園機場真實賞機攝影機視角控制
 // ============================================================================
 const camControl = {
-  target: new THREE.Vector3(0, 5, -25),
-  spherical: { radius: 245, phi: 0.95, theta: 0.15 },
+  target: new THREE.Vector3(-15, 6, 0),
+  spherical: { radius: 340, phi: 0.92, theta: 0.12 },
   isDragging: false,
   isPanning: false,
   prevX: 0,
@@ -1222,7 +1549,7 @@ function updateCameraPosition() {
   if (state.cameraPreset === 'follow' && state.selectedFlightId) {
     const fl = state.flights.find(f => f.id === state.selectedFlightId);
     if (fl && fl.mesh) {
-      camControl.target.lerp(fl.mesh.position, 0.12);
+      camControl.target.lerp(fl.mesh.position, 0.14);
     }
   }
   const { radius, phi, theta } = camControl.spherical;
@@ -1238,28 +1565,24 @@ renderer.domElement.addEventListener('mousedown', e => {
   camControl.prevX = e.clientX;
   camControl.prevY = e.clientY;
 });
-window.addEventListener('mouseup', () => {
-  camControl.isDragging = false;
-  camControl.isPanning = false;
-});
+window.addEventListener('mouseup', () => { camControl.isDragging = false; camControl.isPanning = false; });
 window.addEventListener('contextmenu', e => e.preventDefault());
 window.addEventListener('mousemove', e => {
   const dx = e.clientX - camControl.prevX;
   const dy = e.clientY - camControl.prevY;
   camControl.prevX = e.clientX;
   camControl.prevY = e.clientY;
-
   if (camControl.isDragging) {
     camControl.spherical.theta -= dx * 0.006;
-    camControl.spherical.phi = Math.max(0.2, Math.min(1.45, camControl.spherical.phi - dy * 0.006));
+    camControl.spherical.phi = Math.max(0.18, Math.min(1.48, camControl.spherical.phi - dy * 0.006));
   } else if (camControl.isPanning) {
-    const panSpeed = camControl.spherical.radius * 0.0015;
+    const panSpeed = camControl.spherical.radius * 0.0014;
     camControl.target.x -= dx * panSpeed;
     camControl.target.z -= dy * panSpeed;
   }
 });
 renderer.domElement.addEventListener('wheel', e => {
-  camControl.spherical.radius = Math.max(45, Math.min(480, camControl.spherical.radius + e.deltaY * 0.18));
+  camControl.spherical.radius = Math.max(40, Math.min(620, camControl.spherical.radius + e.deltaY * 0.22));
 });
 
 function setCameraPreset(preset) {
@@ -1269,33 +1592,40 @@ function setCameraPreset(preset) {
   if (activeBtn) activeBtn.classList.add('active');
 
   if (preset === 'overview') {
-    camControl.target.set(0, 5, -25);
-    camControl.spherical = { radius: 245, phi: 0.95, theta: 0.15 };
-  } else if (preset === 'runway05L') {
-    camControl.target.set(-140, 6, -110);
-    camControl.spherical = { radius: 95, phi: 1.25, theta: -1.15 };
-  } else if (preset === 'apron') {
-    camControl.target.set(10, 8, 18);
-    camControl.spherical = { radius: 115, phi: 1.05, theta: 0.35 };
+    camControl.target.set(-15, 6, 0);
+    camControl.spherical = { radius: 340, phi: 0.92, theta: 0.12 };
+  } else if (preset === 't2deck') {
+    // 模擬站在第二航廈 5F 北側觀景台望向 C 區機坪、北跑道 05L 與竹圍海岸風車
+    camControl.target.set(-35, 8, -110);
+    camControl.spherical = { radius: 95, phi: 1.32, theta: 0.04 };
+  } else if (preset === 'rwy05L') {
+    // 05L 跑道頭賞機熱點
+    camControl.target.set(-180, 5, -170);
+    camControl.spherical = { radius: 92, phi: 1.28, theta: -1.18 };
+  } else if (preset === 'wcbridge') {
+    // 西側 WC 跨區滑行道橋（飛機過馬路）
+    camControl.target.set(-245, 5, 0);
+    camControl.spherical = { radius: 105, phi: 1.15, theta: -0.75 };
   } else if (preset === 'tower') {
-    camControl.target.set(0, 4, -40);
-    camControl.spherical = { radius: 185, phi: 0.78, theta: -0.65 };
+    // 紅白雙塔台俯瞰視角
+    camControl.target.set(-20, 5, -35);
+    camControl.spherical = { radius: 165, phi: 0.85, theta: 0.55 };
   } else if (preset === 'follow') {
     if (!state.selectedFlightId && state.flights.length > 0) {
       state.selectedFlightId = state.flights[0].id;
     }
-    camControl.spherical.radius = 85;
-    camControl.spherical.phi = 1.1;
+    camControl.spherical.radius = 80;
+    camControl.spherical.phi = 1.12;
   }
 }
 
 // ============================================================================
-// 8. 航班生命週期與起降、滑行、空橋過站、機師/地勤調度邏輯
+// 9. 航班真實起降、WC 滑行道橋跨越與機坪過站邏輯
 // ============================================================================
-let flightSeq = 101;
+let flightSeq = 102;
 
 function logATC(msg) {
-  document.getElementById('atc-log').textContent = `[RCTP TWR 118.7] ${msg}`;
+  document.getElementById('atc-log').textContent = `[Taipei Tower 118.7] ${msg}`;
 }
 
 function spawnFloatingMoney(worldPos, text) {
@@ -1312,19 +1642,23 @@ function spawnFloatingMoney(worldPos, text) {
   setTimeout(() => div.remove(), 1600);
 }
 
-function spawnFlight() {
+function spawnFlight(forcedCode) {
   if (state.flights.length >= 6) return;
-  const airline = AIRLINES[Math.floor(Math.random() * AIRLINES.length)];
+  const airline = forcedCode
+    ? AIRLINES.find(a => a.code === forcedCode)
+    : AIRLINES[Math.floor(Math.random() * AIRLINES.length)];
   const flightNo = `${airline.code}${flightSeq++}`;
   const dest = DESTINATIONS[Math.floor(Math.random() * DESTINATIONS.length)];
-  const paxCount = airline.code === 'IT' ? 180 : (260 + Math.floor(Math.random() * 80));
+  const paxCount = airline.code === 'IT' ? 180 : (280 + Math.floor(Math.random() * 70));
 
-  const mesh = create3DAircraftMesh(airline);
-  // 初始位置在 05L 五邊進場遠端高空
-  mesh.position.set(-340, 62, -110);
+  const southRwyOpen = EXPANSIONS.find(e => e.id === 'south_runway').built;
+  const arrRunway = (southRwyOpen && airline.preferSide === 'SOUTH' && Math.random() > 0.35) ? '05R' : '05L';
+  const rwyZ = arrRunway === '05R' ? 170 : -170;
+
+  const mesh = createRealisticAircraftMesh(airline);
+  mesh.position.set(-420, 68, rwyZ);
   scene.add(mesh);
 
-  // 建立 3D 浮動標籤
   const labelEl = document.createElement('div');
   labelEl.className = 'aircraft-label';
   labelEl.onclick = () => selectFlight(flightNo);
@@ -1335,19 +1669,19 @@ function spawnFlight() {
     airline,
     dest,
     paxCount,
-    state: 'APPROACH', // APPROACH -> LANDING -> TAXI_IN -> TURNAROUND -> READY_DEP -> TAXI_OUT -> TAKEOFF -> CLIMB
+    state: 'APPROACH',
     progress: 0,
     gateId: null,
     assignedPilot: null,
     assignedGround: null,
-    runway: '05L',
+    runway: arrRunway,
     mesh,
     labelEl
   };
 
   state.flights.push(flight);
   if (!state.selectedFlightId) state.selectedFlightId = flight.id;
-  logATC(`${flightNo} (${airline.name} ${airline.aircraft}) 建立 05L 跑道 ILS 進場，請求落地許可。`);
+  logATC(`${flightNo} (${airline.name} ${airline.aircraft}) 對準桃園機場 ${arrRunway} 跑道 ILS 五邊進場。`);
   renderFIDS();
 }
 
@@ -1361,17 +1695,19 @@ function selectFlight(flightId) {
   renderFIDS();
 }
 
-// 自動或手動分配機位、機師與地勤
 function tryAssignResources(flight) {
-  // 1. 分配空閒登機門
   if (!flight.gateId) {
-    const freeGate = state.gates.find(g => g.unlocked && !g.occupiedBy);
+    // 優先分配與降落跑道同側的空橋機位，若滿則經由 WC 跨區滑行橋前往另一側機坪
+    const targetSide = flight.runway === '05R' ? 'SOUTH' : 'NORTH';
+    let freeGate = state.gates.find(g => g.unlocked && !g.occupiedBy && g.side === targetSide);
+    if (!freeGate) {
+      freeGate = state.gates.find(g => g.unlocked && !g.occupiedBy);
+    }
     if (freeGate) {
       freeGate.occupiedBy = flight.id;
       flight.gateId = freeGate.id;
     }
   }
-  // 2. 自動指派機師與地勤 (若開啟自動塔台)
   if (state.autoATC && flight.state === 'TURNAROUND') {
     if (!flight.assignedPilot) {
       const idlePilot = state.pilots.find(p => p.status === 'IDLE' && p.fatigue < 85);
@@ -1388,11 +1724,10 @@ function assignPilotToFlight(pilotId, flightId) {
   const pilot = state.pilots.find(p => p.id === pilotId);
   const flight = state.flights.find(f => f.id === flightId);
   if (!pilot || !flight || pilot.status !== 'IDLE') return;
-
   pilot.status = 'WORKING';
   pilot.assignedFlight = flight.id;
   flight.assignedPilot = pilot;
-  logATC(`已指派「${pilot.name}」登機執行 ${flight.id} 航前繞機檢查與離場簽派！`);
+  logATC(`已指派「${pilot.name}」至 ${flight.id} 執行機坪繞機檢查與離場簽派！`);
   playTone('atc');
   renderAllPanels();
 }
@@ -1401,36 +1736,36 @@ function assignGroundToFlight(groundId, flightId) {
   const crew = state.groundCrews.find(g => g.id === groundId);
   const flight = state.flights.find(f => f.id === flightId);
   if (!crew || !flight || crew.status !== 'IDLE') return;
-
   crew.status = 'WORKING';
   crew.assignedFlight = flight.id;
   flight.assignedGround = crew;
-  logATC(`已派遣「${crew.name}」前往 Gate ${flight.gateId} 加速 ${flight.id} 地勤過站！`);
+  logATC(`已派遣「${crew.name}」前往 ${flight.gateId} 支援 ${flight.id} 過站作業！`);
   playTone('atc');
   renderAllPanels();
 }
 
-// 手動批准降落或起飛
 function manualApproveAction(flightId) {
   const flight = state.flights.find(f => f.id === flightId);
   if (!flight) return;
   if (flight.state === 'APPROACH') {
     tryAssignResources(flight);
     if (!flight.gateId) {
-      logATC(`⚠️ 尚無空閒登機門，請等待現有班機離場或擴建第三航廈 (T3)！`);
+      logATC(`⚠️ 目前登機門全滿，請先批准現有班機離場或擴建第三航廈 (T3)！`);
       return;
     }
     flight.state = 'LANDING';
     playTone('atc');
-    logATC(`${flight.id} 風向 050 洞五左跑道 (05L) 許可落地，停機位 Gate ${flight.gateId}。`);
+    logATC(`${flight.id} 桃園塔台許可降落 ${flight.runway} 跑道，預計停靠 ${flight.gateId}。`);
   } else if (flight.state === 'READY_DEP') {
-    const depRunway = EXPANSIONS.find(e => e.id === 'south_runway').built ? '05R' : '05L';
+    const southRwyOpen = EXPANSIONS.find(e => e.id === 'south_runway').built;
+    const gate = state.gates.find(g => g.id === flight.gateId);
+    // 若南跑道已啟用，南側機坪或分流航班走 WC 跨區滑行橋由 05R 起飛
+    const depRunway = southRwyOpen ? (gate && gate.side === 'SOUTH' ? '05R' : (Math.random() > 0.45 ? '05R' : '05L')) : '05L';
     flight.runway = depRunway;
     flight.state = 'TAXI_OUT';
-    // 釋放登機門與員工
     releaseFlightGateAndStaff(flight);
     playTone('atc');
-    logATC(`${flight.id} 許可後推開車，滑行至跑道 ${depRunway} 準備起飛往 ${flight.dest}！`);
+    logATC(`${flight.id} 許可後推開車，經由滑行道${depRunway === '05R' ? '與 WC 跨區滑行橋' : ''}前往 ${depRunway} 跑道起飛！`);
   }
   renderFIDS();
 }
@@ -1441,54 +1776,49 @@ function releaseFlightGateAndStaff(flight) {
   if (flight.assignedPilot) {
     flight.assignedPilot.status = 'IDLE';
     flight.assignedPilot.assignedFlight = null;
-    flight.assignedPilot.fatigue = Math.min(100, flight.assignedPilot.fatigue + 18);
+    flight.assignedPilot.fatigue = Math.min(100, flight.assignedPilot.fatigue + 16);
   }
   if (flight.assignedGround) {
     flight.assignedGround.status = 'IDLE';
     flight.assignedGround.assignedFlight = null;
-    flight.assignedGround.energy = Math.max(0, flight.assignedGround.energy - 16);
+    flight.assignedGround.energy = Math.max(0, flight.assignedGround.energy - 15);
   }
   flight.mesh.userData.serviceGroup.visible = false;
 }
 
-// 每幀更新所有 3D 飛機動態與過站進度
 function updateFlights(dt) {
-  const smartBagBuilt = EXPANSIONS.find(e => e.id === 'smart_baggage').built;
-  const southRwyBuilt = EXPANSIONS.find(e => e.id === 'south_runway').built;
+  const smartApron = EXPANSIONS.find(e => e.id === 'smart_apron').built;
 
   for (let i = state.flights.length - 1; i >= 0; i--) {
     const f = state.flights[i];
     const m = f.mesh;
-    // 防撞燈閃爍
-    m.userData.strobe.visible = Math.sin( performance.now() * 0.012 + i ) > 0.5;
+    m.userData.strobe.visible = Math.sin(performance.now() * 0.012 + i) > 0.45;
+    const rwyZ = f.runway === '05R' ? 170 : -170;
 
     if (f.state === 'APPROACH') {
       tryAssignResources(f);
       if (state.autoATC && f.gateId) {
         f.state = 'LANDING';
-        logATC(`${f.id} 獲准降落北跑道 05L，預計停靠 Gate ${f.gateId}。`);
+        logATC(`${f.id} 獲准降落桃園機場 ${f.runway} 跑道，指派停機位 ${f.gateId}。`);
       } else {
-        // 在五邊緩慢進場等待
-        m.position.x = Math.min(-245, m.position.x + dt * 22);
+        m.position.x = Math.min(-310, m.position.x + dt * 24);
       }
     }
     else if (f.state === 'LANDING') {
-      // 進場下滑至跑道 05L (Z = -110)
-      m.position.z = -110;
-      m.position.x += dt * 78;
-      if (m.position.x < -140) {
-        const t = (m.position.x + 340) / 200;
-        m.position.y = Math.max(0, 62 * (1 - t));
-        m.rotation.z = 0.08; // 降落仰角 Pitch up
+      m.position.z = rwyZ;
+      m.position.x += dt * 88;
+      if (m.position.x < -195) {
+        const t = (m.position.x + 420) / 225;
+        m.position.y = Math.max(0, 68 * (1 - t));
+        m.rotation.z = 0.085;
       } else {
-        // 觸地減速並冒出白煙
         if (m.position.y > 0.2) {
           spawnTouchdownSmoke(m.position.x, m.position.z);
           playTone('chime');
         }
         m.position.y = 0;
         m.rotation.z = 0;
-        if (m.position.x >= 35) {
+        if (m.position.x >= 40) {
           f.state = 'TAXI_IN';
         }
       }
@@ -1496,40 +1826,39 @@ function updateFlights(dt) {
     else if (f.state === 'TAXI_IN') {
       const gate = state.gates.find(g => g.id === f.gateId);
       if (!gate) continue;
-      // 從跑道滑行至 Gate 位置並轉向機鼻朝南 (朝向航廈 +Z, rotation.y = -Math.PI/2)
       const targetX = gate.x;
       const targetZ = gate.z;
-      m.position.x += (targetX - m.position.x) * dt * 2.4;
-      m.position.z += (targetZ - m.position.z) * dt * 2.2;
-      m.rotation.y += (-Math.PI / 2 - m.rotation.y) * dt * 3.0;
+      const targetRotY = gate.side === 'NORTH' ? -Math.PI / 2 : Math.PI / 2;
 
-      if (Math.abs(m.position.x - targetX) < 1.5 && Math.abs(m.position.z - targetZ) < 1.5) {
+      m.position.x += (targetX - m.position.x) * dt * 2.3;
+      m.position.z += (targetZ - m.position.z) * dt * 2.1;
+      m.rotation.y += (targetRotY - m.rotation.y) * dt * 3.2;
+
+      if (Math.abs(m.position.x - targetX) < 1.6 && Math.abs(m.position.z - targetZ) < 1.6) {
         m.position.set(targetX, 0, targetZ);
-        m.rotation.y = -Math.PI / 2;
+        m.rotation.y = targetRotY;
         f.state = 'TURNAROUND';
         f.progress = 0;
         m.userData.serviceGroup.visible = true;
 
-        // 落地停場費與下機旅客免稅消費入帳
-        const landingIncome = Math.round((2400 + f.paxCount * state.retailPerPax) * f.airline.feeBonus);
-        state.money += landingIncome;
+        const income = Math.round((2600 + f.paxCount * state.retailPerPax) * f.airline.feeBonus);
+        state.money += income;
         state.totalPax += f.paxCount;
-        spawnFloatingMoney(m.position, `+$${landingIncome.toLocaleString()} (落地+免稅)`);
+        spawnFloatingMoney(m.position, `+$${income.toLocaleString()} (${f.airline.code} 落地+免稅)`);
         playTone('cash');
         tryAssignResources(f);
       }
     }
     else if (f.state === 'TURNAROUND') {
       tryAssignResources(f);
-      // 計算地勤與機師加成速度
-      let speed = 7.5;
+      let speed = 7.8;
       if (f.assignedPilot) speed *= f.assignedPilot.speedBonus;
       if (f.assignedGround) speed *= f.assignedGround.efficiency;
-      if (smartBagBuilt) speed *= 1.3;
+      if (smartApron) speed *= 1.35;
 
       f.progress = Math.min(100, f.progress + dt * speed);
 
-      // 機師繞機檢查動態 (繞著機鼻走動)
+      // 機師繞機檢查動畫
       const pAvatar = m.userData.pilotAvatar;
       pAvatar.position.x = 10 + Math.cos(performance.now() * 0.004) * 3.5;
       pAvatar.position.z = Math.sin(performance.now() * 0.004) * 4.5;
@@ -1537,43 +1866,45 @@ function updateFlights(dt) {
       // 空橋接靠動畫
       const gm = gateMeshes[f.gateId];
       if (gm) {
-        gm.bridgePivot.rotation.y += (0.35 - gm.bridgePivot.rotation.y) * dt * 4;
+        gm.bridgePivot.rotation.y += (gm.dir * 0.32 - gm.bridgePivot.rotation.y) * dt * 4;
       }
 
       if (f.progress >= 100) {
         f.state = 'READY_DEP';
-        if (state.autoATC) {
-          manualApproveAction(f.id);
-        }
+        if (state.autoATC) manualApproveAction(f.id);
       }
     }
     else if (f.state === 'TAXI_OUT') {
-      // 空橋收回
       if (f.gateId && gateMeshes[f.gateId]) {
         gateMeshes[f.gateId].bridgePivot.rotation.y *= 0.9;
       }
-      const rwyZ = (southRwyBuilt && f.runway === '05R') ? -175 : -110;
-      // 滑行往跑道頭 (-210, rwyZ)
-      m.position.x += (-215 - m.position.x) * dt * 1.8;
-      m.position.z += (rwyZ - m.position.z) * dt * 2.2;
-      m.rotation.y += (0 - m.rotation.y) * dt * 3.0;
+      // 經由西側 WC 跨區滑行道橋 (X = -245) 滑往目標跑道頭 (-265, rwyZ)
+      const depZ = f.runway === '05R' ? 170 : -170;
+      if (Math.abs(m.position.z - depZ) > 35 && Math.abs(m.position.x - (-245)) > 12) {
+        // 先滑向西側 WC 跨區滑行橋 (X = -245)
+        m.position.x += (-245 - m.position.x) * dt * 2.0;
+        m.rotation.y += (Math.PI - m.rotation.y) * dt * 3.0;
+      } else {
+        // 通過 WC 滑行橋進入跑道頭 (-265, depZ)
+        m.position.x += (-265 - m.position.x) * dt * 2.2;
+        m.position.z += (depZ - m.position.z) * dt * 1.9;
+        m.rotation.y += (0 - m.rotation.y) * dt * 3.0;
+      }
 
-      if (Math.abs(m.position.x - (-215)) < 4 && Math.abs(m.position.z - rwyZ) < 3) {
-        m.position.set(-215, 0, rwyZ);
+      if (Math.abs(m.position.x - (-265)) < 5 && Math.abs(m.position.z - depZ) < 4) {
+        m.position.set(-265, 0, depZ);
         m.rotation.y = 0;
         f.state = 'TAKEOFF';
       }
     }
     else if (f.state === 'TAKEOFF') {
-      // 滾行加速並拉升機頭起飛
-      m.position.x += dt * 95;
-      if (m.position.x > -45) {
-        m.rotation.z = 0.19; // 拉機頭仰角 Rotate (Vr)
-        m.position.y += dt * 32;
+      m.position.x += dt * 105;
+      if (m.position.x > -60) {
+        m.rotation.z = 0.19;
+        m.position.y += dt * 34;
       }
-      if (m.position.x > 290) {
-        // 完成離場，結算準點起飛獎金
-        const depBonus = Math.round(3200 * f.airline.feeBonus);
+      if (m.position.x > 340) {
+        const depBonus = Math.round(3400 * f.airline.feeBonus);
         state.money += depBonus;
         spawnFloatingMoney(m.position, `+$${depBonus.toLocaleString()} 準點離場`);
         playTone('cash');
@@ -1586,8 +1917,8 @@ function updateFlights(dt) {
       }
     }
 
-    // 更新 3D 飛機頭頂的 HTML 標籤位置
-    const labelPos = m.position.clone().add(new THREE.Vector3(0, 9.5, 0));
+    // 更新飛機 3D 浮動標籤
+    const labelPos = m.position.clone().add(new THREE.Vector3(0, 10, 0));
     labelPos.project(camera);
     if (labelPos.z < 1) {
       const lx = (labelPos.x * 0.5 + 0.5) * window.innerWidth;
@@ -1595,7 +1926,7 @@ function updateFlights(dt) {
       f.labelEl.style.display = 'block';
       f.labelEl.style.left = `${lx}px`;
       f.labelEl.style.top = `${ly}px`;
-      const gateStr = f.gateId ? `Gate ${f.gateId}` : '待命';
+      const gateStr = f.gateId ? f.gateId.split(' ')[0] : f.runway;
       const progStr = f.state === 'TURNAROUND' ? ` ${Math.floor(f.progress)}%` : '';
       f.labelEl.innerHTML = `<span style="color:${f.airline.badgeText};background:${f.airline.badgeBg};padding:1px 4px;border-radius:3px;margin-right:4px;">${f.id}</span>${gateStr}${progStr}`;
     } else {
@@ -1605,15 +1936,15 @@ function updateFlights(dt) {
 }
 
 // ============================================================================
-// 9. UI 面板渲染與互動功能 (FIDS、擴建、找機師、找地勤、塗裝圖鑑)
+// 10. UI 面板渲染與互動事件
 // ============================================================================
 const STATE_LABELS = {
-  APPROACH: '五邊進場',
-  LANDING: '05L 降落滑行',
-  TAXI_IN: '滑入機坪',
-  TURNAROUND: '地勤過站中',
+  APPROACH: 'ILS 五邊進場',
+  LANDING: '跑道降落滑行',
+  TAXI_IN: '滑入停機坪',
+  TURNAROUND: '空橋過站作業',
   READY_DEP: '請求後推起飛',
-  TAXI_OUT: '滑往跑道頭',
+  TAXI_OUT: 'WC滑行橋往跑道',
   TAKEOFF: '全油門起飛'
 };
 
@@ -1622,7 +1953,7 @@ function renderFIDS() {
   document.getElementById('active-flights-count').textContent = `${state.flights.length} 架執飛中`;
 
   if (state.flights.length === 0) {
-    box.innerHTML = `<div style="text-align:center;color:var(--text-sub);padding:24px;font-size:12px;">目前空域無航班，請點擊上方「申請加班機進場」或稍候自動航班抵達。</div>`;
+    box.innerHTML = `<div style="text-align:center;color:var(--text-sub);padding:20px;font-size:12px;">目前空域無航班，請點擊上方「申請航班進場」或於右側召喚指定航空塗裝。</div>`;
     return;
   }
 
@@ -1633,24 +1964,20 @@ function renderFIDS() {
 
     let actionBtns = '';
     if (f.state === 'APPROACH') {
-      actionBtns += `<button class="btn btn-xs green" onclick="event.stopPropagation();manualApproveAction('${f.id}')">🛬 批准降落 05L</button>`;
+      actionBtns += `<button class="btn btn-xs green" onclick="event.stopPropagation();manualApproveAction('${f.id}')">🛬 許可落地 ${f.runway}</button>`;
     }
     if (f.state === 'TURNAROUND') {
       if (!f.assignedPilot) {
         const idleP = state.pilots.find(p => p.status === 'IDLE');
-        if (idleP) {
-          actionBtns += `<button class="btn btn-xs" onclick="event.stopPropagation();assignPilotToFlight('${idleP.id}','${f.id}')">👨‍✈️ 派機師 (${idleP.name.split(' ')[0]})</button>`;
-        }
+        if (idleP) actionBtns += `<button class="btn btn-xs" onclick="event.stopPropagation();assignPilotToFlight('${idleP.id}','${f.id}')">👨‍✈️ 派機師 (${idleP.name.split(' ')[0]})</button>`;
       }
       if (!f.assignedGround) {
         const idleG = state.groundCrews.find(g => g.status === 'IDLE');
-        if (idleG) {
-          actionBtns += `<button class="btn btn-xs" onclick="event.stopPropagation();assignGroundToFlight('${idleG.id}','${f.id}')">🦺 派地勤加速</button>`;
-        }
+        if (idleG) actionBtns += `<button class="btn btn-xs" onclick="event.stopPropagation();assignGroundToFlight('${idleG.id}','${f.id}')">🦺 派桃勤/長勤</button>`;
       }
     }
     if (f.state === 'READY_DEP') {
-      actionBtns += `<button class="btn btn-xs gold" onclick="event.stopPropagation();manualApproveAction('${f.id}')">🛫 批准後推起飛</button>`;
+      actionBtns += `<button class="btn btn-xs gold" onclick="event.stopPropagation();manualApproveAction('${f.id}')">🛫 許可後推起飛</button>`;
     }
 
     return `
@@ -1658,13 +1985,13 @@ function renderFIDS() {
         <div class="fids-top">
           <div class="flight-no">
             <span class="airline-tag" style="background:${f.airline.badgeBg};color:${f.airline.badgeText};">${f.airline.code}</span>
-            ${f.id} <span style="font-weight:400;font-size:11px;color:var(--text-sub);">(${f.airline.aircraft})</span>
+            ${f.id} <span style="font-weight:400;font-size:11px;color:var(--text-sub);">${f.airline.aircraft} (${f.airline.reg})</span>
           </div>
           <span class="status-badge">${STATE_LABELS[f.state]}</span>
         </div>
         <div class="fids-sub">
           <span>航線：TPE ⇄ ${f.dest}</span>
-          <span>登機門：<b>${f.gateId ? 'Gate ' + f.gateId : '待分配'}</b></span>
+          <span>機位：<b>${f.gateId || '分配中'}</b> | 跑道 <b>${f.runway}</b></span>
         </div>
         ${f.state === 'TURNAROUND' ? `
           <div class="progress-wrap">
@@ -1708,32 +2035,27 @@ function buyExpansion(expId) {
   playTone('cash');
 
   if (expId === 'south_runway') {
-    rwySouthGroup.visible = true;
-    logATC(`🎉 桃園機場「南跑道 05R/23L」正式完工啟用！支援雙跑道平行起降！`);
+    southMaintenanceGroup.visible = false;
+    logATC(`🎉 桃園機場「南跑道 05R/23L」整備完工正式開放！南北雙跑道與 WC 跨區滑行橋全線貫通！`);
   } else if (expId === 'terminal_3') {
-    t3Group.visible = true;
+    t3ConstructionGroup.visible = false;
+    t3BuiltGroup.visible = true;
     state.gates.forEach(g => {
       if (g.terminal === 'T3') {
         g.unlocked = true;
         gateMeshes[g.id].group.visible = true;
       }
     });
-    logATC(`🎉 桃園機場「第三航廈 (T3) 與 D6/D7 雙空橋巨型機位」正式落成啟用！`);
+    logATC(`🎉 桃園機場「第三航廈 (T3 雲頂花瓣屋頂) 與北登機廊廳 D11/D12」正式落成啟用！`);
   } else if (expId === 'vip_lounge') {
-    state.retailPerPax = 32;
-    document.getElementById('retail-rate-label').textContent = `消費抽成 $32/人 (VIP加成)`;
-    logATC(`🎉 星宇/華航/長榮 旗艦貴賓室與免稅精品大街啟用，旅客消費力大幅攀升！`);
-  } else if (expId === 'smart_baggage') {
-    logATC(`🎉 桃勤自動化行李分揀與雙空橋快速系統啟用，全機坪過站效率 +30%！`);
-  } else if (expId === 'hangar_mro') {
-    hangarGroup.visible = true;
-    logATC(`🎉 東北角巨型機務維修棚廠 (MRO Hangar) 落成，開始提供定期航機大修收益！`);
+    state.retailPerPax = 38;
+    document.getElementById('retail-rate-label').textContent = `免稅抽成 $38/人 (VIP加成)`;
+    logATC(`🎉 星宇 GALACTIC / 華航梅苑 / 長榮花園貴賓室與免稅城開幕，旅客消費收益激增！`);
+  } else if (expId === 'smart_apron') {
+    logATC(`🎉 A-SMGCS 智慧機坪導引與雙空橋系統啟用，全機坪過站效率 +35%！`);
+  } else if (expId === 'east_hangar') {
+    logATC(`🎉 東側華航修護工廠與長榮航太 (EGAT) 擴建完成，開始提供定期航機大修收益！`);
   }
-
-  // 更新機場等級標題
-  const builtCount = EXPANSIONS.filter(e => e.built).length;
-  document.getElementById('airport-tier-text').textContent =
-    `等級 ${1 + builtCount}：亞太國際旗紐（已完工 ${builtCount}/5 項重大建設）`;
 
   renderAllPanels();
 }
@@ -1747,16 +2069,14 @@ function renderPilots() {
           <div class="card-title">👨‍✈️ ${p.name} <span style="font-size:11px;color:var(--accent);">(${p.rank})</span></div>
           <div class="skill-tags">
             <span class="skill-tag">技術 ${p.skill}</span>
-            <span class="skill-tag">過站簽派 x${p.speedBonus}</span>
+            <span class="skill-tag">簽派速度 x${p.speedBonus}</span>
             <span class="skill-tag">疲勞度 ${p.fatigue}%</span>
           </div>
         </div>
-        <div>
-          ${p.status === 'WORKING'
-            ? `<span class="status-badge">執勤 ${p.assignedFlight}</span>`
-            : `<button class="btn btn-xs" onclick="restPilot('${p.id}')">☕ 休息室恢復</button>`
-          }
-        </div>
+        ${p.status === 'WORKING'
+          ? `<span class="status-badge">執勤 ${p.assignedFlight}</span>`
+          : `<button class="btn btn-xs" onclick="restPilot('${p.id}')">☕ 組員休息</button>`
+        }
       </div>
       <div class="energy-bar-wrap">
         <div style="width:${100 - p.fatigue}%;height:100%;background:${p.fatigue > 70 ? '#ef4444' : '#38bdf8'};"></div>
@@ -1768,15 +2088,13 @@ function renderPilots() {
     <div class="staff-card" style="border-style:dashed;">
       <div class="card-row">
         <div>
-          <div class="card-title">🌟 應徵者：${c.name} <span style="font-size:11px;color:#fbbf24;">(${c.rank})</span></div>
+          <div class="card-title">🌟 應徵機師：${c.name} <span style="font-size:11px;color:#fbbf24;">(${c.rank})</span></div>
           <div class="skill-tags">
             <span class="skill-tag">技術 ${c.skill}</span>
-            <span class="skill-tag">簽派速度 x${c.speedBonus}</span>
+            <span class="skill-tag">簽派加成 x${c.speedBonus}</span>
           </div>
         </div>
-        <button class="btn btn-xs green" ${state.money < c.hireCost ? 'disabled' : ''} onclick="hirePilot('${c.id}')">
-          聘用 $${c.hireCost.toLocaleString()}
-        </button>
+        <button class="btn btn-xs green" ${state.money < c.hireCost ? 'disabled' : ''} onclick="hirePilot('${c.id}')">聘用 $${c.hireCost.toLocaleString()}</button>
       </div>
     </div>
   `).join('');
@@ -1784,7 +2102,7 @@ function renderPilots() {
   box.innerHTML = `
     <div style="font-size:12px;font-weight:700;color:#38bdf8;">在職飛航組員 (${state.pilots.length} 名)</div>
     ${activeHtml}
-    <div style="font-size:12px;font-weight:700;color:#fbbf24;margin-top:6px;">民航局機師人才市場</div>
+    <div style="font-size:12px;font-weight:700;color:#fbbf24;margin-top:4px;">民航局機師人才庫</div>
     ${marketHtml}
   `;
 }
@@ -1798,17 +2116,13 @@ function hirePilot(candId) {
   state.pilots.push(cand);
   state.pilotCandidates.splice(idx, 1);
   playTone('cash');
-  logATC(`👨‍✈️ 歡迎「${cand.name} (${cand.rank})」加入桃園國際機場駐場機隊！`);
+  logATC(`👨‍✈️ 歡迎「${cand.name} (${cand.rank})」加入桃園機場駐場飛航組員團隊！`);
   renderAllPanels();
 }
 
 function restPilot(pilotId) {
   const p = state.pilots.find(x => x.id === pilotId);
-  if (p) {
-    p.fatigue = 0;
-    playTone('chime');
-    renderPilots();
-  }
+  if (p) { p.fatigue = 0; playTone('chime'); renderPilots(); }
 }
 
 function refreshPilotMarket() {
@@ -1831,12 +2145,10 @@ function renderGroundCrew() {
             <span class="skill-tag">體力 ${g.energy}%</span>
           </div>
         </div>
-        <div>
-          ${g.status === 'WORKING'
-            ? `<span class="status-badge">支援 ${g.assignedFlight}</span>`
-            : `<button class="btn btn-xs" onclick="restGround('${g.id}')">🍱 休息補給</button>`
-          }
-        </div>
+        ${g.status === 'WORKING'
+          ? `<span class="status-badge">支援 ${g.assignedFlight}</span>`
+          : `<button class="btn btn-xs" onclick="restGround('${g.id}')">🍱 待命補給</button>`
+        }
       </div>
       <div class="energy-bar-wrap">
         <div style="width:${g.energy}%;height:100%;background:#10b981;"></div>
@@ -1854,17 +2166,15 @@ function renderGroundCrew() {
             <span class="skill-tag">過站效率 x${c.efficiency}</span>
           </div>
         </div>
-        <button class="btn btn-xs green" ${state.money < c.hireCost ? 'disabled' : ''} onclick="hireGround('${c.id}')">
-          招募 $${c.hireCost.toLocaleString()}
-        </button>
+        <button class="btn btn-xs green" ${state.money < c.hireCost ? 'disabled' : ''} onclick="hireGround('${c.id}')">招募 $${c.hireCost.toLocaleString()}</button>
       </div>
     </div>
   `).join('');
 
   box.innerHTML = `
-    <div style="font-size:12px;font-weight:700;color:#34d399;">在職機坪地勤團隊 (${state.groundCrews.length} 組)</div>
+    <div style="font-size:12px;font-weight:700;color:#34d399;">在職機坪地勤車隊 (${state.groundCrews.length} 組)</div>
     ${activeHtml}
-    <div style="font-size:12px;font-weight:700;color:#fbbf24;margin-top:6px;">桃勤 / 長榮航勤 / 星宇地勤招募</div>
+    <div style="font-size:12px;font-weight:700;color:#fbbf24;margin-top:4px;">桃勤 / 長榮航勤 / 星宇地勤招募</div>
     ${marketHtml}
   `;
 }
@@ -1878,17 +2188,13 @@ function hireGround(candId) {
   state.groundCrews.push(cand);
   state.groundCandidates.splice(idx, 1);
   playTone('cash');
-  logATC(`🦺 已成功招募「${cand.name}」投入機坪過站支援！`);
+  logATC(`🦺 已成功招募「${cand.name}」投入桃園機場機坪作業！`);
   renderAllPanels();
 }
 
 function restGround(groundId) {
   const g = state.groundCrews.find(x => x.id === groundId);
-  if (g) {
-    g.energy = 100;
-    playTone('chime');
-    renderGroundCrew();
-  }
+  if (g) { g.energy = 100; playTone('chime'); renderGroundCrew(); }
 }
 
 function refreshGroundMarket() {
@@ -1909,50 +2215,19 @@ function renderAirlines() {
             ${a.name}
           </div>
           <div class="skill-tags">
-            <span class="skill-tag">主力機型：${a.aircraft}</span>
-            <span class="skill-tag">停場費加成 x${a.feeBonus}</span>
+            <span class="skill-tag">${a.aircraft} (${a.reg})</span>
+            <span class="skill-tag">收益加成 x${a.feeBonus}</span>
           </div>
         </div>
-        <button class="btn btn-xs" onclick="spawnAirlineSpecific('${a.code}')">✈ 召喚進場</button>
+        <button class="btn btn-xs gold" onclick="spawnFlight('${a.code}');playTone('atc');">✈ 召喚進場</button>
       </div>
       <div class="card-desc">${a.desc}</div>
     </div>
   `).join('');
 }
 
-function spawnAirlineSpecific(code) {
-  if (state.flights.length >= 6) {
-    logATC(`⚠️ 目前空域與機坪已滿，請先讓現有班機完檢起飛！`);
-    return;
-  }
-  const airline = AIRLINES.find(a => a.code === code);
-  if (!airline) return;
-  const flightNo = `${airline.code}${flightSeq++}`;
-  const dest = DESTINATIONS[Math.floor(Math.random() * DESTINATIONS.length)];
-  const paxCount = airline.code === 'IT' ? 180 : 300;
-  const mesh = create3DAircraftMesh(airline);
-  mesh.position.set(-340, 62, -110);
-  scene.add(mesh);
-
-  const labelEl = document.createElement('div');
-  labelEl.className = 'aircraft-label';
-  labelEl.onclick = () => selectFlight(flightNo);
-  document.getElementById('labels-container').appendChild(labelEl);
-
-  state.flights.push({
-    id: flightNo, airline, dest, paxCount,
-    state: 'APPROACH', progress: 0, gateId: null,
-    assignedPilot: null, assignedGround: null, runway: '05L',
-    mesh, labelEl
-  });
-  state.selectedFlightId = flightNo;
-  playTone('atc');
-  logATC(`已核准專機 ${flightNo} (${airline.name}) 優先進場桃園機場！`);
-  renderFIDS();
-}
-
 // ============================================================================
-// 10. 頂部控制切換與主遊戲迴圈
+// 11. 頂部控制與主迴圈
 // ============================================================================
 function switchTab(tabName) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -1971,7 +2246,7 @@ function toggleAutoATC() {
 
 function toggleSound() {
   state.soundEnabled = !state.soundEnabled;
-  document.getElementById('btn-sound').textContent = state.soundEnabled ? '🔊 音效：開' : '🔇 音效：關';
+  document.getElementById('btn-sound').textContent = state.soundEnabled ? '🔊 音效' : '🔇 靜音';
 }
 
 function cycleTimeWeather() {
@@ -1979,20 +2254,20 @@ function cycleTimeWeather() {
   const btn = document.getElementById('btn-weather');
   if (state.weatherMode === 0) {
     btn.textContent = '☀ 晴朗日航';
-    scene.background.setHex(0x1e3a5f);
-    scene.fog.color.setHex(0x1e3a5f);
+    scene.background.setHex(0x1a365d);
+    scene.fog.color.setHex(0x1a365d);
     ambientLight.intensity = 0.85;
     sunLight.intensity = 1.25;
     sunLight.color.setHex(0xfffbeb);
   } else if (state.weatherMode === 1) {
-    btn.textContent = '🌇 桃園夕照';
-    scene.background.setHex(0x311b3f);
-    scene.fog.color.setHex(0x311b3f);
+    btn.textContent = '🌇 竹圍夕照';
+    scene.background.setHex(0x3b1d38);
+    scene.fog.color.setHex(0x3b1d38);
     ambientLight.intensity = 0.65;
-    sunLight.intensity = 1.0;
+    sunLight.intensity = 1.05;
     sunLight.color.setHex(0xfb923c);
   } else {
-    btn.textContent = '🌙 璀璨夜航';
+    btn.textContent = '🌙 桃機夜航';
     scene.background.setHex(0x060b16);
     scene.fog.color.setHex(0x060b16);
     ambientLight.intensity = 0.35;
@@ -2005,8 +2280,7 @@ function updateTopHUD() {
   document.getElementById('ui-money').textContent = `$${state.money.toLocaleString()}`;
   document.getElementById('ui-pax').textContent = `${state.totalPax.toLocaleString()} 人`;
   document.getElementById('ui-rep').textContent = `${state.reputation}% (4.9★)`;
-  document.getElementById('ui-staff-count').textContent = `${state.pilots.length} 機師 / ${state.groundCrews.length} 地勤`;
-
+  document.getElementById('ui-staff-count').textContent = `${state.pilots.length} 機師 / ${state.groundCrews.length} 地勤組`;
   const hh = String(Math.floor(state.timeMinutes / 60) % 24).padStart(2, '0');
   const mm = String(Math.floor(state.timeMinutes % 60)).padStart(2, '0');
   document.getElementById('ui-clock').textContent = `${hh}:${mm}`;
@@ -2021,45 +2295,37 @@ function renderAllPanels() {
   renderAirlines();
 }
 
-// 初始產生 3 架桃園機場主力航班 (星宇、華航、長榮)
-['JX', 'CI', 'BR'].forEach((code, idx) => {
-  setTimeout(() => spawnAirlineSpecific(code), idx * 1400);
+// 開場依序進場星宇、華航、長榮、台灣虎航
+['JX', 'CI', 'BR', 'IT'].forEach((code, idx) => {
+  setTimeout(() => spawnFlight(code), idx * 1300);
 });
 renderAllPanels();
-cycleTimeWeather(); // 預設切為晴朗日航
-cycleTimeWeather();
-cycleTimeWeather();
 
-// 定時產生新航班與更新航廈數據
 setInterval(() => {
   state.timeMinutes = (state.timeMinutes + 1) % 1440;
-  const maxFlights = EXPANSIONS.find(e => e.id === 'south_runway').built ? 5 : 3;
+  const maxFlights = EXPANSIONS.find(e => e.id === 'south_runway').built ? 6 : 4;
   if (state.flights.length < maxFlights) {
     spawnFlight();
   }
-  // 若維修棚廠已建造，發放機務維護收益
-  if (EXPANSIONS.find(e => e.id === 'hangar_mro').built) {
-    state.money += 400;
+  if (EXPANSIONS.find(e => e.id === 'east_hangar').built) {
+    state.money += 550;
   }
-  // 更新航廈動態人數與休息中員工體力
   state.pilots.forEach(p => { if (p.status === 'IDLE') p.fatigue = Math.max(0, p.fatigue - 3); });
   state.groundCrews.forEach(g => { if (g.status === 'IDLE') g.energy = Math.min(100, g.energy + 4); });
 
-  document.getElementById('pax-security').textContent = `${12 + Math.floor(Math.random() * 22)} 人`;
-  document.getElementById('pax-dutyfree').textContent = `${28 + state.flights.length * 14} 人`;
-  document.getElementById('pax-boarding').textContent = `${20 + state.flights.length * 18} 人`;
+  document.getElementById('pax-security').textContent = `${18 + Math.floor(Math.random() * 25)} 人`;
+  document.getElementById('pax-dutyfree').textContent = `${36 + state.flights.length * 16} 人`;
+  document.getElementById('pax-boarding').textContent = `${28 + state.flights.length * 20} 人`;
   updateTopHUD();
   renderFIDS();
 }, 3200);
 
-// 視窗縮放自適應
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// Three.js 主渲染迴圈
 let lastTime = performance.now();
 function animate(now) {
   requestAnimationFrame(animate);
@@ -2069,25 +2335,43 @@ function animate(now) {
   updateFlights(dt);
   updateCameraPosition();
 
-  // 更新觸地白煙粒子
+  // 竹圍海岸風力發電機葉片旋轉
+  windTurbines.forEach(rotor => { rotor.rotation.z += dt * 1.4; });
+
+  // 航站南北路車流穿梭於航廈與 WC 跨區滑行道橋下
+  highwayCars.forEach(c => {
+    c.mesh.position.x += c.speed * dt;
+    if (c.mesh.position.x > 340) c.mesh.position.x = -340;
+    if (c.mesh.position.x < -340) c.mesh.position.x = 340;
+  });
+
+  // 觸地白煙粒子動畫
   for (let i = smokeParticles.length - 1; i >= 0; i--) {
     const sp = smokeParticles[i];
     sp.life -= dt * 0.9;
     sp.mesh.scale.addScalar(dt * 1.8);
-    sp.mesh.position.y += dt * 2.5;
-    sp.mesh.material.opacity = Math.max(0, sp.life * 0.7);
+    sp.mesh.position.y += dt * 2.4;
+    sp.mesh.material.opacity = Math.max(0, sp.life * 0.72);
     if (sp.life <= 0) {
       scene.remove(sp.mesh);
       smokeParticles.splice(i, 1);
     }
   }
 
-  // 更新航廈旅客走動
-  paxAvatars.forEach(p => {
-    p.mesh.position.x += p.vx;
-    p.mesh.position.z += p.vz;
-    if (p.mesh.position.x < -95 || p.mesh.position.x > 110) p.vx *= -1;
-    if (p.mesh.position.z < 32 || p.mesh.position.z > 52) p.vz *= -1;
+  // 更新 3D 地標名牌座標
+  landmarkEls.forEach(lm => {
+    if (!state.showLandmarks) {
+      lm.el.style.display = 'none';
+      return;
+    }
+    const p = lm.pos.clone().project(camera);
+    if (p.z < 1) {
+      lm.el.style.display = 'block';
+      lm.el.style.left = `${(p.x * 0.5 + 0.5) * window.innerWidth}px`;
+      lm.el.style.top = `${(-(p.y * 0.5) + 0.5) * window.innerHeight}px`;
+    } else {
+      lm.el.style.display = 'none';
+    }
   });
 
   renderer.render(scene, camera);
