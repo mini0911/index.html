@@ -47,7 +47,7 @@
         </div>
       </div>
 
-      <!-- 影片基本資料（已移除影片類型欄位） -->
+      <!-- 影片基本資料 -->
       <div class="space-y-4">
         <h2 class="text-lg font-bold text-indigo-900 border-b pb-2 flex items-center gap-2">
           <span class="w-2 h-6 bg-indigo-600 rounded-full inline-block"></span> 影片基本資料
@@ -95,7 +95,7 @@
         </h2>
         
         <div class="space-y-3">
-          <label class="block text-sm font-semibold text-slate-700">4. 觀點碰撞：影片中是否有哪個情節或角色價值觀讓你感到震撼、認同或質疑？為什麼？</label>
+          <label class="block text-sm font-semibold text-slate-700">4. 觀點碰撞：影片中是否有哪個情節、科學設定或角色價值觀讓你感到震撼、認同或質疑？為什麼？</label>
           <textarea id="q4" rows="3" required class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="寫下你的贊同或批判觀點..."></textarea>
         </div>
 
@@ -162,7 +162,7 @@
       statusMsg.textContent = "正在將作答資料寫入後台試算表，請稍候...";
       statusMsg.className = "text-sm font-medium text-indigo-600";
 
-      // 蒐集所有欄位資料（已移除 videoType）
+      // 蒐集所有欄位資料
       const formData = {
         studentClass: document.getElementById('studentClass').value,
         studentId: document.getElementById('studentId').value,
