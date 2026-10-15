@@ -1,1285 +1,2846 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-TW" class="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>今天也要平安下班！校安問答手遊版 (超萌Q版)</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>《SkyHub：雲端樞紐》機場模擬經營遊戲</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+
     * {
       box-sizing: border-box;
-      margin: 0;
-      padding: 0;
       user-select: none;
       -webkit-user-select: none;
-      -webkit-touch-callout: none;
     }
+
     body {
-      background-color: #ffedd5;
-      font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      font-family: 'Noto Sans TC', sans-serif;
+      background-color: #0b1120;
+      color: #f1f5f9;
       overflow: hidden;
-      touch-action: none;
-    }
-    #mobile-frame {
-      position: relative;
-      width: 100vw;
-      max-width: 430px;
       height: 100vh;
-      max-height: 932px;
-      background: #fef3c7;
-      border: 4px solid #fbbf24;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      box-shadow: 0 10px 25px rgba(251, 191, 36, 0.3);
+      width: 100vw;
     }
+
+    .font-mono-led {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(71, 85, 105, 0.8);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(56, 189, 248, 0.8);
+    }
+
+    /* FIDS LED Row Effect */
+    .fids-row {
+      background: linear-gradient(90deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.85) 100%);
+      border-left: 3px solid #38bdf8;
+      transition: all 0.2s ease;
+    }
+    .fids-row:hover {
+      transform: translateX(2px);
+      background: linear-gradient(90deg, rgba(30, 41, 59, 0.98) 0%, rgba(51, 65, 85, 0.9) 100%);
+    }
+
+    /* Pulse Animations */
+    @keyframes pulse-amber {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.6); }
+      50% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
+    }
+    .btn-urgent {
+      animation: pulse-amber 1.6s infinite;
+    }
+
     canvas {
       display: block;
       width: 100%;
-      height: 52%;
-      background: #fffbeb;
-    }
-
-    #top-bar {
-      position: absolute;
-      top: env(safe-area-inset-top, 10px);
-      left: 12px;
-      right: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 5;
-      pointer-events: none;
-    }
-    .status-group {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-      width: 160px;
-    }
-    .bar-container {
-      background: #fef08a;
-      border: 2px solid #f59e0b;
-      border-radius: 12px;
-      height: 20px;
-      position: relative;
-      overflow: hidden;
-    }
-    .bar-fill {
       height: 100%;
-      width: 100%;
-      transition: width 0.2s ease;
-      border-radius: 10px;
+      cursor: grab;
     }
-    #san-bar { background: #f87171; }
-    #sta-bar { background: #4ade80; }
-    .bar-label {
-      position: absolute;
-      top: 0;
-      left: 6px;
-      font-size: 11px;
-      font-weight: 900;
-      line-height: 18px;
-      color: #78350f;
-    }
-    .top-right-group {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      pointer-events: auto;
-    }
-    #sound-toggle {
-      background: #fff;
-      border: 2px solid #f97316;
-      border-radius: 10px;
-      padding: 4px 8px;
-      font-size: 14px;
-      cursor: pointer;
-      box-shadow: 0 2px 0 #fdba74;
-    }
-    #clock-box {
-      background: #ffffff;
-      border: 3px solid #fb923c;
-      border-radius: 12px;
-      padding: 4px 10px;
-      font-size: 16px;
-      font-weight: 900;
-      color: #ea580c;
-      text-align: center;
-      box-shadow: 0 2px 0 #fdba74;
-    }
-
-    #dialog-box {
-      position: absolute;
-      bottom: 125px;
-      left: 10px;
-      right: 10px;
-      background: #ffffff;
-      border: 4px solid #f97316;
-      border-radius: 20px;
-      padding: 12px;
-      display: none;
-      flex-direction: column;
-      gap: 8px;
-      box-shadow: 0 6px 0 #fed7aa;
-      z-index: 10;
-      max-height: 42%;
-      overflow-y: auto;
-    }
-    #dialog-title {
-      font-size: 12px;
-      font-weight: 900;
-      color: #ea580c;
-      background: #ffedd5;
-      padding: 3px 10px;
-      border-radius: 10px;
-      align-self: flex-start;
-    }
-    #dialog-text {
-      font-size: 14px;
-      font-weight: bold;
-      color: #1e293b;
-      line-height: 1.4;
-    }
-    .options-list {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .option-btn {
-      background: #fef3c7;
-      border: 2px solid #f59e0b;
-      border-radius: 12px;
-      padding: 9px 12px;
-      font-size: 13px;
-      font-weight: bold;
-      color: #78350f;
-      cursor: pointer;
-      text-align: left;
-      line-height: 1.35;
-    }
-    .option-btn:active {
-      background: #fde047;
-      transform: scale(0.98);
-    }
-
-    #touch-controls {
-      position: absolute;
-      bottom: env(safe-area-inset-bottom, 15px);
-      left: 0;
-      right: 0;
-      height: 95px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 20px;
-      z-index: 8;
-    }
-    .d-pad {
-      display: flex;
-      gap: 14px;
-    }
-    .ctrl-btn {
-      width: 65px;
-      height: 65px;
-      border-radius: 50%;
-      background: #fed7aa;
-      border: 3px solid #ea580c;
-      box-shadow: 0 4px 0 #c2410c;
-      font-size: 24px;
-      font-weight: 900;
-      color: #7c2d12;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      touch-action: manipulation;
-    }
-    .ctrl-btn:active {
-      transform: translateY(3px);
-      box-shadow: 0 1px 0 #c2410c;
-      background: #fdba74;
-    }
-    #action-btn {
-      width: 75px;
-      height: 75px;
-      background: #f97316;
-      border: 3px solid #7c2d12;
-      box-shadow: 0 4px 0 #7c2d12;
-      color: #fff;
-      font-size: 16px;
-      font-weight: 900;
-    }
-    #action-btn:active {
-      transform: translateY(3px);
-      box-shadow: 0 1px 0 #7c2d12;
-      background: #ea580c;
-    }
-
-    #modal {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(254, 243, 199, 0.95);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 20;
-      padding: 20px;
-      text-align: center;
-    }
-    #modal h1 {
-      font-size: 28px;
-      margin-bottom: 10px;
-      color: #ea580c;
-    }
-    #modal p {
-      font-size: 14px;
-      font-weight: bold;
-      margin-bottom: 20px;
-      color: #7c2d12;
-      line-height: 1.6;
-    }
-    .cute-btn {
-      padding: 12px 30px;
-      font-size: 17px;
-      font-weight: 900;
-      background: #f97316;
-      color: #ffffff;
-      border: 3px solid #7c2d12;
-      border-radius: 14px;
-      cursor: pointer;
-      box-shadow: 0 4px 0 #7c2d12;
+    canvas:active {
+      cursor: grabbing;
     }
   </style>
 </head>
-<body>
+<body class="flex flex-col h-screen w-screen overflow-hidden bg-slate-950 select-none">
 
-  <div id="mobile-frame">
-    <div id="top-bar">
-      <div class="status-group">
-        <div class="bar-container">
-          <div id="san-bar" class="bar-fill"></div>
-          <span class="bar-label">❤️ 理智 (SAN)</span>
-        </div>
-        <div class="bar-container">
-          <div id="sta-bar" class="bar-fill"></div>
-          <span class="bar-label">👟 耐力 (STA)</span>
-        </div>
-      </div>
-      <div class="top-right-group">
-        <button id="sound-toggle" onclick="toggleAudio()">🔊</button>
-        <div id="clock-box">
-          <span style="font-size: 9px; color: #f97316; display: block;">目標 17:00</span>
-          <span id="time-display">16:30</span>
+  <!-- ==================== TOP HUD BAR ==================== -->
+  <header class="h-14 bg-slate-900/95 border-b border-slate-800 px-3 lg:px-5 flex items-center justify-between gap-2 z-30 shrink-0 shadow-lg">
+    <!-- Brand & Rating -->
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2 bg-sky-500/10 border border-sky-500/30 px-2.5 py-1 rounded-xl">
+        <i class="fa-solid fa-plane-up text-sky-400 text-lg"></i>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <span class="font-black tracking-wider text-sm md:text-base text-white">SKYHUB</span>
+            <span class="text-[10px] bg-sky-500 text-slate-950 font-bold px-1.5 py-0.2 rounded">TPE-2</span>
+          </div>
+          <div class="text-[10px] text-slate-400 hidden sm:block leading-none">雲端樞紐國際機場</div>
         </div>
       </div>
-    </div>
 
-    <canvas id="gameCanvas" width="400" height="420"></canvas>
+      <!-- KPI Pills -->
+      <div class="flex items-center gap-1.5 sm:gap-2.5">
+        <!-- Money -->
+        <div class="bg-slate-800/90 border border-slate-700/80 px-2.5 py-1 rounded-lg flex items-center gap-2">
+          <i class="fa-solid fa-sack-dollar text-emerald-400 text-sm"></i>
+          <div>
+            <div class="text-[10px] text-slate-400 leading-none">營運資金</div>
+            <div id="hud-money" class="font-mono-led font-bold text-emerald-400 text-xs sm:text-sm">$48,500</div>
+          </div>
+        </div>
 
-    <div id="dialog-box">
-      <div id="dialog-title">💬 學生來請教你了！</div>
-      <div id="dialog-text">問題內容</div>
-      <div class="options-list" id="options-container"></div>
-    </div>
+        <!-- Star Rating / Reputation -->
+        <div class="bg-slate-800/90 border border-slate-700/80 px-2.5 py-1 rounded-lg flex items-center gap-2">
+          <i class="fa-solid fa-star text-amber-400 text-sm"></i>
+          <div>
+            <div class="text-[10px] text-slate-400 leading-none">機場評級</div>
+            <div id="hud-rating" class="font-mono-led font-bold text-amber-300 text-xs sm:text-sm">3.6 ★</div>
+          </div>
+        </div>
 
-    <div id="touch-controls">
-      <div class="d-pad">
-        <button class="ctrl-btn" id="btn-left">◀</button>
-        <button class="ctrl-btn" id="btn-right">▶</button>
+        <!-- On-Time Rate -->
+        <div class="hidden md:flex bg-slate-800/90 border border-slate-700/80 px-2.5 py-1 rounded-lg items-center gap-2">
+          <i class="fa-solid fa-clock text-cyan-400 text-sm"></i>
+          <div>
+            <div class="text-[10px] text-slate-400 leading-none">航班準點率</div>
+            <div id="hud-ontime" class="font-mono-led font-bold text-cyan-300 text-xs sm:text-sm">96%</div>
+          </div>
+        </div>
+
+        <!-- Active Pax -->
+        <div class="hidden xl:flex bg-slate-800/90 border border-slate-700/80 px-2.5 py-1 rounded-lg items-center gap-2">
+          <i class="fa-solid fa-users text-indigo-400 text-sm"></i>
+          <div>
+            <div class="text-[10px] text-slate-400 leading-none">航廈旅客 / 累計</div>
+            <div id="hud-pax" class="font-mono-led font-bold text-indigo-300 text-xs sm:text-sm">18 / 42</div>
+          </div>
+        </div>
+
+        <!-- Crew & Pilots -->
+        <div class="hidden lg:flex bg-slate-800/90 border border-slate-700/80 px-2.5 py-1 rounded-lg items-center gap-2.5">
+          <div class="flex items-center gap-1.5" title="可用地勤 / 總地勤人數">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span>
+            <span class="text-xs text-slate-300">地勤:</span>
+            <span id="hud-crew" class="font-mono-led font-bold text-amber-300 text-xs">4/6</span>
+          </div>
+          <div class="h-3 w-[1px] bg-slate-700"></div>
+          <div class="flex items-center gap-1.5" title="待命機師 / 簽約總機師">
+            <span class="w-2.5 h-2.5 rounded-full bg-sky-400 inline-block"></span>
+            <span class="text-xs text-slate-300">機師:</span>
+            <span id="hud-pilots" class="font-mono-led font-bold text-sky-300 text-xs">3/4</span>
+          </div>
+        </div>
       </div>
-      <button class="ctrl-btn" id="action-btn">💬 對話</button>
     </div>
 
-    <div id="modal">
-      <h1 id="modal-title">校安生存戰 🎒</h1>
-      <p id="modal-desc">
-        你是學務處最親切的超萌 Q 版校安老師！<br>
-        在 17:00 前利用下方按鈕巡視校園，<br>
-        門口會陸續湧入許多帶著煩惱的 Q 版學生，<br>
-        靠近冒問號的學生點擊【對話】排解難題，平安下班！
-      </p>
-      <button class="cute-btn" id="start-btn" onclick="startGame()">開始值勤 ⏰</button>
+    <!-- Right Controls: Weather, Auto-ATC, Speed, Audio -->
+    <div class="flex items-center gap-1.5 sm:gap-2">
+      <!-- Weather / Time Mode -->
+      <div class="flex bg-slate-800 p-0.5 rounded-lg border border-slate-700">
+        <button onclick="setWeather('day')" id="btn-weather-day" class="px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1 bg-sky-500 text-slate-950 font-bold transition">
+          <i class="fa-solid fa-sun"></i><span class="hidden sm:inline">晴朗日航</span>
+        </button>
+        <button onclick="setWeather('night')" id="btn-weather-night" class="px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1 text-slate-300 hover:text-white transition">
+          <i class="fa-solid fa-moon"></i><span class="hidden sm:inline">夜航燈光</span>
+        </button>
+        <button onclick="setWeather('storm')" id="btn-weather-storm" class="px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1 text-slate-300 hover:text-white transition">
+          <i class="fa-solid fa-cloud-bolt"></i><span class="hidden sm:inline">雷雨側風</span>
+        </button>
+      </div>
+
+      <!-- Auto-ATC Toggle -->
+      <button onclick="toggleAutoATC()" id="btn-auto-atc" class="px-2.5 py-1.5 rounded-lg text-xs font-bold border border-emerald-500/60 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 flex items-center gap-1.5 transition" title="自動批准起降、指派機師與地勤">
+        <i class="fa-solid fa-tower-observation"></i>
+        <span class="hidden md:inline">自動塔台:</span>
+        <span id="auto-atc-label">開啟</span>
+      </button>
+
+      <!-- Game Speed -->
+      <div class="flex bg-slate-800 p-0.5 rounded-lg border border-slate-700">
+        <button onclick="setGameSpeed(0)" id="speed-0" class="px-2 py-1 rounded text-xs text-slate-300 hover:text-white">⏸</button>
+        <button onclick="setGameSpeed(1)" id="speed-1" class="px-2 py-1 rounded text-xs bg-amber-500 text-slate-950 font-bold">1x</button>
+        <button onclick="setGameSpeed(2)" id="speed-2" class="px-2 py-1 rounded text-xs text-slate-300 hover:text-white">2x</button>
+        <button onclick="setGameSpeed(3)" id="speed-3" class="px-2 py-1 rounded text-xs text-slate-300 hover:text-white">3x</button>
+      </div>
+
+      <!-- Sound Toggle -->
+      <button onclick="toggleSound()" id="btn-sound" class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 hover:text-white" title="音效開關">
+        <i id="sound-icon" class="fa-solid fa-volume-high text-xs"></i>
+      </button>
     </div>
+  </header>
+
+  <!-- ==================== MAIN WORKSPACE ==================== -->
+  <div class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+
+    <!-- LEFT / CENTER: INTERACTIVE AIRPORT CANVAS -->
+    <div class="flex-1 relative bg-slate-950 overflow-hidden" id="canvas-container">
+      <canvas id="airportCanvas"></canvas>
+
+      <!-- Zone Legend Overlay (Top-Left of Canvas) -->
+      <div class="absolute top-3 left-3 flex flex-wrap items-center gap-1.5 pointer-events-none">
+        <div class="bg-slate-900/85 backdrop-blur-md border border-slate-700/80 px-2.5 py-1 rounded-lg text-[11px] flex items-center gap-2 shadow">
+          <span class="font-mono-led text-emerald-400 font-bold" id="clock-display">08:30</span>
+          <span class="text-slate-500">|</span>
+          <span id="wind-display" class="text-sky-300"><i class="fa-solid fa-wind mr-1"></i>090° 8kt</span>
+        </div>
+        <button onclick="spawnImmediateFlight()" class="pointer-events-auto bg-sky-600/90 hover:bg-sky-500 text-white border border-sky-400/50 px-2.5 py-1 rounded-lg text-[11px] font-bold shadow flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-plane-arrival"></i> 召喚進場班機
+        </button>
+        <button onclick="spawnPassengerWave(10)" class="pointer-events-auto bg-indigo-600/90 hover:bg-indigo-500 text-white border border-indigo-400/50 px-2.5 py-1 rounded-lg text-[11px] font-bold shadow flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-bus"></i> 機場巴士進站 (+10旅客)
+        </button>
+      </div>
+
+      <!-- ATC Radio Log Ticker (Bottom-Left of Canvas) -->
+      <div class="absolute bottom-3 left-3 max-w-md w-[calc(100%-1.5rem)] sm:w-96 bg-slate-900/90 backdrop-blur-md border border-slate-700/80 rounded-xl p-2.5 shadow-xl pointer-events-none">
+        <div class="flex items-center justify-between text-[10px] text-slate-400 uppercase tracking-wider mb-1">
+          <span class="flex items-center gap-1.5 font-bold text-sky-400">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            TPE TOWER 118.7 MHz 塔台通訊與機場廣播
+          </span>
+          <span class="font-mono-led text-slate-500">LIVE</span>
+        </div>
+        <div id="atc-log-list" class="space-y-1 text-xs font-mono-led max-h-16 overflow-hidden">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <!-- Entity Inspector Card (Top-Right of Canvas when clicked) -->
+      <div id="inspector-card" class="hidden absolute top-3 right-3 w-72 bg-slate-900/95 backdrop-blur-md border border-sky-500/50 rounded-xl p-3.5 shadow-2xl z-20">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2.5">
+          <div class="flex items-center gap-2">
+            <div id="insp-icon" class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold">
+              <i class="fa-solid fa-plane"></i>
+            </div>
+            <div>
+              <div id="insp-title" class="font-bold text-sm text-white">JX800 星宇航空</div>
+              <div id="insp-subtitle" class="text-[11px] text-slate-400">A350-900 廣體客機</div>
+            </div>
+          </div>
+          <button onclick="closeInspector()" class="text-slate-400 hover:text-white w-6 h-6 flex items-center justify-center rounded-lg hover:bg-slate-800">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div id="insp-body" class="space-y-2 text-xs text-slate-300">
+          <!-- Dynamic details -->
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT SIDEBAR: FIDS & MANAGEMENT TABS -->
+    <aside class="w-full lg:w-[410px] xl:w-[440px] h-72 lg:h-full bg-slate-900 border-t lg:border-t-0 lg:border-l border-slate-800 flex flex-col shrink-0 z-20">
+      
+      <!-- Navigation Tabs -->
+      <div class="grid grid-cols-4 bg-slate-950/80 p-1 border-b border-slate-800 text-xs font-bold shrink-0">
+        <button onclick="switchTab('fids')" id="tab-btn-fids" class="py-2 rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/40 flex items-center justify-center gap-1.5 transition">
+          <i class="fa-solid fa-plane-departure"></i>
+          <span>航班看板</span>
+          <span id="fids-badge" class="bg-sky-500 text-slate-950 text-[10px] px-1.5 rounded-full font-mono-led">3</span>
+        </button>
+        <button onclick="switchTab('staff')" id="tab-btn-staff" class="py-2 rounded-lg text-slate-400 hover:text-white flex items-center justify-center gap-1.5 transition">
+          <i class="fa-solid fa-user-tie"></i>
+          <span>機師/地勤</span>
+        </button>
+        <button onclick="switchTab('upgrades')" id="tab-btn-upgrades" class="py-2 rounded-lg text-slate-400 hover:text-white flex items-center justify-center gap-1.5 transition">
+          <i class="fa-solid fa-building-wheat"></i>
+          <span>航廈擴建</span>
+        </button>
+        <button onclick="switchTab('airlines')" id="tab-btn-airlines" class="py-2 rounded-lg text-slate-400 hover:text-white flex items-center justify-center gap-1.5 transition">
+          <i class="fa-solid fa-file-signature"></i>
+          <span>航權合約</span>
+        </button>
+      </div>
+
+      <!-- TAB 1: FIDS (Flight Information Display System & ATC Control) -->
+      <div id="tab-panel-fids" class="flex-1 flex flex-col overflow-hidden p-3 space-y-2.5">
+        <div class="flex items-center justify-between text-xs text-slate-400 px-1">
+          <span>即時航班調度與機坪過站監控</span>
+          <span class="text-[11px] text-emerald-400"><i class="fa-solid fa-circle-info mr-1"></i>點擊航班可聚焦或手動指揮</span>
+        </div>
+
+        <div id="fids-container" class="flex-1 overflow-y-auto space-y-2 pr-1">
+          <!-- Dynamically populated flight cards -->
+        </div>
+      </div>
+
+      <!-- TAB 2: STAFF (Pilots & Ground Crew Management) -->
+      <div id="tab-panel-staff" class="hidden flex-1 overflow-y-auto p-3 space-y-3">
+        <!-- Summary Status -->
+        <div class="grid grid-cols-2 gap-2.5">
+          <div class="bg-slate-800/70 border border-slate-700 rounded-xl p-3">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs text-amber-300 font-bold"><i class="fa-solid fa-helmet-safety mr-1"></i>機坪與航廈地勤</span>
+              <span id="staff-crew-count" class="font-mono-led text-sm font-bold text-white">6 人</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mb-2.5">負責報到櫃檯、安檢門、機坪引導、加油、空廚與行李裝卸。</p>
+            <button onclick="hireGroundCrew()" class="w-full py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg transition flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-plus"></i> 招募地勤人員 (<span id="cost-crew">$2,500</span>)
+            </button>
+          </div>
+
+          <div class="bg-slate-800/70 border border-slate-700 rounded-xl p-3">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs text-sky-300 font-bold"><i class="fa-solid fa-user-astronaut mr-1"></i>駐場簽約機師</span>
+              <span id="staff-pilot-count" class="font-mono-led text-sm font-bold text-white">4 人</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mb-2.5">每架過站航班皆須指派機師進行繞機檢查與執飛，方能後推起飛。</p>
+            <button onclick="hirePilot()" class="w-full py-1.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs rounded-lg transition flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-plus"></i> 簽約正機師 (<span id="cost-pilot">$4,200</span>)
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Boost Action -->
+        <div class="bg-gradient-to-r from-indigo-900/50 to-sky-900/40 border border-indigo-500/40 rounded-xl p-3 flex items-center justify-between">
+          <div>
+            <div class="text-xs font-bold text-indigo-200"><i class="fa-solid fa-mug-hot text-amber-400 mr-1.5"></i>免費供應精品手沖咖啡與能量飲</div>
+            <div class="text-[11px] text-slate-300">全體地勤與機師作業速度提升 50%，持續 45 秒</div>
+          </div>
+          <button onclick="activateCoffeeBoost()" id="btn-coffee-boost" class="px-3 py-1.5 bg-indigo-500 hover:bg-indigo-400 text-white font-bold text-xs rounded-lg shrink-0 transition">
+            激勵士氣 ($1,200)
+          </button>
+        </div>
+
+        <!-- Live Roster List -->
+        <div>
+          <div class="text-xs font-bold text-slate-300 mb-2 flex items-center justify-between">
+            <span>執勤中機師與地勤名單 (點擊可追蹤位置)</span>
+          </div>
+          <div id="staff-roster-list" class="space-y-1.5 max-h-60 overflow-y-auto pr-1">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: TERMINAL & APRON UPGRADES -->
+      <div id="tab-panel-upgrades" class="hidden flex-1 overflow-y-auto p-3 space-y-2.5">
+        <div class="text-xs text-slate-400 px-1">升級機坪空橋與航廈設施，加速旅客通關並提高免稅店消費收益：</div>
+        <div id="upgrades-list" class="space-y-2">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <!-- TAB 4: AIRLINE CONTRACTS -->
+      <div id="tab-panel-airlines" class="hidden flex-1 overflow-y-auto p-3 space-y-2.5">
+        <div class="text-xs text-slate-400 px-1">與各大航空公司簽署航權合約，引進不同機型與高消費旅客：</div>
+        <div id="airlines-list" class="space-y-2">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+    </aside>
   </div>
 
+  <!-- ==================== GAME SCRIPT ==================== -->
   <script>
-    let audioCtx = null;
-    let bgmInterval = null;
-    let isMuted = false;
-
-    function initAudio() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-    }
-
-    function toggleAudio() {
-      initAudio();
-      isMuted = !isMuted;
-      document.getElementById('sound-toggle').innerText = isMuted ? '🔇' : '🔊';
-      if (isMuted) stopBGM();
-      else if (isPlaying) startBGM();
-    }
-
-    function playTone(freq, type = 'sine', duration = 0.15, gainVal = 0.1) {
-      if (!audioCtx || isMuted) return;
-      try {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+    // =========================================================================
+    // 1. AUDIO SYNTHESIZER (Web Audio API - No external files needed)
+    // =========================================================================
+    const AudioSys = {
+      ctx: null,
+      enabled: true,
+      init() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) this.ctx = new AudioCtx();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      },
+      playCash() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(987.77, now); // B5
+        osc.frequency.setValueAtTime(1318.51, now + 0.07); // E6
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
         osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + duration);
-      } catch (e) { }
-    }
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.28);
+      },
+      playRadioBeep() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(1850, now);
+        osc.frequency.setValueAtTime(1420, now + 0.04);
+        gain.gain.setValueAtTime(0.05, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.12);
+      },
+      playJetRoar(duration = 1.2) {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const bufferSize = this.ctx.sampleRate * duration;
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = Math.random() * 2 - 1;
+        }
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
 
-    function playCorrectSound() {
-      initAudio();
-      if (isMuted) return;
-      playTone(523.25, 'triangle', 0.1, 0.15);
-      setTimeout(() => playTone(659.25, 'triangle', 0.12, 0.15), 80);
-      setTimeout(() => playTone(783.99, 'triangle', 0.2, 0.2), 160);
-    }
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(260, this.ctx.currentTime);
+        filter.frequency.linearRampToValueAtTime(110, this.ctx.currentTime + duration);
 
-    function playWrongSound() {
-      initAudio();
-      if (isMuted) return;
-      playTone(260, 'sawtooth', 0.15, 0.12);
-      setTimeout(() => playTone(180, 'sawtooth', 0.25, 0.15), 100);
-    }
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.01, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.08, this.ctx.currentTime + 0.2);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
 
-    function playPopSound() {
-      initAudio();
-      if (isMuted) return;
-      playTone(440, 'sine', 0.08, 0.1);
-    }
-
-    const melody = [
-      { f: 392.00, d: 200 },
-      { f: 440.00, d: 200 },
-      { f: 523.25, d: 350 },
-      { f: 440.00, d: 200 },
-      { f: 523.25, d: 200 },
-      { f: 587.33, d: 400 },
-      { f: 523.25, d: 200 },
-      { f: 392.00, d: 400 },
-    ];
-    let melodyIndex = 0;
-
-    function startBGM() {
-      if (bgmInterval || isMuted) return;
-      melodyIndex = 0;
-      bgmInterval = setInterval(() => {
-        if (!isPlaying || isMuted) return;
-        const note = melody[melodyIndex];
-        playTone(note.f, 'sine', note.d / 1000, 0.04);
-        melodyIndex = (melodyIndex + 1) % melody.length;
-      }, 300);
-    }
-
-    function stopBGM() {
-      if (bgmInterval) {
-        clearInterval(bgmInterval);
-        bgmInterval = null;
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        noise.start();
       }
-    }
-
-    function triggerHaptic(type) {
-      if (!('vibrate' in navigator)) return;
-      if (type === 'success') navigator.vibrate([40, 60, 50]);
-      else if (type === 'warning') navigator.vibrate(180);
-      else if (type === 'click') navigator.vibrate(20);
-    }
-
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-
-    const sanBar = document.getElementById('san-bar');
-    const staBar = document.getElementById('sta-bar');
-    const timeDisplay = document.getElementById('time-display');
-    const dialogBox = document.getElementById('dialog-box');
-    const dialogText = document.getElementById('dialog-text');
-    const optionsContainer = document.getElementById('options-container');
-    const modal = document.getElementById('modal');
-    const modalTitle = document.getElementById('modal-title');
-    const modalDesc = document.getElementById('modal-desc');
-    const startBtn = document.getElementById('start-btn');
-
-    let isPlaying = false;
-    let gameTime = 16.5 * 60;
-    const targetTime = 17.0 * 60;
-    const timeScale = 0.55;
-
-    /* Q版主角狀態 */
-    const player = {
-      x: 60,
-      y: 265,
-      speed: 3.5,
-      san: 100,
-      maxSan: 100,
-      sta: 100,
-      maxSta: 100,
-      facing: 'right',
-      walkFrame: 0,
-      blinkTimer: 100
     };
 
-    let students = [];
-    let activeStudent = null;
-    let feedbackText = "";
-    let feedbackTimer = 0;
+    function toggleSound() {
+      AudioSys.enabled = !AudioSys.enabled;
+      const icon = document.getElementById('sound-icon');
+      icon.className = AudioSys.enabled ? 'fa-solid fa-volume-high text-xs text-emerald-400' : 'fa-solid fa-volume-xmark text-xs text-slate-500';
+    }
 
-    let moveLeft = false;
-    let moveRight = false;
+    // =========================================================================
+    // 2. WORLD COORDINATE SYSTEM (1400 x 860 Virtual Airport Map)
+    // =========================================================================
+    const WORLD = {
+      width: 1400,
+      height: 860,
+      // Top Zone: Runway & Taxiways
+      runwayY: 98,
+      runwayHeight: 62,
+      taxiwayY: 222,
+      holdingX: 165,
+      // Middle Zone: Apron & Gates
+      apronTopY: 255,
+      apronBottomY: 500,
+      terminalWallY: 500,
+      // Bottom Zone: Terminal Interior
+      curbsideY: 825
+    };
 
-    const questionBank = [
+    // Gate Configurations (A1 to A4)
+    const GATES = [
+      { id: 'A1', name: 'Gate A1', x: 310, y: 375, unlocked: true, price: 0, occupiedBy: null, jetbridgeExt: 0 },
+      { id: 'A2', name: 'Gate A2', x: 610, y: 375, unlocked: true, price: 0, occupiedBy: null, jetbridgeExt: 0 },
+      { id: 'A3', name: 'Gate A3', x: 910, y: 375, unlocked: false, price: 15000, occupiedBy: null, jetbridgeExt: 0 },
+      { id: 'A4', name: 'Gate A4 (廣體專用)', x: 1200, y: 375, unlocked: false, price: 28000, occupiedBy: null, jetbridgeExt: 0 }
+    ];
+
+    // Airlines & Aircraft Types
+    const AIRLINES = [
       {
-        text: "老師！有人把我的醜照發在匿名 Threads 和 IG 告白粉專，底下好多人在笑我...",
-        options: [
-          { text: "截圖存證！我陪你找輔導老師與生輔組，發函要求平台撤下並啟動關懷。", san: 12, sta: -5 },
-          { text: "先不要看手機了，網路留言過幾天大家就忘了，別想太多。", san: -15, sta: 0 },
-          { text: "叫你朋友一起去貼文底下留言罵回去，看誰比較大聲！", san: -25, sta: 0 }
-        ]
+        code: 'B7',
+        name: '立榮區域航空 (UNI Regional)',
+        type: 'ATR 72-600 螺旋槳',
+        size: 'regional',
+        scale: 0.82,
+        primaryColor: '#10b981',
+        accentColor: '#059669',
+        fuselageColor: '#f8fafc',
+        capacity: 14,
+        landingFee: 1800,
+        onTimeBonus: 1200,
+        turnaroundSec: 28,
+        unlocked: true,
+        contractCost: 0,
+        minRating: 1.0,
+        desc: '高班次離島與區域航線，過站整備極快，適合累積初期資金。'
       },
       {
-        text: "老師，二樓男廁裡面有很濃的水果甜味，好像有人在偷抽電子煙...",
-        options: [
-          { text: "收到！謝謝你反映，我馬上帶生輔組老師過去巡查，並保密你的身分。", san: 10, sta: -10 },
-          { text: "你現在帶我進去抓，直接指給我看是誰！", san: -15, sta: -5 },
-          { text: "那種東西很貴他們抽不起啦，應該只是芳香劑吧？", san: -20, sta: 0 }
-        ]
+        code: 'IT',
+        name: '台灣虎航 (Tigerair LCC)',
+        type: 'A320neo 窄體客機',
+        size: 'narrow',
+        scale: 0.98,
+        primaryColor: '#f59e0b',
+        accentColor: '#1e293b',
+        fuselageColor: '#ffffff',
+        capacity: 22,
+        landingFee: 3200,
+        onTimeBonus: 2200,
+        turnaroundSec: 36,
+        unlocked: true,
+        contractCost: 0,
+        minRating: 2.5,
+        desc: '熱門東北亞廉價航空，載客量高、免稅店伴手禮買氣旺盛。'
       },
       {
-        text: "老師，我偷訂的外送到了，可是門口警衛杯杯把外送員擋在外面，我的奶茶要被沒收了...",
-        options: [
-          { text: "校規規定外送需集中在專區，我先幫你領回暫管，放學再來學務處拿。", san: 8, sta: -10 },
-          { text: "警衛做得對！你現在去罰站，外送當場銷毀倒掉！", san: -15, sta: 0 },
-          { text: "趁警衛不注意，你繞去側門圍牆偷偷接過來啦。", san: -25, sta: 0 }
-        ]
+        code: 'BR',
+        name: '長榮國際航空 (EVA Air)',
+        type: 'B787-10 夢幻客機',
+        size: 'wide',
+        scale: 1.15,
+        primaryColor: '#047857',
+        accentColor: '#d97706',
+        fuselageColor: '#f1f5f9',
+        capacity: 30,
+        landingFee: 5500,
+        onTimeBonus: 3800,
+        turnaroundSec: 44,
+        unlocked: false,
+        contractCost: 12000,
+        minRating: 3.5,
+        desc: '傳統五星級國際幹線，帶來高比例商務艙旅客與豐厚停場收益。'
       },
       {
-        text: "老師，網路上有網友說要給我免費手遊造型，要我傳學生證跟手機驗證碼給他...",
-        options: [
-          { text: "千萬不要傳！這是典型的詐騙套路，立刻封鎖對方，有問題找老師！", san: 15, sta: 0 },
-          { text: "天下沒有白吃的午餐，但先給他看看，真的有拿到造型再說？", san: -20, sta: 0 },
-          { text: "你都幾歲了還玩這種遊戲，手機先交出來保管！", san: -15, sta: 0 }
-        ]
-      },
-      {
-        text: "老師，隔壁班阿凱放學想借我的機車去載人，但他根本沒有駕照，不借他就要堵我...",
-        options: [
-          { text: "絕對不能借！無照駕駛非常危險，我放學親自找阿凱跟他的導師會談。", san: 10, sta: -10 },
-          { text: "你就跟他說車子沒油了，自己想辦法推託掉。", san: -10, sta: 0 },
-          { text: "他敢騎你就借啊，被警察抓到罰單算他的又不是你的。", san: -30, sta: 0 }
-        ]
-      },
-      {
-        text: "老師，我交友軟體認識的『哥哥』說放學要開車在側門載我去夜景餐廳，我有點害怕...",
-        options: [
-          { text: "別去！未成年私下見網友風險極高，我陪你聯絡家長，放學一起走。", san: 15, sta: -10 },
-          { text: "既然害怕，那就約在人多的麥當勞見面比較安全吧？", san: -15, sta: 0 },
-          { text: "人家請吃飯幹嘛不去？大驚小怪的。", san: -25, sta: 0 }
-        ]
-      },
-      {
-        text: "老師！我的 AirPods 掉在操場草叢，定位顯示還在那裡，快放學了我好急！",
-        options: [
-          { text: "別慌，我們拿手電筒去定位點找找，順便廣播失物招領。", san: 8, sta: -15 },
-          { text: "操場那麼大找不到了啦，回家叫爸媽再買一副新的。", san: -15, sta: 0 },
-          { text: "肯定是剛才體育課被別班撿走了，直接報警調閱全校監視器！", san: -10, sta: -10 }
-        ]
-      },
-      {
-        text: "老師，下一節要考數學，我胃好痛手都在發抖，好想翻牆翹課回家...",
-        options: [
-          { text: "深呼吸，翻牆很危險！我先帶你去健康中心休息，我來跟導師溝通。", san: 12, sta: -10 },
-          { text: "考個試而已裝什麼病？回去教室坐好，不會寫就用猜的！", san: -20, sta: 0 },
-          { text: "想翹課自己動作俐落點，別被我看到就不算違規。", san: -30, sta: 0 }
-        ]
-      },
-      {
-        text: "老師，群組裡有人用 AI 換臉把女同學照片做成不雅梗圖瘋傳，我該怎麼辦？",
-        options: [
-          { text: "這是嚴重的性別平等與法律事件！請保留截圖，我立刻啟動性平與校安通報程序。", san: 15, sta: -10 },
-          { text: "那只是同學鬧著玩的惡搞啦，不要跟著轉傳就好。", san: -20, sta: 0 },
-          { text: "把那張圖傳給我看看，我看看到底有多像！", san: -30, sta: 0 }
-        ]
-      },
-      {
-        text: "老師，網路前輩找我假日去幫忙當『收簿手』，一天現領五千元，我可以去嗎？",
-        options: [
-          { text: "千萬不行！那是詐騙集團的車手洗錢陷阱，會背刑事責任！我立刻通知家長與少年隊宣導。", san: 15, sta: -5 },
-          { text: "天下哪有這麼好賺的事，你自己去看看，發現不對勁再跑。", san: -25, sta: 0 },
-          { text: "賺了記得分紅給老師買下午茶就好。", san: -35, sta: 0 }
-        ]
-      },
-      {
-        text: "老師，班上有同學沉迷球版線上簽賭，輸了兩萬塊現在被校外人士討債...",
-        options: [
-          { text: "這涉及校外賭博與黑道介入！請他馬上來學務處，我聯繫家長與警方少年隊共同保護處理。", san: 12, sta: -15 },
-          { text: "欠債還錢天經地義，叫他去跟爸媽坦白借錢還掉。", san: -15, sta: 0 },
-          { text: "賭博是他自己的事，不要把討債的人引到學校來就好。", san: -25, sta: 0 }
-        ]
-      },
-      {
-        text: "老師，隔壁班男生說只要我傳私密照給他看，他就答應跟我交往...",
-        options: [
-          { text: "絕對不能傳！這是兒少性剝削犯罪，真正喜歡你的人不會這樣要求，我帶你找輔導老師。", san: 15, sta: -5 },
-          { text: "只傳一張不露臉的應該還好吧？你自己斟酌。", san: -30, sta: 0 },
-          { text: "感情的事老師不管，你們私下處理好。", san: -25, sta: 0 }
-        ]
-      },
-      {
-        text: "老師，放學有宮廟陣頭的人在側門發飲料，拉我們假日去出陣頭說有零用錢拿...",
-        options: [
-          { text: "請提高警覺！我立刻去側門巡視勸離，同學切勿隨意提供個資或盲目跟隨。", san: 10, sta: -15 },
-          { text: "有免費飲料不喝白不喝，拿了就趕快回家。", san: -15, sta: 0 },
-          { text: "出陣頭也是本土文化推廣嘛，想去賺外快自己小心就好。", san: -20, sta: 0 }
-        ]
-      },
-      {
-        text: "老師！剛才體育課搶籃球場，有兩班同學差點抄球棒打起來，現在僵持在球場！",
-        options: [
-          { text: "大家別衝動！我拿哨子和大聲公立刻過去隔開雙方，體育組長也隨後就到！", san: 10, sta: -20 },
-          { text: "打球有衝突很正常，讓他們自己講開就好了。", san: -15, sta: 0 },
-          { text: "有種去操場外面打，不要在校園裡面丟人現眼！", san: -30, sta: 0 }
-        ]
-      },
-      {
-        text: "老師，我看到同桌同學書包裡藏著一把彈簧刀，他說是要防身用的...",
-        options: [
-          { text: "謝謝你的機警反映！為保障大家安全，我請導師協助引導該生到學務處妥善保管查證。", san: 12, sta: -10 },
-          { text: "你直接當場叫他拿出來，問他到底想幹嘛！", san: -20, sta: -5 },
-          { text: "他平常滿乖的應該只是削鉛筆，不要大驚小怪。", san: -20, sta: 0 }
-        ]
-      },
-      {
-        text: "老師，外面下大雨走廊很滑，剛才有同學狂奔滑倒骨折，躺在地上動不了了！",
-        options: [
-          { text: "千萬別隨意搬動傷者！我立刻攜帶急救箱並聯絡健康中心校護與 119！", san: 12, sta: -15 },
-          { text: "叫他自己爬起來去健康中心擦藥，在走廊躺著成何體統！", san: -25, sta: 0 },
-          { text: "找兩個力氣大的同學直接把他抬起來送去醫務室！", san: -20, sta: -10 }
-        ]
-      },
-      {
-        text: "老師，班上有同學的錢包不見了，全班現在鼓譟要搜大家的書包，甚至要搜身...",
-        options: [
-          { text: "立刻制止私自搜查！搜查涉及人權與法規，我過去班上主持秩序並調閱教室監視器。", san: 12, sta: -10 },
-          { text: "身正不怕影子斜，大家書包打開讓班長看一眼不就解決了？", san: -20, sta: 0 },
-          { text: "直接報警叫警察來全班做筆錄！", san: -15, sta: -10 }
-        ]
-      },
-      {
-        text: "老師，男同學們在走廊玩阿魯巴撞柱子，有人撞到頭流血而且柱子磁磚掉了...",
-        options: [
-          { text: "太危險了！受傷同學我馬上送醫護室，相關同學全數到學務處進行安全再教育。", san: 10, sta: -15 },
-          { text: "男生打打鬧鬧而已，去洗手台沖沖水就沒事了。", san: -20, san: 0 },
-          { text: "損壞公物！磁磚費用全班分攤，每人記警告一支！", san: -15, sta: 0 }
-        ]
-      },
-      {
-        text: "老師，頂樓圍欄外好像有他校穿便服的人在抽煙挑釁，還朝中庭丟飲料罐...",
-        options: [
-          { text: "所有在場學生退回室內！我攜帶防身配備並通報警衛室封鎖樓梯口，必要時通報轄區警局。", san: 12, sta: -20 },
-          { text: "你們拿掃把上去把他們趕走，不要讓別校的看扁了！", san: -30, sta: 0 },
-          { text: "當作沒看到，等他們無聊了自然就會走。", san: -25, sta: 0 }
-        ]
-      },
-      {
-        text: "老師，我跟家裡吵架不想回家，打算放學後在公園涼亭過夜...",
-        options: [
-          { text: "外面晚上很危險！來辦公室坐坐喝杯溫水，我陪你聊聊並幫忙跟家長溝通。", san: 15, sta: -10 },
-          { text: "現在離家出走很帥是不是？等沒錢吃飯看你怎麼辦。", san: -20, sta: 0 },
-          { text: "去便利商店坐著比較安全，至少有冷氣吹。", san: -15, sta: 0 }
-        ]
+        code: 'JX',
+        name: '星宇精品航空 (STARLUX)',
+        type: 'A350-1000 旗艦廣體',
+        size: 'wide',
+        scale: 1.24,
+        primaryColor: '#b45309',
+        accentColor: '#334155',
+        fuselageColor: '#e2e8f0',
+        capacity: 38,
+        landingFee: 8500,
+        onTimeBonus: 6000,
+        turnaroundSec: 50,
+        unlocked: false,
+        contractCost: 24000,
+        minRating: 4.0,
+        desc: '頂級越洋精品航線，頭等與商務 VIP 旅客在貴賓室與精品店大額消費！'
       }
     ];
 
-    const btnLeft = document.getElementById('btn-left');
-    const btnRight = document.getElementById('btn-right');
-    const actionBtn = document.getElementById('action-btn');
+    // Upgrades Configuration
+    const UPGRADES = [
+      {
+        id: 'gate_a3',
+        name: '啟用 Gate A3 停機坪與空橋',
+        desc: '擴充第三座智慧空橋機坪，大幅提升同時接待航班數量。',
+        level: 0,
+        maxLevel: 1,
+        baseCost: 15000,
+        icon: 'fa-bridge-lock'
+      },
+      {
+        id: 'gate_a4',
+        name: '啟用 Gate A4 廣體旗艦機坪',
+        desc: '擴充第四座雙走道廣體客機機坪，解決尖峰時段空中盤旋塞機。',
+        level: 0,
+        maxLevel: 1,
+        baseCost: 28000,
+        icon: 'fa-plane-lock'
+      },
+      {
+        id: 'kiosk',
+        name: '自助報到與行李託運機 (Self Check-in)',
+        desc: '加快旅客在報到櫃檯的處理速度 +35%，減少排隊不耐煩。',
+        level: 1,
+        maxLevel: 4,
+        baseCost: 4500,
+        icon: 'fa-passport'
+      },
+      {
+        id: 'security',
+        name: 'CT 智慧安檢門與 e-Gate 查驗',
+        desc: '旅客免取出筆電即可快速通過安檢，通關效率每級提升 +40%。',
+        level: 1,
+        maxLevel: 4,
+        baseCost: 5200,
+        icon: 'fa-shield-halved'
+      },
+      {
+        id: 'dutyfree',
+        name: '奢華免稅精品大街與星級貴賓室',
+        desc: '吸引過境旅客駐足購物，每位旅客免稅店消費金額提升 +45%。',
+        level: 1,
+        maxLevel: 5,
+        baseCost: 6800,
+        icon: 'fa-bag-shopping'
+      },
+      {
+        id: 'apron_tech',
+        name: '機坪自動化地勤車隊與地下油栓',
+        desc: '配備高流速地下加油栓與電動行李車，過站整備速度提升 +30%。',
+        level: 1,
+        maxLevel: 4,
+        baseCost: 7500,
+        icon: 'fa-truck-ramp-box'
+      }
+    ];
 
-    const bindTouch = (elem, onPress, onRelease) => {
-      elem.addEventListener('touchstart', (e) => { e.preventDefault(); triggerHaptic('click'); onPress(); });
-      elem.addEventListener('touchend', (e) => { e.preventDefault(); onRelease(); });
-      elem.addEventListener('mousedown', () => { triggerHaptic('click'); onPress(); });
-      elem.addEventListener('mouseup', onRelease);
+    // =========================================================================
+    // 3. GAME STATE
+    // =========================================================================
+    const state = {
+      money: 48500,
+      rating: 3.6,
+      flightsCompleted: 12,
+      flightsOnTime: 12,
+      totalPaxServed: 42,
+      gameSpeed: 1,
+      weather: 'day', // 'day' | 'night' | 'storm'
+      autoATC: true,
+      simMinutes: 8 * 60 + 30, // 08:30 AM
+      coffeeBoostTimer: 0,
+
+      // Entities
+      flights: [],
+      passengers: [],
+      pilots: [],
+      groundCrew: [],
+      particles: [],
+      floatingTexts: [],
+      rainDrops: [],
+      lightningAlpha: 0,
+
+      // Costs
+      crewHireCost: 2500,
+      pilotHireCost: 4200,
+
+      // Selection / Camera
+      selectedEntity: null, // { type: 'flight'|'pilot'|'crew'|'pax'|'gate', ref: obj }
+      flightSpawnTimer: 6,
+      paxSpawnTimer: 2,
+      runwayBusyBy: null // flight id currently on runway or final approach
     };
 
-    bindTouch(btnLeft, () => { moveLeft = true; player.facing = 'left'; }, () => { moveLeft = false; });
-    bindTouch(btnRight, () => { moveRight = true; player.facing = 'right'; }, () => { moveRight = false; });
+    // =========================================================================
+    // 4. INITIALIZATION OF PILOTS, GROUND CREW & PASSENGERS
+    // =========================================================================
+    const PILOT_NAMES = ['張機長 (Capt. Chang)', '林機長 (Capt. Lin)', '陳機長 (Capt. Chen)', '王機長 (Capt. Wang)', '劉機長 (Capt. Liu)', '趙機長 (Capt. Chao)', '黃機長 (Capt.Huang)', '周機長 (Capt. Chou)'];
+    const CREW_NAMES = ['李組長 (引導員)', '吳技師 (航機加油)', '鄭專員 (空廚裝卸)', '許專員 (行李分揀)', '蔡督導 (報到櫃檯)', '楊教官 (安檢督導)', '謝技師 (機務維修)', '韓組員 (空橋操作)'];
 
-    actionBtn.addEventListener('click', () => {
-      if (activeStudent && dialogBox.style.display === 'none') {
-        playPopSound();
-        triggerHaptic('click');
-        openQuestion();
-      }
-    });
-
-    function spawnStudent() {
-      if (!isPlaying || students.length >= 4) return;
-      const slotX = 130 + Math.random() * 200;
-
-      students.push({
-        x: 420,
-        y: 280,
-        targetX: slotX,
-        state: 'entering',
-        type: Math.floor(Math.random() * 3), // 0: 雙馬尾妹妹, 1: 呆毛弟弟, 2: 圓眼鏡班長
-        facing: 'left',
-        walkFrame: 0,
-        bounce: Math.random() * Math.PI,
-        hasQuestion: false,
-        mood: null,
-        blinkTimer: 60 + Math.random() * 80
-      });
+    function createPilot(index) {
+      const homeX = 1130 + (index % 3) * 58;
+      const homeY = 735 + Math.floor(index / 3) * 38;
+      return {
+        id: 'pilot_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        name: PILOT_NAMES[index % PILOT_NAMES.length],
+        x: homeX,
+        y: homeY,
+        homeX,
+        homeY,
+        targetX: homeX,
+        targetY: homeY,
+        state: 'IDLE', // 'IDLE' | 'WALKING_TO_PLANE' | 'INSPECTING' | 'IN_COCKPIT' | 'RETURNING'
+        assignedFlightId: null,
+        inspectAngle: 0,
+        stamina: 100
+      };
     }
 
-    function shuffleArray(array) {
-      const arr = [...array];
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-      return arr;
+    function createGroundCrew(index) {
+      // First 2 stationed in terminal (Check-in & Security), rest stationed at Apron Service Depot
+      const isTerminal = index < 2;
+      const homeX = isTerminal ? (index === 0 ? 235 : 535) : (120 + ((index - 2) % 4) * 35);
+      const homeY = isTerminal ? (index === 0 ? 645 : 645) : (455 + Math.floor((index - 2) / 4) * 24);
+      return {
+        id: 'crew_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        name: CREW_NAMES[index % CREW_NAMES.length],
+        role: isTerminal ? (index === 0 ? '報到櫃檯督導' : '安檢中心督導') : '機坪過站技師',
+        isTerminal,
+        x: homeX,
+        y: homeY,
+        homeX,
+        homeY,
+        targetX: homeX,
+        targetY: homeY,
+        state: 'IDLE', // 'IDLE' | 'WORKING_FLIGHT' | 'RETURNING'
+        assignedFlightId: null
+      };
     }
 
-    function openQuestion() {
-      if (!activeStudent || activeStudent.state !== 'waiting') return;
-      const currentQuestion = questionBank[Math.floor(Math.random() * questionBank.length)];
-      dialogText.innerText = currentQuestion.text;
-      optionsContainer.innerHTML = '';
+    function spawnPassenger(customGateId = null, isDeplaning = false, startX = null, startY = null) {
+      const unlockedGates = GATES.filter(g => g.unlocked);
+      const chosenGate = customGateId
+        ? GATES.find(g => g.id === customGateId) || unlockedGates[0]
+        : unlockedGates[Math.floor(Math.random() * unlockedGates.length)];
 
-      const shuffledOptions = shuffleArray(currentQuestion.options);
+      const tierRoll = Math.random();
+      const tier = tierRoll > 0.82 ? 'VIP' : (tierRoll > 0.5 ? 'BUSINESS' : 'ECONOMY');
+      const color = tier === 'VIP' ? '#fbbf24' : (tier === 'BUSINESS' ? '#c084fc' : '#38bdf8');
 
-      shuffledOptions.forEach((opt, idx) => {
-        const btn = document.createElement('button');
-        btn.className = 'option-btn';
-        btn.innerText = `${idx + 1}. ${opt.text}`;
-        btn.onclick = () => answerQuestion(opt);
-        optionsContainer.appendChild(btn);
-      });
-
-      dialogBox.style.display = 'flex';
-    }
-
-    function answerQuestion(opt) {
-      player.san = Math.max(0, Math.min(player.maxSan, player.san + opt.san));
-      player.sta = Math.max(0, Math.min(player.maxSta, player.sta + opt.sta));
-
-      if (opt.san >= 0) {
-        playCorrectSound();
-        triggerHaptic('success');
-        feedbackText = "處置得宜，學生放心離開！ ❤️";
-      } else {
-        playWrongSound();
-        triggerHaptic('warning');
-        feedbackText = "處置不當，學生委屈離開... 💦";
-      }
-
-      feedbackTimer = 70;
-      dialogBox.style.display = 'none';
-
-      if (activeStudent) {
-        activeStudent.state = 'leaving';
-        activeStudent.hasQuestion = false;
-        activeStudent.facing = 'right';
-        activeStudent.mood = opt.san >= 0 ? 'happy' : 'sad';
-        activeStudent = null;
-      }
-
-      if (player.san <= 0) {
-        gameOver(false);
-      }
-    }
-
-    function startGame() {
-      initAudio();
-      startBGM();
-      modal.style.display = 'none';
-      isPlaying = true;
-      gameTime = 16.5 * 60;
-      player.san = 100;
-      player.sta = 100;
-      player.x = 60;
-      students = [];
-      activeStudent = null;
-      dialogBox.style.display = 'none';
-      feedbackText = "";
-
-      spawnStudent();
-      setTimeout(spawnStudent, 800);
-    }
-
-    function gameOver(win) {
-      isPlaying = false;
-      stopBGM();
-      modal.style.display = 'flex';
-      dialogBox.style.display = 'none';
-
-      if (win) {
-        playCorrectSound();
-        triggerHaptic('success');
-        modalTitle.innerText = "🎉 順利平安下班！";
-        modalTitle.style.color = "#10b981";
-        modalDesc.innerHTML = "17:00 打卡鐘響起！ ⏰<br>你用滿滿的愛與專業解答了孩子們的煩惱！<br>守住了理智值，今天又是平安的一天！";
-        startBtn.innerText = "明天再戰";
-      } else {
-        playWrongSound();
-        triggerHaptic('warning');
-        modalTitle.innerText = "💦 理智斷線加班中...";
-        modalTitle.style.color = "#ef4444";
-        modalDesc.innerHTML = "SAN 值歸零了！ 🥺<br>面對連環湧入的諮詢與問題，精神徹底被榨乾，<br>今天只好多留下來喝杯奶茶寫檢討報告了。";
-        startBtn.innerText = "重新振作";
-      }
-    }
-
-    let spawnTimer = 0;
-
-    function update() {
-      if (!isPlaying) return;
-
-      gameTime += (1 / 60) * timeScale;
-      let hours = Math.floor(gameTime / 60);
-      let minutes = Math.floor(gameTime % 60);
-      timeDisplay.innerText = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-
-      if (gameTime >= targetTime) {
-        gameOver(true);
+      if (isDeplaning) {
+        // Deplaning passenger walks from gate out to terminal exit
+        state.passengers.push({
+          id: 'pax_' + Math.random().toString(36).slice(2, 8),
+          tier,
+          color,
+          x: startX || chosenGate.x,
+          y: startY || 495,
+          targetX: 775 + (Math.random() * 140 - 70),
+          targetY: 575 + (Math.random() * 40 - 20),
+          stage: 'DEPLANING_SHOP',
+          gateId: chosenGate.id,
+          patience: 100,
+          waitTimer: 1.5 + Math.random() * 2
+        });
         return;
       }
 
-      /* 主角眨眼倒數 */
-      player.blinkTimer--;
-      if (player.blinkTimer <= 0) {
-        player.blinkTimer = 100 + Math.random() * 80;
+      // Departing passenger enters at Curbside Drop-off (Bottom-Left)
+      const counterIndex = Math.floor(Math.random() * 3);
+      const checkinX = 165 + counterIndex * 70 + (Math.random() * 16 - 8);
+      const checkinY = 700 + (Math.random() * 24 - 12);
+
+      state.passengers.push({
+        id: 'pax_' + Math.random().toString(36).slice(2, 8),
+        tier,
+        color,
+        x: 140 + Math.random() * 180,
+        y: 825,
+        targetX: checkinX,
+        targetY: checkinY,
+        stage: 'TO_CHECKIN', // TO_CHECKIN -> CHECKIN_WAIT -> TO_SECURITY -> SECURITY_WAIT -> TO_DUTYFREE -> DUTYFREE_SHOP -> TO_GATE -> GATE_WAIT -> BOARDING
+        gateId: chosenGate.id,
+        patience: 100,
+        waitTimer: 2.5
+      });
+    }
+
+    function spawnPassengerWave(count = 8) {
+      for (let i = 0; i < count; i++) {
+        setTimeout(() => spawnPassenger(), i * 180);
+      }
+      addATCLog('TERMINAL', `機場快線巴士抵達下客區，+${count} 名出境旅客進入航廈。`, 'info');
+    }
+
+    // =========================================================================
+    // 5. FLIGHT GENERATION & TURNAROUND LIFECYCLE
+    // =========================================================================
+    let flightCounter = 101;
+
+    function createFlight(forceGateId = null) {
+      // Pick an unlocked airline
+      const unlockedAirlines = AIRLINES.filter(a => a.unlocked);
+      const airline = unlockedAirlines[Math.floor(Math.random() * unlockedAirlines.length)];
+      const flightNum = `${airline.code}${flightCounter++}`;
+
+      // Check if a gate is available
+      const freeGates = GATES.filter(g => g.unlocked && !g.occupiedBy);
+      const assignedGate = forceGateId
+        ? GATES.find(g => g.id === forceGateId)
+        : (freeGates.length > 0 ? freeGates[0] : null);
+
+      if (assignedGate) {
+        assignedGate.occupiedBy = flightNum;
       }
 
-      let isMoving = false;
-      if (dialogBox.style.display === 'none') {
-        if (moveLeft) { player.x -= player.speed; isMoving = true; }
-        if (moveRight) { player.x += player.speed; isMoving = true; }
+      const totalTurnaround = Math.max(
+        16,
+        Math.round(airline.turnaroundSec * (1 - (getUpgradeLevel('apron_tech') - 1) * 0.08))
+      );
+
+      const flight = {
+        id: flightNum,
+        airline,
+        gateId: assignedGate ? assignedGate.id : null,
+        // States:
+        // 'APPROACHING' -> 'LANDING_ROLL' -> 'TAXI_TO_GATE' -> 'DEPLANING' -> 'SERVICING' -> 'WAIT_PILOT' -> 'BOARDING' -> 'READY_PUSHBACK' -> 'PUSHBACK' -> 'TAXI_TO_RUNWAY' -> 'HOLD_SHORT' -> 'TAKEOFF_ROLL' -> 'CLIMBING'
+        status: state.autoATC && assignedGate && !state.runwayBusyBy ? 'LANDING_ROLL' : 'APPROACHING',
+        x: -180,
+        y: WORLD.runwayY,
+        altitude: 140, // Visual altitude offset for shadow & scaling
+        speed: 195,
+        angle: 0, // Radians (0 = facing right, PI/2 = facing down, -PI/2 = facing up)
+        targetAngle: 0,
+
+        // Turnaround progress & timers
+        turnaroundTotal: totalTurnaround,
+        turnaroundRemaining: totalTurnaround + 18, // Punctuality deadline
+        stageProgress: 0, // 0 to 100 within current turnaround sub-stage
+        pilotAssigned: false,
+        assignedPilotId: null,
+        crewBoosted: false,
+        boardedPax: 0,
+        targetPax: airline.capacity,
+        propAngle: 0
+      };
+
+      if (flight.status === 'LANDING_ROLL') {
+        state.runwayBusyBy = flight.id;
+        AudioSys.playJetRoar(1.1);
+        addATCLog(flight.id, `${flight.id} (${airline.name}) 獲准降落 09L 跑道，預計停靠 ${assignedGate.id}。`, 'clear');
+      } else {
+        addATCLog(flight.id, `${flight.id} (${airline.type}) 進入本場五邊進場管制區，請求降落許可。`, 'warn');
       }
 
-      if (isMoving) player.walkFrame += 0.22;
-      else player.walkFrame = 0;
+      state.flights.push(flight);
+      renderFIDS();
+      return flight;
+    }
 
-      player.x = Math.max(20, Math.min(canvas.width - 70, player.x));
+    function spawnImmediateFlight() {
+      if (state.flights.length >= 6) {
+        addATCLog('ATC', '目前空域與滑行道航班已達飽和上限 (6架)，請先放行現有班機！', 'warn');
+        return;
+      }
+      createFlight();
+    }
 
-      for (let i = students.length - 1; i >= 0; i--) {
-        const st = students[i];
+    // =========================================================================
+    // 6. ATC & PLAYER MANUAL / AUTO COMMANDS
+    // =========================================================================
+    function approveLanding(flightId) {
+      const f = state.flights.find(fl => fl.id === flightId);
+      if (!f || f.status !== 'APPROACHING') return;
 
-        st.blinkTimer--;
-        if (st.blinkTimer <= 0) {
-          st.blinkTimer = 90 + Math.random() * 70;
+      // Ensure gate is assigned
+      if (!f.gateId) {
+        const freeGate = GATES.find(g => g.unlocked && !g.occupiedBy);
+        if (!freeGate) {
+          addATCLog('ATC', `無法批准 ${f.id} 降落：目前無空閒停機坪！請先放行離場班機或擴建機坪。`, 'alert');
+          return;
+        }
+        f.gateId = freeGate.id;
+        freeGate.occupiedBy = f.id;
+      }
+
+      if (state.runwayBusyBy && state.runwayBusyBy !== f.id) {
+        addATCLog('ATC', `09L 跑道目前由 ${state.runwayBusyBy} 佔用中，請稍候片刻！`, 'warn');
+        return;
+      }
+
+      state.runwayBusyBy = f.id;
+      f.status = 'LANDING_ROLL';
+      f.x = -160;
+      f.y = WORLD.runwayY;
+      f.altitude = 120;
+      f.speed = 210;
+      AudioSys.playRadioBeep();
+      AudioSys.playJetRoar(1.2);
+      addATCLog(f.id, `Tower to ${f.id}, Runway 09L cleared to land. 停機坪指派 ${f.gateId}。`, 'clear');
+      renderFIDS();
+    }
+
+    function dispatchCrewBoost(flightId) {
+      const f = state.flights.find(fl => fl.id === flightId);
+      if (!f || f.crewBoosted) return;
+
+      const idleCrew = state.groundCrew.filter(c => !c.isTerminal && c.state === 'IDLE');
+      if (idleCrew.length === 0) {
+        addATCLog('GROUND', `目前無空閒機坪地勤可增援 ${f.id}，可在「機師/地勤」分頁招募更多人員！`, 'warn');
+        return;
+      }
+
+      const chosen = idleCrew.slice(0, 2);
+      const gate = GATES.find(g => g.id === f.gateId);
+      chosen.forEach((c, idx) => {
+        c.state = 'WORKING_FLIGHT';
+        c.assignedFlightId = f.id;
+        c.targetX = gate.x + (idx === 0 ? -42 : 42);
+        c.targetY = gate.y + 15;
+      });
+
+      f.crewBoosted = true;
+      AudioSys.playRadioBeep();
+      addATCLog('GROUND', `已加派 ${chosen.length} 名機坪技師前往 ${f.gateId} 支援 ${f.id}，整備效率大幅提升！`, 'info');
+      renderFIDS();
+    }
+
+    function assignPilotToFlight(flightId) {
+      const f = state.flights.find(fl => fl.id === flightId);
+      if (!f || f.pilotAssigned) return;
+
+      const idlePilot = state.pilots.find(p => p.state === 'IDLE');
+      if (!idlePilot) {
+        addATCLog('CREW', `目前無待命機師可指派給 ${f.id}！請等待機師返場或立即簽約新機師。`, 'alert');
+        return;
+      }
+
+      const gate = GATES.find(g => g.id === f.gateId);
+      if (!gate) return;
+
+      f.pilotAssigned = true;
+      f.assignedPilotId = idlePilot.id;
+      idlePilot.state = 'WALKING_TO_PLANE';
+      idlePilot.assignedFlightId = f.id;
+      idlePilot.targetX = gate.x - 28;
+      idlePilot.targetY = gate.y + 38;
+
+      AudioSys.playRadioBeep();
+      addATCLog('CREW', `${idlePilot.name} 已離開航前氣象簡報室，前往 ${gate.id} 執行 ${f.id} 繞機檢查。`, 'info');
+      renderFIDS();
+    }
+
+    function approveTakeoff(flightId) {
+      const f = state.flights.find(fl => fl.id === flightId);
+      if (!f) return;
+
+      if (f.status === 'READY_PUSHBACK') {
+        f.status = 'PUSHBACK';
+        f.stageProgress = 0;
+        AudioSys.playRadioBeep();
+        addATCLog(f.id, `${f.id} 獲准從 ${f.gateId} 後推開車，滑行至 09L 跑道頭等待點。`, 'clear');
+        renderFIDS();
+      } else if (f.status === 'HOLD_SHORT') {
+        if (state.runwayBusyBy && state.runwayBusyBy !== f.id) {
+          addATCLog('ATC', `跑道 09L 尚有 ${state.runwayBusyBy} 起降作業中，${f.id} 請在等待線稍候。`, 'warn');
+          return;
+        }
+        state.runwayBusyBy = f.id;
+        f.status = 'TAKEOFF_ROLL';
+        AudioSys.playRadioBeep();
+        AudioSys.playJetRoar(1.4);
+        addATCLog(f.id, `${f.id}, Runway 09L cleared for takeoff! 祝順風飛行。`, 'clear');
+        renderFIDS();
+      }
+    }
+
+    // =========================================================================
+    // 7. UPGRADES, HIRING & AIRLINE CONTRACTS
+    // =========================================================================
+    function getUpgradeLevel(id) {
+      const u = UPGRADES.find(up => up.id === id);
+      return u ? u.level : 1;
+    }
+
+    function buyUpgrade(id) {
+      const u = UPGRADES.find(up => up.id === id);
+      if (!u || u.level >= u.maxLevel) return;
+      const cost = Math.round(u.baseCost * Math.pow(1.55, u.level));
+      if (state.money < cost) {
+        addATCLog('ADMIN', `營運資金不足 ($${cost.toLocaleString()})，無法升級「${u.name}」。`, 'alert');
+        return;
+      }
+
+      state.money -= cost;
+      u.level++;
+      AudioSys.playCash();
+
+      if (id === 'gate_a3') {
+        GATES[2].unlocked = true;
+        addFloatingText(GATES[2].x, GATES[2].y, 'Gate A3 正式啟用!', '#38bdf8');
+      } else if (id === 'gate_a4') {
+        GATES[3].unlocked = true;
+        addFloatingText(GATES[3].x, GATES[3].y, 'Gate A4 廣體機坪啟用!', '#38bdf8');
+      } else {
+        addFloatingText(650, 620, `${u.name} Lv.${u.level}!`, '#34d399');
+      }
+
+      state.rating = Math.min(5.0, +(state.rating + 0.15).toFixed(1));
+      addATCLog('ADMIN', `已完成航廈擴建：「${u.name}」提升至 Lv.${u.level}！機場評級上升。`, 'clear');
+      renderUpgrades();
+      renderAirlines();
+      updateHUD();
+    }
+
+    function hireGroundCrew() {
+      if (state.money < state.crewHireCost) {
+        addATCLog('ADMIN', '資金不足，無法招募地勤人員！', 'alert');
+        return;
+      }
+      state.money -= state.crewHireCost;
+      state.crewHireCost = Math.round(state.crewHireCost * 1.25);
+      const newCrew = createGroundCrew(state.groundCrew.length);
+      state.groundCrew.push(newCrew);
+      AudioSys.playCash();
+      addFloatingText(newCrew.x, newCrew.y, `+地勤 ${newCrew.name}`, '#fbbf24');
+      addATCLog('ADMIN', `新進機坪地勤 ${newCrew.name} 已報到並投入機坪作業。`, 'info');
+      renderStaffTab();
+      updateHUD();
+    }
+
+    function hirePilot() {
+      if (state.money < state.pilotHireCost) {
+        addATCLog('ADMIN', '資金不足，無法簽約新機師！', 'alert');
+        return;
+      }
+      state.money -= state.pilotHireCost;
+      state.pilotHireCost = Math.round(state.pilotHireCost * 1.3);
+      const newPilot = createPilot(state.pilots.length);
+      state.pilots.push(newPilot);
+      AudioSys.playCash();
+      addFloatingText(newPilot.x, newPilot.y, `+機師 ${newPilot.name}`, '#38bdf8');
+      addATCLog('CREW', `${newPilot.name} 已進駐機組員簡報室待命。`, 'info');
+      renderStaffTab();
+      updateHUD();
+    }
+
+    function activateCoffeeBoost() {
+      if (state.money < 1200) {
+        addATCLog('ADMIN', '資金不足 ($1,200)，無法購買全體手沖咖啡激勵！', 'alert');
+        return;
+      }
+      state.money -= 1200;
+      state.coffeeBoostTimer = 45;
+      AudioSys.playCash();
+      addFloatingText(700, 550, '☕ 全員士氣大振! 速度 +50%', '#f59e0b');
+      addATCLog('ADMIN', '已發放精品咖啡與能量飲，全體地勤與機師作業速度提升 50% (45秒)！', 'clear');
+      updateHUD();
+    }
+
+    function signAirlineContract(code) {
+      const airline = AIRLINES.find(a => a.code === code);
+      if (!airline || airline.unlocked) return;
+      if (state.rating < airline.minRating) {
+        addATCLog('ADMIN', `機場評級未達 ${airline.minRating} ★，${airline.name} 暫不開放簽約（可透過航廈擴建與準點起飛提升評級）。`, 'alert');
+        return;
+      }
+      if (state.money < airline.contractCost) {
+        addATCLog('ADMIN', `資金不足 ($${airline.contractCost.toLocaleString()})，無法簽署 ${airline.name} 航權合約。`, 'alert');
+        return;
+      }
+
+      state.money -= airline.contractCost;
+      airline.unlocked = true;
+      AudioSys.playCash();
+      addATCLog('ADMIN', `恭喜！已與「${airline.name}」正式簽署航權合約，旗下 ${airline.type} 即將飛抵本場！`, 'clear');
+      renderAirlines();
+      updateHUD();
+      createFlight();
+    }
+
+    // =========================================================================
+    // 8. CORE SIMULATION UPDATE LOOP
+    // =========================================================================
+    function updateSimulation(dt) {
+      if (state.gameSpeed === 0) return;
+      const effDt = dt * state.gameSpeed;
+
+      // Advance Clock
+      state.simMinutes = (state.simMinutes + effDt * 2.5) % 1440;
+      if (state.coffeeBoostTimer > 0) {
+        state.coffeeBoostTimer = Math.max(0, state.coffeeBoostTimer - effDt);
+      }
+
+      const staffSpeedMult = (state.coffeeBoostTimer > 0 ? 1.5 : 1.0) * (state.weather === 'storm' ? 0.82 : 1.0);
+
+      // Periodic Flight Spawning
+      state.flightSpawnTimer -= effDt;
+      const unlockedGatesCount = GATES.filter(g => g.unlocked).length;
+      if (state.flightSpawnTimer <= 0) {
+        if (state.flights.length < unlockedGatesCount + 1) {
+          createFlight();
+        }
+        state.flightSpawnTimer = Math.max(10, 22 - unlockedGatesCount * 2.5);
+      }
+
+      // Periodic Passenger Spawning
+      state.paxSpawnTimer -= effDt;
+      if (state.paxSpawnTimer <= 0) {
+        if (state.passengers.length < unlockedGatesCount * 22) {
+          spawnPassenger();
+        }
+        state.paxSpawnTimer = 1.6 / unlockedGatesCount;
+      }
+
+      // Update Flights
+      updateFlights(effDt, staffSpeedMult);
+
+      // Update Pilots
+      updatePilots(effDt, staffSpeedMult);
+
+      // Update Ground Crew
+      updateGroundCrew(effDt, staffSpeedMult);
+
+      // Update Passengers
+      updatePassengers(effDt, staffSpeedMult);
+
+      // Update Particles & Floating Texts
+      updateEffects(effDt);
+    }
+
+    function updateFlights(dt, staffSpeedMult) {
+      for (let i = state.flights.length - 1; i >= 0; i--) {
+        const f = state.flights[i];
+        f.propAngle += dt * 28;
+        const gate = GATES.find(g => g.id === f.gateId);
+
+        // Auto-ATC check for approaching flights
+        if (f.status === 'APPROACHING') {
+          if (!f.gateId) {
+            const freeGate = GATES.find(g => g.unlocked && !g.occupiedBy);
+            if (freeGate) {
+              f.gateId = freeGate.id;
+              freeGate.occupiedBy = f.id;
+            }
+          }
+          if (state.autoATC && f.gateId && !state.runwayBusyBy) {
+            approveLanding(f.id);
+          }
         }
 
-        if (st.state === 'entering') {
-          st.x -= 2;
-          st.facing = 'left';
-          st.walkFrame += 0.22;
-          if (st.x <= st.targetX) {
-            st.state = 'waiting';
-            st.hasQuestion = true;
-            st.walkFrame = 0;
+        // 1. LANDING ROLL ON RUNWAY 09L
+        else if (f.status === 'LANDING_ROLL') {
+          f.y = WORLD.runwayY;
+          f.angle = 0;
+          f.x += f.speed * dt;
+
+          // Descend until touchdown at x = 220
+          if (f.x < 220) {
+            f.altitude = Math.max(0, 120 * (1 - (f.x + 160) / 380));
+          } else {
+            if (f.altitude > 0) {
+              f.altitude = 0;
+              // Tire touchdown smoke burst!
+              spawnSmokeBurst(f.x - 10, f.y + 8, 14);
+            }
+            // Decelerate with reverse thrust
+            f.speed = Math.max(85, f.speed - 65 * dt);
+            if (Math.random() < 0.35) {
+              spawnSmokeBurst(f.x - 18, f.y + 5, 1);
+            }
           }
-        } else if (st.state === 'waiting') {
-          st.bounce += 0.05;
-        } else if (st.state === 'leaving') {
-          st.x += 3.2;
-          st.facing = 'right';
-          st.walkFrame += 0.25;
-          if (st.x > 440) {
-            students.splice(i, 1);
-            continue;
+
+          // Exit runway at high-speed turnoff (x >= 1160)
+          if (f.x >= 1160) {
+            f.status = 'TAXI_TO_GATE';
+            if (state.runwayBusyBy === f.id) state.runwayBusyBy = null;
+          }
+        }
+
+        // 2. TAXI FROM RUNWAY EXIT TO ASSIGNED GATE
+        else if (f.status === 'TAXI_TO_GATE') {
+          const taxiSpeed = 105;
+          if (!gate) continue;
+
+          // Step A: Move down from runway (y=98) to taxiway (y=222) at x=1220
+          if (f.y < WORLD.taxiwayY - 2 && Math.abs(f.x - gate.x) > 25) {
+            f.x = moveTowards(f.x, 1220, taxiSpeed * dt);
+            f.y = moveTowards(f.y, WORLD.taxiwayY, taxiSpeed * dt);
+            f.angle = lerpAngle(f.angle, Math.PI * 0.42, dt * 6);
+          }
+          // Step B: Move left along main taxiway (y=222) until aligned with gate.x
+          else if (Math.abs(f.x - gate.x) > 6) {
+            f.y = WORLD.taxiwayY;
+            f.x = moveTowards(f.x, gate.x, taxiSpeed * dt);
+            f.angle = lerpAngle(f.angle, Math.PI, dt * 8);
+          }
+          // Step C: Turn down into Gate apron stand (facing down: Math.PI/2)
+          else {
+            f.x = gate.x;
+            f.y = moveTowards(f.y, gate.y, taxiSpeed * 0.75 * dt);
+            f.angle = lerpAngle(f.angle, Math.PI / 2, dt * 8);
+            if (Math.abs(f.y - gate.y) <= 2) {
+              f.y = gate.y;
+              f.angle = Math.PI / 2;
+              f.status = 'DEPLANING';
+              f.stageProgress = 0;
+
+              // Pay Landing Fee immediately upon parking!
+              state.money += f.airline.landingFee;
+              AudioSys.playCash();
+              addFloatingText(f.x, f.y - 30, `+$${f.airline.landingFee.toLocaleString()} 降落停場費`, '#34d399');
+
+              // Auto dispatch ground crew if available
+              const idleCrew = state.groundCrew.find(c => !c.isTerminal && c.state === 'IDLE');
+              if (idleCrew) {
+                idleCrew.state = 'WORKING_FLIGHT';
+                idleCrew.assignedFlightId = f.id;
+                idleCrew.targetX = gate.x + 36;
+                idleCrew.targetY = gate.y + 10;
+              }
+              renderFIDS();
+            }
+          }
+        }
+
+        // 3. PARKED AT GATE - TURNAROUND PHASES
+        else if (['DEPLANING', 'SERVICING', 'WAIT_PILOT', 'BOARDING', 'READY_PUSHBACK'].includes(f.status)) {
+          // Extend jetbridge smoothly
+          if (gate) gate.jetbridgeExt = Math.min(1, gate.jetbridgeExt + dt * 1.8);
+
+          // Countdown punctuality timer
+          f.turnaroundRemaining = Math.max(0, f.turnaroundRemaining - dt);
+
+          const crewBoostFactor = (f.crewBoosted ? 1.45 : 1.0) * staffSpeedMult;
+
+          if (f.status === 'DEPLANING') {
+            f.stageProgress += dt * 32 * crewBoostFactor;
+            if (Math.random() < dt * 3.5) {
+              spawnPassenger(f.gateId, true, gate.x, 495);
+            }
+            if (f.stageProgress >= 100) {
+              f.status = 'SERVICING';
+              f.stageProgress = 0;
+              renderFIDS();
+            }
+          } else if (f.status === 'SERVICING') {
+            // Refueling, Catering & Baggage Loading
+            const serviceRate = (100 / (f.turnaroundTotal * 0.48)) * crewBoostFactor;
+            f.stageProgress += dt * serviceRate;
+
+            // If Auto-ATC is on, automatically assign a pilot early so they walk out in time
+            if (state.autoATC && !f.pilotAssigned) {
+              assignPilotToFlight(f.id);
+            }
+
+            if (f.stageProgress >= 100) {
+              f.status = 'WAIT_PILOT';
+              f.stageProgress = 0;
+              renderFIDS();
+            }
+          } else if (f.status === 'WAIT_PILOT') {
+            if (!f.pilotAssigned && state.autoATC) {
+              assignPilotToFlight(f.id);
+            }
+            // Check if assigned pilot has finished walkaround and boarded cockpit
+            const pilot = state.pilots.find(p => p.id === f.assignedPilotId);
+            if (pilot && pilot.state === 'IN_COCKPIT') {
+              f.status = 'BOARDING';
+              f.stageProgress = 0;
+              renderFIDS();
+            }
+          } else if (f.status === 'BOARDING') {
+            f.stageProgress += dt * 26 * crewBoostFactor;
+            // Pull waiting passengers at this gate into the aircraft
+            const waitingPax = state.passengers.filter(p => p.gateId === f.gateId && p.stage === 'GATE_WAIT');
+            if (waitingPax.length > 0 && Math.random() < dt * 6) {
+              const p = waitingPax[0];
+              p.stage = 'BOARDING_BRIDGE';
+              p.targetX = gate.x;
+              p.targetY = gate.y + 15;
+              f.boardedPax = Math.min(f.targetPax, f.boardedPax + 1);
+            }
+            if (f.stageProgress >= 100) {
+              f.boardedPax = f.targetPax;
+              f.status = 'READY_PUSHBACK';
+              f.stageProgress = 100;
+              // Release ground crew working on this flight
+              releaseGroundCrewForFlight(f.id);
+              addATCLog(f.id, `${f.id} 艙門關閉，機師已完成航前檢查，請求後推與起飛許可！`, 'warn');
+              renderFIDS();
+            }
+          } else if (f.status === 'READY_PUSHBACK') {
+            if (state.autoATC) {
+              approveTakeoff(f.id);
+            }
+          }
+        }
+
+        // 4. PUSHBACK FROM GATE ONTO TAXIWAY
+        else if (f.status === 'PUSHBACK') {
+          if (gate) gate.jetbridgeExt = Math.max(0, gate.jetbridgeExt - dt * 2.5);
+          f.y = moveTowards(f.y, WORLD.taxiwayY, 45 * dt);
+          // Nose turns toward left (facing holding point at x=165) as it reaches taxiway
+          if (f.y < gate.y - 45) {
+            f.angle = lerpAngle(f.angle, Math.PI, dt * 4.5);
+          }
+          if (Math.abs(f.y - WORLD.taxiwayY) <= 2) {
+            f.y = WORLD.taxiwayY;
+            f.angle = Math.PI;
+            if (gate && gate.occupiedBy === f.id) {
+              gate.occupiedBy = null;
+            }
+            f.status = 'TAXI_TO_RUNWAY';
+            renderFIDS();
+          }
+        }
+
+        // 5. TAXI TO RUNWAY 09L HOLDING POINT
+        else if (f.status === 'TAXI_TO_RUNWAY') {
+          f.x = moveTowards(f.x, WORLD.holdingX, 105 * dt);
+          f.angle = lerpAngle(f.angle, Math.PI, dt * 8);
+          if (Math.abs(f.x - WORLD.holdingX) <= 3) {
+            f.x = WORLD.holdingX;
+            f.status = 'HOLD_SHORT';
+            f.angle = -Math.PI / 2;
+            renderFIDS();
+          }
+        }
+
+        // 6. HOLD SHORT OF RUNWAY 09L
+        else if (f.status === 'HOLD_SHORT') {
+          if (state.autoATC && (!state.runwayBusyBy || state.runwayBusyBy === f.id)) {
+            approveTakeoff(f.id);
+          }
+        }
+
+        // 7. LINE UP AND TAKEOFF ROLL
+        else if (f.status === 'TAKEOFF_ROLL') {
+          // Move from taxiway (y=222) onto runway centerline (y=98)
+          if (Math.abs(f.y - WORLD.runwayY) > 2) {
+            f.y = moveTowards(f.y, WORLD.runwayY, 85 * dt);
+            f.angle = lerpAngle(f.angle, 0, dt * 6);
+            f.speed = 60;
+          } else {
+            f.y = WORLD.runwayY;
+            f.angle = 0;
+            f.speed += 145 * dt;
+            f.x += f.speed * dt;
+
+            // Jet exhaust particles
+            if (Math.random() < 0.65) {
+              spawnSmokeBurst(f.x - 32, f.y, 1, 'rgba(226, 232, 240, 0.45)');
+            }
+
+            // Rotate & Liftoff at x > 680
+            if (f.x > 680) {
+              f.status = 'CLIMBING';
+              if (state.runwayBusyBy === f.id) state.runwayBusyBy = null;
+
+              // Calculate Departure Payout & Punctuality
+              const isOnTime = f.turnaroundRemaining > 0;
+              state.flightsCompleted++;
+              if (isOnTime) state.flightsOnTime++;
+
+              const ticketRev = f.targetPax * 120;
+              const bonus = isOnTime ? f.airline.onTimeBonus : 0;
+              const totalPayout = ticketRev + bonus;
+              state.money += totalPayout;
+              state.totalPaxServed += f.targetPax;
+
+              if (isOnTime) {
+                state.rating = Math.min(5.0, +(state.rating + 0.05).toFixed(2));
+                addFloatingText(f.x, f.y - 30, `準點起飛! +$${totalPayout.toLocaleString()}`, '#38bdf8');
+                addATCLog(f.id, `${f.id} 準點離場升空！獲得機票分成與準點獎金 +$${totalPayout.toLocaleString()}。`, 'clear');
+              } else {
+                state.rating = Math.max(1.0, +(state.rating - 0.08).toFixed(2));
+                addFloatingText(f.x, f.y - 30, `延誤起飛 +$${totalPayout.toLocaleString()}`, '#f59e0b');
+                addATCLog(f.id, `${f.id} 延誤起飛，僅獲基本分成 +$${totalPayout.toLocaleString()}。`, 'warn');
+              }
+              AudioSys.playCash();
+              updateHUD();
+              renderFIDS();
+            }
+          }
+        }
+
+        // 8. CLIMBING OUT INTO SKY
+        else if (f.status === 'CLIMBING') {
+          f.speed += 120 * dt;
+          f.x += f.speed * dt;
+          f.altitude += 95 * dt;
+          if (f.x > WORLD.width + 240) {
+            // Release assigned pilot back to Crew Briefing Room
+            const pilot = state.pilots.find(p => p.id === f.assignedPilotId);
+            if (pilot) {
+              pilot.state = 'RETURNING';
+              pilot.assignedFlightId = null;
+              pilot.x = 1030;
+              pilot.y = 515;
+              pilot.targetX = pilot.homeX;
+              pilot.targetY = pilot.homeY;
+            }
+            if (state.selectedEntity && state.selectedEntity.ref === f) {
+              closeInspector();
+            }
+            state.flights.splice(i, 1);
+            renderFIDS();
           }
         }
       }
+    }
 
-      activeStudent = null;
-      let minDistance = 55;
-      students.forEach(st => {
-        if (st.state === 'waiting' && st.hasQuestion) {
-          let dist = Math.abs((player.x + 25) - (st.x + 20));
-          if (dist < minDistance) {
-            activeStudent = st;
-            minDistance = dist;
+    function releaseGroundCrewForFlight(flightId) {
+      state.groundCrew.forEach(c => {
+        if (c.assignedFlightId === flightId) {
+          c.state = 'RETURNING';
+          c.assignedFlightId = null;
+          c.targetX = c.homeX;
+          c.targetY = c.homeY;
+        }
+      });
+    }
+
+    // =========================================================================
+    // 9. PILOTS, GROUND CREW & PASSENGERS AI MOVEMENT
+    // =========================================================================
+    function updatePilots(dt, staffSpeedMult) {
+      const speed = 95 * staffSpeedMult;
+      state.pilots.forEach(p => {
+        if (p.state === 'WALKING_TO_PLANE') {
+          p.x = moveTowards(p.x, p.targetX, speed * dt);
+          p.y = moveTowards(p.y, p.targetY, speed * dt);
+          if (Math.hypot(p.x - p.targetX, p.y - p.targetY) < 4) {
+            p.state = 'INSPECTING';
+            p.inspectAngle = 0;
+          }
+        } else if (p.state === 'INSPECTING') {
+          // Walk around aircraft nose/engines for pre-flight check
+          const flight = state.flights.find(f => f.id === p.assignedFlightId);
+          const gate = flight ? GATES.find(g => g.id === flight.gateId) : null;
+          if (!flight || !gate) {
+            p.state = 'RETURNING';
+            p.targetX = p.homeX;
+            p.targetY = p.homeY;
+            return;
+          }
+          p.inspectAngle += dt * 2.2 * staffSpeedMult;
+          p.x = gate.x + Math.cos(p.inspectAngle) * 34;
+          p.y = gate.y + 12 + Math.sin(p.inspectAngle) * 34;
+          if (p.inspectAngle >= Math.PI * 1.8) {
+            p.state = 'IN_COCKPIT';
+            addFloatingText(gate.x, gate.y - 12, '👨‍✈️ 機師就位完畢', '#38bdf8');
+            renderFIDS();
+          }
+        } else if (p.state === 'RETURNING') {
+          p.x = moveTowards(p.x, p.homeX, speed * dt);
+          p.y = moveTowards(p.y, p.homeY, speed * dt);
+          if (Math.hypot(p.x - p.homeX, p.y - p.homeY) < 4) {
+            p.state = 'IDLE';
           }
         }
       });
-
-      if (activeStudent && dialogBox.style.display === 'none') {
-        actionBtn.style.background = "#fbbf24";
-        actionBtn.style.color = "#7c2d12";
-      } else {
-        actionBtn.style.background = "#f97316";
-        actionBtn.style.color = "#ffffff";
-      }
-
-      spawnTimer++;
-      if (spawnTimer > 130) {
-        spawnStudent();
-        spawnTimer = 0;
-      }
-
-      sanBar.style.width = `${(player.san / player.maxSan) * 100}%`;
-      staBar.style.width = `${(player.sta / player.maxSta) * 100}%`;
-
-      if (feedbackTimer > 0) feedbackTimer--;
     }
 
-    /* ==========================================================
-       全新超萌「二頭身（Chibi）」Q 版人物繪製引擎
-       ========================================================== */
+    function updateGroundCrew(dt, staffSpeedMult) {
+      const speed = 105 * staffSpeedMult;
+      state.groundCrew.forEach(c => {
+        if (c.isTerminal) {
+          // Gentle patrol at Check-in / Security
+          c.x = c.homeX + Math.sin(Date.now() * 0.002 + (c.homeX % 5)) * 22;
+          return;
+        }
+        if (c.state === 'WORKING_FLIGHT' || c.state === 'RETURNING') {
+          c.x = moveTowards(c.x, c.targetX, speed * dt);
+          c.y = moveTowards(c.y, c.targetY, speed * dt);
+          if (c.state === 'RETURNING' && Math.hypot(c.x - c.homeX, c.y - c.homeY) < 4) {
+            c.state = 'IDLE';
+          }
+        }
+      });
+    }
 
-    // 超萌果凍感大眼（支援眨眼閉眼狀態）
-    function drawChibiEye(x, y, radius, isBlinking = false, lookDir = 0) {
-      ctx.save();
-      if (isBlinking) {
-        // 萌萌閉眼弧線 ( ^ )
-        ctx.strokeStyle = '#3e2723';
-        ctx.lineWidth = 2.2;
-        ctx.beginPath();
-        ctx.arc(x, y + 1, radius * 0.9, 1.1 * Math.PI, 1.9 * Math.PI);
-        ctx.stroke();
-      } else {
-        // 圓滾滾大眼白
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = '#3e2723';
-        ctx.lineWidth = 1.6;
-        ctx.stroke();
+    function updatePassengers(dt, staffSpeedMult) {
+      const walkSpeed = 76 * staffSpeedMult;
+      const kioskSpeed = 1 + (getUpgradeLevel('kiosk') - 1) * 0.35;
+      const secSpeed = 1 + (getUpgradeLevel('security') - 1) * 0.4;
+      const dutyFreeBonus = 1 + (getUpgradeLevel('dutyfree') - 1) * 0.45;
 
-        // 雙色果凍黑棕眼珠
-        ctx.fillStyle = '#2c1810';
-        ctx.beginPath();
-        ctx.arc(x + lookDir, y, radius * 0.76, 0, Math.PI * 2);
-        ctx.fill();
+      for (let i = state.passengers.length - 1; i >= 0; i--) {
+        const p = state.passengers[i];
+        p.x = moveTowards(p.x, p.targetX, walkSpeed * dt);
+        p.y = moveTowards(p.y, p.targetY, walkSpeed * dt);
+        const arrived = Math.hypot(p.x - p.targetX, p.y - p.targetY) < 4;
 
-        // 瞳孔底部淡色光感
-        ctx.fillStyle = '#6d4c41';
-        ctx.beginPath();
-        ctx.arc(x + lookDir, y + 1.2, radius * 0.45, 0, Math.PI);
-        ctx.fill();
+        if (!arrived) continue;
 
-        // 大高光
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.arc(x + lookDir - 1.8, y - 1.6, radius * 0.38, 0, Math.PI * 2);
-        ctx.fill();
+        if (p.stage === 'TO_CHECKIN') {
+          p.stage = 'CHECKIN_WAIT';
+          p.waitTimer = 2.2 / kioskSpeed;
+        } else if (p.stage === 'CHECKIN_WAIT') {
+          p.waitTimer -= dt;
+          p.patience = Math.max(20, p.patience - dt * 2.5);
+          if (p.waitTimer <= 0) {
+            p.stage = 'TO_SECURITY';
+            p.targetX = 485 + Math.floor(Math.random() * 2) * 75 + (Math.random() * 14 - 7);
+            p.targetY = 695 + (Math.random() * 20 - 10);
+          }
+        } else if (p.stage === 'TO_SECURITY') {
+          p.stage = 'SECURITY_WAIT';
+          p.waitTimer = 2.0 / secSpeed;
+        } else if (p.stage === 'SECURITY_WAIT') {
+          p.waitTimer -= dt;
+          if (p.waitTimer <= 0) {
+            p.stage = 'TO_DUTYFREE';
+            p.targetX = 720 + Math.random() * 220;
+            p.targetY = 670 + Math.random() * 85;
+          }
+        } else if (p.stage === 'TO_DUTYFREE') {
+          p.stage = 'DUTYFREE_SHOP';
+          p.waitTimer = 2.2 + Math.random() * 2.0;
+        } else if (p.stage === 'DUTYFREE_SHOP') {
+          p.waitTimer -= dt;
+          if (p.waitTimer <= 0) {
+            // Spend money in Duty-Free or VIP Lounge!
+            const baseSpend = p.tier === 'VIP' ? 260 : (p.tier === 'BUSINESS' ? 140 : 65);
+            const spend = Math.round(baseSpend * dutyFreeBonus);
+            state.money += spend;
+            if (Math.random() < 0.45) {
+              addFloatingText(p.x, p.y - 10, `+$${spend} 免稅消費`, '#fbbf24');
+            }
 
-        // 小反光
-        ctx.beginPath();
-        ctx.arc(x + lookDir + 1.5, y + 1.5, radius * 0.18, 0, Math.PI * 2);
-        ctx.fill();
+            // Head to Boarding Gate Waiting Lounge
+            const gate = GATES.find(g => g.id === p.gateId && g.unlocked) || GATES[0];
+            p.gateId = gate.id;
+            p.stage = 'TO_GATE';
+            p.targetX = gate.x + (Math.random() * 90 - 45);
+            p.targetY = 535 + Math.random() * 45;
+          }
+        } else if (p.stage === 'TO_GATE') {
+          p.stage = 'GATE_WAIT';
+        } else if (p.stage === 'BOARDING_BRIDGE') {
+          // Reached aircraft door via jetbridge
+          state.passengers.splice(i, 1);
+        } else if (p.stage === 'DEPLANING_SHOP') {
+          p.waitTimer -= dt;
+          if (p.waitTimer <= 0) {
+            const spend = Math.round(45 * dutyFreeBonus);
+            state.money += spend;
+            p.stage = 'EXITING';
+            p.targetX = 950 + Math.random() * 120;
+            p.targetY = 835;
+          }
+        } else if (p.stage === 'EXITING') {
+          state.passengers.splice(i, 1);
+        }
       }
+    }
+
+    function updateEffects(dt) {
+      for (let i = state.particles.length - 1; i >= 0; i--) {
+        const pt = state.particles[i];
+        pt.x += pt.vx * dt;
+        pt.y += pt.vy * dt;
+        pt.r += dt * 14;
+        pt.alpha -= dt * 0.75;
+        if (pt.alpha <= 0) state.particles.splice(i, 1);
+      }
+
+      for (let i = state.floatingTexts.length - 1; i >= 0; i--) {
+        const ft = state.floatingTexts[i];
+        ft.y -= 28 * dt;
+        ft.life -= dt;
+        if (ft.life <= 0) state.floatingTexts.splice(i, 1);
+      }
+
+      if (state.weather === 'storm') {
+        if (Math.random() < dt * 0.18) {
+          state.lightningAlpha = 0.55;
+        }
+        state.lightningAlpha = Math.max(0, state.lightningAlpha - dt * 1.8);
+      } else {
+        state.lightningAlpha = 0;
+      }
+    }
+
+    function spawnSmokeBurst(x, y, count = 8, color = 'rgba(241, 245, 249, 0.65)') {
+      for (let i = 0; i < count; i++) {
+        state.particles.push({
+          x: x + (Math.random() * 14 - 7),
+          y: y + (Math.random() * 10 - 5),
+          vx: -35 - Math.random() * 45,
+          vy: (Math.random() - 0.5) * 28,
+          r: 4 + Math.random() * 6,
+          alpha: 0.75,
+          color
+        });
+      }
+    }
+
+    function addFloatingText(x, y, text, color = '#34d399') {
+      state.floatingTexts.push({ x, y, text, color, life: 1.7 });
+    }
+
+    // =========================================================================
+    // 10. CANVAS RENDERING (3 ZONES + AIRCRAFT + AGENTS + LIGHTING)
+    // =========================================================================
+    const canvas = document.getElementById('airportCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let viewScale = 1;
+    let viewOffsetX = 0;
+    let viewOffsetY = 0;
+
+    function resizeCanvas() {
+      const container = document.getElementById('canvas-container');
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = container.clientWidth * dpr;
+      canvas.height = container.clientHeight * dpr;
+
+      const scaleX = container.clientWidth / WORLD.width;
+      const scaleY = container.clientHeight / WORLD.height;
+      viewScale = Math.min(scaleX, scaleY);
+      viewOffsetX = (container.clientWidth - WORLD.width * viewScale) / 2;
+      viewOffsetY = (container.clientHeight - WORLD.height * viewScale) / 2;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+
+    function renderWorld() {
+      const container = document.getElementById('canvas-container');
+      const dpr = window.devicePixelRatio || 1;
+      ctx.save();
+      ctx.scale(dpr, dpr);
+
+      // Clear letterbox background
+      const isNight = state.weather === 'night' || state.weather === 'storm';
+      ctx.fillStyle = isNight ? '#060b16' : '#0f172a';
+      ctx.fillRect(0, 0, container.clientWidth, container.clientHeight);
+
+      // Transform into Virtual Airport Coordinates (1400 x 860)
+      ctx.translate(viewOffsetX, viewOffsetY);
+      ctx.scale(viewScale, viewScale);
+
+      // 1. Draw Airfield Grass & Zones Background
+      drawAirfieldAndRunway(isNight);
+
+      // 2. Draw Middle Zone: Apron Stands, Ground Vehicles & Jetbridges (Base)
+      drawApronAndGates(isNight);
+
+      // 3. Draw Bottom Zone: Terminal Interior Floorplan & Facilities
+      drawTerminalInterior(isNight);
+
+      // 4. Draw Autonomous Agents (Passengers, Pilots, Ground Crew)
+      drawPassengers();
+      drawGroundCrew();
+      drawPilots();
+
+      // 5. Draw Aircraft & Turnaround Overlays
+      drawAllAircraft(isNight);
+
+      // 6. Draw Jetbridge Canopies (Over aircraft doors)
+      drawJetbridgeArms();
+
+      // 7. Draw Particles & Floating Revenue Texts
+      drawParticlesAndTexts();
+
+      // 8. Weather Overlay (Night Ambient / Rain / Lightning)
+      drawWeatherEffects();
+
       ctx.restore();
     }
 
-    // 繪製【超萌二頭身校安老師】
-    function drawCuteTeacher(x, y, facing, walkFrame, blinkTimer) {
+    function drawAirfieldAndRunway(isNight) {
+      // Grass Field (Top Zone)
+      ctx.fillStyle = isNight ? '#0b221e' : '#14532d';
+      ctx.fillRect(0, 0, WORLD.width, WORLD.apronTopY);
+
+      // Mow stripes on airfield grass
+      ctx.fillStyle = isNight ? 'rgba(255,255,255,0.015)' : 'rgba(255,255,255,0.03)';
+      for (let x = 0; x < WORLD.width; x += 80) {
+        ctx.fillRect(x, 0, 40, WORLD.apronTopY);
+      }
+
+      // Main Taxiway Parallel Strip (y = 200 to 244)
+      ctx.fillStyle = isNight ? '#1e293b' : '#334155';
+      ctx.fillRect(90, 200, 1220, 44);
+
+      // Taxiway Exits connecting Runway (y=98) to Taxiway (y=222) and Gates
+      ctx.beginPath();
+      // Left entry taxiway (Runway 09L holding point at x=165)
+      ctx.fillRect(140, 125, 50, 90);
+      // Center high-speed exit
+      ctx.moveTo(760, 125);
+      ctx.lineTo(820, 125);
+      ctx.lineTo(880, 210);
+      ctx.lineTo(820, 210);
+      ctx.closePath();
+      ctx.fill();
+      // Right high-speed exit (x=1160 to 1220)
+      ctx.beginPath();
+      ctx.moveTo(1130, 125);
+      ctx.lineTo(1195, 125);
+      ctx.lineTo(1250, 210);
+      ctx.lineTo(1190, 210);
+      ctx.closePath();
+      ctx.fill();
+
+      // Yellow Taxiway Centerlines
+      ctx.strokeStyle = '#facc15';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(165, 130);
+      ctx.lineTo(165, 222);
+      ctx.lineTo(1220, 222);
+      ctx.lineTo(1165, 130);
+      ctx.stroke();
+
+      // Hold Short Marking at x=165, y=172
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(145, 174);
+      ctx.lineTo(185, 174);
+      ctx.stroke();
+
+      // Main Asphalt Runway 09L / 27R
+      const rTop = WORLD.runwayY - WORLD.runwayHeight / 2;
+      ctx.fillStyle = isNight ? '#0f172a' : '#1e293b';
+      ctx.fillRect(30, rTop, WORLD.width - 60, WORLD.runwayHeight);
+
+      // Runway Shoulder Borders
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(30, rTop, WORLD.width - 60, WORLD.runwayHeight);
+
+      // Threshold Piano Keys (Left & Right)
+      ctx.fillStyle = '#f8fafc';
+      for (let i = -22; i <= 22; i += 7) {
+        ctx.fillRect(46, WORLD.runwayY + i - 2, 26, 4);
+        ctx.fillRect(WORLD.width - 72, WORLD.runwayY + i - 2, 26, 4);
+      }
+
+      // Touchdown Zone Blocks
+      ctx.fillStyle = 'rgba(248, 250, 252, 0.75)';
+      ctx.fillRect(210, WORLD.runwayY - 18, 42, 7);
+      ctx.fillRect(210, WORLD.runwayY + 11, 42, 7);
+      ctx.fillRect(290, WORLD.runwayY - 18, 28, 6);
+      ctx.fillRect(290, WORLD.runwayY + 12, 28, 6);
+
+      // Runway Centerline Dashed
+      ctx.strokeStyle = '#f8fafc';
+      ctx.lineWidth = 2.5;
+      ctx.setLineDash([28, 22]);
+      ctx.beginPath();
+      ctx.moveTo(130, WORLD.runwayY);
+      ctx.lineTo(WORLD.width - 130, WORLD.runwayY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Runway Designation Text "09L" and "27R"
       ctx.save();
-      ctx.translate(x, y);
-
-      let isBlinking = (blinkTimer > 0 && blinkTimer <= 6);
-      let dir = facing === 'right' ? 1 : -1;
-
-      // 走路企鵝小碎步左右微傾角 (Waddle)
-      let tilt = (walkFrame !== 0) ? Math.sin(walkFrame) * 0.08 : 0;
-      let bobY = (walkFrame !== 0) ? Math.abs(Math.sin(walkFrame)) * 3 : 0;
-
-      ctx.rotate(tilt);
-
-      // 地面小陰影
-      ctx.fillStyle = 'rgba(120, 53, 15, 0.16)';
-      ctx.beginPath();
-      ctx.ellipse(25, 76, 18, 5, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 小短腿 (饅頭腳)
-      let legOffset = (walkFrame !== 0) ? Math.sin(walkFrame) * 4 : 0;
-      ctx.fillStyle = '#1e293b';
-      ctx.beginPath();
-      ctx.ellipse(19 + legOffset, 72, 4.5, 4, 0, 0, Math.PI * 2);
-      ctx.ellipse(31 - legOffset, 72, 4.5, 4, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 二頭身小圓身 (深藍西服)
-      ctx.fillStyle = '#3b82f6';
-      ctx.beginPath();
-      ctx.roundRect(14, 40 + bobY, 22, 26, 9);
-      ctx.fill();
-      ctx.strokeStyle = '#1e3a8a';
-      ctx.lineWidth = 1.8;
-      ctx.stroke();
-
-      // 迷你黃色反光背心
-      ctx.fillStyle = '#fde047';
-      ctx.beginPath();
-      ctx.roundRect(15, 44 + bobY, 20, 16, 5);
-      ctx.fill();
-      ctx.fillStyle = '#10b981';
-      ctx.fillRect(15, 50 + bobY, 20, 3.5);
-
-      // 抱在手上的迷你小板夾
-      ctx.fillStyle = '#d97706';
-      let boardX = dir > 0 ? 30 : 10;
-      ctx.fillRect(boardX, 48 + bobY, 7, 10);
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(boardX + 1, 49 + bobY, 5, 8);
-
-      // 【超萌大圓臉】(半徑 22，極致二頭身肉肉臉)
-      ctx.fillStyle = '#ffedd5';
-      ctx.beginPath();
-      ctx.arc(25, 23 + bobY, 21, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = '#3e2723';
-      ctx.lineWidth = 2.2;
-      ctx.stroke();
-
-      // 澎澎圓短髮
-      ctx.fillStyle = '#451a03';
-      ctx.beginPath();
-      ctx.arc(25, 15 + bobY, 21, Math.PI, Math.PI * 2);
-      ctx.fill();
-      // 圓潤短瀏海
-      ctx.beginPath();
-      ctx.arc(17, 13 + bobY, 8.5, 0, Math.PI);
-      ctx.arc(31, 13 + bobY, 9.5, 0, Math.PI);
-      ctx.fill();
-
-      // 校安小圓帽 (帶金色小警徽)
-      ctx.fillStyle = '#1e3a8a';
-      ctx.beginPath();
-      ctx.ellipse(25, 5 + bobY, 17, 5.5, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#fbbf24';
-      ctx.beginPath();
-      ctx.arc(25, 4 + bobY, 2.5, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 超萌果凍大眼睛
-      let lookOffset = dir * 1.5;
-      drawChibiEye(18, 22 + bobY, 4.2, isBlinking, lookOffset);
-      drawChibiEye(32, 22 + bobY, 4.2, isBlinking, lookOffset);
-
-      // 軟萌粉紅心形感腮紅
-      ctx.fillStyle = 'rgba(251, 113, 133, 0.55)';
-      ctx.beginPath();
-      ctx.ellipse(13, 27 + bobY, 3.8, 2.5, 0, 0, Math.PI * 2);
-      ctx.ellipse(37, 27 + bobY, 3.8, 2.5, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 溫柔微笑
-      ctx.strokeStyle = '#3e2723';
-      ctx.lineWidth = 1.8;
-      ctx.beginPath();
-      ctx.arc(25, 27 + bobY, 2.8, 0.1 * Math.PI, 0.9 * Math.PI);
-      ctx.stroke();
-
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = 'bold 17px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.translate(98, WORLD.runwayY);
+      ctx.rotate(Math.PI / 2);
+      ctx.fillText('09L', 0, 0);
       ctx.restore();
-    }
 
-    // 繪製【超萌二頭身學生（三款外觀）】
-    function drawCuteStudent(st) {
       ctx.save();
-      ctx.translate(st.x, st.y);
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = 'bold 17px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.translate(WORLD.width - 98, WORLD.runwayY);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText('27R', 0, 0);
+      ctx.restore();
 
-      let isBlinking = (st.blinkTimer > 0 && st.blinkTimer <= 6);
-      let dir = st.facing === 'right' ? 1 : -1;
-      let bob = (st.state === 'waiting') ? Math.sin(st.bounce) * 2.5 : Math.sin(st.walkFrame) * 2.8;
-      let tilt = (st.state !== 'waiting') ? Math.sin(st.walkFrame) * 0.08 : 0;
-
-      ctx.rotate(tilt);
-
-      // 地面小陰影
-      ctx.fillStyle = 'rgba(120, 53, 15, 0.16)';
-      ctx.beginPath();
-      ctx.ellipse(20, 68, 15, 4.5, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 小短腳
-      let legOffset = (st.state !== 'waiting') ? Math.sin(st.walkFrame) * 3.5 : 0;
-      ctx.fillStyle = '#78350f';
-      ctx.beginPath();
-      ctx.ellipse(15 + legOffset, 65, 3.8, 3, 0, 0, Math.PI * 2);
-      ctx.ellipse(25 - legOffset, 65, 3.8, 3, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 背上的可愛小書包
-      ctx.fillStyle = '#ef4444';
-      let bagX = dir > 0 ? 5 : 27;
-      ctx.beginPath();
-      ctx.roundRect(bagX, 36 + bob, 7, 12, 3);
-      ctx.fill();
-
-      // 身體服裝 (二頭身小身型)
-      if (st.type === 0) {
-        // 0號：水手服短裙雙馬尾妹妹
-        ctx.fillStyle = '#ffffff';
+      // Animated Runway Approach & Edge Lights (Especially vivid at night/storm)
+      const timeSec = Date.now() / 1000;
+      for (let x = 45; x < WORLD.width - 45; x += 45) {
+        // Edge lights
+        ctx.fillStyle = isNight ? '#fef08a' : 'rgba(254, 240, 138, 0.55)';
         ctx.beginPath();
-        ctx.roundRect(11, 35 + bob, 18, 14, 4);
+        ctx.arc(x, rTop - 3, isNight ? 2.6 : 1.8, 0, Math.PI * 2);
+        ctx.arc(x, rTop + WORLD.runwayHeight + 3, isNight ? 2.6 : 1.8, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = '#3e2723';
-        ctx.lineWidth = 1.4;
-        ctx.stroke();
 
-        ctx.fillStyle = '#1e3a8a';
-        ctx.beginPath();
-        ctx.moveTo(9, 48 + bob);
-        ctx.lineTo(31, 48 + bob);
-        ctx.lineTo(33, 56 + bob);
-        ctx.lineTo(7, 56 + bob);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-
-        // 粉紅大領結
-        ctx.fillStyle = '#f43f5e';
-        ctx.beginPath();
-        ctx.arc(20, 39 + bob, 3, 0, Math.PI * 2);
-        ctx.fill();
-      } else if (st.type === 1) {
-        // 1號：吊帶短褲小正太
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.roundRect(11, 35 + bob, 18, 14, 4);
-        ctx.fill();
-        ctx.strokeStyle = '#3e2723';
-        ctx.lineWidth = 1.4;
-        ctx.stroke();
-
-        ctx.fillStyle = '#b45309';
-        ctx.fillRect(12, 48 + bob, 16, 9);
-        ctx.strokeRect(12, 48 + bob, 16, 9);
-      } else {
-        // 2號：抱著書的班長
-        ctx.fillStyle = '#f8fafc';
-        ctx.beginPath();
-        ctx.roundRect(11, 35 + bob, 18, 16, 4);
-        ctx.fill();
-        ctx.strokeStyle = '#3e2723';
-        ctx.lineWidth = 1.4;
-        ctx.stroke();
-
-        // 抱在胸前的小字典
-        ctx.fillStyle = '#10b981';
-        ctx.fillRect(16, 42 + bob, 8, 10);
-      }
-
-      // 【二頭身大圓頭】(半徑 18.5)
-      ctx.fillStyle = '#ffedd5';
-      ctx.beginPath();
-      ctx.arc(20, 20 + bob, 18.5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = '#3e2723';
-      ctx.lineWidth = 2.0;
-      ctx.stroke();
-
-      // 各式 Q 版髮型
-      if (st.type === 0) {
-        // 萌萌雙馬尾
-        ctx.fillStyle = '#7c2d12';
-        ctx.beginPath();
-        ctx.arc(20, 13 + bob, 18.5, Math.PI, Math.PI * 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(14, 11 + bob, 6.5, 0, Math.PI);
-        ctx.arc(26, 11 + bob, 6.5, 0, Math.PI);
-        ctx.fill();
-        // 蓬鬆側馬尾
-        ctx.beginPath();
-        ctx.arc(0, 17 + bob, 6.5, 0, Math.PI * 2);
-        ctx.arc(40, 17 + bob, 6.5, 0, Math.PI * 2);
-        ctx.fill();
-      } else if (st.type === 1) {
-        // 俏皮呆毛短髮
-        ctx.fillStyle = '#374151';
-        ctx.beginPath();
-        ctx.arc(20, 13 + bob, 18.5, Math.PI, Math.PI * 2);
-        ctx.fill();
-        // 搖擺呆毛
-        let hairSway = Math.sin(st.bounce * 2) * 2;
-        ctx.strokeStyle = '#374151';
-        ctx.lineWidth = 3.2;
-        ctx.beginPath();
-        ctx.moveTo(20, 1 + bob);
-        ctx.quadraticCurveTo(24 + hairSway, -8 + bob, 29 + hairSway, -2 + bob);
-        ctx.stroke();
-      } else {
-        // 乖巧齊瀏海
-        ctx.fillStyle = '#1e293b';
-        ctx.beginPath();
-        ctx.arc(20, 13 + bob, 18.5, Math.PI, Math.PI * 2);
-        ctx.fill();
-        ctx.fillRect(8, 9 + bob, 24, 7);
-      }
-
-      // 果凍大眼睛
-      let eyeDir = dir * 1.5;
-      drawChibiEye(15, 21 + bob, 3.8, isBlinking, eyeDir);
-      drawChibiEye(26, 21 + bob, 3.8, isBlinking, eyeDir);
-
-      // 班長的圓圓黑框眼鏡
-      if (st.type === 2 && !isBlinking) {
-        ctx.strokeStyle = '#1e293b';
-        ctx.lineWidth = 1.6;
-        ctx.beginPath();
-        ctx.arc(15, 21 + bob, 4.5, 0, Math.PI * 2);
-        ctx.arc(26, 21 + bob, 4.5, 0, Math.PI * 2);
-        ctx.moveTo(19.5, 21 + bob);
-        ctx.lineTo(21.5, 21 + bob);
-        ctx.stroke();
-      }
-
-      // 萌萌腮紅
-      ctx.fillStyle = 'rgba(254, 202, 202, 0.75)';
-      ctx.beginPath();
-      ctx.arc(11, 26 + bob, 3.2, 0, Math.PI * 2);
-      ctx.arc(30, 26 + bob, 3.2, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 小巧困惑的小嘟嘴
-      ctx.fillStyle = '#ef4444';
-      ctx.beginPath();
-      ctx.arc(20.5, 27 + bob, 2, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 頭頂問號浮動
-      if (st.hasQuestion && st.state === 'waiting') {
-        let qBob = Math.sin(st.bounce * 1.6) * 4;
-        ctx.font = 'bold 22px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
-        ctx.fillText("❓", 10, -5 + qBob);
-      }
-
-      // 離開時心情特效
-      if (st.state === 'leaving') {
-        ctx.font = 'bold 18px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
-        if (st.mood === 'happy') {
-          ctx.fillText("💖", 12, -4);
-        } else {
-          ctx.fillText("💦", 12, -4);
+        // Green Taxiway Centerline Lights
+        if (x >= 165 && x <= 1220) {
+          ctx.fillStyle = isNight ? '#4ade80' : 'rgba(74, 222, 128, 0.5)';
+          ctx.beginPath();
+          ctx.arc(x, WORLD.taxiwayY, isNight ? 2.2 : 1.5, 0, Math.PI * 2);
+          ctx.fill();
         }
       }
 
+      // Sequenced Rabbit Approach Lights on left threshold
+      const pulseIdx = Math.floor((timeSec * 8) % 5);
+      for (let i = 0; i < 5; i++) {
+        const lx = 8 + i * 7;
+        ctx.fillStyle = i === pulseIdx ? '#38bdf8' : 'rgba(248, 113, 113, 0.6)';
+        ctx.beginPath();
+        ctx.arc(lx, WORLD.runwayY, i === pulseIdx ? 3 : 1.8, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function drawApronAndGates(isNight) {
+      // Concrete Apron Area (y = 255 to 500)
+      ctx.fillStyle = isNight ? '#1e293b' : '#475569';
+      ctx.fillRect(0, WORLD.apronTopY, WORLD.width, WORLD.apronBottomY - WORLD.apronTopY);
+
+      // Concrete slab grid lines
+      ctx.strokeStyle = isNight ? 'rgba(15, 23, 42, 0.5)' : 'rgba(51, 65, 85, 0.45)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < WORLD.width; x += 70) {
+        ctx.beginPath();
+        ctx.moveTo(x, WORLD.apronTopY);
+        ctx.lineTo(x, WORLD.apronBottomY);
+        ctx.stroke();
+      }
+      for (let y = WORLD.apronTopY; y < WORLD.apronBottomY; y += 50) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(WORLD.width, y);
+        ctx.stroke();
+      }
+
+      // Ground Service Equipment (GSE) Depot on Left Apron
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.45)';
+      ctx.strokeStyle = '#f59e0b';
+      ctx.setLineDash([6, 4]);
+      ctx.strokeRect(65, 425, 195, 62);
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = 'bold 11px "Noto Sans TC"';
+      ctx.fillText('🛠 機坪地勤與油車調度站', 75, 443);
+
+      // Draw each Gate Stand (A1 - A4)
+      GATES.forEach(gate => {
+        ctx.save();
+        // Lead-in line from taxiway (y=222) to gate stand
+        ctx.strokeStyle = gate.unlocked ? '#facc15' : 'rgba(148, 163, 184, 0.3)';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(gate.x, WORLD.taxiwayY);
+        ctx.lineTo(gate.x, gate.y + 42);
+        ctx.stroke();
+
+        // Red Safety Box around Gate Parking Zone
+        ctx.strokeStyle = gate.unlocked ? 'rgba(239, 68, 68, 0.65)' : 'rgba(148, 163, 184, 0.25)';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([8, 6]);
+        ctx.strokeRect(gate.x - 85, gate.y - 68, 170, 136);
+        ctx.setLineDash([]);
+
+        // Gate Ground Sign Box
+        ctx.fillStyle = gate.unlocked ? '#f59e0b' : '#334155';
+        ctx.fillRect(gate.x - 24, gate.y + 48, 48, 18);
+        ctx.fillStyle = gate.unlocked ? '#0f172a' : '#94a3b8';
+        ctx.font = 'bold 12px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(gate.id, gate.x, gate.y + 61);
+
+        // If Locked Gate, draw interactive Unlock Prompt on Canvas
+        if (!gate.unlocked) {
+          ctx.fillStyle = 'rgba(15, 23, 42, 0.82)';
+          ctx.beginPath();
+          ctx.roundRect(gate.x - 72, gate.y - 26, 144, 52, 10);
+          ctx.fill();
+          ctx.strokeStyle = '#38bdf8';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+          ctx.fillStyle = '#f8fafc';
+          ctx.font = 'bold 12px "Noto Sans TC"';
+          ctx.fillText(`🔒 點擊擴建 ${gate.id}`, gate.x, gate.y - 6);
+          ctx.fillStyle = '#38bdf8';
+          ctx.font = 'bold 12px "JetBrains Mono"';
+          ctx.fillText(`$${gate.price.toLocaleString()}`, gate.x, gate.y + 14);
+        }
+
+        // Night Floodlight Glow at Unlocked Gates
+        if (isNight && gate.unlocked) {
+          const grad = ctx.createRadialGradient(gate.x, gate.y + 20, 10, gate.x, gate.y, 130);
+          grad.addColorStop(0, 'rgba(254, 249, 195, 0.22)');
+          grad.addColorStop(1, 'rgba(254, 249, 195, 0)');
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(gate.x, gate.y, 130, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      });
+    }
+
+    function drawJetbridgeArms() {
+      GATES.forEach(gate => {
+        if (!gate.unlocked) return;
+        ctx.save();
+        // Fixed root at terminal wall (x = gate.x - 42, y = 500)
+        const rootX = gate.x - 42;
+        const rootY = WORLD.terminalWallY;
+        const targetX = gate.x - 12;
+        const targetY = gate.y + 18;
+        const curX = rootX + (targetX - rootX) * gate.jetbridgeExt;
+        const curY = rootY - 26 + (targetY - (rootY - 26)) * gate.jetbridgeExt;
+
+        // Jetbridge corridor arm
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 12;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(rootX, rootY);
+        ctx.lineTo(curX, curY);
+        ctx.stroke();
+
+        ctx.strokeStyle = '#e2e8f0';
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.moveTo(rootX, rootY);
+        ctx.lineTo(curX, curY);
+        ctx.stroke();
+
+        // Rotunda joint circles
+        ctx.fillStyle = '#0284c7';
+        ctx.beginPath();
+        ctx.arc(rootX, rootY, 8, 0, Math.PI * 2);
+        ctx.arc(curX, curY, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+    }
+
+    function drawTerminalInterior(isNight) {
+      const topY = WORLD.terminalWallY;
+      const h = WORLD.height - topY;
+
+      // Terminal Floor Base
+      ctx.fillStyle = isNight ? '#0f172a' : '#1e293b';
+      ctx.fillRect(0, topY, WORLD.width, h);
+
+      // Subtle architectural floor tiles
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.08)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < WORLD.width; x += 45) {
+        ctx.beginPath();
+        ctx.moveTo(x, topY);
+        ctx.lineTo(x, WORLD.height);
+        ctx.stroke();
+      }
+      for (let y = topY; y < WORLD.height; y += 45) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(WORLD.width, y);
+        ctx.stroke();
+      }
+
+      // Glass Curtain Wall separating Apron (y=500) & Terminal Concourse
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(0, topY - 4, WORLD.width, 8);
+
+      // 1. Boarding Gate Waiting Lounges (y = 515 to 600)
+      GATES.forEach(gate => {
+        ctx.save();
+        ctx.fillStyle = gate.unlocked ? 'rgba(30, 58, 138, 0.35)' : 'rgba(15, 23, 42, 0.5)';
+        ctx.strokeStyle = gate.unlocked ? 'rgba(56, 189, 248, 0.4)' : 'rgba(71, 85, 105, 0.3)';
+        ctx.beginPath();
+        ctx.roundRect(gate.x - 95, 514, 190, 82, 8);
+        ctx.fill();
+        ctx.stroke();
+
+        // Waiting room benches
+        ctx.fillStyle = gate.unlocked ? '#475569' : '#1e293b';
+        for (let r = 0; r < 2; r++) {
+          ctx.fillRect(gate.x - 70, 542 + r * 22, 55, 8);
+          ctx.fillRect(gate.x + 15, 542 + r * 22, 55, 8);
+        }
+
+        ctx.fillStyle = gate.unlocked ? '#bae6fd' : '#64748b';
+        ctx.font = 'bold 12px "Noto Sans TC"';
+        ctx.textAlign = 'center';
+        ctx.fillText(`🚪 ${gate.id} 登機候機室`, gate.x, 532);
+        ctx.restore();
+      });
+
+      // 2. Bottom-Left: Check-in Counters (報到與行李託運櫃檯)
+      drawTerminalZoneBox(80, 625, 310, 155, '🛂 旅客報到與自助託運櫃檯 (Check-in)', '#0284c7', 'rgba(2, 132, 199, 0.14)');
+      for (let i = 0; i < 3; i++) {
+        const cx = 140 + i * 75;
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillRect(cx, 658, 46, 18);
+        ctx.fillStyle = '#0284c7';
+        ctx.fillRect(cx + 4, 661, 38, 6);
+      }
+
+      // 3. Center-Left: Security Checkpoints (智慧安檢與證照查驗 e-Gate)
+      drawTerminalZoneBox(415, 625, 230, 155, '🛡️ 智慧安檢門與證照查驗 (Security)', '#0d9488', 'rgba(13, 148, 136, 0.14)');
+      for (let i = 0; i < 2; i++) {
+        const sx = 465 + i * 80;
+        ctx.strokeStyle = '#2dd4bf';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(sx, 665, 36, 26);
+      }
+
+      // 4. Center-Right: Duty-Free Shops & VIP Lounge (免稅精品大街與貴賓室)
+      const dfLevel = getUpgradeLevel('dutyfree');
+      drawTerminalZoneBox(670, 625, 345, 155, `🛍️ 寰宇免稅精品店 & 星級貴賓室 (Lv.${dfLevel})`, '#d97706', 'rgba(217, 119, 6, 0.15)');
+      // Boutique Counters
+      ctx.fillStyle = 'rgba(251, 191, 36, 0.25)';
+      ctx.fillRect(695, 665, 130, 42);
+      ctx.fillRect(855, 665, 130, 42);
+      ctx.fillStyle = '#fde68a';
+      ctx.font = '11px "Noto Sans TC"';
+      ctx.fillText('✨ 精品免稅專櫃', 718, 690);
+      ctx.fillText('🥂 航空公司 VIP 貴賓室', 865, 690);
+
+      // 5. Bottom-Right: Pilot & Crew Briefing Center (機組員通道與航前氣象簡報室)
+      drawTerminalZoneBox(1040, 625, 300, 155, '👨‍✈️ 機師航前氣象簡報與組員中心 (Crew Ops)', '#6366f1', 'rgba(99, 102, 241, 0.16)');
+      ctx.fillStyle = 'rgba(30, 41, 59, 0.85)';
+      ctx.fillRect(1065, 662, 110, 40);
+      ctx.fillStyle = '#818cf8';
+      ctx.font = '11px "JetBrains Mono"';
+      ctx.fillText('WX RADAR: CLEAR', 1074, 686);
+
+      // 6. Curbside Drop-off Road (Bottom Edge y = 795 to 860)
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 795, WORLD.width, 65);
+      ctx.strokeStyle = '#fbbf24';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([18, 14]);
+      ctx.beginPath();
+      ctx.moveTo(0, 828);
+      ctx.lineTo(WORLD.width, 828);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = 'bold 12px "Noto Sans TC"';
+      ctx.fillText('🚕 航廈出境下客車道 (Departure Curbside)', 90, 816);
+      ctx.fillText('🚌 入境迎賓與計程車乘車處 (Arrivals Pickup)', 880, 816);
+    }
+
+    function drawTerminalZoneBox(x, y, w, h, title, borderColor, fillColor) {
+      ctx.save();
+      ctx.fillStyle = fillColor;
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(x, y, w, h, 10);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = 'bold 12px "Noto Sans TC"';
+      ctx.fillText(title, x + 12, y + 22);
       ctx.restore();
     }
 
-    function render() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // =========================================================================
+    // 11. DRAW AGENTS (PASSENGERS, GROUND CREW, PILOTS) & AIRCRAFT
+    // =========================================================================
+    function drawPassengers() {
+      state.passengers.forEach(p => {
+        ctx.save();
+        // Luggage case trailing behind
+        ctx.fillStyle = '#64748b';
+        ctx.fillRect(p.x - 7, p.y + 2, 4, 5);
 
-      ctx.fillStyle = '#fef3c7';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // 溫馨木質地板
-      ctx.fillStyle = '#fed7aa';
-      ctx.fillRect(0, 340, canvas.width, canvas.height - 340);
-      ctx.strokeStyle = '#f97316';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(0, 340);
-      ctx.lineTo(canvas.width, 340);
-      ctx.stroke();
-
-      // 出入大門
-      ctx.fillStyle = '#e2e8f0';
-      ctx.fillRect(360, 180, 40, 160);
-      ctx.strokeStyle = '#94a3b8';
-      ctx.lineWidth = 3;
-      ctx.strokeRect(360, 180, 40, 160);
-      ctx.fillStyle = '#f97316';
-      ctx.font = 'bold 11px sans-serif';
-      ctx.fillText("大門", 368, 205);
-
-      // 窗戶與藍天小雲朵
-      ctx.fillStyle = '#bae6fd';
-      ctx.beginPath();
-      ctx.roundRect(170, 45, 120, 75, 10);
-      ctx.fill();
-      ctx.strokeStyle = '#7dd3fc';
-      ctx.lineWidth = 3;
-      ctx.stroke();
-
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(200, 75, 12, 0, Math.PI * 2);
-      ctx.arc(215, 70, 15, 0, Math.PI * 2);
-      ctx.arc(230, 75, 11, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 佈告欄
-      ctx.fillStyle = '#fb923c';
-      ctx.beginPath();
-      ctx.roundRect(20, 70, 120, 85, 10);
-      ctx.fill();
-      ctx.strokeStyle = '#c2410c';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-
-      ctx.fillStyle = '#fef08a';
-      ctx.fillRect(32, 85, 25, 30);
-      ctx.fillStyle = '#fbcfe8';
-      ctx.fillRect(70, 95, 35, 25);
-
-      ctx.fillStyle = '#7c2d12';
-      ctx.font = 'bold 14px sans-serif';
-      ctx.fillText("平安下班", 310, 100);
-      ctx.font = '11px sans-serif';
-      ctx.fillText("愛心守護", 315, 120);
-
-      // 繪製 Q 版學生群
-      students.forEach(st => drawCuteStudent(st));
-
-      // 繪製 Q 版校安老師
-      drawCuteTeacher(player.x, player.y, player.facing, player.walkFrame, player.blinkTimer);
-
-      // 提示氣泡
-      if (activeStudent && dialogBox.style.display === 'none') {
-        ctx.fillStyle = '#ffffff';
+        // Passenger Body Circle
+        ctx.fillStyle = p.color;
         ctx.beginPath();
-        ctx.roundRect(player.x - 15, player.y - 35, 80, 24, 8);
+        ctx.arc(p.x, p.y, 4.8, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = '#f97316';
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+
+        // Highlight if selected
+        if (state.selectedEntity && state.selectedEntity.ref === p) {
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 9, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        ctx.restore();
+      });
+    }
+
+    function drawGroundCrew() {
+      state.groundCrew.forEach(c => {
+        ctx.save();
+        // High-Vis Yellow/Orange Vest Agent
+        ctx.fillStyle = '#facc15';
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, 6.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#ea580c';
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        ctx.fillStyle = '#ea580c';
-        ctx.font = 'bold 11px sans-serif';
-        ctx.fillText("點擊 [對話] 💬", player.x - 9, player.y - 19);
+        // Waving orange marshalling wands if working on apron
+        if (c.state === 'WORKING_FLIGHT') {
+          const wave = Math.sin(Date.now() * 0.012) * 5;
+          ctx.strokeStyle = '#f97316';
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.moveTo(c.x - 5, c.y - 2);
+          ctx.lineTo(c.x - 9, c.y - 8 + wave);
+          ctx.moveTo(c.x + 5, c.y - 2);
+          ctx.lineTo(c.x + 9, c.y - 8 - wave);
+          ctx.stroke();
+        }
+
+        if (state.selectedEntity && state.selectedEntity.ref === c) {
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(c.x, c.y, 11, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        ctx.restore();
+      });
+    }
+
+    function drawPilots() {
+      state.pilots.forEach(p => {
+        if (p.state === 'IN_COCKPIT') return; // Inside the plane cockpit
+        ctx.save();
+        // Navy Blue Uniform with Gold Stripes
+        ctx.fillStyle = '#1e3a8a';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 2.2;
+        ctx.stroke();
+
+        // Captain Hat Visor Peak
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillRect(p.x - 4, p.y - 8, 8, 3);
+
+        if (state.selectedEntity && state.selectedEntity.ref === p) {
+          ctx.strokeStyle = '#38bdf8';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 12, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        ctx.restore();
+      });
+    }
+
+    function drawAllAircraft(isNight) {
+      state.flights.forEach(f => {
+        if (f.status === 'APPROACHING') return; // In holding pattern / sky queue
+
+        ctx.save();
+
+        // 1. Draw Ground Service Vehicles when in SERVICING state
+        if (f.status === 'SERVICING' || f.status === 'DEPLANING') {
+          drawGroundServiceTrucks(f);
+        }
+
+        // 2. Draw Pushback Tug when in PUSHBACK or READY_PUSHBACK
+        if (f.status === 'PUSHBACK' || f.status === 'READY_PUSHBACK') {
+          ctx.save();
+          ctx.fillStyle = '#f59e0b';
+          ctx.fillRect(f.x - 9, f.y + 42, 18, 22);
+          ctx.fillStyle = '#1e293b';
+          ctx.fillRect(f.x - 6, f.y + 46, 12, 10);
+          ctx.strokeStyle = '#94a3b8';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(f.x, f.y + 42);
+          ctx.lineTo(f.x, f.y + 28);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // 3. Draw Shadow Offset (based on altitude)
+        const sScale = f.airline.scale * (1 + f.altitude * 0.0015);
+        ctx.save();
+        ctx.translate(f.x + f.altitude * 0.25, f.y + 10 + f.altitude * 0.45);
+        ctx.rotate(f.angle);
+        ctx.scale(f.airline.scale * 0.92, f.airline.scale * 0.92);
+        drawAircraftShape(f, true);
+        ctx.restore();
+
+        // 4. Draw Actual Aircraft Body
+        ctx.save();
+        ctx.translate(f.x, f.y - f.altitude * 0.35);
+        ctx.rotate(f.angle);
+        ctx.scale(sScale, sScale);
+        drawAircraftShape(f, false);
+
+        // Navigation & Strobe Lights
+        const blink = Math.floor(Date.now() / 350) % 2 === 0;
+        // Left Wingtip Red, Right Wingtip Green
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath();
+        ctx.arc(-6, -42, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#22c55e';
+        ctx.beginPath();
+        ctx.arc(-6, 42, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (blink) {
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(-38, 0, 3.2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Landing Headlight Cone at Night
+        if (isNight && ['LANDING_ROLL', 'TAXI_TO_GATE', 'TAXI_TO_RUNWAY', 'TAKEOFF_ROLL'].includes(f.status)) {
+          const beam = ctx.createLinearGradient(35, 0, 170, 0);
+          beam.addColorStop(0, 'rgba(254, 249, 195, 0.45)');
+          beam.addColorStop(1, 'rgba(254, 249, 195, 0)');
+          ctx.fillStyle = beam;
+          ctx.beginPath();
+          ctx.moveTo(32, -4);
+          ctx.lineTo(170, -34);
+          ctx.lineTo(170, 34);
+          ctx.lineTo(32, 4);
+          ctx.closePath();
+          ctx.fill();
+        }
+        ctx.restore();
+
+        // 5. Overhead Status Pill & Turnaround Progress Bar
+        drawAircraftHUD(f);
+
+        ctx.restore();
+      });
+    }
+
+    function drawAircraftShape(f, isShadow) {
+      const primary = isShadow ? 'rgba(2, 6, 23, 0.38)' : f.airline.primaryColor;
+      const fuselage = isShadow ? 'rgba(2, 6, 23, 0.38)' : f.airline.fuselageColor;
+      const accent = isShadow ? 'rgba(2, 6, 23, 0.38)' : f.airline.accentColor;
+
+      // Swept Main Wings
+      ctx.fillStyle = isShadow ? primary : '#cbd5e1';
+      ctx.beginPath();
+      ctx.moveTo(10, 0);
+      ctx.lineTo(-12, -44);
+      ctx.lineTo(-22, -44);
+      ctx.lineTo(-10, 0);
+      ctx.lineTo(-22, 44);
+      ctx.lineTo(-12, 44);
+      ctx.closePath();
+      ctx.fill();
+
+      // Wingtip Winglets
+      ctx.fillStyle = primary;
+      ctx.fillRect(-22, -45, 8, 3);
+      ctx.fillRect(-22, 42, 8, 3);
+
+      // Tail Horizontal Stabilizers
+      ctx.fillStyle = isShadow ? primary : primary;
+      ctx.beginPath();
+      ctx.moveTo(-28, 0);
+      ctx.lineTo(-42, -16);
+      ctx.lineTo(-47, -16);
+      ctx.lineTo(-39, 0);
+      ctx.lineTo(-47, 16);
+      ctx.lineTo(-42, 16);
+      ctx.closePath();
+      ctx.fill();
+
+      // Underwing Engines
+      ctx.fillStyle = accent;
+      ctx.fillRect(-2, -23, 14, 6);
+      ctx.fillRect(-2, 17, 14, 6);
+
+      // Spinning Propellers for Regional Turboprop
+      if (!isShadow && f.airline.size === 'regional') {
+        ctx.strokeStyle = 'rgba(226, 232, 240, 0.8)';
+        ctx.lineWidth = 1.8;
+        const pLen = Math.sin(f.propAngle) * 7;
+        ctx.beginPath();
+        ctx.moveTo(13, -20 - pLen);
+        ctx.lineTo(13, -20 + pLen);
+        ctx.moveTo(13, 20 - pLen);
+        ctx.lineTo(13, 20 + pLen);
+        ctx.stroke();
       }
 
-      // 飄字
-      if (feedbackTimer > 0) {
-        ctx.fillStyle = feedbackText.includes("放心") ? '#059669' : '#dc2626';
-        ctx.font = 'bold 15px sans-serif';
-        ctx.fillText(feedbackText, player.x - 45, player.y - 50);
+      // Main Fuselage Tube
+      ctx.fillStyle = fuselage;
+      ctx.beginPath();
+      ctx.moveTo(38, 0);
+      ctx.quadraticCurveTo(32, -8, 18, -8);
+      ctx.lineTo(-32, -7);
+      ctx.quadraticCurveTo(-46, 0, -46, 0);
+      ctx.quadraticCurveTo(-46, 0, -32, 7);
+      ctx.lineTo(18, 8);
+      ctx.quadraticCurveTo(32, 8, 38, 0);
+      ctx.closePath();
+      ctx.fill();
+
+      if (!isShadow) {
+        // Airline Livery Stripe & Vertical Tail Fin
+        ctx.fillStyle = primary;
+        ctx.fillRect(-38, -2, 24, 4);
+
+        // Cockpit Windshield
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.arc(27, 0, 4.2, -Math.PI * 0.4, Math.PI * 0.4);
+        ctx.fill();
       }
     }
 
-    function gameLoop() {
-      update();
-      render();
+    function drawGroundServiceTrucks(f) {
+      // Fuel Truck on Right Wing & Catering/Baggage Cart on Left
+      ctx.save();
+      // Fuel Truck
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(f.x + 28, f.y - 18, 24, 12);
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = 'bold 8px "JetBrains Mono"';
+      ctx.fillText('FUEL', f.x + 30, f.y - 10);
+
+      // Baggage Train
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(f.x - 52, f.y - 25, 16, 10);
+      ctx.fillRect(f.x - 52, f.y - 12, 16, 10);
+      ctx.restore();
+    }
+
+    function drawAircraftHUD(f) {
+      const stageMeta = getFlightStageMeta(f);
+      const boxY = f.y - 68 - f.altitude * 0.35;
+
+      ctx.save();
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+      ctx.strokeStyle = stageMeta.color;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(f.x - 58, boxY, 116, 36, 7);
+      ctx.fill();
+      ctx.stroke();
+
+      // Flight ID & Gate
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 11px "JetBrains Mono"';
+      ctx.textAlign = 'left';
+      ctx.fillText(`${f.id}`, f.x - 52, boxY + 13);
+
+      ctx.fillStyle = stageMeta.color;
+      ctx.font = 'bold 10px "Noto Sans TC"';
+      ctx.textAlign = 'right';
+      ctx.fillText(stageMeta.shortLabel, f.x + 52, boxY + 13);
+
+      // Progress Bar inside HUD
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(f.x - 50, boxY + 21, 100, 7);
+      ctx.fillStyle = stageMeta.color;
+      ctx.fillRect(f.x - 50, boxY + 21, Math.min(100, Math.max(8, f.stageProgress)), 7);
+      ctx.restore();
+    }
+
+    function drawParticlesAndTexts() {
+      state.particles.forEach(pt => {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, pt.alpha);
+        ctx.fillStyle = pt.color;
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, pt.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+
+      state.floatingTexts.forEach(ft => {
+        ctx.save();
+        ctx.globalAlpha = Math.min(1, ft.life);
+        ctx.font = 'bold 13px "Noto Sans TC"';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#0f172a';
+        ctx.fillText(ft.text, ft.x + 1, ft.y + 1);
+        ctx.fillStyle = ft.color;
+        ctx.fillText(ft.text, ft.x, ft.y);
+        ctx.restore();
+      });
+    }
+
+    function drawWeatherEffects() {
+      if (state.weather === 'storm') {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(186, 230, 253, 0.35)';
+        ctx.lineWidth = 1.2;
+        const offset = (Date.now() * 0.9) % 800;
+        for (let i = 0; i < 95; i++) {
+          const rx = ((i * 157 + offset) % (WORLD.width + 100)) - 50;
+          const ry = ((i * 263 + offset * 1.4) % WORLD.height);
+          ctx.beginPath();
+          ctx.moveTo(rx, ry);
+          ctx.lineTo(rx - 12, ry + 22);
+          ctx.stroke();
+        }
+        if (state.lightningAlpha > 0) {
+          ctx.fillStyle = `rgba(240, 249, 255, ${state.lightningAlpha})`;
+          ctx.fillRect(0, 0, WORLD.width, WORLD.height);
+        }
+        ctx.restore();
+      }
+    }
+
+    // =========================================================================
+    // 12. UI RENDERERS (FIDS, STAFF, UPGRADES, AIRLINES, INSPECTOR)
+    // =========================================================================
+    function getFlightStageMeta(f) {
+      const map = {
+        APPROACHING: { label: '空中進場等待許可', shortLabel: '進場請求', color: '#f59e0b' },
+        LANDING_ROLL: { label: '09L 跑道降落滑行', shortLabel: '降落減速', color: '#38bdf8' },
+        TAXI_TO_GATE: { label: `滑行前往 ${f.gateId}`, shortLabel: '滑行入位', color: '#38bdf8' },
+        DEPLANING: { label: '空橋接靠・旅客下機', shortLabel: '旅客下機', color: '#a855f7' },
+        SERVICING: { label: '地勤加油・空廚・行李', shortLabel: '地勤整備', color: '#facc15' },
+        WAIT_PILOT: { label: '等待機師繞機檢查', shortLabel: '待派機師', color: '#f97316' },
+        BOARDING: { label: `旅客登機中 (${f.boardedPax}/${f.targetPax})`, shortLabel: '旅客登機', color: '#10b981' },
+        READY_PUSHBACK: { label: '準備完成・請求後推', shortLabel: '請求後推', color: '#22c55e' },
+        PUSHBACK: { label: '拖車後推離橋中', shortLabel: '後推作業', color: '#38bdf8' },
+        TAXI_TO_RUNWAY: { label: '滑行至 09L 跑道頭', shortLabel: '滑行離場', color: '#38bdf8' },
+        HOLD_SHORT: { label: '09L 跑道頭等待起飛', shortLabel: '等待起飛', color: '#f59e0b' },
+        TAKEOFF_ROLL: { label: '全油門滾行起飛！', shortLabel: '滾行起飛', color: '#34d399' },
+        CLIMBING: { label: '起飛離場爬升中', shortLabel: '離場爬升', color: '#34d399' }
+      };
+      return map[f.status] || { label: f.status, shortLabel: f.status, color: '#94a3b8' };
+    }
+
+    function renderFIDS() {
+      const container = document.getElementById('fids-container');
+      document.getElementById('fids-badge').textContent = state.flights.length;
+
+      if (state.flights.length === 0) {
+        container.innerHTML = `
+          <div class="bg-slate-800/40 border border-slate-800 rounded-xl p-6 text-center text-slate-400 text-xs">
+            <i class="fa-solid fa-radar text-2xl text-sky-400 mb-2 block"></i>
+            目前空域無航班，點擊左上角「召喚進場班機」或稍候片刻。
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = state.flights.map(f => {
+        const meta = getFlightStageMeta(f);
+        const timerColor = f.turnaroundRemaining < 12 ? 'text-rose-400' : 'text-emerald-400';
+
+        // Action buttons depending on status
+        let actionBtn = '';
+        if (f.status === 'APPROACHING') {
+          actionBtn = `<button onclick="event.stopPropagation(); approveLanding('${f.id}')" class="btn-urgent px-2.5 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg transition">批准降落 09L</button>`;
+        } else if (['DEPLANING', 'SERVICING'].includes(f.status) && !f.crewBoosted) {
+          actionBtn = `<button onclick="event.stopPropagation(); dispatchCrewBoost('${f.id}')" class="px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 text-amber-300 font-bold text-xs rounded-lg transition"><i class="fa-solid fa-bolt mr-1"></i>加派地勤</button>`;
+        } else if (['SERVICING', 'WAIT_PILOT'].includes(f.status) && !f.pilotAssigned) {
+          actionBtn = `<button onclick="event.stopPropagation(); assignPilotToFlight('${f.id}')" class="btn-urgent px-2.5 py-1 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs rounded-lg transition"><i class="fa-solid fa-user-astronaut mr-1"></i>指派機師</button>`;
+        } else if (f.status === 'READY_PUSHBACK') {
+          actionBtn = `<button onclick="event.stopPropagation(); approveTakeoff('${f.id}')" class="btn-urgent px-2.5 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-lg transition">批准後推</button>`;
+        } else if (f.status === 'HOLD_SHORT') {
+          actionBtn = `<button onclick="event.stopPropagation(); approveTakeoff('${f.id}')" class="btn-urgent px-2.5 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-lg transition">批准起飛</button>`;
+        }
+
+        return `
+          <div onclick="inspectFlight('${f.id}')" class="fids-row rounded-xl p-2.5 border border-slate-800 cursor-pointer">
+            <div class="flex items-center justify-between mb-1.5">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full" style="background:${f.airline.primaryColor}"></span>
+                <span class="font-mono-led font-bold text-sm text-white">${f.id}</span>
+                <span class="text-xs text-slate-300 truncate max-w-[125px]">${f.airline.name.split(' ')[0]}</span>
+                <span class="text-[10px] font-mono-led bg-slate-800 border border-slate-700 px-1.5 py-0.5 rounded text-sky-300">${f.gateId || '待分配'}</span>
+              </div>
+              <div class="font-mono-led text-xs ${timerColor}" title="準點過站剩餘時間">
+                <i class="fa-regular fa-clock mr-0.5"></i>${Math.ceil(f.turnaroundRemaining)}s
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex-1">
+                <div class="flex items-center justify-between text-[11px] mb-1">
+                  <span style="color:${meta.color}" class="font-bold">${meta.label}</span>
+                  <span class="text-slate-400 font-mono-led">${f.pilotAssigned ? '👨‍✈️機師就緒' : '⏳待命'}</span>
+                </div>
+                <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                  <div class="h-full transition-all duration-200" style="width:${Math.min(100, Math.max(10, f.stageProgress))}%; background:${meta.color}"></div>
+                </div>
+              </div>
+              ${actionBtn ? `<div class="shrink-0">${actionBtn}</div>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderStaffTab() {
+      document.getElementById('staff-crew-count').textContent = `${state.groundCrew.length} 人`;
+      document.getElementById('staff-pilot-count').textContent = `${state.pilots.length} 人`;
+      document.getElementById('cost-crew').textContent = `$${state.crewHireCost.toLocaleString()}`;
+      document.getElementById('cost-pilot').textContent = `$${state.pilotHireCost.toLocaleString()}`;
+
+      const rosterEl = document.getElementById('staff-roster-list');
+      const pilotItems = state.pilots.map(p => {
+        const statusText = p.state === 'IDLE' ? '簡報室待命中' : (p.state === 'IN_COCKPIT' ? `執飛 ${p.assignedFlightId}` : `繞機檢查 ${p.assignedFlightId || ''}`);
+        return `
+          <div onclick="selectEntity('pilot', '${p.id}')" class="bg-slate-800/60 hover:bg-slate-800 border border-slate-700/70 rounded-lg px-2.5 py-1.5 flex items-center justify-between cursor-pointer text-xs">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+              <span class="font-bold text-white">${p.name}</span>
+            </div>
+            <span class="text-sky-300 font-mono-led text-[11px]">${statusText}</span>
+          </div>`;
+      }).join('');
+
+      const crewItems = state.groundCrew.map(c => {
+        const statusText = c.isTerminal ? c.role : (c.state === 'WORKING_FLIGHT' ? `支援 ${c.assignedFlightId}` : '機坪待命');
+        return `
+          <div onclick="selectEntity('crew', '${c.id}')" class="bg-slate-800/60 hover:bg-slate-800 border border-slate-700/70 rounded-lg px-2.5 py-1.5 flex items-center justify-between cursor-pointer text-xs">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+              <span class="font-bold text-white">${c.name}</span>
+            </div>
+            <span class="text-amber-300 font-mono-led text-[11px]">${statusText}</span>
+          </div>`;
+      }).join('');
+
+      rosterEl.innerHTML = pilotItems + crewItems;
+    }
+
+    function renderUpgrades() {
+      const list = document.getElementById('upgrades-list');
+      list.innerHTML = UPGRADES.map(u => {
+        const isMax = u.level >= u.maxLevel;
+        const cost = Math.round(u.baseCost * Math.pow(1.55, u.level));
+        return `
+          <div class="bg-slate-800/75 border border-slate-700/80 rounded-xl p-3 flex items-center justify-between gap-3">
+            <div class="flex items-start gap-2.5">
+              <div class="w-9 h-9 rounded-lg bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center shrink-0 mt-0.5">
+                <i class="fa-solid ${u.icon}"></i>
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-xs text-white">${u.name}</span>
+                  <span class="text-[10px] font-mono-led bg-slate-900 px-1.5 py-0.5 rounded text-sky-300">Lv.${u.level}/${u.maxLevel}</span>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-0.5">${u.desc}</p>
+              </div>
+            </div>
+            <button onclick="buyUpgrade('${u.id}')" ${isMax ? 'disabled' : ''} class="px-3 py-1.5 rounded-lg font-bold text-xs shrink-0 transition ${isMax ? 'bg-slate-700 text-slate-500 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'}">
+              ${isMax ? '已滿級' : `$${cost.toLocaleString()}`}
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderAirlines() {
+      const list = document.getElementById('airlines-list');
+      list.innerHTML = AIRLINES.map(a => {
+        const canRating = state.rating >= a.minRating;
+        return `
+          <div class="bg-slate-800/75 border border-slate-700/80 rounded-xl p-3 space-y-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full" style="background:${a.primaryColor}"></span>
+                <span class="font-bold text-xs text-white">${a.name}</span>
+              </div>
+              <span class="text-[11px] font-mono-led text-amber-300">需求評級 ${a.minRating.toFixed(1)} ★</span>
+            </div>
+            <p class="text-[11px] text-slate-400">${a.desc}</p>
+            <div class="flex items-center justify-between pt-1 border-t border-slate-700/60 text-[11px]">
+              <div class="text-slate-300">
+                機型: <span class="text-white font-semibold">${a.type}</span> | 降落費: <span class="text-emerald-400 font-mono-led">$${a.landingFee}</span>
+              </div>
+              ${
+                a.unlocked
+                  ? `<span class="px-2.5 py-1 rounded bg-sky-500/20 text-sky-300 font-bold text-xs border border-sky-500/30"><i class="fa-solid fa-check mr-1"></i>營運中</span>`
+                  : `<button onclick="signAirlineContract('${a.code}')" class="px-3 py-1 rounded-lg font-bold text-xs transition ${canRating ? 'bg-amber-500 hover:bg-amber-400 text-slate-950' : 'bg-slate-700 text-slate-400'}">簽約 ($${a.contractCost.toLocaleString()})</button>`
+              }
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateHUD() {
+      document.getElementById('hud-money').textContent = `$${state.money.toLocaleString()}`;
+      document.getElementById('hud-rating').textContent = `${state.rating.toFixed(1)} ★`;
+      const onTimePct = state.flightsCompleted > 0 ? Math.round((state.flightsOnTime / state.flightsCompleted) * 100) : 100;
+      document.getElementById('hud-ontime').textContent = `${onTimePct}%`;
+      document.getElementById('hud-pax').textContent = `${state.passengers.length} / ${state.totalPaxServed}`;
+
+      const idleCrew = state.groundCrew.filter(c => !c.isTerminal && c.state === 'IDLE').length;
+      document.getElementById('hud-crew').textContent = `${idleCrew}/${state.groundCrew.length}`;
+
+      const idlePilots = state.pilots.filter(p => p.state === 'IDLE').length;
+      document.getElementById('hud-pilots').textContent = `${idlePilots}/${state.pilots.length}`;
+
+      // Clock
+      const hrs = String(Math.floor(state.simMinutes / 60)).padStart(2, '0');
+      const mins = String(Math.floor(state.simMinutes % 60)).padStart(2, '0');
+      document.getElementById('clock-display').textContent = `${hrs}:${mins}`;
+    }
+
+    function addATCLog(callsign, msg, type = 'info') {
+      const list = document.getElementById('atc-log-list');
+      const colorMap = {
+        info: 'text-slate-300',
+        clear: 'text-emerald-400',
+        warn: 'text-amber-300',
+        alert: 'text-rose-400'
+      };
+      const item = document.createElement('div');
+      item.className = `truncate ${colorMap[type] || 'text-slate-300'}`;
+      item.innerHTML = `<span class="text-sky-400 font-bold">[${callsign}]</span> ${msg}`;
+      list.prepend(item);
+      while (list.children.length > 3) {
+        list.removeChild(list.lastChild);
+      }
+    }
+
+    // =========================================================================
+    // 13. CANVAS CLICK DETECTION & INSPECTOR PANEL
+    // =========================================================================
+    canvas.addEventListener('click', e => {
+      const rect = canvas.getBoundingClientRect();
+      const mx = (e.clientX - rect.left - viewOffsetX) / viewScale;
+      const my = (e.clientY - rect.top - viewOffsetY) / viewScale;
+
+      // 1. Check Locked Gate Click (to unlock directly on map)
+      for (const gate of GATES) {
+        if (!gate.unlocked && Math.hypot(mx - gate.x, my - gate.y) < 68) {
+          const upgId = gate.id === 'A3' ? 'gate_a3' : 'gate_a4';
+          buyUpgrade(upgId);
+          return;
+        }
+      }
+
+      // 2. Check Aircraft Click
+      for (const f of state.flights) {
+        if (f.status !== 'APPROACHING' && Math.hypot(mx - f.x, my - (f.y - f.altitude * 0.35)) < 48) {
+          state.selectedEntity = { type: 'flight', ref: f };
+          showInspector();
+          return;
+        }
+      }
+
+      // 3. Check Pilot Click
+      for (const p of state.pilots) {
+        if (p.state !== 'IN_COCKPIT' && Math.hypot(mx - p.x, my - p.y) < 15) {
+          state.selectedEntity = { type: 'pilot', ref: p };
+          showInspector();
+          return;
+        }
+      }
+
+      // 4. Check Ground Crew Click
+      for (const c of state.groundCrew) {
+        if (Math.hypot(mx - c.x, my - c.y) < 15) {
+          state.selectedEntity = { type: 'crew', ref: c };
+          showInspector();
+          return;
+        }
+      }
+
+      // 5. Check Passenger Click
+      for (const pax of state.passengers) {
+        if (Math.hypot(mx - pax.x, my - pax.y) < 12) {
+          state.selectedEntity = { type: 'pax', ref: pax };
+          showInspector();
+          return;
+        }
+      }
+
+      closeInspector();
+    });
+
+    function inspectFlight(flightId) {
+      const f = state.flights.find(fl => fl.id === flightId);
+      if (f) {
+        state.selectedEntity = { type: 'flight', ref: f };
+        showInspector();
+      }
+    }
+
+    function selectEntity(type, id) {
+      if (type === 'pilot') {
+        const p = state.pilots.find(pl => pl.id === id);
+        if (p) {
+          state.selectedEntity = { type: 'pilot', ref: p };
+          showInspector();
+        }
+      } else if (type === 'crew') {
+        const c = state.groundCrew.find(cr => cr.id === id);
+        if (c) {
+          state.selectedEntity = { type: 'crew', ref: c };
+          showInspector();
+        }
+      }
+    }
+
+    function showInspector() {
+      const card = document.getElementById('inspector-card');
+      if (!state.selectedEntity || !state.selectedEntity.ref) {
+        card.classList.add('hidden');
+        return;
+      }
+      card.classList.remove('hidden');
+      const { type, ref } = state.selectedEntity;
+      const titleEl = document.getElementById('insp-title');
+      const subEl = document.getElementById('insp-subtitle');
+      const bodyEl = document.getElementById('insp-body');
+      const iconEl = document.getElementById('insp-icon');
+
+      if (type === 'flight') {
+        const meta = getFlightStageMeta(ref);
+        iconEl.innerHTML = '<i class="fa-solid fa-plane"></i>';
+        titleEl.textContent = `${ref.id} ${ref.airline.name.split(' ')[0]}`;
+        subEl.textContent = `${ref.airline.type} • 停機坪 ${ref.gateId || '待分配'}`;
+        bodyEl.innerHTML = `
+          <div class="flex justify-between"><span>當前階段:</span><span class="font-bold text-sky-300">${meta.label}</span></div>
+          <div class="flex justify-between"><span>登機旅客:</span><span class="font-mono-led">${ref.boardedPax} / ${ref.targetPax} 人</span></div>
+          <div class="flex justify-between"><span>執飛機師:</span><span class="font-bold ${ref.pilotAssigned ? 'text-emerald-400' : 'text-amber-400'}">${ref.pilotAssigned ? '已指派就緒' : '尚未指派'}</span></div>
+          <div class="flex justify-between"><span>準點倒數:</span><span class="font-mono-led text-emerald-400">${Math.ceil(ref.turnaroundRemaining)} 秒</span></div>
+        `;
+      } else if (type === 'pilot') {
+        iconEl.innerHTML = '<i class="fa-solid fa-user-astronaut"></i>';
+        titleEl.textContent = ref.name;
+        subEl.textContent = '駐場正機師 (Captain)';
+        bodyEl.innerHTML = `
+          <div class="flex justify-between"><span>目前動態:</span><span class="text-sky-300 font-bold">${ref.state === 'IDLE' ? '於氣象簡報室待命' : `執行 ${ref.assignedFlightId} 航前檢查`}</span></div>
+          <div class="flex justify-between"><span>抗壓與飛行技術:</span><span class="text-amber-300 font-mono-led">★★★★★</span></div>
+        `;
+      } else if (type === 'crew') {
+        iconEl.innerHTML = '<i class="fa-solid fa-helmet-safety"></i>';
+        titleEl.textContent = ref.name;
+        subEl.textContent = ref.role;
+        bodyEl.innerHTML = `
+          <div class="flex justify-between"><span>目前任務:</span><span class="text-amber-300 font-bold">${ref.assignedFlightId ? `整備 ${ref.assignedFlightId}` : '正常執勤中'}</span></div>
+          <div class="flex justify-between"><span>裝備加成:</span><span class="text-emerald-400 font-mono-led">Lv.${getUpgradeLevel('apron_tech')} 機坪科技</span></div>
+        `;
+      } else if (type === 'pax') {
+        iconEl.innerHTML = '<i class="fa-solid fa-suitcase-rolling"></i>';
+        titleEl.textContent = `${ref.tier === 'VIP' ? '頭等艙 VIP 貴賓' : (ref.tier === 'BUSINESS' ? '商務艙旅客' : '經濟艙旅客')}`;
+        subEl.textContent = `前往登機門 ${ref.gateId}`;
+        bodyEl.innerHTML = `
+          <div class="flex justify-between"><span>目前動線:</span><span class="text-sky-300 font-bold">${ref.stage}</span></div>
+          <div class="flex justify-between"><span>心情與耐心度:</span><span class="text-emerald-400 font-mono-led">${Math.round(ref.patience)}% 😊</span></div>
+        `;
+      }
+    }
+
+    function closeInspector() {
+      state.selectedEntity = null;
+      document.getElementById('inspector-card').classList.add('hidden');
+    }
+
+    // =========================================================================
+    // 14. TOP BAR CONTROLS (WEATHER, AUTO-ATC, SPEED, TABS)
+    // =========================================================================
+    function setWeather(mode) {
+      state.weather = mode;
+      ['day', 'night', 'storm'].forEach(m => {
+        const btn = document.getElementById('btn-weather-' + m);
+        if (m === mode) {
+          btn.className = 'px-2 py-1 rounded-md text-xs font-bold flex items-center gap-1 bg-sky-500 text-slate-950 transition';
+        } else {
+          btn.className = 'px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1 text-slate-300 hover:text-white transition';
+        }
+      });
+
+      const windEl = document.getElementById('wind-display');
+      if (mode === 'storm') {
+        windEl.innerHTML = '<i class="fa-solid fa-cloud-bolt text-amber-400 mr-1"></i>140° 24kt 側風雷雨';
+        addATCLog('METAR', '氣象特報：本場發布雷雨與強側風警報，跑道助航燈光全開！', 'warn');
+      } else if (mode === 'night') {
+        windEl.innerHTML = '<i class="fa-solid fa-moon text-indigo-300 mr-1"></i>090° 6kt 夜航模式';
+        addATCLog('METAR', '夜航模式啟動：跑道邊燈、滑行道綠燈與機坪高桿照明已點亮。', 'info');
+      } else {
+        windEl.innerHTML = '<i class="fa-solid fa-wind mr-1"></i>090° 8kt CAVOK';
+        addATCLog('METAR', '天氣晴朗能見度良好 (CAVOK)，適合各型客機起降。', 'clear');
+      }
+    }
+
+    function toggleAutoATC() {
+      state.autoATC = !state.autoATC;
+      const btn = document.getElementById('btn-auto-atc');
+      const label = document.getElementById('auto-atc-label');
+      if (state.autoATC) {
+        btn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-bold border border-emerald-500/60 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 flex items-center gap-1.5 transition';
+        label.textContent = '開啟';
+        addATCLog('ATC', '已開啟「自動塔台與機師派遣」，系統將自動放行起降並指派機師。', 'clear');
+      } else {
+        btn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-bold border border-amber-500/60 bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 flex items-center gap-1.5 transition';
+        label.textContent = '手動';
+        addATCLog('ATC', '已切換為「手動塔台模式」，請在右側航班看板手動批准降落、指派機師與起飛！', 'warn');
+      }
+    }
+
+    function setGameSpeed(spd) {
+      state.gameSpeed = spd;
+      [0, 1, 2, 3].forEach(s => {
+        const btn = document.getElementById('speed-' + s);
+        btn.className = s === spd
+          ? 'px-2 py-1 rounded text-xs bg-amber-500 text-slate-950 font-bold'
+          : 'px-2 py-1 rounded text-xs text-slate-300 hover:text-white';
+      });
+    }
+
+    function switchTab(tabName) {
+      ['fids', 'staff', 'upgrades', 'airlines'].forEach(t => {
+        const panel = document.getElementById('tab-panel-' + t);
+        const btn = document.getElementById('tab-btn-' + t);
+        if (t === tabName) {
+          panel.classList.remove('hidden');
+          btn.className = 'py-2 rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/40 flex items-center justify-center gap-1.5 transition';
+        } else {
+          panel.classList.add('hidden');
+          btn.className = 'py-2 rounded-lg text-slate-400 hover:text-white flex items-center justify-center gap-1.5 transition';
+        }
+      });
+      if (tabName === 'staff') renderStaffTab();
+      if (tabName === 'upgrades') renderUpgrades();
+      if (tabName === 'airlines') renderAirlines();
+    }
+
+    // Utility Math Helpers
+    function moveTowards(cur, target, maxDelta) {
+      if (Math.abs(target - cur) <= maxDelta) return target;
+      return cur + Math.sign(target - cur) * maxDelta;
+    }
+
+    function lerpAngle(a, b, t) {
+      const diff = Math.atan2(Math.sin(b - a), Math.cos(b - a));
+      return a + diff * Math.min(1, t);
+    }
+
+    // =========================================================================
+    // 15. BOOTSTRAP & MAIN LOOP
+    // =========================================================================
+    window.onload = function () {
+      resizeCanvas();
+
+      // Create initial Staff (4 Pilots, 6 Ground Crew)
+      for (let i = 0; i < 4; i++) state.pilots.push(createPilot(i));
+      for (let i = 0; i < 6; i++) state.groundCrew.push(createGroundCrew(i));
+
+      // Create initial Passengers inside Terminal
+      for (let i = 0; i < 16; i++) spawnPassenger();
+
+      // Create first two flights (one already parked at Gate A1 in servicing, one landing on 09L for Gate A2!)
+      const firstFlight = createFlight('A1');
+      firstFlight.status = 'SERVICING';
+      firstFlight.x = GATES[0].x;
+      firstFlight.y = GATES[0].y;
+      firstFlight.altitude = 0;
+      firstFlight.angle = Math.PI / 2;
+      GATES[0].jetbridgeExt = 1;
+      if (state.runwayBusyBy === firstFlight.id) state.runwayBusyBy = null;
+
+      // Second flight landing immediately on Runway 09L
+      createFlight('A2');
+
+      renderFIDS();
+      renderStaffTab();
+      renderUpgrades();
+      renderAirlines();
+      updateHUD();
+
+      addATCLog('SYSTEM', '歡迎來到《SkyHub：雲端樞紐》！可隨時切換晴天/夜航/雷雨或點擊飛機與人員檢視。', 'clear');
+
+      let lastTime = performance.now();
+      let uiTick = 0;
+
+      function gameLoop(now) {
+        const dt = Math.min(0.1, (now - lastTime) / 1000);
+        lastTime = now;
+
+        updateSimulation(dt);
+        renderWorld();
+
+        uiTick += dt;
+        if (uiTick >= 0.4) {
+          uiTick = 0;
+          updateHUD();
+          renderFIDS();
+          if (state.selectedEntity) showInspector();
+          if (!document.getElementById('tab-panel-staff').classList.contains('hidden')) {
+            renderStaffTab();
+          }
+        }
+
+        requestAnimationFrame(gameLoop);
+      }
+
       requestAnimationFrame(gameLoop);
-    }
-
-    requestAnimationFrame(gameLoop);
+    };
   </script>
 </body>
 </html>
