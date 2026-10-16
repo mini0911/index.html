@@ -187,7 +187,6 @@
         let lineDisplayName = "";
         let currentStudents = [...defaultStudents];
 
-        // 🌟 嚴格對齊格式：強制傳回 YYYY-MM-DD
         function getTodayDateStr(dateObj = new Date()) {
             const y = dateObj.getFullYear();
             const m = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -262,6 +261,7 @@
             const idInput = document.getElementById('student-id');
             const hintEl = document.getElementById('student-name-hint');
             
+            // 自動帶入先前儲存的學號
             const savedId = localStorage.getItem('movie_club_pref_sid');
             if (savedId) {
                 idInput.value = savedId;
@@ -313,6 +313,7 @@
                 return;
             }
 
+            // 按鈕進入載入模式
             submitBtn.disabled = true;
             btnText.innerText = "正在驗證並處理打卡...";
             btnSpinner.classList.remove('hidden');
@@ -327,7 +328,7 @@
                     return;
                 }
 
-                // 2. 比對動態驗證碼
+                // 2. 比對動態驗證碼 (探測 current_otp_code, prev_otp_code 及替代路徑)
                 const [curSnap, prevSnap, altSnap] = await Promise.all([
                     database.ref('current_otp_code').once('value'),
                     database.ref('prev_otp_code').once('value'),
@@ -366,20 +367,10 @@
                     await bindRef.set(sid);
                 }
 
-                // 4. 🌟 關鍵修正：確保 Firebase 伺服器親口確認寫入完成（消除非同步排隊被強制中斷問題）
+                // 4. 寫入 Firebase 出席資料庫
                 const todayStr = getTodayDateStr();
                 const nowTimeStr = new Date().toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                
-                await new Promise((resolve, reject) => {
-                    database.ref(`movie_club_rollcall/${todayStr}/${sid}`).set(1, (error) => {
-                        if (error) {
-                            console.error("Firebase 寫入被拒絕:", error);
-                            reject(error);
-                        } else {
-                            resolve();
-                        }
-                    });
-                });
+                await database.ref(`movie_club_rollcall/${todayStr}/${sid}`).set(1);
 
                 // 5. 處理本地記憶學號
                 if (rememberChk.checked) {
@@ -390,10 +381,10 @@
 
                 let lineNotified = false;
 
-                // 6. 🌟 雙軌保險：發送給後端 GAS（順便推播官方收據）
+                // 🌟 核心修復：單軌主動推播（僅呼叫後端發送官方收據，不使用 liff.sendMessages，避免觸發對話框二次誤判）
                 if (GAS_WEB_APP_URL && lineUserId && lineUserId.startsWith("U")) {
                     try {
-                        fetch(GAS_WEB_APP_URL, {
+                        await fetch(GAS_WEB_APP_URL, {
                             method: "POST",
                             mode: "no-cors",
                             headers: { "Content-Type": "application/json" },
@@ -411,7 +402,7 @@
                     }
                 }
 
-                // 7. 渲染簽到完成介面
+                // 6. 渲染簽到完成介面
                 document.getElementById('form-section').classList.add('hidden');
                 const successScreen = document.getElementById('success-screen');
                 successScreen.classList.remove('hidden');
@@ -422,16 +413,16 @@
                 document.getElementById('res-time').innerText = `${todayStr} ${nowTimeStr}`;
                 document.getElementById('res-notify-status').innerText = lineNotified ? "已送達聊天室" : "雲端已登記打卡";
 
-                // 🌟 安全等待 2.5 秒，確保所有網路封包確實發送完畢後再關閉視窗
+                // 自動關閉視窗返回聊天室
                 setTimeout(() => {
                     if (window.liff && liff.isInClient && liff.isInClient()) {
                         liff.closeWindow();
                     }
-                }, 2500);
+                }, 1800);
 
             } catch (err) {
                 console.error("簽到過程發生錯誤:", err);
-                displayNotice("⚠️ 寫入資料庫失敗，請確認網路環境或重試！", "error");
+                displayNotice("⚠️ 連線異常，請檢查網路環境或稍候重試！", "error");
                 resetButtonState();
             }
         }
