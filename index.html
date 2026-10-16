@@ -195,7 +195,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
     <script>
-        const defaultStudents = [{"id":"11401011","name":"李浩凱","dept_class":"重機科一忠"},{"id":"11401014","name":"林士閎","dept_class":"重機科一忠"},{"id":"11401024","name":"陳宥廷","dept_class":"重機科一忠"},{"id":"11401025","name":"陳柏安","dept_class":"陳柏安"},{"id":"11401026","name":"陳韋勛","dept_class":"重機科一忠"},{"id":"11401027","name":"陳楷霖","dept_class":"重機科一忠"},{"id":"11401032","name":"劉諶叡","dept_class":"重機科一忠"},{"id":"11402023","name":"許盛鈞","dept_class":"模具科一忠"},{"id":"11402101","name":"林芝羽","dept_class":"模具科一孝"},{"id":"11402103","name":"陳姿瑜","dept_class":"模具科一孝"},{"id":"11402113","name":"邱羿翰","dept_class":"模具科一孝"},{"id":"11404006","name":"王子維","dept_class":"電子科一忠"},{"id":"11404009","name":"王鈞毅","dept_class":"電子科一忠"},{"id":"11404010","name":"何俊廷","dept_class":"電子科一忠"},{"id":"11404011","name":"吳彥霆","dept_class":"電子科一忠"},{"id":"11404029","name":"陳昱傑","dept_class":"電子科一忠"},{"id":"11404110","name":"周杰陽","dept_class":"電子科一孝"},{"id":"11404112","name":"林和穎","dept_class":"電子科一孝"},{"id":"11404113","name":"林柏安","dept_class":"電子科一孝"},{"id":"11404115","name":"柯品均","dept_class":"電子科一孝"},{"id":"11404117","name":"胡俊英","dept_class":"電子科一孝"},{"id":"11404120","name":"張維哲","dept_class":"電子科一孝"},{"id":"11404124","name":"陳庭翊","dept_class":"電子科一孝"},{"id":"11404126","name":"黃禹翔","dept_class":"電子科一孝"},{"id":"11404130","name":"鄭宇恩","dept_class":"電子科一孝"},{"id":"11405011","name":"吳展旭","dept_class":"土木科一忠"},{"id":"11405016","name":"林知炫","dept_class":"土木科一忠"},{"id":"11405110","name":"江孟哲","dept_class":"土木科一孝"},{"id":"11405114","name":"李泓儀","dept_class":"土木科一孝"},{"id":"11405116","name":"林弘裕","dept_class":"土木科一孝"},{"id":"11405120","name":"施劭儒","dept_class":"土木科一孝"},{"id":"11405124","name":"陳一愷","dept_class":"土木科一孝"},{"id":"11405127","name":"廖廷軒","dept_class":"土木科一孝"},{"id":"11406031","name":"鄭可謙","dept_class":"建築科一忠"},{"id":"11406106","name":"劉軒辰","dept_class":"建築科一孝"},{"id":"11406107","name":"鄭恩旻","dept_class":"建築科一孝"},{"id":"11406110","name":"王子豪","dept_class":"建築科一孝"},{"id":"11406117","name":"林小平","dept_class":"建築科一孝"},{"id":"11406122","name":"勒卡而・旮巴Lkal・Kapa","dept_class":"建築科一孝"},{"id":"11407022","name":"曾泓維","dept_class":"汽車科一忠"},{"id":"11407024","name":"黃佑恩","dept_class":"汽車科一忠"},{"id":"11407025","name":"黃靖捷","dept_class":"汽車科一忠"},{"id":"11407106","name":"林宥安","dept_class":"汽車科一孝"},{"id":"11407107","name":"林桓安","dept_class":"汽車科一孝"},{"id":"11407118","name":"陳雋淇","dept_class":"汽車科一孝"},{"id":"11407121","name":"黃澤楷","dept_class":"汽車科一孝"},{"id":"11407124","name":"葉宥宏","dept_class":"汽車科一孝"},{"id":"11407126","name":"蔡承勳","dept_class":"汽車科一孝"},{"id":"11407130","name":"蕭禎賢","dept_class":"汽車科一孝"},{"id":"11408006","name":"朱昱安","dept_class":"冷凍空調科一忠"},{"id":"11408008","name":"吳岱霖","dept_class":"冷凍空調科一忠"},{"id":"11408016","name":"區少升","dept_class":"冷凍空調科一忠"},{"id":"11408020","name":"陳品諺","dept_class":"冷凍空調科一忠"},{"id":"11408026","name":"黃稚鈞","dept_class":"冷凍空調科一忠"},{"id":"11408108","name":"林肯成","dept_class":"冷凍空調科一孝"},{"id":"11408121","name":"彭暐瀚","dept_class":"冷凍空調科一孝"},{"id":"11408122","name":"游俊恩","dept_class":"冷凍空調科一孝"},{"id":"11408136","name":"魏丞宏","dept_class":"冷凍空調科一孝"},{"id":"11409007","name":"周品曦","dept_class":"電機科一忠"},{"id":"11409021","name":"陳秉鉉","dept_class":"電機科一忠"},{"id":"11409022","name":"陳冠愷","dept_class":"電機科一忠"},{"id":"11409029","name":"黃鈺淳","dept_class":"電機科一忠"},{"id":"11409031","name":"黎家齊","dept_class":"電機科一忠"},{"id":"11409104","name":"吳紘宇","dept_class":"電機科一孝"},{"id":"11409108","name":"林佑勳","dept_class":"電機科一孝"},{"id":"11409118","name":"陳柏廷","dept_class":"電機科一孝"},{"id":"11409123","name":"勤正浩","dept_class":"電機科一孝"},{"id":"11409124","name":"楊峻瑋","dept_class":"電機科一孝"},{"id":"11409132","name":"鄭家佑","dept_class":"電機科一孝"},{"id":"11410031","name":"劉威彥","dept_class":"機械科一忠"},{"id":"11410119","name":"陳沅祥","dept_class":"機械科一孝"},{"id":"11410127","name":"楊善閔","dept_class":"機械科一孝"},{"id":"11410131","name":"謝孝霆","dept_class":"機械科一孝"},{"id":"11410134","name":"蘇寅","dept_class":"機械科一孝"},{"id":"11301003","name":"田翊新","dept_class":"重機科二忠"},{"id":"11301022","name":"陳威良","dept_class":"重機科二忠"},{"id":"11301025","name":"陳詠昕","dept_class":"重機科二忠"},{"id":"11301110","name":"林宏鈞","dept_class":"重機科二孝"},{"id":"11202128","name":"游祐程","dept_class":"模具科二忠"},{"id":"11302006","name":"黃晴婠","dept_class":"模具科二忠"},{"id":"11302011","name":"林承旻","dept_class":"模具科二忠"},{"id":"11302016","name":"張華軒","dept_class":"模具科二忠"},{"id":"11302018","name":"許耕源","dept_class":"模具科二忠"},{"id":"11302020","name":"陳冠辰","dept_class":"模具科二忠"},{"id":"11302030","name":"廖梓亦","dept_class":"模具科二忠"},{"id":"11304014","name":"林威融","dept_class":"電子科二忠"},{"id":"11304031","name":"廖澤綱","dept_class":"電子科二忠"},{"id":"11304115","name":"孫廷翰","dept_class":"電子科二孝"},{"id":"11305012","name":"吳庭恩","dept_class":"土木科二忠"},{"id":"11305029","name":"張恩杰","dept_class":"土木科二忠"},{"id":"11306115","name":"李亮瑋","dept_class":"建築科二孝"},{"id":"11306126","name":"詹立宇","dept_class":"建築科二孝"},{"id":"11307011","name":"杜頤宥","dept_class":"汽車科二忠"},{"id":"11307105","name":"宋宥均","dept_class":"汽車科二孝"},{"id":"11307118","name":"陳乙篁","dept_class":"汽車科二孝"},{"id":"11307127","name":"楊家宏","dept_class":"汽車科二孝"},{"id":"11307134","name":"謝杰穎","dept_class":"汽車科二孝"},{"id":"11308004","name":"吳育熙","dept_class":"冷凍空調科二忠"},{"id":"11308011","name":"林品嶧","dept_class":"冷凍空調科二忠"},{"id":"11308015","name":"洪翊倫","dept_class":"冷凍空調科二忠"},{"id":"11308017","name":"張泰祥","dept_class":"冷凍空調科二忠"},{"id":"11308021","name":"陳宣叡","dept_class":"冷凍空調科二忠"},{"id":"11308026","name":"黃文昇","dept_class":"冷凍空調科二忠"},{"id":"11309108","name":"林言家","dept_class":"電機科二孝"},{"id":"11309109","name":"林亞佐","dept_class":"電機科二孝"},{"id":"11309110","name":"林昱丞","dept_class":"電機科二孝"},{"id":"11309113","name":"范宸維","dept_class":"電機科二孝"},{"id":"11309124","name":"黃鴻緯","dept_class":"電機科二孝"},{"id":"11309129","name":"蔣承澤","dept_class":"電機科二孝"},{"id":"11309130","name":"鄧明鈞","dept_class":"電機科二孝"},{"id":"11309131","name":"鄭至勛","dept_class":"電機科二孝"},{"id":"11310113","name":"姚元博","dept_class":"機械科二孝"},{"id":"11310115","name":"唐維壕","dept_class":"機械科二孝"},{"id":"11310120","name":"陳汝睿","dept_class":"機械科二孝"},{"id":"11310125","name":"曾柏翰","dept_class":"機械科二孝"},{"id":"11315004","name":"邱于哲","dept_class":"機械加工科二忠"},{"id":"11315006","name":"張偉倫","dept_class":"機械加工科二忠"},{"id":"11315008","name":"許宸睿","dept_class":"機械加工科二忠"},{"id":"11315012","name":"葉宇宸","dept_class":"機械加工科二忠"},{"id":"11401008","name":"吳悜瑋","dept_class":"重機科一忠"},{"id":"11401012","name":"李博丞","dept_class":"重機科一忠"},{"id":"11401022","name":"郭韋良","dept_class":"重機科一忠"},{"id":"11402005","name":"彭翊荃","dept_class":"模具科一忠"},{"id":"11402012","name":"林宗德","dept_class":"模具科一忠"},{"id":"11402014","name":"林羿廷","dept_class":"模具科一忠"},{"id":"11402016","name":"夏子峻","dept_class":"模具科一忠"},{"id":"11402018","name":"張允齊","dept_class":"模具科一忠"},{"id":"11402022","name":"莊博鈞","dept_class":"模具科一忠"},{"id":"11402105","name":"曾怡婷","dept_class":"模具科一孝"},{"id":"11402114","name":"施閔傑","dept_class":"模具科一孝"},{"id":"11402123","name":"黃昕亞","dept_class":"模具科一孝"},{"id":"11402129","name":"鄭佳侑","dept_class":"模具科一孝"},{"id":"11403015","name":"林威漢","dept_class":"鑄造科一忠"},{"id":"11403019","name":"陳威旬","dept_class":"鑄造科一忠"},{"id":"11403025","name":"蔡政祐","dept_class":"鑄造科一忠"},{"id":"11403102","name":"白承叡","dept_class":"鑄造科一孝"},{"id":"11403113","name":"張鈞崴","dept_class":"鑄造科一孝"},{"id":"11404111","name":"林辰祐","dept_class":"電子科一孝"},{"id":"11404118","name":"高佳瑋","dept_class":"電子科一孝"},{"id":"11404119","name":"張祐豪","dept_class":"電子科一孝"},{"id":"11405101","name":"王逸蓁","dept_class":"土木科一孝"},{"id":"11405107","name":"羅苡甄","dept_class":"土木科一孝"},{"id":"11405113","name":"李丞恩","dept_class":"土木科一孝"},{"id":"11406013","name":"杜承恩","dept_class":"建築科一忠"},{"id":"11406021","name":"陳柏俊","dept_class":"建築科一忠"},{"id":"11406113","name":"李武駿","dept_class":"建築科一孝"},{"id":"11406116","name":"周育銘","dept_class":"建築科一孝"},{"id":"11406126","name":"陳宥宇","dept_class":"建築科一孝"},{"id":"11406128","name":"蔡翊展","dept_class":"建築科一孝"},{"id":"11406131","name":"簡震","dept_class":"建築科一孝"},{"id":"11406133","name":"蘇品齊","dept_class":"建築科一孝"},{"id":"11407018","name":"陳宇幟","dept_class":"汽車科一忠"},{"id":"11407029","name":"蔡承翰","dept_class":"汽車科一忠"},{"id":"11407112","name":"張舜傑","dept_class":"汽車科一孝"},{"id":"11407132","name":"簡子淇","dept_class":"汽車科一孝"},{"id":"11408017","name":"許文駿","dept_class":"冷凍空調科一忠"},{"id":"11408023","name":"曾宇謙","dept_class":"冷凍空調科一忠"},{"id":"11408118","name":"陳劭恩","dept_class":"冷凍空調科一孝"},{"id":"11408119","name":"陳均瑋","dept_class":"冷凍空調科一孝"},{"id":"11408132","name":"鄭名峰","dept_class":"冷凍空調科一孝"},{"id":"11409001","name":"王彦博","dept_class":"電機科一忠"},{"id":"11409018","name":"張哲睿","dept_class":"電機科一忠"},{"id":"11409024","name":"陳致嘉","dept_class":"電機科一忠"},{"id":"11409028","name":"黃莛閎","dept_class":"電機科一忠"},{"id":"11409103","name":"江冠皜","dept_class":"電機科一孝"},{"id":"11409105","name":"李杰恩","dept_class":"電機科一孝"},{"id":"11409106","name":"李炘育","dept_class":"電機科一孝"},{"id":"11409107","name":"周宣瑋","dept_class":"電機科一孝"},{"id":"11409120","name":"曾雋翰","dept_class":"電機科一孝"},{"id":"11310029","name":"馮宇承","dept_class":"機械科二忠"},{"id":"11310034","name":"蔡新澤","dept_class":"機械科二忠"},{"id":"11310104","name":"吳秉霖","dept_class":"機械科二孝"},{"id":"11310107","name":"谷應絃","dept_class":"機械科二孝"},{"id":"11310110","name":"林柏安","dept_class":"機械科二孝"},{"id":"11310111","name":"邱少輔","dept_class":"機械科二孝"},{"id":"11310132","name":"潘廖賢","dept_class":"機械科二孝"},{"id":"11315001","name":"王靖宇","dept_class":"機械加工科二忠"},{"id":"11315007","name":"梁詠翔","dept_class":"機械加工科二忠"},{"id":"11501001","name":"余明霖","dept_class":"機械加工科二忠"}];
+        const defaultStudents = [{"id":"11401011","name":"李浩凱","dept_class":"重機科一忠"},{"id":"11401014","name":"林士閎","dept_class":"重機科一忠"},{"id":"11401024","name":"陳宥廷","dept_class":"重機科一忠"},{"id":"11401025","name":"陳柏安","dept_class":"陳柏安"},{"id":"11401026","name":"陳韋勛","dept_class":"重機科一忠"},{"id":"11401027","name":"陳楷霖","dept_class":"重機科一忠"},{"id":"11401032","name":"劉諶叡","dept_class":"重機科一忠"},{"id":"11402023","name":"許盛鈞","dept_class":"模具科一忠"},{"id":"11402101","name":"林芝羽","dept_class":"模具科一孝"},{"id":"11402103","name":"陳姿瑜","dept_class":"模具科一孝"},{"id":"11402113","name":"邱羿翰","dept_class":"模具科一孝"},{"id":"11404006","name":"王子維","dept_class":"電子科一忠"},{"id":"11404009","name":"王鈞毅","dept_class":"電子科一忠"},{"id":"11404010","name":"何俊廷","dept_class":"電子科一忠"},{"id":"11404011","name":"吳彥霆","dept_class":"電子科一忠"},{"id":"11404029","name":"陳昱傑","dept_class":"電子科一忠"},{"id":"11404110","name":"周杰陽","dept_class":"電子科一孝"},{"id":"11404112","name":"林和穎","dept_class":"電子科一孝"},{"id":"11404113","name":"林柏安","dept_class":"電子科一孝"},{"id":"11404115","name":"柯品均","dept_class":"電子科一孝"},{"id":"11404117","name":"胡俊英","dept_class":"電子科一孝"},{"id":"11404120","name":"張維哲","dept_class":"電子科一孝"},{"id":"11404124","name":"陳庭翊","dept_class":"電子科一孝"},{"id":"11404126","name":"黃禹翔","dept_class":"電子科一孝"},{"id":"11404130","name":"鄭宇恩","dept_class":"電子科一孝"},{"id":"11405011","name":"吳展旭","dept_class":"土木科一忠"},{"id":"11405016","name":"林知炫","dept_class":"土木科一忠"},{"id":"11405110","name":"江孟哲","dept_class":"土木科一孝"},{"id":"11405114","name":"李泓儀","dept_class":"土木科一孝"},{"id":"11405116","name":"林弘裕","dept_class":"土木科一孝"},{"id":"11405120","name":"施劭儒","dept_class":"土木科一孝"},{"id":"11405124","name":"陳一愷","dept_class":"土木科一孝"},{"id":"11405127","name":"廖廷軒","dept_class":"土木科一孝"},{"id":"11406031","name":"鄭可謙","dept_class":"建築科一忠"},{"id":"11406106","name":"劉軒辰","dept_class":"建築科一孝"},{"id":"11406107","name":"鄭恩旻","dept_class":"建築科一孝"},{"id":"11406110","name":"王子豪","dept_class":"建築科一孝"},{"id":"11406117","name":"林小平","dept_class":"建築科一孝"},{"id":"11406122","name":"勒卡而・旮巴Lkal・Kapa","dept_class":"建築科一孝"},{"id":"11407022","name":"曾泓維","dept_class":"汽車科一忠"},{"id":"11407024","name":"黃佑恩","dept_class":"汽車科一忠"},{"id":"11407025","name":"黃靖捷","dept_class":"汽車科一忠"},{"id":"11407106","name":"林宥安","dept_class":"汽車科一孝"},{"id":"11407107","name":"林桓安","dept_class":"汽車科一孝"},{"id":"11407108","name":"林泰澄","dept_class":"汽車科一孝"},{"id":"11407118","name":"陳雋淇","dept_class":"汽車科一孝"},{"id":"11407121","name":"黃澤楷","dept_class":"汽車科一孝"},{"id":"11407124","name":"葉宥宏","dept_class":"汽車科一孝"},{"id":"11407126","name":"蔡承勳","dept_class":"汽車科一孝"},{"id":"11407130","name":"蕭禎賢","dept_class":"汽車科一孝"},{"id":"11408006","name":"朱昱安","dept_class":"冷凍空調科一忠"},{"id":"11408008","name":"吳岱霖","dept_class":"冷凍空調科一忠"},{"id":"11408016","name":"區少升","dept_class":"冷凍空調科一忠"},{"id":"11408020","name":"陳品諺","dept_class":"冷凍空調科一忠"},{"id":"11408026","name":"黃稚鈞","dept_class":"冷凍空調科一忠"},{"id":"11408108","name":"林肯成","dept_class":"冷凍空調科一孝"},{"id":"11408121","name":"彭暐瀚","dept_class":"冷凍空調科一孝"},{"id":"11408122","name":"游俊恩","dept_class":"冷凍空調科一孝"},{"id":"11408136","name":"魏丞宏","dept_class":"冷凍空調科一孝"},{"id":"11409007","name":"周品曦","dept_class":"電機科一忠"},{"id":"11409021","name":"陳秉鉉","dept_class":"電機科一忠"},{"id":"11409022","name":"陳冠愷","dept_class":"電機科一忠"},{"id":"11409029","name":"黃鈺淳","dept_class":"電機科一忠"},{"id":"11409031","name":"黎家齊","dept_class":"電機科一忠"},{"id":"11409104","name":"吳紘宇","dept_class":"電機科一孝"},{"id":"11409108","name":"林佑勳","dept_class":"電機科一孝"},{"id":"11409118","name":"陳柏廷","dept_class":"電機科一孝"},{"id":"11409123","name":"勤正浩","dept_class":"電機科一孝"},{"id":"11409124","name":"楊峻瑋","dept_class":"電機科一孝"},{"id":"11409132","name":"鄭家佑","dept_class":"電機科一孝"},{"id":"11410031","name":"劉威彥","dept_class":"機械科一忠"},{"id":"11410119","name":"陳沅祥","dept_class":"機械科一孝"},{"id":"11410127","name":"楊善閔","dept_class":"機械科一孝"},{"id":"11410131","name":"謝孝霆","dept_class":"機械科一孝"},{"id":"11410134","name":"蘇寅","dept_class":"機械科一孝"},{"id":"11301003","name":"田翊新","dept_class":"重機科二忠"},{"id":"11301022","name":"陳威良","dept_class":"重機科二忠"},{"id":"11301025","name":"陳詠昕","dept_class":"重機科二忠"},{"id":"11301110","name":"林宏鈞","dept_class":"重機科二孝"},{"id":"11202128","name":"游祐程","dept_class":"模具科二忠"},{"id":"11302006","name":"黃晴婠","dept_class":"模具科二忠"},{"id":"11302011","name":"林承旻","dept_class":"模具科二忠"},{"id":"11302016","name":"張華軒","dept_class":"模具科二忠"},{"id":"11302018","name":"許耕源","dept_class":"模具科二忠"},{"id":"11302020","name":"陳冠辰","dept_class":"模具科二忠"},{"id":"11302030","name":"廖梓亦","dept_class":"模具科二忠"},{"id":"11304014","name":"林威融","dept_class":"電子科二忠"},{"id":"11304031","name":"廖澤綱","dept_class":"電子科二忠"},{"id":"11304115","name":"孫廷翰","dept_class":"電子科二孝"},{"id":"11305012","name":"吳庭恩","dept_class":"土木科二忠"},{"id":"11305029","name":"張恩杰","dept_class":"土木科二忠"},{"id":"11306115","name":"李亮瑋","dept_class":"建築科二孝"},{"id":"11306126","name":"詹立宇","dept_class":"建築科二孝"},{"id":"11307011","name":"杜頤宥","dept_class":"汽車科二忠"},{"id":"11307105","name":"宋宥均","dept_class":"汽車科二孝"},{"id":"11307118","name":"陳乙篁","dept_class":"汽車科二孝"},{"id":"11307127","name":"楊家宏","dept_class":"汽車科二孝"},{"id":"11307134","name":"謝杰穎","dept_class":"汽車科二孝"},{"id":"11308004","name":"吳育熙","dept_class":"冷凍空調科二忠"},{"id":"11308011","name":"林品嶧","dept_class":"冷凍空調科二忠"},{"id":"11308015","name":"洪翊倫","dept_class":"冷凍空調科二忠"},{"id":"11308017","name":"張泰祥","dept_class":"冷凍空調科二忠"},{"id":"11308021","name":"陳宣叡","dept_class":"冷凍空調科二忠"},{"id":"11308026","name":"黃文昇","dept_class":"冷凍空調科二忠"},{"id":"11309108","name":"林言家","dept_class":"電機科二孝"},{"id":"11309109","name":"林亞佐","dept_class":"電機科二孝"},{"id":"11309110","name":"林昱丞","dept_class":"電機科二孝"},{"id":"11309113","name":"范宸維","dept_class":"電機科二孝"},{"id":"11309124","name":"黃鴻緯","dept_class":"電機科二孝"},{"id":"11309129","name":"蔣承澤","dept_class":"電機科二孝"},{"id":"11309130","name":"鄧明鈞","dept_class":"電機科二孝"},{"id":"11309131","name":"鄭至勛","dept_class":"電機科二孝"},{"id":"11310113","name":"姚元博","dept_class":"機械科二孝"},{"id":"11310115","name":"唐維壕","dept_class":"機械科二孝"},{"id":"11310120","name":"陳汝睿","dept_class":"機械科二孝"},{"id":"11310125","name":"曾柏翰","dept_class":"機械科二孝"},{"id":"11315004","name":"邱于哲","dept_class":"機械加工科二忠"},{"id":"11315006","name":"張偉倫","dept_class":"機械加工科二忠"},{"id":"11315008","name":"許宸睿","dept_class":"機械加工科二忠"},{"id":"11315012","name":"葉宇宸","dept_class":"機械加工科二忠"},{"id":"11401008","name":"吳悜瑋","dept_class":"重機科一忠"},{"id":"11401012","name":"李博丞","dept_class":"重機科一忠"},{"id":"11401022","name":"郭韋良","dept_class":"重機科一忠"},{"id":"11402005","name":"彭翊荃","dept_class":"模具科一忠"},{"id":"11402012","name":"林宗德","dept_class":"模具科一忠"},{"id":"11402014","name":"林羿廷","dept_class":"模具科一忠"},{"id":"11402016","name":"夏子峻","dept_class":"模具科一忠"},{"id":"11402018","name":"張允齊","dept_class":"模具科一忠"},{"id":"11402022","name":"莊博鈞","dept_class":"模具科一忠"},{"id":"11402105","name":"曾怡婷","dept_class":"模具科一孝"},{"id":"11402114","name":"施閔傑","dept_class":"模具科一孝"},{"id":"11402123","name":"黃昕亞","dept_class":"模具科一孝"},{"id":"11402129","name":"鄭佳侑","dept_class":"模具科一孝"},{"id":"11403015","name":"林威漢","dept_class":"鑄造科一忠"},{"id":"11403019","name":"陳威旬","dept_class":"鑄造科一忠"},{"id":"11403025","name":"蔡政祐","dept_class":"鑄造科一忠"},{"id":"11403102","name":"白承叡","dept_class":"鑄造科一孝"},{"id":"11403113","name":"張鈞崴","dept_class":"鑄造科一孝"},{"id":"11404111","name":"林辰祐","dept_class":"電子科一孝"},{"id":"11404118","name":"高佳瑋","dept_class":"電子科一孝"},{"id":"11404119","name":"張祐豪","dept_class":"電子科一孝"},{"id":"11405101","name":"王逸蓁","dept_class":"土木科一孝"},{"id":"11405107","name":"羅苡甄","dept_class":"土木科一孝"},{"id":"11405113","name":"李丞恩","dept_class":"土木科一孝"},{"id":"11406013","name":"杜承恩","dept_class":"建築科一忠"},{"id":"11406021","name":"陳柏俊","dept_class":"建築科一忠"},{"id":"11406113","name":"李武駿","dept_class":"建築科一孝"},{"id":"11406116","name":"周育銘","dept_class":"建築科一孝"},{"id":"11406126","name":"陳宥宇","dept_class":"建築科一孝"},{"id":"11406128","name":"蔡翊展","dept_class":"建築科一孝"},{"id":"11406131","name":"簡震","dept_class":"建築科一孝"},{"id":"11406133","name":"蘇品齊","dept_class":"建築科一孝"},{"id":"11407018","name":"陳宇幟","dept_class":"汽車科一忠"},{"id":"11407029","name":"蔡承翰","dept_class":"汽車科一忠"},{"id":"11407112","name":"張舜傑","dept_class":"汽車科一孝"},{"id":"11407132","name":"簡子淇","dept_class":"汽車科一孝"},{"id":"11408017","name":"許文駿","dept_class":"冷凍空調科一忠"},{"id":"11408023","name":"曾宇謙","dept_class":"冷凍空調科一忠"},{"id":"11408118","name":"陳劭恩","dept_class":"冷凍空調科一孝"},{"id":"11408119","name":"陳均瑋","dept_class":"冷凍空調科一孝"},{"id":"11408132","name":"鄭名峰","dept_class":"冷凍空調科一孝"},{"id":"11409001","name":"王彦博","dept_class":"電機科一忠"},{"id":"11409018","name":"張哲睿","dept_class":"電機科一忠"},{"id":"11409024","name":"陳致嘉","dept_class":"電機科一忠"},{"id":"11409028","name":"黃莛閎","dept_class":"電機科一忠"},{"id":"11409103","name":"江冠皜","dept_class":"電機科一孝"},{"id":"11409105","name":"李杰恩","dept_class":"電機科一孝"},{"id":"11409106","name":"李炘育","dept_class":"電機科一孝"},{"id":"11409107","name":"周宣瑋","dept_class":"電機科一孝"},{"id":"11409120","name":"曾雋翰","dept_class":"電機科一孝"},{"id":"11310029","name":"馮宇承","dept_class":"機械科二忠"},{"id":"11310034","name":"蔡新澤","dept_class":"機械科二忠"},{"id":"11310104","name":"吳秉霖","dept_class":"機械科二孝"},{"id":"11310107","name":"谷應絃","dept_class":"機械科二孝"},{"id":"11310110","name":"林柏安","dept_class":"機械科二孝"},{"id":"11310111","name":"邱少輔","dept_class":"機械科二孝"},{"id":"11310132","name":"潘廖賢","dept_class":"機械科二孝"},{"id":"11315001","name":"王靖宇","dept_class":"機械加工科二忠"},{"id":"11315007","name":"梁詠翔","dept_class":"機械加工科二忠"},{"id":"11501001","name":"余明霖","dept_class":"機械加工科二忠"}];
 
         let currentStudents = [];
         let customConfig = {
@@ -211,7 +211,6 @@
         let settingsRef = null;
         let lastAttendanceRootData = null;
 
-        // 提取月日特徵（例如 "2026-10-16" 轉為 "10-16"，"10/16" 轉為 "10-16"）
         function extractMonthDay(str) {
             if (!str) return '';
             const clean = String(str).trim().replace(/\//g, '-');
@@ -222,26 +221,6 @@
                 return `${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
             }
             return clean;
-        }
-
-        // 雙向日期歸一化晶片
-        function normalizeDateStr(dateStr) {
-            if (!dateStr) return '';
-            const cleanStr = String(dateStr).trim().replace(/\//g, '-');
-            const parts = cleanStr.split('-');
-            const currentYear = new Date().getFullYear();
-
-            if (parts.length === 3) {
-                const y = parts[0];
-                const m = parts[1].padStart(2, '0');
-                const d = parts[2].padStart(2, '0');
-                return `${y}-${m}-${d}`;
-            } else if (parts.length === 2) {
-                const m = parts[0].padStart(2, '0');
-                const d = parts[1].padStart(2, '0');
-                return `${currentYear}-${m}-${d}`;
-            }
-            return dateStr;
         }
 
         function initTable() {
@@ -269,7 +248,6 @@
             document.getElementById('view-title').innerText = customConfig.title;
             document.getElementById('view-subtitle').innerText = customConfig.subtitle;
             
-            // 更新 8 個日期標頭（顯示 MM/DD）
             for(let i = 0; i < 8; i++) {
                 const el = document.getElementById(`th-d${i}`);
                 if(el && customConfig.dates[i]) {
@@ -343,7 +321,6 @@
 
                 debugEl.innerHTML = "📡 [通道連接中] 正在與雲端 Firebase 建立 WebSocket 實時加密通訊...";
 
-                // 🌐 1. 監聽雲端設定同步
                 settingsRef.on('value', (snapshot) => {
                     const cloudConfig = snapshot.val();
                     if (cloudConfig) {
@@ -373,7 +350,6 @@
                     }
                 });
 
-                // 🌐 2. 監聽點名實時打卡數據
                 dbRef.on('value', (snapshot) => {
                     lastAttendanceRootData = snapshot.val();
                     syncAttendanceData(lastAttendanceRootData);
@@ -389,41 +365,36 @@
             }
         }
 
-        // 🌟 核心修正：超強韌純數字比對（徹底免疫符號干擾，不再被大螢幕口令洗掉打勾）
+        // 🌟 核心過濾護盾：排除非日期節點，純數字比對永久鎖定打勾
         function syncAttendanceData(rootData) {
-            // 1. 先重置記憶體狀態槽
-            currentStudents.forEach(s => {
-                s.attendance = {};
-                for (let i = 0; i < 8; i++) {
-                    s.attendance[`d${i}`] = 0;
-                }
+            if (!rootData || typeof rootData !== 'object') return;
+
+            // 1. 嚴格過濾：過濾掉 current_code 與任何非日期的鍵值
+            const validDateKeys = Object.keys(rootData).filter(k => {
+                return k !== "current_code" && /\d+/.test(k);
             });
 
-            if (!rootData || typeof rootData !== 'object') {
-                renderTable();
-                calculateStats();
-                return;
-            }
+            // 2. 乾淨重置本機狀態槽
+            currentStudents.forEach(s => {
+                s.attendance = {};
+                for (let i = 0; i < 8; i++) s.attendance[`d${i}`] = 0;
+            });
 
-            // 2. 取出 Firebase 所有真實存在的打卡日期節點
-            const dbDateKeys = Object.keys(rootData).filter(k => k !== "current_code");
-
-            // 3. 超強韌比對：提取月日純數字特徵（例如 "2026-10-16" -> "1016"，"10/16" -> "1016"）
-            dbDateKeys.forEach(dbDate => {
+            // 3. 提取末 4 碼純數字（例如 "1016"）精確匹配打卡
+            validDateKeys.forEach(dbDate => {
                 const dayRecords = rootData[dbDate];
                 if (!dayRecords || typeof dayRecords !== 'object') return;
 
-                // 提取月與日之 4 位數字（如 1016）
-                const dbMD = extractMonthDay(dbDate).replace(/\D/g, '');
+                const dbDigits = dbDate.replace(/\D/g, ''); 
+                const dbMD = dbDigits.slice(-4); // 取月日 4 碼
 
                 customConfig.dates.forEach((panelDate, colIndex) => {
-                    const panelMD = extractMonthDay(panelDate).replace(/\D/g, '');
+                    const panelDigits = String(panelDate).replace(/\D/g, '');
+                    const panelMD = panelDigits.slice(-4); // 取月日 4 碼
 
-                    // 精準數字匹配
                     if (dbMD && panelMD && dbMD === panelMD) {
-                        Object.keys(dayRecords).forEach(studentId => {
-                            const cleanSid = String(studentId).trim();
-                            const student = currentStudents.find(s => s.id === cleanSid);
+                        Object.keys(dayRecords).forEach(sid => {
+                            const student = currentStudents.find(s => s.id === String(sid).trim());
                             if (student) {
                                 student.attendance[`d${colIndex}`] = 1;
                             }
@@ -515,7 +486,6 @@
         }
         function closeConfigModal() { document.getElementById('config-modal').style.display = 'none'; }
 
-        // ☁️ 儲存變更：修復本地立即反應與雲端推送雙軌
         function saveConfig() {
             const saveBtn = document.getElementById('btn-save-cfg');
             const originalText = saveBtn.innerText;
@@ -536,7 +506,6 @@
                 rawStudentsList: rawList
             };
 
-            // 1. 本地立即生效
             customConfig.title = updatedConfig.title;
             customConfig.subtitle = updatedConfig.subtitle;
             customConfig.dates = updatedConfig.dates;
@@ -558,7 +527,6 @@
                 initFirebaseConnection();
             }
 
-            // 2. 寫入雲端節點 movie_club_settings
             if (database) {
                 database.ref('movie_club_settings').set(updatedConfig).then(() => {
                     saveBtn.innerText = originalText;
@@ -578,7 +546,6 @@
             }
         }
 
-        // ☁️ 還原預設
         function resetToOfficialDefault() {
             if(confirm("確定要將雲端設定還原成內建預設值嗎？（其他裝置也會同步重設）")) { 
                 const defaultRaw = defaultStudents.map(s => `${s.id}\t${s.name}\t${s.dept_class}`).join("\n");
