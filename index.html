@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>電影欣賞社 - 實時點名監控看板</title>
+    <title>電影欣賞社</title>
     <style>
         :root {
             --primary: #2b4c7e;
@@ -62,7 +62,7 @@
         .chk-btn:checked { 
             background-color: var(--success); 
             border-color: var(--success); 
-            opacity: 1; 
+            opacity: 1;
             animation: popAnim 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
         }
         .chk-btn:checked::after { 
@@ -168,7 +168,7 @@
     <!-- ⚙️ 萬用大設定面板彈出式視窗層 -->
     <div class="modal-overlay" id="config-modal">
         <div class="modal-box">
-            <h2>⚙ 點名系統大自訂面版</h2>
+            <h2>⚙️️ 點名系統大自訂面版</h2>
             <div class="form-group"><label>網頁大標題</label><input type="text" id="cfg-title"></div>
             <div class="form-group"><label>網頁副標題說明</label><input type="text" id="cfg-subtitle"></div>
             <div class="form-group">
@@ -211,17 +211,24 @@
         let settingsRef = null;
         let lastAttendanceRootData = null;
 
-        // 提取月日特徵（例如 "2026-10-16" 轉為 "10-16"，"10/16" 轉為 "10-16"）
-        function extractMonthDay(str) {
-            if (!str) return '';
-            const clean = String(str).trim().replace(/\//g, '-');
-            const parts = clean.split('-');
-            if (parts.length >= 3) {
-                return `${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+        // 🎯 雙向日期歸一化晶片：不論格式為何，一律強制轉換成標準 YYYY-MM-DD
+        function normalizeDateStr(dateStr) {
+            if (!dateStr) return '';
+            const cleanStr = dateStr.trim().replace(/\//g, '-');
+            const parts = cleanStr.split('-');
+            const currentYear = new Date().getFullYear();
+
+            if (parts.length === 3) {
+                const y = parts[0];
+                const m = parts[1].padStart(2, '0');
+                const d = parts[2].padStart(2, '0');
+                return `${y}-${m}-${d}`;
             } else if (parts.length === 2) {
-                return `${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
+                const m = parts[0].padStart(2, '0');
+                const d = parts[1].padStart(2, '0');
+                return `${currentYear}-${m}-${d}`;
             }
-            return clean;
+            return dateStr;
         }
 
         function initTable() {
@@ -249,11 +256,12 @@
             document.getElementById('view-title').innerText = customConfig.title;
             document.getElementById('view-subtitle').innerText = customConfig.subtitle;
             
-            for (let i = 0; i < 8; i++) {
+            // 更新 8 個日期標頭（顯示 MM/DD）
+            for(let i=0; i<8; i++) {
                 const el = document.getElementById(`th-d${i}`);
-                if (el && customConfig.dates[i]) {
-                    const md = extractMonthDay(customConfig.dates[i]);
-                    el.innerText = md.replace('-', '/');
+                if(el && customConfig.dates[i]) {
+                    const norm = normalizeDateStr(customConfig.dates[i]);
+                    el.innerText = norm.substring(5).replace('-', '/');
                 }
             }
             updateClassFilterDropdown();
@@ -261,37 +269,37 @@
             calculateStats();
         }
 
+        // 🌟 徹底解決名單解析與繼承 Bug
         function parseRawStudents(rawText) {
-            const attendanceCache = {};
-            currentStudents.forEach(s => {
-                if (s.attendance) attendanceCache[s.id] = s.attendance;
-            });
-
             if (!rawText || !rawText.trim()) {
                 currentStudents = JSON.parse(JSON.stringify(defaultStudents));
-            } else {
-                const lines = rawText.split("\n"); 
-                const newList = [];
-                lines.forEach(line => {
-                    let cleanLine = line.trim(); 
-                    if (!cleanLine) return;
-                    let cells = cleanLine.split(/[\t,\s]+/).filter(c => c.trim() !== "");
-                    if (cells.length >= 2) {
-                        newList.push({ 
-                            id: cells[0].trim(), 
-                            name: cells[1].trim(), 
-                            dept_class: cells[2] ? cells[2].trim() : "未分配班級", 
-                            attendance: {} 
-                        });
-                    }
-                });
-                currentStudents = newList.length > 0 ? newList : JSON.parse(JSON.stringify(defaultStudents));
+                return;
             }
-
-            // 嚴格保留歷史打卡記憶
-            currentStudents.forEach(s => {
-                s.attendance = attendanceCache[s.id] || {};
+            const lines = rawText.split("\n"); 
+            const newList = [];
+            lines.forEach(line => {
+                let cleanLine = line.trim(); 
+                if (!cleanLine) return;
+                let cells = cleanLine.split(/[\t,\s]+/).filter(c => c.trim() !== "");
+                if (cells.length >= 2) {
+                    newList.push({ 
+                        id: cells[0].trim(), 
+                        name: cells[1].trim(), 
+                        dept_class: cells[2] ? cells[2].trim() : "未分配班級", 
+                        attendance: {} 
+                    });
+                }
             });
+
+            if (newList.length > 0) {
+                newList.forEach(ns => { 
+                    const old = currentStudents.find(o => o.id === ns.id); 
+                    ns.attendance = old ? old.attendance : {}; 
+                });
+                currentStudents = newList;
+            } else {
+                currentStudents = JSON.parse(JSON.stringify(defaultStudents));
+            }
         }
 
         function initFirebaseConnection() {
@@ -308,15 +316,17 @@
                 if (firebase.apps.length > 0) {
                     firebase.app().delete().then(() => {
                         startFirebaseListening();
-                    }).catch(() => {
+                    }).catch(e => {
+                        console.warn(e);
                         startFirebaseListening();
                     });
                 } else {
                     startFirebaseListening();
                 }
+
             } catch(err) {
                 console.error(err);
-                debugEl.innerHTML = "❌ [格式錯誤] 設定面板中的 Firebase 網址不正確。";
+                debugEl.innerHTML = "❌ [格式錯誤] 設定面板中的 Firebase 網址不正確，請重新檢查。";
             }
         }
 
@@ -330,40 +340,31 @@
 
                 debugEl.innerHTML = "📡 [通道連接中] 正在與雲端 Firebase 建立 WebSocket 實時加密通訊...";
 
-                // 🌐 1. 監聽點名實時打卡數據
+                // 🌐 1. 監聽雲端設定同步（任何裝置更動設定，所有瀏覽器即時同步生效）
+                settingsRef.on('value', (snapshot) => {
+                    const cloudConfig = snapshot.val();
+                    if (cloudConfig) {
+                        if (cloudConfig.title) customConfig.title = cloudConfig.title;
+                        if (cloudConfig.subtitle) customConfig.subtitle = cloudConfig.subtitle;
+                        if (cloudConfig.dates && Array.isArray(cloudConfig.dates)) customConfig.dates = cloudConfig.dates;
+                        if (cloudConfig.rawStudentsList) {
+                            customConfig.rawStudentsList = cloudConfig.rawStudentsList;
+                            localStorage.setItem('movie_club_custom_students', cloudConfig.rawStudentsList);
+                            parseRawStudents(cloudConfig.rawStudentsList);
+                        }
+                        applySettingsToUI();
+                        if (lastAttendanceRootData) syncAttendanceData(lastAttendanceRootData);
+                    }
+                });
+
+                // 🌐 2. 監聽點名實時打卡數據
                 dbRef.on('value', (snapshot) => {
                     lastAttendanceRootData = snapshot.val();
                     syncAttendanceData(lastAttendanceRootData);
                     const now = new Date();
                     debugEl.innerHTML = `⚡ [LINE 實時同步成功] 安全基地台運作良好！最後同步更新時間：${now.toLocaleTimeString()}`;
                 }, (error) => {
-                    debugEl.innerHTML = "❌ [權限異常] 無法讀取資料，請確認 Firebase Rules 規則是否開放。";
-                });
-
-                // 🌐 2. 監聽雲端設定同步（只在設定真的不同時才切換）
-                settingsRef.on('value', (snapshot) => {
-                    const cloudConfig = snapshot.val();
-                    if (cloudConfig) {
-                        let needApply = false;
-                        if (cloudConfig.title && cloudConfig.title !== customConfig.title) {
-                            customConfig.title = cloudConfig.title;
-                            needApply = true;
-                        }
-                        if (cloudConfig.subtitle && cloudConfig.subtitle !== customConfig.subtitle) {
-                            customConfig.subtitle = cloudConfig.subtitle;
-                            needApply = true;
-                        }
-                        if (cloudConfig.rawStudentsList && cloudConfig.rawStudentsList !== customConfig.rawStudentsList) {
-                            customConfig.rawStudentsList = cloudConfig.rawStudentsList;
-                            localStorage.setItem('movie_club_custom_students', cloudConfig.rawStudentsList);
-                            parseRawStudents(cloudConfig.rawStudentsList);
-                            needApply = true;
-                        }
-                        if (needApply) {
-                            applySettingsToUI();
-                            if (lastAttendanceRootData) syncAttendanceData(lastAttendanceRootData);
-                        }
-                    }
+                    debugEl.innerHTML = "❌ [權限異常] 無法讀取資料，請確認 Firebase Rules 規則是否已發布為測試模式 (true)。";
                 });
 
             } catch (err) {
@@ -372,41 +373,38 @@
             }
         }
 
-        // 🌟 核心防禦：增量比對，拔除強制洗白為 0 的邏輯
         function syncAttendanceData(rootData) {
-            if (!rootData || typeof rootData !== 'object') return;
-
-            // 確保每位學生的 attendance 物件完整（不強制清除原有數值）
             currentStudents.forEach(s => {
                 if (!s.attendance) s.attendance = {};
-            });
-
-            // 取出所有點名日期節點
-            const dbDateKeys = Object.keys(rootData).filter(k => k !== "current_code");
-
-            // 雙向寬鬆匹配，打上勾勾並永久常駐
-            dbDateKeys.forEach(dbDate => {
-                const dbMD = extractMonthDay(dbDate);
-                const cleanDbDate = String(dbDate).trim().replace(/\//g, '-');
-                const dayRecords = rootData[dbDate];
-                if (!dayRecords || typeof dayRecords !== 'object') return;
-
-                customConfig.dates.forEach((panelDate, colIndex) => {
-                    const panelMD = extractMonthDay(panelDate);
-                    const cleanPanelDate = String(panelDate).trim().replace(/\//g, '-');
-
-                    // 只要月日相同（例如 10-16 === 10-16）或字串互相包含
-                    if (dbMD === panelMD || cleanDbDate.includes(cleanPanelDate) || cleanPanelDate.includes(cleanDbDate)) {
-                        Object.keys(dayRecords).forEach(studentId => {
-                            const cleanSid = String(studentId).trim();
-                            const student = currentStudents.find(s => s.id === cleanSid);
-                            if (student) {
-                                student.attendance[`d${colIndex}`] = 1; // 標記打勾！
-                            }
-                        });
-                    }
+                customConfig.dates.forEach(d => {
+                    const normD = normalizeDateStr(d);
+                    s.attendance[normD] = 0;
                 });
             });
+
+            if (rootData) {
+                Object.keys(rootData).forEach(dbDateStr => {
+                    if (dbDateStr === "current_code") return;
+
+                    const normalizedDbDate = normalizeDateStr(dbDateStr);
+
+                    customConfig.dates.forEach(panelDate => {
+                        const normalizedPanelDate = normalizeDateStr(panelDate);
+
+                        if (normalizedDbDate === normalizedPanelDate) {
+                            const dayRecords = rootData[dbDateStr];
+                            if (dayRecords) {
+                                Object.keys(dayRecords).forEach(studentId => {
+                                    const student = currentStudents.find(s => s.id === studentId);
+                                    if (student) {
+                                        student.attendance[normalizedPanelDate] = 1;
+                                    }
+                                });
+                            }
+                        }
+                    });
+                });
+            }
 
             renderTable();
             calculateStats();
@@ -426,47 +424,49 @@
                 const tr = document.createElement('tr');
                 let attCount = 0; 
                 
-                for (let i = 0; i < 8; i++) {
-                    if (student.attendance && student.attendance[`d${i}`] === 1) attCount++; 
-                }
+                customConfig.dates.forEach(d => { 
+                    const normD = normalizeDateStr(d);
+                    if(student.attendance && student.attendance[normD] === 1) attCount++; 
+                });
 
                 let chkHtml = '';
-                for (let i = 0; i < 8; i++) {
-                    const isChecked = (student.attendance && student.attendance[`d${i}`] === 1) ? 'checked' : '';
+                customConfig.dates.forEach((d) => {
+                    const normD = normalizeDateStr(d);
+                    const isChecked = (student.attendance && student.attendance[normD] === 1) ? 'checked' : '';
                     chkHtml += `<td class="checkbox-cell"><input type="checkbox" class="chk-btn" ${isChecked} disabled></td>`;
-                }
+                });
 
-                const totalClasses = 8;
-                const statusBadge = attCount === totalClasses ? '<span class="badge badge-success">全勤</span>' : (attCount === 0 ? '<span class="badge badge-danger">缺席</span>' : '<span class="badge" style="background:#f1f3f4;color:#5f6368;">一般</span>');
-                tr.innerHTML = `<td>${index + 1}</td><td>${student.id}</td><td><strong>${student.name}</strong></td><td>${student.dept_class}</td>${chkHtml}<td style="text-align:center;font-weight:bold;">${attCount}次</td><td style="text-align:center;color:var(--primary);font-weight:bold;">${((attCount/totalClasses)*100).toFixed(0)}%</td><td style="text-align:center;">${statusBadge}</td>`;
+                const statusBadge = attCount === customConfig.dates.length ? '<span class="badge badge-success">全勤</span>' : (attCount === 0 ? '<span class="badge badge-danger">缺席</span>' : '<span class="badge" style="background:#f1f3f4;color:#5f6368;">一般</span>');
+                tr.innerHTML = `<td>${index + 1}</td><td>${student.id}</td><td><strong>${student.name}</strong></td><td>${student.dept_class}</td>${chkHtml}<td style="text-align:center;font-weight:bold;">${attCount}次</td><td style="text-align:center;color:var(--primary);font-weight:bold;">${((attCount/customConfig.dates.length)*100).toFixed(0)}%</td><td style="text-align:center;">${statusBadge}</td>`;
                 tbody.appendChild(tr);
             });
             document.getElementById('total-students-count').innerText = currentStudents.length;
         }
 
         function calculateStats() {
-            let totalPerfect = 0; 
-            let sumTotalRates = 0; 
-            const dateCounts = [0, 0, 0, 0, 0, 0, 0, 0];
+            let totalPerfect = 0; let sumTotalRates = 0; const dateCounts = {};
+            customConfig.dates.forEach(d => dateCounts[normalizeDateStr(d)] = 0);
             
             currentStudents.forEach(s => {
                 let count = 0; 
-                for (let i = 0; i < 8; i++) {
-                    if (s.attendance && s.attendance[`d${i}`] === 1) { 
+                customConfig.dates.forEach(d => { 
+                    const normD = normalizeDateStr(d);
+                    if (s.attendance && s.attendance[normD] === 1) { 
                         count++; 
-                        dateCounts[i]++; 
+                        dateCounts[normD]++; 
                     } 
-                }
-                if (count === 8) totalPerfect++;
-                sumTotalRates += (count / 8);
+                });
+                if (count === customConfig.dates.length) totalPerfect++;
+                sumTotalRates += (count / customConfig.dates.length);
             });
             
             document.getElementById('perfect-attendance-count').innerText = totalPerfect;
             document.getElementById('avg-attendance-rate').innerText = currentStudents.length ? ((sumTotalRates / currentStudents.length) * 100).toFixed(1) + '%' : '0%';
-            for (let i = 0; i < 8; i++) { 
+            customConfig.dates.forEach((d, i) => { 
+                const normD = normalizeDateStr(d);
                 const el = document.getElementById(`sum-d${i}`); 
-                if(el) el.innerText = dateCounts[i]; 
-            }
+                if(el) el.innerText = dateCounts[normD] || 0; 
+            });
         }
 
         function updateClassFilterDropdown() {
@@ -479,11 +479,7 @@
             if(classes.includes(saved)) select.value = saved;
         }
 
-        function resetFilters() { 
-            document.getElementById('search-box').value = ''; 
-            document.getElementById('class-filter').value = ''; 
-            renderTable(); 
-        }
+        function resetFilters() { document.getElementById('search-box').value = ''; document.getElementById('class-filter').value = ''; renderTable(); }
 
         function openConfigModal() {
             document.getElementById('cfg-title').value = customConfig.title;
@@ -495,8 +491,10 @@
         }
         function closeConfigModal() { document.getElementById('config-modal').style.display = 'none'; }
 
+        // ☁️ 儲存變更：修復本地立即反應與雲端推送雙軌
         function saveConfig() {
             const saveBtn = document.getElementById('btn-save-cfg');
+            const originalText = saveBtn.innerText;
             saveBtn.innerText = "⏳ 正在同步至雲端...";
             saveBtn.disabled = true;
 
@@ -507,52 +505,86 @@
 
             const rawList = document.getElementById('cfg-students-raw').value;
 
-            customConfig.title = document.getElementById('cfg-title').value.trim();
-            customConfig.subtitle = document.getElementById('cfg-subtitle').value.trim();
-            customConfig.dates = newDates;
-            customConfig.rawStudentsList = rawList;
+            const updatedConfig = {
+                title: document.getElementById('cfg-title').value.trim(),
+                subtitle: document.getElementById('cfg-subtitle').value.trim(),
+                dates: newDates,
+                rawStudentsList: rawList
+            };
 
+            // 1. 本地立即生效
+            customConfig.title = updatedConfig.title;
+            customConfig.subtitle = updatedConfig.subtitle;
+            customConfig.dates = updatedConfig.dates;
+            customConfig.rawStudentsList = rawList;
             localStorage.setItem('movie_club_custom_students', rawList);
-            localStorage.setItem('movie_club_title', customConfig.title);
-            localStorage.setItem('movie_club_subtitle', customConfig.subtitle);
+            localStorage.setItem('movie_club_title', updatedConfig.title);
+            localStorage.setItem('movie_club_subtitle', updatedConfig.subtitle);
 
             parseRawStudents(rawList);
             applySettingsToUI();
             if (lastAttendanceRootData) syncAttendanceData(lastAttendanceRootData);
 
+            const newDbUrl = document.getElementById('cfg-csv-url').value.trim();
+            const isUrlChanged = (newDbUrl !== customConfig.csvUrl);
+            customConfig.csvUrl = newDbUrl;
+            localStorage.setItem('movie_club_firebase_url', newDbUrl);
+
+            if (!database || isUrlChanged) {
+                initFirebaseConnection();
+            }
+
+            // 2. 寫入雲端節點 movie_club_settings
             if (database) {
-                database.ref('movie_club_settings').update({
-                    title: customConfig.title,
-                    subtitle: customConfig.subtitle,
-                    dates: newDates,
-                    rawStudentsList: rawList
-                }).then(() => {
-                    saveBtn.innerText = "儲存變更並同步雲端";
+                database.ref('movie_club_settings').set(updatedConfig).then(() => {
+                    saveBtn.innerText = originalText;
                     saveBtn.disabled = false;
                     closeConfigModal();
-                    alert("✅ 設定已成功同步至雲端！");
-                }).catch(() => {
-                    saveBtn.innerText = "儲存變更並同步雲端";
+                    alert("✅ 設定已成功同步至雲端！所有連線的裝置與瀏覽器將即時更新。");
+                }).catch((err) => {
+                    console.error(err);
+                    saveBtn.innerText = originalText;
                     saveBtn.disabled = false;
-                    closeConfigModal();
+                    alert("⚠️ 雲端寫入失敗，請檢查 Firebase Rules 寫入權限是否為 true。");
                 });
             } else {
-                saveBtn.innerText = "儲存變更並同步雲端";
+                saveBtn.innerText = originalText;
                 saveBtn.disabled = false;
                 closeConfigModal();
             }
         }
 
+        // ☁️ 還原預設
         function resetToOfficialDefault() {
-            if(confirm("確定要將設定還原成內建預設值嗎？")) { 
+            if(confirm("確定要將雲端設定還原成內建預設值嗎？（其他裝置也會同步重設）")) { 
                 const defaultRaw = defaultStudents.map(s => `${s.id}\t${s.name}\t${s.dept_class}`).join("\n");
-                customConfig.dates = ['2026/10/02', '2026/10/16', '2026/10/23', '2026/11/06', '2026/11/20', '2026/11/27', '2026/12/04', '2027/01/08'];
-                customConfig.rawStudentsList = defaultRaw;
+                const resetData = {
+                    title: "電影欣賞社",
+                    subtitle: "115學年度第1學期",
+                    dates: ['2026/10/02', '2026/10/16', '2026/10/23', '2026/11/06', '2026/11/20', '2026/11/27', '2026/12/04', '2027/01/08'],
+                    rawStudentsList: defaultRaw
+                };
+
                 localStorage.removeItem('movie_club_custom_students');
+                localStorage.removeItem('movie_club_title');
+                localStorage.removeItem('movie_club_subtitle');
+
+                customConfig.title = resetData.title;
+                customConfig.subtitle = resetData.subtitle;
+                customConfig.dates = resetData.dates;
+                customConfig.rawStudentsList = defaultRaw;
+
                 parseRawStudents(defaultRaw);
                 applySettingsToUI();
-                closeConfigModal();
-                alert("✅ 已還原為預設名單！");
+
+                if (database) {
+                    database.ref('movie_club_settings').set(resetData).then(() => {
+                        closeConfigModal();
+                        alert("✅ 雲端設定已成功重設為預設名單！");
+                    }).catch(() => {
+                        alert("⚠️ 雲端重設失敗，請檢查權限。");
+                    });
+                }
             }
         }
 
@@ -561,24 +593,24 @@
             const rows = [];
             currentStudents.forEach((s, index) => {
                 let attCount = 0; 
-                for (let i = 0; i < 8; i++) {
-                    if (s.attendance && s.attendance[`d${i}`] === 1) attCount++; 
-                }
+                customConfig.dates.forEach(d => { 
+                    const normD = normalizeDateStr(d);
+                    if(s.attendance && s.attendance[normD] === 1) attCount++; 
+                });
                 
-                const dateStatus = [];
-                for (let i = 0; i < 8; i++) {
-                    dateStatus.push((s.attendance && s.attendance[`d${i}`] === 1) ? "V" : "");
-                }
+                const dateStatus = customConfig.dates.map(d => {
+                    const normD = normalizeDateStr(d);
+                    return (s.attendance && s.attendance[normD] === 1) ? "V" : "";
+                });
 
                 rows.push([
                     index + 1, s.id, s.name, s.dept_class, 
                     ...dateStatus, 
-                    attCount + "次", ((attCount / 8) * 100).toFixed(0) + "%", 
-                    attCount === 8 ? "全勤" : (attCount === 0 ? "缺席" : "一般")
+                    attCount + "次", ((attCount / customConfig.dates.length) * 100).toFixed(0) + "%", 
+                    attCount === customConfig.dates.length ? "全勤" : (attCount === 0 ? "缺席" : "一般")
                 ]);
             });
-            const wb = XLSX.utils.book_new(); 
-            const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
+            const wb = XLSX.utils.book_new(); const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
             XLSX.utils.book_append_sheet(wb, ws, "點名統計紀錄");
             XLSX.writeFile(wb, `電影欣賞社_實時點名統計結果.xlsx`);
         }
