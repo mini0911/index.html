@@ -218,7 +218,7 @@
             document.getElementById('example-code').innerText = newCode;
 
             // 寫入 Firebase Realtime Database
-            database.ref('movie_club_rollcall/current_code').set(newCode)
+            database.ref('current_otp_code').set(newCode)
                 .then(() => {
                     document.getElementById('firebase-status').innerText = `⚡ 實時廣播成功！口令：${newCode}`;
                 })
