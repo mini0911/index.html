@@ -1,830 +1,242 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Flyff Universe Web - 視覺特效升級版</title>
-  <!-- 載入 Babylon.js 核心與 GLTF/GLB 3D 模型載入器 -->
-  <script src="https://cdn.babylonjs.com/babylon.js"></script>
-  <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>學務處狂想曲：今天也要平安下班！</title>
   <style>
-    * { box-sizing: border-box; user-select: none; font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; }
-    body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #0b101e; }
-    #renderCanvas { width: 100%; height: 100%; touch-action: none; display: block; outline: none; }
-
-    /* 3D 頭頂懸浮名牌層 */
-    #labels-container { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
-    .nametag {
-      position: absolute; transform: translate(-50%, -100%);
-      text-align: center; white-space: nowrap; pointer-events: none;
-      transition: opacity 0.15s;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
     }
-    .nametag-title { font-size: 11px; color: #38bdf8; text-shadow: 0 0 4px #000, 1px 1px 2px #000; font-weight: bold; }
-    .nametag-name { font-size: 13px; color: #ffffff; text-shadow: 0 0 5px #000, 1px 1px 2px #000; font-weight: bold; }
-    .nametag-mob { color: #fde047; }
-    .nametag-hp-bg {
-      width: 64px; height: 6px; background: rgba(0,0,0,0.7);
-      border: 1px solid rgba(255,255,255,0.4); border-radius: 4px;
-      margin: 3px auto 0; overflow: hidden;
+    body {
+      background-color: #ffedd5;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+      touch-action: none;
     }
-    .nametag-hp-fill { height: 100%; background: linear-gradient(90deg, #ef4444, #f97316); width: 100%; transition: width 0.15s; }
-
-    /* Flyff 經典左上角玻璃擬態狀態窗 */
-    #player-hud {
-      position: absolute; top: 16px; left: 16px; width: 280px;
-      background: linear-gradient(145deg, rgba(30, 41, 75, 0.88), rgba(15, 23, 42, 0.92));
-      border: 2px solid #93c5fd; border-radius: 14px; padding: 14px;
-      color: #fff; box-shadow: 0 8px 25px rgba(0,0,0,0.65), inset 0 1px 1px rgba(255,255,255,0.3);
-      backdrop-filter: blur(8px);
+    #mobile-frame {
+      position: relative;
+      width: 100vw;
+      max-width: 430px;
+      height: 100vh;
+      max-height: 932px;
+      background: #fef3c7;
+      border: 4px solid #fbbf24;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(251, 191, 36, 0.3);
     }
-    .hud-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .char-title { font-size: 15px; font-weight: 800; color: #f8fafc; text-shadow: 0 2px 4px rgba(0,0,0,0.6); }
-    .lv-badge {
-      background: linear-gradient(135deg, #f59e0b, #fbbf24); color: #1e1b4b;
-      padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 900;
-      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.5);
-    }
-    .bar-row { display: flex; align-items: center; margin: 6px 0; font-size: 11px; }
-    .bar-label { width: 34px; font-weight: 800; color: #93c5fd; }
-    .bar-bg {
-      flex: 1; height: 15px; background: rgba(15, 23, 42, 0.9);
-      border-radius: 8px; overflow: hidden; position: relative;
-      border: 1px solid rgba(148, 163, 184, 0.4);
-    }
-    .bar-fill { height: 100%; transition: width 0.2s ease-out; }
-    .hp-fill { background: linear-gradient(90deg, #b91c1c, #ef4444, #f87171); }
-    .mp-fill { background: linear-gradient(90deg, #1d4ed8, #3b82f6, #60a5fa); }
-    .exp-fill { background: linear-gradient(90deg, #059669, #10b981, #34d399); }
-    .bar-text { position: absolute; inset: 0; text-align: center; line-height: 13px; font-size: 10px; font-weight: bold; color: #fff; text-shadow: 1px 1px 2px #000; }
-
-    /* 正上方目標鎖定窗 */
-    #target-hud {
-      position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
-      width: 320px; background: linear-gradient(180deg, rgba(45, 18, 35, 0.9), rgba(25, 10, 20, 0.92));
-      border: 2px solid #fb7185; border-radius: 14px; padding: 10px 16px;
-      color: #fff; display: none; box-shadow: 0 8px 25px rgba(0,0,0,0.7);
-      backdrop-filter: blur(6px);
-    }
-    #target-name { text-align: center; font-weight: 800; font-size: 14px; margin-bottom: 6px; color: #fecdd3; }
-
-    /* 右上角操作提示與畫質面板 */
-    #guide-panel {
-      position: absolute; top: 16px; right: 16px; width: 250px;
-      background: rgba(15, 23, 42, 0.82); border: 1px solid rgba(147, 197, 253, 0.5);
-      border-radius: 12px; padding: 12px; color: #e2e8f0; font-size: 12px;
-      backdrop-filter: blur(6px); box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-    }
-    .guide-title { font-weight: 800; color: #fde047; margin-bottom: 6px; font-size: 13px; }
-    .loading-badge {
-      margin-top: 8px; padding: 6px; border-radius: 6px;
-      background: rgba(56, 189, 248, 0.2); border: 1px solid #38bdf8;
-      color: #7dd3fc; text-align: center; font-weight: bold;
+    canvas {
+      display: block;
+      width: 100%;
+      height: 60%;
+      background: #fffbeb;
     }
 
-    /* 下方技能快捷列 */
-    #hotbar {
-      position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-      display: flex; gap: 12px;
-      background: linear-gradient(180deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
-      padding: 10px 16px; border-radius: 16px; border: 2px solid #93c5fd;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.75);
+    /* 頂部狀態列 */
+    #top-bar {
+      position: absolute;
+      top: env(safe-area-inset-top, 10px);
+      left: 12px;
+      right: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 5;
+      pointer-events: none;
     }
-    .skill-slot {
-      width: 64px; height: 64px;
-      background: radial-gradient(circle at 30% 30%, #334155, #0f172a);
-      border: 2px solid #cbd5e1; border-radius: 12px; position: relative; cursor: pointer;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      color: #fff; font-size: 11px; font-weight: bold; text-align: center;
-      transition: all 0.15s; box-shadow: inset 0 2px 5px rgba(255,255,255,0.15);
+    .status-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      width: 150px;
     }
-    .skill-slot:hover { border-color: #fde047; transform: translateY(-4px) scale(1.04); box-shadow: 0 6px 15px rgba(250, 204, 21, 0.35); }
-    .skill-slot.active-flight { border-color: #38bdf8; background: radial-gradient(circle, #0284c7, #0f172a); box-shadow: 0 0 18px #38bdf8; }
-    .hotkey { position: absolute; top: 3px; left: 6px; font-size: 11px; color: #fde047; font-weight: 900; text-shadow: 1px 1px 2px #000; }
-    .skill-icon { font-size: 22px; margin-bottom: 2px; }
-    .cd-overlay {
-      position: absolute; inset: 0; background: rgba(0,0,0,0.78);
-      color: #fde047; display: none; align-items: center; justify-content: center;
-      font-weight: 900; font-size: 16px; border-radius: 10px;
+    .bar-container {
+      background: #fef08a;
+      border: 2px solid #f59e0b;
+      border-radius: 12px;
+      height: 18px;
+      position: relative;
+      overflow: hidden;
     }
-
-    /* 左下角聊天與戰鬥訊息 */
-    #chat-log {
-      position: absolute; bottom: 20px; left: 16px; width: 340px; height: 140px;
-      background: rgba(15, 23, 42, 0.72); border: 1px solid rgba(148, 163, 184, 0.4);
-      border-radius: 12px; padding: 10px; overflow-y: auto; font-size: 12px; color: #e2e8f0;
-      backdrop-filter: blur(4px);
+    .bar-fill {
+      height: 100%;
+      width: 100%;
+      transition: width 0.2s ease;
+      border-radius: 10px;
     }
-    .log-item { margin-bottom: 4px; line-height: 1.4; text-shadow: 1px 1px 2px #000; }
-    .log-sys { color: #7dd3fc; }
-    .log-dmg { color: #fde047; }
-    .log-lv { color: #4ade80; font-weight: bold; }
-
-    /* 暴擊跳字特效 */
-    .floating-text {
-      position: absolute; pointer-events: none; font-weight: 900;
-      font-size: 24px; text-shadow: 0 3px 6px rgba(0,0,0,0.9), 0 0 10px currentColor;
-      animation: floatUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    #san-bar { background: #f87171; }
+    .bar-label {
+      position: absolute;
+      top: 0;
+      left: 6px;
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 16px;
+      color: #78350f;
     }
-    @keyframes floatUp {
-      0% { opacity: 0; transform: translate(-50%, 10px) scale(0.5); }
-      25% { opacity: 1; transform: translate(-50%, -20px) scale(1.25); }
-      100% { opacity: 0; transform: translate(-50%, -65px) scale(0.9); }
+    .score-badge {
+      font-size: 13px;
+      font-weight: 900;
+      color: #b45309;
+      background: #ffedd5;
+      padding: 2px 8px;
+      border-radius: 8px;
+      display: inline-block;
     }
-  </style>
-</head>
-<body>
-
-  <canvas id="renderCanvas"></canvas>
-  <div id="labels-container"></div>
-
-  <!-- 左上角玩家資訊 -->
-  <div id="player-hud">
-    <div class="hud-header">
-      <span class="char-title">✨ 帕里鎮冒險家</span>
-      <span class="lv-badge" id="ui-lv">Lv. 1</span>
-    </div>
-    <div class="bar-row">
-      <span class="bar-label">HP</span>
-      <div class="bar-bg"><div class="bar-fill hp-fill" id="ui-hp-bar" style="width:100%"></div><div class="bar-text" id="ui-hp-text">300 / 300</div></div>
-    </div>
-    <div class="bar-row">
-      <span class="bar-label">MP</span>
-      <div class="bar-bg"><div class="bar-fill mp-fill" id="ui-mp-bar" style="width:100%"></div><div class="bar-text" id="ui-mp-text">150 / 150</div></div>
-    </div>
-    <div class="bar-row">
-      <span class="bar-label">EXP</span>
-      <div class="bar-bg"><div class="bar-fill exp-fill" id="ui-exp-bar" style="width:0%"></div><div class="bar-text" id="ui-exp-text">0%</div></div>
-    </div>
-  </div>
-
-  <!-- 正上方鎖定怪物血條 -->
-  <div id="target-hud">
-    <div id="target-name">獨眼蝙蝠隊長 (Lv.2)</div>
-    <div class="bar-bg" style="height:16px;">
-      <div class="bar-fill hp-fill" id="target-hp-bar" style="width:100%"></div>
-      <div class="bar-text" id="target-hp-text">150 / 150</div>
-    </div>
-  </div>
-
-  <!-- 右上角指南 -->
-  <div id="guide-panel">
-    <div class="guide-title">🌟 視覺升級版內容</div>
-    <div style="line-height: 1.5; color: #cbd5e1;">
-      • <b>真實 .glb 骨骼動畫人物</b><br>
-      • <b>Bloom 光暈 + 動態太陽陰影</b><br>
-      • <b>GPU 粒子尾焰與技能爆破</b><br>
-      • <b>WASD</b> 移動 / <b>左鍵</b> 點怪鎖定<br>
-      • 按 <b>4</b> 召喚發光魔力滑板升空！
-    </div>
-    <div class="loading-badge" id="model-status">⏳ 正在從雲端載入 3D 動漫角色...</div>
-  </div>
-
-  <!-- 下方技能列 -->
-  <div id="hotbar">
-    <div class="skill-slot" onclick="useSkill(1)">
-      <span class="hotkey">1</span>
-      <span class="skill-icon">⚔️</span>
-      <span>星光斬擊</span>
-      <div class="cd-overlay" id="cd-1"></div>
-    </div>
-    <div class="skill-slot" onclick="useSkill(2)">
-      <span class="hotkey">2</span>
-      <span class="skill-icon">🔥</span>
-      <span>烈焰爆破</span>
-      <div class="cd-overlay" id="cd-2"></div>
-    </div>
-    <div class="skill-slot" onclick="useSkill(3)">
-      <span class="hotkey">3</span>
-      <span class="skill-icon">💖</span>
-      <span>神聖治癒</span>
-      <div class="cd-overlay" id="cd-3"></div>
-    </div>
-    <div class="skill-slot" id="slot-flight" onclick="useSkill(4)">
-      <span class="hotkey">4</span>
-      <span class="skill-icon">🛸</span>
-      <span>魔力滑板</span>
-      <div class="cd-overlay" id="cd-4"></div>
-    </div>
-  </div>
-
-  <div id="chat-log"></div>
-
-<script>
-// ==========================================
-// 1. 產生離線可用的高質感發光粒子貼圖 (Data URL)
-// ==========================================
-function createFlareTexture(scene) {
-  const c = document.createElement('canvas');
-  c.width = 64; c.height = 64;
-  const ctx = c.getContext('2d');
-  const grad = ctx.createRadialGradient(32, 32, 2, 32, 32, 32);
-  grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-  grad.addColorStop(0.3, 'rgba(255, 240, 180, 0.8)');
-  grad.addColorStop(0.7, 'rgba(255, 160, 50, 0.25)');
-  grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, 64, 64);
-  return new BABYLON.Texture(c.toDataURL(), scene);
-}
-
-const chatLog = document.getElementById('chat-log');
-function addLog(msg, type = 'log-sys') {
-  const div = document.createElement('div');
-  div.className = 'log-item ' + type;
-  div.textContent = msg;
-  chatLog.appendChild(div);
-  chatLog.scrollTop = chatLog.scrollHeight;
-}
-
-// ==========================================
-// 2. 初始化場景、Bloom 光暈、霧氣與動態陰影
-// ==========================================
-const canvas = document.getElementById('renderCanvas');
-const engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
-const scene = new BABYLON.Scene(engine);
-scene.clearColor = new BABYLON.Color4(0.52, 0.78, 0.98, 1);
-scene.fogMode = BABYLON.Scene.FOGMODE_EXP2;
-scene.fogDensity = 0.0055;
-scene.fogColor = new BABYLON.Color3(0.68, 0.85, 0.98);
-
-// 載入發光圖層 (讓精煉武器、魔法水晶與滑板自體發光)
-const glowLayer = new BABYLON.GlowLayer("glow", scene);
-glowLayer.intensity = 0.65;
-
-const flareTex = createFlareTexture(scene);
-
-// 第三人稱相機
-const camera = new BABYLON.ArcRotateCamera("cam", -Math.PI / 2, Math.PI / 3.1, 14, new BABYLON.Vector3(0, 1.5, 0), scene);
-camera.lowerRadiusLimit = 5;
-camera.upperRadiusLimit = 28;
-camera.upperBetaLimit = Math.PI / 2 - 0.06;
-camera.wheelPrecision = 18;
-camera.attachControl(canvas, true);
-
-// 環境光與太陽方向光 + PCF 柔和動態陰影
-const hemiLight = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
-hemiLight.intensity = 0.75;
-hemiLight.groundColor = new BABYLON.Color3(0.25, 0.3, 0.45);
-
-const sunLight = new BABYLON.DirectionalLight("sun", new BABYLON.Vector3(-0.6, -1.2, -0.5), scene);
-sunLight.position = new BABYLON.Vector3(30, 50, 30);
-sunLight.intensity = 1.1;
-
-const shadowGen = new BABYLON.ShadowGenerator(1024, sunLight);
-shadowGen.useBlurExponentialShadowMap = true;
-shadowGen.blurKernel = 16;
-
-// ==========================================
-// 3. 建立高低起伏的奇幻地形、湖泊與魔法水晶
-// ==========================================
-function getTerrainHeight(x, z) {
-  const distFromCenter = Math.sqrt(x * x + z * z);
-  if (distFromCenter < 10) return 0; // 中央出生區平坦
-  return Math.sin(x * 0.08) * Math.cos(z * 0.08) * 2.2 + Math.sin(distFromCenter * 0.05) * 1.2;
-}
-
-const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 160, height: 160, subdivisions: 80, updatable: true }, scene);
-const positions = ground.getVerticesData(BABYLON.VertexBuffer.PositionKind);
-const colors = [];
-for (let i = 0; i < positions.length; i += 3) {
-  const x = positions[i];
-  const z = positions[i + 2];
-  const y = getTerrainHeight(x, z);
-  positions[i + 1] = y;
-
-  // 根據高度自動塗上草地、沙灘與高地色彩
-  if (y < -0.3) colors.push(0.76, 0.7, 0.5, 1);
-  else if (y > 1.6) colors.push(0.45, 0.52, 0.42, 1);
-  else colors.push(0.32, 0.68, 0.32, 1);
-}
-ground.updateVerticesData(BABYLON.VertexBuffer.PositionKind, positions);
-ground.setVerticesData(BABYLON.VertexBuffer.ColorKind, colors);
-const normals = [];
-BABYLON.VertexData.ComputeNormals(positions, ground.getIndices(), normals);
-ground.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normals);
-
-const groundMat = new BABYLON.StandardMaterial("groundMat", scene);
-groundMat.specularColor = new BABYLON.Color3(0.05, 0.05, 0.05);
-ground.material = groundMat;
-ground.receiveShadows = true;
-
-// 奇幻櫻花樹／綠樹與發光魔法水晶陣
-for (let i = 0; i < 32; i++) {
-  const angle = (i / 32) * Math.PI * 2 + Math.random() * 0.3;
-  const dist = 14 + Math.random() * 45;
-  const tx = Math.cos(angle) * dist;
-  const tz = Math.sin(angle) * dist;
-  const ty = getTerrainHeight(tx, tz);
-
-  const trunk = BABYLON.MeshBuilder.CreateCylinder("trunk", { height: 2.8, diameterTop: 0.4, diameterBottom: 0.8 }, scene);
-  trunk.position.set(tx, ty + 1.4, tz);
-  const tMat = new BABYLON.StandardMaterial("tMat", scene);
-  tMat.diffuseColor = new BABYLON.Color3(0.42, 0.26, 0.16);
-  trunk.material = tMat;
-  shadowGen.addShadowCaster(trunk);
-
-  // 雙層樹冠 (隨機翠綠或粉紅櫻花色)
-  const isSakura = i % 3 === 0;
-  const crown = BABYLON.MeshBuilder.CreatePolyhedron("crown", { type: 1, size: 1.9 }, scene);
-  crown.position.set(tx, ty + 3.4, tz);
-  const cMat = new BABYLON.StandardMaterial("cMat", scene);
-  cMat.diffuseColor = isSakura ? new BABYLON.Color3(0.98, 0.58, 0.78) : new BABYLON.Color3(0.22, 0.58, 0.28);
-  cMat.specularColor = BABYLON.Color3.Black();
-  crown.material = cMat;
-  shadowGen.addShadowCaster(crown);
-}
-
-// 飄浮魔法水晶地標
-for (let i = 0; i < 6; i++) {
-  const a = (i / 6) * Math.PI * 2;
-  const cx = Math.cos(a) * 18;
-  const cz = Math.sin(a) * 18;
-  const cy = getTerrainHeight(cx, cz);
-  const crystal = BABYLON.MeshBuilder.CreatePolyhedron("crystal", { type: 2, size: 0.9 }, scene);
-  crystal.scaling.y = 2.2;
-  crystal.position.set(cx, cy + 2.5, cz);
-  const cryMat = new BABYLON.StandardMaterial("cryMat", scene);
-  cryMat.diffuseColor = new BABYLON.Color3(0.2, 0.8, 1.0);
-  cryMat.emissiveColor = new BABYLON.Color3(0.1, 0.55, 0.9);
-  crystal.material = cryMat;
-  scene.registerBeforeRender(() => {
-    crystal.rotation.y += 0.015;
-    crystal.position.y = cy + 2.5 + Math.sin(performance.now() * 0.003 + i) * 0.35;
-  });
-}
-
-// ==========================================
-// 4. 玩家角色載入 (.glb 骨骼動畫) 與精煉發光飛天滑板
-// ==========================================
-const playerRoot = new BABYLON.TransformNode("playerRoot", scene);
-playerRoot.position.set(0, 0, 0);
-
-// 精煉發光飛天滑板
-const boardGroup = new BABYLON.TransformNode("boardGroup", scene);
-boardGroup.parent = playerRoot;
-boardGroup.setEnabled(false);
-
-const boardMesh = BABYLON.MeshBuilder.CreateBox("board", { width: 0.85, height: 0.1, depth: 2.3 }, scene);
-boardMesh.position.y = 0.15;
-boardMesh.parent = boardGroup;
-const boardMat = new BABYLON.StandardMaterial("boardMat", scene);
-boardMat.diffuseColor = new BABYLON.Color3(0.1, 0.6, 1.0);
-boardMat.emissiveColor = new BABYLON.Color3(0.08, 0.45, 0.95);
-boardMesh.material = boardMat;
-
-// 飛天滑板噴射粒子系統 (GPU Thruster Trail)
-const flightParticles = new BABYLON.ParticleSystem("flightParticles", 600, scene);
-flightParticles.particleTexture = flareTex;
-flightParticles.emitter = boardMesh;
-flightParticles.minEmitBox = new BABYLON.Vector3(-0.3, 0, -1.1);
-flightParticles.maxEmitBox = new BABYLON.Vector3(0.3, 0, -1.1);
-flightParticles.color1 = new BABYLON.Color4(0.2, 0.8, 1.0, 1.0);
-flightParticles.color2 = new BABYLON.Color4(0.7, 0.3, 1.0, 1.0);
-flightParticles.colorDead = new BABYLON.Color4(0, 0, 0.2, 0.0);
-flightParticles.minSize = 0.25;
-flightParticles.maxSize = 0.65;
-flightParticles.minLifeTime = 0.2;
-flightParticles.maxLifeTime = 0.45;
-flightParticles.emitRate = 180;
-flightParticles.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
-flightParticles.direction1 = new BABYLON.Vector3(-0.3, -0.1, -2.5);
-flightParticles.direction2 = new BABYLON.Vector3(0.3, 0.2, -3.5);
-
-// 角色身旁的精煉發光守護精靈球 (Flyff 寵物/精靈感)
-const fairyOrb = BABYLON.MeshBuilder.CreateSphere("fairy", { diameter: 0.38 }, scene);
-fairyOrb.parent = playerRoot;
-const fairyMat = new BABYLON.StandardMaterial("fairyMat", scene);
-fairyMat.emissiveColor = new BABYLON.Color3(1.0, 0.85, 0.3);
-fairyOrb.material = fairyMat;
-
-// 載入 Babylon.js 官方 3D 動漫人物模型 (HVGirl.glb)
-let animIdle = null, animWalk = null, animSkill = null, currentAnim = null;
-
-BABYLON.SceneLoader.ImportMeshAsync("", "https://assets.babylonjs.com/meshes/", "HVGirl.glb", scene)
-  .then((result) => {
-    const rootMesh = result.meshes[0];
-    rootMesh.parent = playerRoot;
-    rootMesh.scaling.setAll(0.11);
-    rootMesh.rotationQuaternion = null;
-    rootMesh.rotation.y = Math.PI; // 面向前方
-
-    result.meshes.forEach(m => {
-      shadowGen.addShadowCaster(m);
-      // 加上動漫風微微邊緣輪廓
-      m.renderOutline = true;
-      m.outlineColor = new BABYLON.Color3(0.08, 0.08, 0.12);
-      m.outlineWidth = 0.015;
-    });
-
-    animIdle = scene.getAnimationGroupByName("Idle");
-    animWalk = scene.getAnimationGroupByName("Walking");
-    animSkill = scene.getAnimationGroupByName("Samba");
-    if (animIdle) { animIdle.start(true, 1.0); currentAnim = animIdle; }
-
-    const statusBadge = document.getElementById('model-status');
-    statusBadge.textContent = "✅ 3D 動漫角色與骨骼動畫已就緒！";
-    statusBadge.style.borderColor = "#4ade80";
-    statusBadge.style.color = "#4ade80";
-  })
-  .catch(() => {
-    document.getElementById('model-status').textContent = "⚠️ 離線模式：使用內建備用模型";
-  });
-
-function playCharacterAnim(targetAnim, loop = true) {
-  if (!targetAnim || currentAnim === targetAnim) return;
-  if (currentAnim) currentAnim.stop();
-  targetAnim.start(loop, 1.25);
-  currentAnim = targetAnim;
-}
-
-// ==========================================
-// 5. 3D 頭頂名牌與怪物建立 (動漫描邊 + 造型部件)
-// ==========================================
-const labelsContainer = document.getElementById('labels-container');
-function createNametag(title, name, isMob = false) {
-  const el = document.createElement('div');
-  el.className = 'nametag';
-  el.innerHTML = isMob
-    ? `<div class="nametag-name nametag-mob">${name}</div><div class="nametag-hp-bg"><div class="nametag-hp-fill"></div></div>`
-    : `<div class="nametag-title">&lt;${title}&gt;</div><div class="nametag-name">${name}</div>`;
-  labelsContainer.appendChild(el);
-  return el;
-}
-
-const playerTag = createNametag("見習飛行者", "帕里鎮冒險家", false);
-
-// 鎖定目標腳下魔法陣
-const targetRing = BABYLON.MeshBuilder.CreateTorus("ring", { diameter: 2.2, thickness: 0.12, tessellation: 40 }, scene);
-const ringMat = new BABYLON.StandardMaterial("ringMat", scene);
-ringMat.emissiveColor = new BABYLON.Color3(1, 0.2, 0.35);
-targetRing.material = ringMat;
-targetRing.setEnabled(false);
-
-const monsters = [];
-let selectedTarget = null;
-
-function createStylizedMonster(id, name, lv, maxHp, isBat, x, z) {
-  const root = new BABYLON.TransformNode("mobRoot_" + id, scene);
-  const y = getTerrainHeight(x, z);
-  root.position.set(x, y, z);
-
-  // 主體模型 (加上動漫卡通黑邊 Outline)
-  const body = BABYLON.MeshBuilder.CreateSphere("mobBody_" + id, { diameter: 1.3, segments: 16 }, scene);
-  body.position.y = isBat ? 1.4 : 0.75;
-  body.parent = root;
-  body.renderOutline = true;
-  body.outlineColor = new BABYLON.Color3(0.05, 0.05, 0.05);
-  body.outlineWidth = 0.03;
-
-  const mat = new BABYLON.StandardMaterial("mMat_" + id, scene);
-  mat.diffuseColor = isBat ? new BABYLON.Color3(0.58, 0.28, 0.85) : new BABYLON.Color3(0.95, 0.32, 0.28);
-  body.material = mat;
-  shadowGen.addShadowCaster(body);
-
-  // 獨眼蝙蝠的大眼睛與翅膀 / 蘑菇怪的傘帽斑點
-  const eye = BABYLON.MeshBuilder.CreateSphere("eye", { diameter: 0.5 }, scene);
-  eye.position.set(0, body.position.y + 0.1, 0.55);
-  eye.parent = root;
-  const eyeMat = new BABYLON.StandardMaterial("eyeMat", scene);
-  eyeMat.emissiveColor = new BABYLON.Color3(1, 0.9, 0.2);
-  eye.material = eyeMat;
-
-  let leftWing = null, rightWing = null;
-  if (isBat) {
-    leftWing = BABYLON.MeshBuilder.CreateBox("lw", { width: 1.2, height: 0.08, depth: 0.6 }, scene);
-    leftWing.position.set(-0.8, 1.5, 0);
-    leftWing.parent = root;
-    leftWing.material = mat;
-
-    rightWing = BABYLON.MeshBuilder.CreateBox("rw", { width: 1.2, height: 0.08, depth: 0.6 }, scene);
-    rightWing.position.set(0.8, 1.5, 0);
-    rightWing.parent = root;
-    rightWing.material = mat;
-  } else {
-    const cap = BABYLON.MeshBuilder.CreateCylinder("cap", { height: 0.6, diameterTop: 0.4, diameterBottom: 1.8 }, scene);
-    cap.position.y = 1.35;
-    cap.parent = root;
-    cap.material = mat;
-    cap.renderOutline = true;
-    cap.outlineWidth = 0.03;
-  }
-
-  const tagEl = createNametag("", `Lv.${lv} ${name}`, true);
-  const mob = {
-    id, name, lv, hp: maxHp, maxHp,
-    root, body, leftWing, rightWing, isBat,
-    spawnPos: new BABYLON.Vector3(x, y, z),
-    dead: false, atkCd: 0, tagEl
-  };
-  body.metadata = { mobRef: mob };
-  monsters.push(mob);
-}
-
-for (let i = 0; i < 6; i++) {
-  const a = (i / 6) * Math.PI * 2;
-  createStylizedMonster(i, "獨眼蝙蝠 Aibatt", 1, 120, true, Math.cos(a) * 11, Math.sin(a) * 11);
-}
-for (let i = 6; i < 10; i++) {
-  const a = ((i - 6) / 4) * Math.PI * 2 + 0.4;
-  createStylizedMonster(i, "紅傘蘑菇怪 Mushpang", 3, 240, false, Math.cos(a) * 22, Math.sin(a) * 22);
-}
-
-// ==========================================
-// 6. 華麗粒子爆破特效與技能系統
-// ==========================================
-function spawnBurstParticles(pos, color1, color2, count = 80) {
-  const ps = new BABYLON.ParticleSystem("burst", count, scene);
-  ps.particleTexture = flareTex;
-  ps.emitter = pos.clone();
-  ps.color1 = color1;
-  ps.color2 = color2;
-  ps.colorDead = new BABYLON.Color4(0, 0, 0, 0);
-  ps.minSize = 0.35;
-  ps.maxSize = 0.95;
-  ps.minLifeTime = 0.25;
-  ps.maxLifeTime = 0.55;
-  ps.emitRate = 600;
-  ps.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
-  ps.createSphereEmitter(1.4);
-  ps.minEmitPower = 2;
-  ps.maxEmitPower = 6;
-  ps.targetStopDuration = 0.15;
-  ps.disposeOnStop = true;
-  ps.start();
-}
-
-function spawnFloatingText(worldPos, text, color = '#ffffff') {
-  const screenPos = BABYLON.Vector3.Project(
-    worldPos, BABYLON.Matrix.Identity(), scene.getTransformMatrix(),
-    camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight())
-  );
-  if (screenPos.z > 1) return;
-  const el = document.createElement('div');
-  el.className = 'floating-text';
-  el.style.left = `${screenPos.x}px`;
-  el.style.top = `${screenPos.y}px`;
-  el.style.color = color;
-  el.textContent = text;
-  document.body.appendChild(el);
-  setTimeout(() => el.remove(), 950);
-}
-
-const playerState = {
-  lv: 1, hp: 300, maxHp: 300, mp: 150, maxMp: 150, exp: 0, maxExp: 100,
-  atk: 42, isFlying: false
-};
-const cooldowns = { 1: 0, 2: 0, 3: 0, 4: 0 };
-
-function updateHUD() {
-  document.getElementById('ui-lv').textContent = `Lv. ${playerState.lv}`;
-  document.getElementById('ui-hp-bar').style.width = `${(playerState.hp / playerState.maxHp) * 100}%`;
-  document.getElementById('ui-hp-text').textContent = `${Math.floor(playerState.hp)} / ${playerState.maxHp}`;
-  document.getElementById('ui-mp-bar').style.width = `${(playerState.mp / playerState.maxMp) * 100}%`;
-  document.getElementById('ui-mp-text').textContent = `${Math.floor(playerState.mp)} / ${playerState.maxMp}`;
-  const expPct = Math.min(100, Math.floor((playerState.exp / playerState.maxExp) * 100));
-  document.getElementById('ui-exp-bar').style.width = `${expPct}%`;
-  document.getElementById('ui-exp-text').textContent = `${expPct}%`;
-
-  const thud = document.getElementById('target-hud');
-  if (!selectedTarget || selectedTarget.dead) {
-    thud.style.display = 'none';
-    targetRing.setEnabled(false);
-  } else {
-    thud.style.display = 'block';
-    document.getElementById('target-name').textContent = `${selectedTarget.name} (Lv.${selectedTarget.lv})`;
-    const pct = Math.max(0, (selectedTarget.hp / selectedTarget.maxHp) * 100);
-    document.getElementById('target-hp-bar').style.width = `${pct}%`;
-    document.getElementById('target-hp-text').textContent = `${Math.max(0, selectedTarget.hp)} / ${selectedTarget.maxHp}`;
-    selectedTarget.tagEl.querySelector('.nametag-hp-fill').style.width = `${pct}%`;
-  }
-}
-
-scene.onPointerDown = (evt, pick) => {
-  if (evt.button !== 0) return;
-  if (pick.hit && pick.pickedMesh && pick.pickedMesh.metadata && pick.pickedMesh.metadata.mobRef) {
-    const mob = pick.pickedMesh.metadata.mobRef;
-    if (!mob.dead) {
-      selectedTarget = mob;
-      targetRing.setEnabled(true);
-      updateHUD();
+    .top-right-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      pointer-events: auto;
     }
-  }
-};
-
-function setCooldown(slot, sec) {
-  cooldowns[slot] = sec;
-  const el = document.getElementById(`cd-${slot}`);
-  el.style.display = 'flex';
-  el.textContent = sec.toFixed(1);
-}
-
-function useSkill(slot) {
-  if (cooldowns[slot] > 0) return;
-
-  if (slot === 1 || slot === 2) {
-    if (!selectedTarget || selectedTarget.dead) {
-      addLog("請先點擊畫面上的怪物進行鎖定！");
-      return;
+    #sound-toggle {
+      background: #fff;
+      border: 2px solid #f97316;
+      border-radius: 10px;
+      padding: 4px 8px;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 2px 0 #fdba74;
     }
-    const dist = BABYLON.Vector3.Distance(playerRoot.position, selectedTarget.root.position);
-    if (dist > 5.5) {
-      addLog("目標距離過遠，請靠近後再施放技能！");
-      return;
-    }
-    if (slot === 2 && playerState.mp < 20) {
-      addLog("MP 魔力不足！");
-      return;
+    #clock-box {
+      background: #ffffff;
+      border: 3px solid #fb923c;
+      border-radius: 12px;
+      padding: 4px 10px;
+      font-size: 16px;
+      font-weight: 900;
+      color: #ea580c;
+      text-align: center;
+      box-shadow: 0 2px 0 #fdba74;
     }
 
-    playerRoot.lookAt(new BABYLON.Vector3(selectedTarget.root.position.x, playerRoot.position.y, selectedTarget.root.position.z));
-    if (animSkill) {
-      playCharacterAnim(animSkill, false);
-      setTimeout(() => { if (currentAnim === animSkill) playCharacterAnim(animIdle, true); }, 700);
+    /* 手機虛擬控制面板 */
+    #touch-controls {
+      position: absolute;
+      bottom: env(safe-area-inset-bottom, 15px);
+      left: 0;
+      right: 0;
+      height: 140px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+      z-index: 8;
+    }
+    .d-pad-cross {
+      position: relative;
+      width: 120px;
+      height: 120px;
+    }
+    .ctrl-btn {
+      position: absolute;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: #fed7aa;
+      border: 2px solid #ea580c;
+      box-shadow: 0 3px 0 #c2410c;
+      font-size: 18px;
+      font-weight: 900;
+      color: #7c2d12;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+    }
+    .ctrl-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 #c2410c;
+      background: #fdba74;
+    }
+    #btn-up { top: 0; left: 38px; }
+    #btn-down { bottom: 0; left: 38px; }
+    #btn-left { top: 38px; left: 0; }
+    #btn-right { top: 38px; right: 0; }
+
+    .action-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    #action-btn {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: #f97316;
+      border: 3px solid #7c2d12;
+      box-shadow: 0 4px 0 #7c2d12;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 900;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    #action-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #7c2d12;
+      background: #ea580c;
+    }
+    #held-item-display {
+      font-size: 12px;
+      font-weight: 900;
+      color: #78350f;
+      background: #fff;
+      padding: 3px 10px;
+      border-radius: 10px;
+      border: 2px solid #f59e0b;
+      min-width: 90px;
+      text-align: center;
     }
 
-    const mult = slot === 1 ? 1.0 : 2.3;
-    if (slot === 2) playerState.mp -= 20;
-
-    const isCrit = Math.random() < 0.35;
-    let dmg = Math.floor(playerState.atk * mult * (0.9 + Math.random() * 0.25));
-    if (isCrit) dmg = Math.floor(dmg * 1.65);
-
-    selectedTarget.hp -= dmg;
-    const hitPos = selectedTarget.root.position.add(new BABYLON.Vector3(0, 1.2, 0));
-
-    // 施放粒子爆破特效
-    if (slot === 1) {
-      spawnBurstParticles(hitPos, new BABYLON.Color4(0.3, 0.85, 1, 1), new BABYLON.Color4(1, 1, 0.4, 1), 60);
-      setCooldown(1, 0.7);
-    } else {
-      spawnBurstParticles(hitPos, new BABYLON.Color4(1, 0.3, 0.1, 1), new BABYLON.Color4(1, 0.85, 0.2, 1), 150);
-      setCooldown(2, 2.2);
+    /* 開始/結算視窗 */
+    #modal {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(254, 243, 199, 0.96);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      padding: 24px;
+      text-align: center;
     }
-
-    spawnFloatingText(hitPos, isCrit ? `💥 CRIT ${dmg}!` : `${dmg}`, isCrit ? '#fde047' : '#ffffff');
-    addLog(`施放【${slot === 1 ? '星光斬擊' : '烈焰爆破'}】對 ${selectedTarget.name} 造成 ${dmg} 傷害！`, "log-dmg");
-
-    if (selectedTarget.hp <= 0) {
-      const mob = selectedTarget;
-      mob.dead = true;
-      mob.root.setEnabled(false);
-      mob.tagEl.style.opacity = '0';
-      playerState.exp += mob.lv * 55;
-      addLog(`✨ 擊敗 ${mob.name}！獲得 ${mob.lv * 55} 經驗值。`, "log-lv");
-
-      if (playerState.exp >= playerState.maxExp) {
-        playerState.exp -= playerState.maxExp;
-        playerState.lv++;
-        playerState.maxHp += 60; playerState.hp = playerState.maxHp;
-        playerState.maxMp += 30; playerState.mp = playerState.maxMp;
-        playerState.atk += 12;
-        spawnBurstParticles(playerRoot.position.add(new BABYLON.Vector3(0, 1.5, 0)), new BABYLON.Color4(0.2, 1, 0.5, 1), new BABYLON.Color4(1, 0.9, 0.2, 1), 220);
-        spawnFloatingText(playerRoot.position.add(new BABYLON.Vector3(0, 2.5, 0)), `🌟 LEVEL UP! Lv.${playerState.lv}`, '#4ade80');
-      }
-
-      setTimeout(() => {
-        mob.hp = mob.maxHp;
-        mob.dead = false;
-        mob.root.position.copyFrom(mob.spawnPos);
-        mob.root.setEnabled(true);
-        mob.tagEl.style.opacity = '1';
-        updateHUD();
-      }, 4500);
+    #modal h1 {
+      font-size: 26px;
+      margin-bottom: 12px;
+      color: #ea580c;
     }
-    updateHUD();
-  } else if (slot === 3) {
-    if (playerState.mp < 25) return;
-    playerState.mp -= 25;
-    const heal = Math.floor(playerState.maxHp * 0.4);
-    playerState.hp = Math.min(playerState.maxHp, playerState.hp + heal);
-    spawnBurstParticles(playerRoot.position.add(new BABYLON.Vector3(0, 1.2, 0)), new BABYLON.Color4(0.3, 1, 0.6, 1), new BABYLON.Color4(0.2, 0.8, 1, 1), 100);
-    spawnFloatingText(playerRoot.position.add(new BABYLON.Vector3(0, 2.2, 0)), `+${heal} HP`, '#4ade80');
-    updateHUD();
-    setCooldown(3, 3.5);
-  } else if (slot === 4) {
-    playerState.isFlying = !playerState.isFlying;
-    boardGroup.setEnabled(playerState.isFlying);
-    const slotEl = document.getElementById('slot-flight');
-    if (playerState.isFlying) {
-      slotEl.classList.add('active-flight');
-      flightParticles.start();
-      playerRoot.position.y += 2.5;
-      addLog("🛸 已騎乘【精煉魔力滑板】！按住 空白鍵 升空、Shift 下降。");
-    } else {
-      slotEl.classList.remove('active-flight');
-      flightParticles.stop();
-      playerRoot.position.y = getTerrainHeight(playerRoot.position.x, playerRoot.position.z);
-      addLog("已收起魔力滑板。");
+    #modal p {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 22px;
+      color: #7c2d12;
+      line-height: 1.6;
     }
-    setCooldown(4, 0.8);
-  }
-}
-
-// ==========================================
-// 7. 主遊戲迴圈：骨骼動畫切換、地形貼合與 3D 名牌投影
-// ==========================================
-const keys = {};
-window.addEventListener('keydown', e => {
-  keys[e.key.toLowerCase()] = true;
-  if (['1', '2', '3', '4'].includes(e.key)) useSkill(parseInt(e.key));
-});
-window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
-
-addLog("🌟 歡迎來到《飛飛》視覺升級版！支援 3D 動漫骨骼角色、Bloom 光暈與粒子尾焰。");
-
-function updateNametagPos(worldPos, el) {
-  const sp = BABYLON.Vector3.Project(
-    worldPos, BABYLON.Matrix.Identity(), scene.getTransformMatrix(),
-    camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight())
-  );
-  if (sp.z < 0 || sp.z > 1) {
-    el.style.display = 'none';
-  } else {
-    el.style.display = 'block';
-    el.style.left = `${sp.x}px`;
-    el.style.top = `${sp.y}px`;
-  }
-}
-
-let lastTime = performance.now();
-engine.runRenderLoop(() => {
-  const now = performance.now();
-  const dt = (now - lastTime) / 1000;
-  lastTime = now;
-
-  // 更新技能冷卻
-  for (let s = 1; s <= 4; s++) {
-    if (cooldowns[s] > 0) {
-      cooldowns[s] = Math.max(0, cooldowns[s] - dt);
-      const el = document.getElementById(`cd-${s}`);
-      if (cooldowns[s] === 0) el.style.display = 'none';
-      else el.textContent = cooldowns[s].toFixed(1);
-    }
-  }
-
-  // 守護精靈環繞特效
-  fairyOrb.position.set(
-    Math.cos(now * 0.003) * 0.95,
-    1.5 + Math.sin(now * 0.005) * 0.25,
-    Math.sin(now * 0.003) * 0.95
-  );
-
-  // 玩家移動與轉向
-  const forward = new BABYLON.Vector3(Math.cos(camera.alpha + Math.PI), 0, Math.sin(camera.alpha + Math.PI)).normalize();
-  const right = new BABYLON.Vector3(forward.z, 0, -forward.x).normalize();
-  let moveVec = BABYLON.Vector3.Zero();
-
-  if (keys['w']) moveVec.addInPlace(forward);
-  if (keys['s']) moveVec.subtractInPlace(forward);
-  if (keys['d']) moveVec.addInPlace(right);
-  if (keys['a']) moveVec.subtractInPlace(right);
-
-  const speed = playerState.isFlying ? 0.3 : 0.16;
-  if (moveVec.lengthSquared() > 0.001) {
-    moveVec.normalize().scaleInPlace(speed);
-    playerRoot.position.addInPlace(moveVec);
-    playerRoot.lookAt(playerRoot.position.add(moveVec));
-    if (currentAnim !== animSkill) playCharacterAnim(animWalk, true);
-  } else {
-    if (currentAnim !== animSkill) playCharacterAnim(animIdle, true);
-  }
-
-  // 地形高度貼合與飛行升降
-  const groundY = getTerrainHeight(playerRoot.position.x, playerRoot.position.z);
-  if (playerState.isFlying) {
-    if (keys[' ']) playerRoot.position.y = Math.min(28, playerRoot.position.y + 0.18);
-    if (keys['shift']) playerRoot.position.y = Math.max(groundY + 1.2, playerRoot.position.y - 0.18);
-    // 飛行時微微上下懸浮呼吸感
-    boardGroup.position.y = Math.sin(now * 0.006) * 0.12;
-  } else {
-    playerRoot.position.y = groundY;
-  }
-
-  camera.target.set(playerRoot.position.x, playerRoot.position.y + 1.4, playerRoot.position.z);
-  updateNametagPos(playerRoot.position.add(new BABYLON.Vector3(0, 2.35, 0)), playerTag);
-
-  // 怪物動畫與鎖定光圈更新
-  if (selectedTarget && !selectedTarget.dead) {
-    targetRing.position.set(selectedTarget.root.position.x, selectedTarget.root.position.y + 0.1, selectedTarget.root.position.z);
-    targetRing.rotation.y += 0.05;
-  }
-
-  monsters.forEach((mob, idx) => {
-    if (mob.dead) return;
-    // 蝙蝠拍動翅膀動畫
-    if (mob.isBat && mob.leftWing && mob.rightWing) {
-      const flap = Math.sin(now * 0.015 + idx) * 0.55;
-      mob.leftWing.rotation.z = flap;
-      mob.rightWing.rotation.z = -flap;
-      mob.body.position.y = 1.4 + Math.sin(now * 0.006 + idx) * 0.2;
-    }
-    updateNametagPos(mob.root.position.add(new BABYLON.Vector3(0, 2.1, 0)), mob.tagEl);
-  });
-
-  scene.render();
-});
-
-window.addEventListener('resize', () => engine.resize());
-</script>
-</body>
-</html>
+    .cute-btn {
+      padding: 12px 32px;
+      font-size: 17px;
+      font-weight: 900;
+      background: #f97316;
+      color: #ffffff;
+      border: 3px solid #7c2d12;
+      border-radius: 14px;
+      cursor: pointer;
