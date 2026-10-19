@@ -240,3 +240,588 @@
       border: 3px solid #7c2d12;
       border-radius: 14px;
       cursor: pointer;
+      box-shadow: 0 4px 0 #7c2d12;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="mobile-frame">
+    <!-- 頂部數據列 -->
+    <div id="top-bar">
+      <div class="status-group">
+        <div class="bar-container">
+          <div id="san-bar" class="bar-fill"></div>
+          <span class="bar-label">❤️ 理智 (SAN)</span>
+        </div>
+        <span class="score-badge">積分: <span id="score-text">0</span></span>
+      </div>
+      <div class="top-right-group">
+        <button id="sound-toggle" onclick="toggleAudio()">🔊</button>
+        <div id="clock-box">
+          <span style="font-size: 9px; color: #f97316; display: block;">目標 17:00</span>
+          <span id="time-display">16:30</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 遊戲畫布 -->
+    <canvas id="gameCanvas" width="400" height="460"></canvas>
+
+    <!-- 底部十字鍵與動作鍵 -->
+    <div id="touch-controls">
+      <div class="d-pad-cross">
+        <button class="ctrl-btn" id="btn-up">▲</button>
+        <button class="ctrl-btn" id="btn-down">▼</button>
+        <button class="ctrl-btn" id="btn-left">◀</button>
+        <button class="ctrl-btn" id="btn-right">▶</button>
+      </div>
+      <div class="action-group">
+        <button id="action-btn">
+          <span>🖐 互動</span>
+          <span style="font-size: 11px;">拿取/交付</span>
+        </button>
+        <div id="held-item-display">手中：無</div>
+      </div>
+    </div>
+
+    <!-- 開始/結束彈窗 -->
+    <div id="modal">
+      <h1 id="modal-title">學務處狂想曲 📋</h1>
+      <p id="modal-desc">
+        放學前學務處大塞車！<br>
+        學生要【蓋章請假單】或【借體育鑰匙】、<br>
+        長官要【影印公文】、陳情家長需要【溫熱茶水】！<br>
+        走向對應工作站拿取物品交付，<br>
+        別讓他們的耐心條歸零扣除理智，平安下班！
+      </p>
+      <button class="cute-btn" id="start-btn" onclick="startGame()">開始值勤 ⏰</button>
+    </div>
+  </div>
+
+  <script>
+    /* ==========================================================
+       Web Audio API：音效與歡樂 BGM 引擎
+       ========================================================== */
+    let audioCtx = null;
+    let bgmInterval = null;
+    let isMuted = false;
+
+    function initAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function toggleAudio() {
+      initAudio();
+      isMuted = !isMuted;
+      document.getElementById('sound-toggle').innerText = isMuted ? '🔇' : '🔊';
+      if (isMuted) stopBGM();
+      else if (isPlaying) startBGM();
+    }
+
+    function playTone(freq, type = 'sine', duration = 0.12, gainVal = 0.1) {
+      if (!audioCtx || isMuted) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) { }
+    }
+
+    function playSuccess() {
+      playTone(523.25, 'triangle', 0.08, 0.15); // C5
+      setTimeout(() => playTone(659.25, 'triangle', 0.1, 0.15), 60); // E5
+      setTimeout(() => playTone(783.99, 'triangle', 0.18, 0.2), 120); // G5
+    }
+
+    function playAnger() {
+      playTone(200, 'sawtooth', 0.15, 0.2);
+      setTimeout(() => playTone(140, 'sawtooth', 0.25, 0.2), 100);
+    }
+
+    function playInteract() {
+      playTone(480, 'sine', 0.06, 0.12);
+    }
+
+    // 輕快俏皮的派工節奏樂
+    const melody = [
+      { f: 261.63, d: 150 }, { f: 329.63, d: 150 }, { f: 392.00, d: 150 }, { f: 523.25, d: 200 },
+      { f: 440.00, d: 150 }, { f: 392.00, d: 150 }, { f: 329.63, d: 250 }, { f: 293.66, d: 150 },
+      { f: 329.63, d: 150 }, { f: 392.00, d: 200 }, { f: 349.23, d: 150 }, { f: 293.66, d: 250 }
+    ];
+    let melodyIdx = 0;
+
+    function startBGM() {
+      if (bgmInterval || isMuted) return;
+      melodyIdx = 0;
+      bgmInterval = setInterval(() => {
+        if (!isPlaying || isMuted) return;
+        const note = melody[melodyIdx];
+        playTone(note.f, 'triangle', note.d / 1000, 0.035);
+        melodyIdx = (melodyIdx + 1) % melody.length;
+      }, 240);
+    }
+
+    function stopBGM() {
+      if (bgmInterval) {
+        clearInterval(bgmInterval);
+        bgmInterval = null;
+      }
+    }
+
+    function triggerHaptic(type) {
+      if (!('vibrate' in navigator)) return;
+      if (type === 'success') navigator.vibrate([40, 50, 40]);
+      else if (type === 'anger') navigator.vibrate(200);
+      else if (type === 'click') navigator.vibrate(20);
+    }
+
+    /* ==========================================================
+       遊戲世界與工作站設定
+       ========================================================== */
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const sanBar = document.getElementById('san-bar');
+    const scoreText = document.getElementById('score-text');
+    const timeDisplay = document.getElementById('time-display');
+    const heldItemDisplay = document.getElementById('held-item-display');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalDesc = document.getElementById('modal-desc');
+    const startBtn = document.getElementById('start-btn');
+
+    let isPlaying = false;
+    let gameTime = 16.5 * 60; // 16:30
+    const targetTime = 17.0 * 60; // 17:00
+    const timeScale = 0.5; // ~60秒一局
+    let score = 0;
+
+    // 物品定義
+    const ITEMS = {
+      STAMPED_FORM: { id: 'STAMPED_FORM', name: '蓋章假單', icon: '📜' },
+      KEY: { id: 'KEY', name: '體育鑰匙', icon: '🔑' },
+      COPY_DOC: { id: 'COPY_DOC', name: '影印公文', icon: '📄' },
+      HOT_TEA: { id: 'HOT_TEA', name: '安撫熱茶', icon: '☕' }
+    };
+
+    // 工作站定義 (辦公室各站點)
+    const stations = [
+      { id: 'stamp', name: '蓋章台', x: 260, y: 70, w: 90, h: 45, color: '#f59e0b', item: ITEMS.STAMPED_FORM, icon: '📜' },
+      { id: 'key', name: '鑰匙櫃', x: 30, y: 220, w: 55, h: 65, color: '#0284c7', item: ITEMS.KEY, icon: '🔑' },
+      { id: 'copy', name: '影印機', x: 290, y: 220, w: 65, h: 65, color: '#8b5cf6', item: ITEMS.COPY_DOC, icon: '📄' },
+      { id: 'tea', name: '茶水間', x: 270, y: 350, w: 85, h: 45, color: '#10b981', item: ITEMS.HOT_TEA, icon: '☕' },
+      { id: 'trash', name: '回收筒', x: 40, y: 350, w: 50, h: 45, color: '#64748b', isTrash: true, icon: '🗑️' }
+    ];
+
+    // 主角狀態
+    const player = {
+      x: 180,
+      y: 220,
+      speed: 3.8,
+      san: 100,
+      maxSan: 100,
+      heldItem: null,
+      facing: 'down',
+      walkFrame: 0
+    };
+
+    // 櫃檯等待區 (顧客 queue)
+    const queueSlots = [
+      { x: 50, y: 100 },
+      { x: 120, y: 100 },
+      { x: 190, y: 100 }
+    ];
+    let customers = [];
+    let spawnTimer = 0;
+    let feedbackList = [];
+
+    // 移動按鍵狀態
+    const keys = { up: false, down: false, left: false, right: false };
+
+    // 綁定虛擬按鈕
+    const bindBtn = (id, k) => {
+      const el = document.getElementById(id);
+      const press = (e) => { e.preventDefault(); keys[k] = true; triggerHaptic('click'); };
+      const release = (e) => { e.preventDefault(); keys[k] = false; };
+      el.addEventListener('touchstart', press);
+      el.addEventListener('touchend', release);
+      el.addEventListener('mousedown', press);
+      el.addEventListener('mouseup', release);
+    };
+
+    bindBtn('btn-up', 'up');
+    bindBtn('btn-down', 'down');
+    bindBtn('btn-left', 'left');
+    bindBtn('btn-right', 'right');
+
+    // 鍵盤支援
+    window.addEventListener('keydown', (e) => {
+      const k = e.key.toLowerCase();
+      if (k === 'w' || k === 'arrowup') keys.up = true;
+      if (k === 's' || k === 'arrowdown') keys.down = true;
+      if (k === 'a' || k === 'arrowleft') keys.left = true;
+      if (k === 'd' || k === 'arrowright') keys.right = true;
+      if (k === ' ' || k === 'j') handleInteract();
+    });
+
+    window.addEventListener('keyup', (e) => {
+      const k = e.key.toLowerCase();
+      if (k === 'w' || k === 'arrowup') keys.up = false;
+      if (k === 's' || k === 'arrowdown') keys.down = false;
+      if (k === 'a' || k === 'arrowleft') keys.left = false;
+      if (k === 'd' || k === 'arrowright') keys.right = false;
+    });
+
+    document.getElementById('action-btn').addEventListener('click', handleInteract);
+
+    /* ==========================================================
+       互動邏輯（拿取、交付、丟棄）
+       ========================================================== */
+    function handleInteract() {
+      if (!isPlaying) return;
+      playInteract();
+      triggerHaptic('click');
+
+      // 1. 檢測是否與工作站互動
+      for (const st of stations) {
+        const dist = Math.hypot((player.x + 15) - (st.x + st.w / 2), (player.y + 15) - (st.y + st.h / 2));
+        if (dist < 55) {
+          if (st.isTrash) {
+            // 丟棄垃圾
+            if (player.heldItem) {
+              addFeedback("丟棄物品 🗑️", player.x, player.y, '#64748b');
+              player.heldItem = null;
+              updateHeldUI();
+            }
+            return;
+          } else {
+            // 從工作站取得物品
+            player.heldItem = st.item;
+            addFeedback(`取得 ${st.item.name} ${st.item.icon}`, player.x, player.y, '#0284c7');
+            updateHeldUI();
+            return;
+          }
+        }
+      }
+
+      // 2. 檢測是否交付給櫃檯顧客
+      for (let i = 0; i < customers.length; i++) {
+        const cust = customers[i];
+        const dist = Math.hypot((player.x + 15) - cust.x, (player.y + 15) - (cust.y + 35));
+        if (dist < 60) {
+          if (player.heldItem && player.heldItem.id === cust.wantedItem.id) {
+            // 交付成功！
+            playSuccess();
+            triggerHaptic('success');
+            score += 100;
+            scoreText.innerText = score;
+            addFeedback("服務滿意！ +100 🎉", cust.x, cust.y, '#10b981');
+
+            player.heldItem = null;
+            updateHeldUI();
+            customers.splice(i, 1);
+            return;
+          } else if (player.heldItem) {
+            // 物品不對
+            addFeedback("不是要這個！ ❌", cust.x, cust.y, '#ef4444');
+            return;
+          }
+        }
+      }
+    }
+
+    function updateHeldUI() {
+      if (player.heldItem) {
+        heldItemDisplay.innerText = `手中：${player.heldItem.icon} ${player.heldItem.name}`;
+      } else {
+        heldItemDisplay.innerText = `手中：無`;
+      }
+    }
+
+    function addFeedback(text, x, y, color = '#10b981') {
+      feedbackList.push({ text, x, y, color, life: 60 });
+    }
+
+    /* 顧客生成機制 */
+    function spawnCustomer() {
+      if (!isPlaying || customers.length >= 3) return;
+
+      const types = [
+        { role: '學生', item: ITEMS.STAMPED_FORM, patience: 450, color: '#f43f5e' },
+        { role: '學生', item: ITEMS.KEY, patience: 400, color: '#3b82f6' },
+        { role: '老師', item: ITEMS.COPY_DOC, patience: 350, color: '#8b5cf6' },
+        { role: '家長', item: ITEMS.HOT_TEA, patience: 300, color: '#ea580c' } // 家長耐心最短
+      ];
+
+      const chosen = types[Math.floor(Math.random() * types.length)];
+      const targetSlot = queueSlots[customers.length];
+
+      customers.push({
+        x: targetSlot.x,
+        y: targetSlot.y,
+        role: chosen.role,
+        wantedItem: chosen.item,
+        maxPatience: chosen.patience,
+        patience: chosen.patience,
+        color: chosen.color,
+        bounce: Math.random() * Math.PI
+      });
+    }
+
+    function startGame() {
+      initAudio();
+      startBGM();
+      modal.style.display = 'none';
+      isPlaying = true;
+      gameTime = 16.5 * 60;
+      score = 0;
+      scoreText.innerText = "0";
+      player.san = 100;
+      player.heldItem = null;
+      updateHeldUI();
+      player.x = 180;
+      player.y = 220;
+      customers = [];
+      feedbackList = [];
+
+      spawnCustomer();
+      spawnCustomer();
+    }
+
+    function gameOver(win) {
+      isPlaying = false;
+      stopBGM();
+      modal.style.display = 'flex';
+
+      if (win) {
+        playSuccess();
+        triggerHaptic('success');
+        modalTitle.innerText = "🎉 準時下班！金牌校安！";
+        modalTitle.style.color = "#10b981";
+        modalDesc.innerHTML = `17:00 打卡鐘響起！ ⏰<br>你臨危不亂地處理了所有突發公文與需求！<br><b>最終值勤積分：${score} 分</b><br>守護了學務處的和平與自己的理智！`;
+        startBtn.innerText = "明天再戰";
+      } else {
+        playAnger();
+        triggerHaptic('anger');
+        modalTitle.innerText = "💀 崩潰加班！理智斷線！";
+        modalTitle.style.color = "#ef4444";
+        modalDesc.innerHTML = `SAN 值歸零了！ 🥺<br>櫃檯前大排長龍、抱怨電話響不停...<br>今天只好多留下來寫檢討報告與加班了。`;
+        startBtn.innerText = "重新振作";
+      }
+    }
+
+    /* ==========================================================
+       主更新迴圈
+       ========================================================== */
+    function update() {
+      if (!isPlaying) return;
+
+      // 時間推進
+      gameTime += (1 / 60) * timeScale;
+      let hours = Math.floor(gameTime / 60);
+      let minutes = Math.floor(gameTime % 60);
+      timeDisplay.innerText = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+
+      if (gameTime >= targetTime) {
+        gameOver(true);
+        return;
+      }
+
+      // 主角移動
+      let dx = 0, dy = 0;
+      if (keys.up) { dy -= 1; player.facing = 'up'; }
+      if (keys.down) { dy -= 1; player.facing = 'down'; }
+      if (keys.left) { dx -= 1; player.facing = 'left'; }
+      if (keys.right) { dx += 1; player.facing = 'right'; }
+
+      if (dx !== 0 && dy !== 0) {
+        dx *= 0.7071;
+        dy *= 0.7071;
+      }
+
+      if (dx !== 0 || dy !== 0) player.walkFrame += 0.25;
+      else player.walkFrame = 0;
+
+      player.x += dx * player.speed;
+      player.y += dy * player.speed;
+
+      // 辦公室走動邊界限制 (不能穿進櫃檯內)
+      player.x = Math.max(20, Math.min(350, player.x));
+      player.y = Math.max(160, Math.min(410, player.y));
+
+      // 顧客耐心倒數
+      for (let i = customers.length - 1; i >= 0; i--) {
+        const cust = customers[i];
+        cust.patience--;
+
+        if (cust.patience <= 0) {
+          // 耐心耗盡，爆氣扣 SAN！
+          playAnger();
+          triggerHaptic('anger');
+          player.san = Math.max(0, player.san - 25);
+          addFeedback(`${cust.role}暴怒離去！ -25 SAN 💥`, cust.x, cust.y, '#ef4444');
+          customers.splice(i, 1);
+
+          if (player.san <= 0) {
+            gameOver(false);
+            return;
+          }
+        }
+      }
+
+      // 生成新顧客
+      spawnTimer++;
+      if (spawnTimer > 180) {
+        spawnCustomer();
+        spawnTimer = 0;
+      }
+
+      // 更新理智條
+      sanBar.style.width = `${(player.san / player.maxSan) * 100}%`;
+
+      // 飄字生命週期
+      for (let i = feedbackList.length - 1; i >= 0; i--) {
+        feedbackList[i].y -= 0.6;
+        feedbackList[i].life--;
+        if (feedbackList[i].life <= 0) feedbackList.splice(i, 1);
+      }
+    }
+
+    /* ==========================================================
+       畫布渲染繪圖
+       ========================================================== */
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // 地板磁磚
+      ctx.fillStyle = '#fef3c7';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // 頂部櫃檯隔板 (接待台)
+      ctx.fillStyle = '#b45309';
+      ctx.fillRect(20, 140, 240, 16);
+      ctx.fillStyle = '#78350f';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.fillText("【 學務處服務櫃檯 】", 80, 152);
+
+      // 繪製工作站 (Stations)
+      stations.forEach(st => {
+        ctx.fillStyle = st.color;
+        ctx.beginPath();
+        ctx.roundRect(st.x, st.y, st.w, st.h, 10);
+        ctx.fill();
+        ctx.strokeStyle = '#7c2d12';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        // 站點標籤與圖示
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 13px sans-serif';
+        ctx.fillText(st.name, st.x + 8, st.y + 22);
+        ctx.font = '18px sans-serif';
+        ctx.fillText(st.icon, st.x + st.w - 28, st.y + 26);
+      });
+
+      // 繪製櫃檯等待的顧客 (NPC)
+      customers.forEach((cust, idx) => {
+        cust.bounce += 0.05;
+        let bob = Math.sin(cust.bounce) * 2;
+
+        // 顧客身體
+        ctx.fillStyle = cust.color;
+        ctx.beginPath();
+        ctx.arc(cust.x, cust.y + bob, 15, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#3e2723';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // 角色名
+        ctx.fillStyle = '#7c2d12';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.fillText(cust.role, cust.x - 11, cust.y + 26 + bob);
+
+        // 頭頂需求氣泡
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.roundRect(cust.x - 20, cust.y - 42 + bob, 40, 24, 6);
+        ctx.fill();
+        ctx.strokeStyle = '#ea580c';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.font = '16px sans-serif';
+        ctx.fillText(cust.wantedItem.icon, cust.x - 9, cust.y - 25 + bob);
+
+        // 耐心進度條 (綠 -> 黃 -> 紅)
+        let pRatio = Math.max(0, cust.patience / cust.maxPatience);
+        let barColor = pRatio > 0.5 ? '#10b981' : (pRatio > 0.25 ? '#f59e0b' : '#ef4444');
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillRect(cust.x - 18, cust.y - 14 + bob, 36, 4);
+        ctx.fillStyle = barColor;
+        ctx.fillRect(cust.x - 18, cust.y - 14 + bob, 36 * pRatio, 4);
+      });
+
+      // 繪製主角（Q 版值勤校安）
+      let wBob = Math.sin(player.walkFrame) * 2;
+      ctx.fillStyle = 'rgba(120, 53, 15, 0.15)';
+      ctx.beginPath();
+      ctx.ellipse(player.x + 15, player.y + 32, 16, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 主角身體
+      ctx.fillStyle = '#3b82f6';
+      ctx.beginPath();
+      ctx.roundRect(player.x, player.y + wBob, 30, 30, 8);
+      ctx.fill();
+      ctx.strokeStyle = '#1e3a8a';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // 反光背心
+      ctx.fillStyle = '#fde047';
+      ctx.fillRect(player.x + 2, player.y + 8 + wBob, 26, 14);
+      ctx.fillStyle = '#10b981';
+      ctx.fillRect(player.x + 2, player.y + 14 + wBob, 26, 3);
+
+      // 主角頭頂舉著的物品 (Carry Item)
+      if (player.heldItem) {
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.roundRect(player.x + 2, player.y - 24 + wBob, 26, 20, 5);
+        ctx.fill();
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.font = '14px sans-serif';
+        ctx.fillText(player.heldItem.icon, player.x + 7, player.y - 9 + wBob);
+      }
+
+      // 飄字反饋
+      feedbackList.forEach(fb => {
+        ctx.fillStyle = fb.color;
+        ctx.font = 'bold 13px sans-serif';
+        ctx.fillText(fb.text, fb.x - 20, fb.y);
+      });
+    }
+
+    function gameLoop() {
+      update();
+      render();
+      requestAnimationFrame(gameLoop);
+    }
+
+    requestAnimationFrame(gameLoop);
+  </script>
+</body>
+</html>
