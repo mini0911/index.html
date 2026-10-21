@@ -9,13 +9,12 @@
       --primary: #f97316;
       --primary-dark: #c2410c;
       --primary-light: #ffedd5;
-      --bg-cream: #fefce8;
+      --bg-main: #fefce8;
       --card-bg: #ffffff;
       --text-main: #1e293b;
       --text-sub: #64748b;
       --danger: #ef4444;
       --success: #10b981;
-      --san-color: #f43f5e;
     }
 
     * {
@@ -29,7 +28,7 @@
     }
 
     body {
-      background-color: #f1f5f9;
+      background-color: #0f172a;
       color: var(--text-main);
       display: flex;
       justify-content: center;
@@ -43,15 +42,24 @@
       max-width: 440px;
       height: 100vh;
       max-height: 900px;
-      background: var(--bg-cream);
+      background: var(--bg-main);
       display: flex;
       flex-direction: column;
       position: relative;
       overflow: hidden;
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      border-radius: 0;
     }
 
-    /* 頂部導航與儀表板 */
+    @media (min-width: 450px) {
+      #app-container {
+        border-radius: 28px;
+        height: 92vh;
+        border: 4px solid #fed7aa;
+      }
+    }
+
+    /* 頂部打卡狀態儀表板 */
     .dashboard {
       background: #ffffff;
       padding: 14px 16px 12px;
@@ -59,8 +67,8 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
-      box-shadow: 0 2px 8px rgba(249, 115, 22, 0.06);
       z-index: 10;
+      box-shadow: 0 4px 12px rgba(249, 115, 22, 0.06);
     }
 
     .dashboard-top {
@@ -74,7 +82,7 @@
       align-items: center;
       gap: 6px;
       background: var(--primary-light);
-      padding: 4px 10px;
+      padding: 5px 12px;
       border-radius: 20px;
       font-size: 13px;
       font-weight: 800;
@@ -133,7 +141,6 @@
       border: 2px solid #fda4af;
       border-radius: 10px;
       overflow: hidden;
-      position: relative;
     }
 
     .san-bar-fill {
@@ -166,13 +173,13 @@
       position: relative;
     }
 
-    /* 訪客事件卡 */
+    /* 訪客情境卡片 */
     .visitor-card {
       background: #ffffff;
       border: 3px solid #fdba74;
       border-radius: 20px;
       padding: 16px;
-      box-shadow: 0 8px 16px rgba(249, 115, 22, 0.08);
+      box-shadow: 0 8px 18px rgba(249, 115, 22, 0.08);
       display: flex;
       flex-direction: column;
       gap: 12px;
@@ -249,7 +256,7 @@
       border-color: transparent transparent #fde68a transparent;
     }
 
-    /* 選項按鈕組 */
+    /* 三選一選項卡片組 */
     .options-group {
       display: flex;
       flex-direction: column;
@@ -413,17 +420,8 @@
       animation: popIn 0.35s ease-out;
     }
 
-    .report-emoji {
-      font-size: 46px;
-      line-height: 1;
-    }
-
-    .report-title {
-      font-size: 22px;
-      font-weight: 900;
-      color: #0f172a;
-    }
-
+    .report-emoji { font-size: 46px; line-height: 1; }
+    .report-title { font-size: 22px; font-weight: 900; color: #0f172a; }
     .title-win { color: #16a34a; }
     .title-lose { color: #dc2626; }
 
@@ -486,6 +484,7 @@
 <body>
 
   <div id="app-container">
+    <!-- 頂部打卡狀態儀表板 -->
     <header class="dashboard">
       <div class="dashboard-top">
         <div class="app-title-badge">
@@ -517,6 +516,7 @@
       </div>
     </header>
 
+    <!-- 舞台區：卡片式訪客情境與選項 -->
     <main class="stage-container" id="stage">
       <div class="visitor-card" id="visitor-card">
         <div class="visitor-header">
@@ -531,9 +531,11 @@
         </div>
       </div>
 
+      <!-- 選項清單 -->
       <div class="options-group" id="options-box"></div>
     </main>
 
+    <!-- 處置結果彈出層 (Bottom Sheet) -->
     <div class="result-sheet" id="result-sheet">
       <div class="result-header">
         <div class="result-tag" id="result-tag">處置完畢</div>
@@ -542,23 +544,25 @@
       <div class="result-desc" id="result-desc">
         同學點點頭，收好東西放心地離開了學務處。
       </div>
-      <button class="next-btn" onclick="nextVisitor()">接待下一位同學 ➔</button>
+      <button class="next-btn" onclick="nextVisitor()">接待下一位訪客 ➔</button>
     </div>
 
+    <!-- 全螢幕開始視窗 -->
     <div class="modal-fullscreen" id="start-modal">
       <div class="report-card">
         <div class="report-emoji">🏫</div>
         <h1 class="report-title">今天也要平安下班！</h1>
-        <div class="report-badge">學務處校安生存日記</div>
+        <div class="report-badge">學務處校安日常版</div>
         <p style="font-size: 13px; color: #475569; line-height: 1.6; font-weight: 700;">
           現在是 15:30，距離 17:00 準時打卡下班只剩最後一個半小時！<br><br>
-          各班同學、導師與家長的棘手問題排山倒海而來，<br>
+          各班同學、導師與家長的棘手難題排山倒海而來，<br>
           做出正確抉擇，保護你的理智值（SAN）平安下班！
         </p>
         <button class="next-btn" onclick="startGame()">開始今日值勤 📋</button>
       </div>
     </div>
 
+    <!-- 全螢幕結算卡片視窗 -->
     <div class="modal-fullscreen" id="end-modal" style="display: none;">
       <div class="report-card">
         <div class="report-emoji" id="end-emoji">🎉</div>
@@ -588,6 +592,9 @@
   </div>
 
   <script>
+    /* ==========================================================
+       Web Audio API：音效系統（免外掛音檔）
+       ========================================================== */
     let audioCtx = null;
     let isMuted = false;
 
@@ -646,6 +653,9 @@
       } catch (e) { }
     }
 
+    /* ==========================================================
+       8 大高共鳴真實校園難題題庫
+       ========================================================== */
     const visitorsPool = [
       {
         name: "高二３班 陳同學",
@@ -833,8 +843,11 @@
       }
     ];
 
-    let gameTimeState = 15.5 * 60;
-    const targetTimeState = 17.0 * 60;
+    /* ==========================================================
+       狀態管理
+       ========================================================== */
+    let gameTimeState = 15.5 * 60; // 15:30
+    const targetTimeState = 17.0 * 60; // 17:00
     let san = 100;
     const maxSan = 100;
     let solvedCount = 0;
@@ -907,11 +920,13 @@
       visitorTag.innerText = currentVisitor.tag;
       speechText.innerText = currentVisitor.speech;
 
+      // 觸發卡片彈跳進場動畫
       const card = document.getElementById('visitor-card');
       card.style.animation = 'none';
-      card.offsetHeight;
+      card.offsetHeight; // reflow
       card.style.animation = 'popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)';
 
+      // 隨機打亂選項
       optionsBox.innerHTML = '';
       const shuffledOptions = shuffle(currentVisitor.options);
 
@@ -931,6 +946,7 @@
       san = Math.max(0, Math.min(maxSan, san + opt.san));
       updateSanDisplay();
 
+      // 每題消耗 12 ~ 15 分鐘
       gameTimeState += 15;
       updateTimeDisplay();
 
@@ -976,6 +992,8 @@
       initAudio();
       startModal.style.display = 'none';
       endModal.style.display = 'none';
+      resultSheet.style.display = 'none';
+
       gameTimeState = 15.5 * 60;
       san = 100;
       solvedCount = 0;
