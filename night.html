@@ -3,18 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>今天也要平安下班！校安日常版</title>
+  <title>今天也要平安下班：校安人員的一天</title>
   <style>
     :root {
       --primary: #f97316;
       --primary-dark: #c2410c;
       --primary-light: #ffedd5;
-      --bg-main: #fefce8;
-      --card-bg: #ffffff;
-      --text-main: #1e293b;
-      --text-sub: #64748b;
+      --bg: #0f172a;
+      --panel: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
       --danger: #ef4444;
       --success: #10b981;
+      --urgent: #dc2626;
+      --gold: #f59e0b;
     }
 
     * {
@@ -24,76 +26,71 @@
       user-select: none;
       -webkit-user-select: none;
       -webkit-tap-highlight-color: transparent;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Microsoft JhengHei", sans-serif;
     }
 
     body {
-      background-color: #0f172a;
-      color: var(--text-main);
+      background-color: var(--bg);
+      color: var(--text);
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      overflow-x: hidden;
+      overflow: hidden;
     }
 
-    #app-container {
+    #game-wrapper {
+      position: relative;
       width: 100vw;
-      max-width: 440px;
+      max-width: 480px;
       height: 100vh;
-      max-height: 900px;
-      background: var(--bg-main);
+      max-height: 920px;
+      background: #1e293b;
       display: flex;
       flex-direction: column;
-      position: relative;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
       overflow: hidden;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-      border-radius: 0;
     }
 
-    @media (min-width: 450px) {
-      #app-container {
-        border-radius: 28px;
-        height: 92vh;
-        border: 4px solid #fed7aa;
+    @media (min-width: 500px) {
+      #game-wrapper {
+        height: 94vh;
+        border-radius: 24px;
+        border: 4px solid #f97316;
       }
     }
 
-    /* 頂部打卡狀態儀表板 */
-    .dashboard {
+    /* 頂部 HUD 狀態儀表板 */
+    header {
       background: #ffffff;
-      padding: 14px 16px 12px;
-      border-bottom: 3px solid #fed7aa;
+      padding: 10px 14px 8px;
+      border-bottom: 3px solid #fdba74;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      z-index: 10;
-      box-shadow: 0 4px 12px rgba(249, 115, 22, 0.06);
+      gap: 6px;
+      z-index: 20;
     }
 
-    .dashboard-top {
+    .hud-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
-    .app-title-badge {
+    .badge-role {
       display: flex;
       align-items: center;
       gap: 6px;
       background: var(--primary-light);
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 800;
       color: var(--primary-dark);
-      border: 1.5px solid #fdba74;
+      font-weight: 900;
+      font-size: 13px;
+      padding: 4px 10px;
+      border-radius: 12px;
+      border: 1px solid #fdba74;
     }
 
-    .time-badge {
-      display: flex;
-      align-items: center;
-      gap: 5px;
+    .clock-pill {
       background: #0f172a;
       color: #fbbf24;
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -105,496 +102,512 @@
       box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
     }
 
-    .sound-btn {
-      background: #f1f5f9;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      padding: 4px 8px;
-      font-size: 14px;
-      cursor: pointer;
+    .hud-meters {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
     }
 
-    .stats-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .san-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-
-    .san-meta {
-      display: flex;
-      justify-content: space-between;
-      font-size: 11px;
-      font-weight: 800;
-      color: #9f1239;
-    }
-
-    .san-bar-track {
-      height: 14px;
-      background: #ffe4e6;
-      border: 2px solid #fda4af;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-
-    .san-bar-fill {
-      height: 100%;
-      width: 100%;
-      background: linear-gradient(90deg, #f43f5e, #e11d48);
-      border-radius: 8px;
-      transition: width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    .case-count-box {
-      font-size: 11px;
-      font-weight: 800;
-      color: #475569;
-      background: #f8fafc;
-      padding: 5px 10px;
-      border-radius: 8px;
-      border: 1px solid #e2e8f0;
-      white-space: nowrap;
-    }
-
-    /* 主要卡片舞台區 */
-    .stage-container {
-      flex: 1;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      overflow-y: auto;
-      position: relative;
-    }
-
-    /* 訪客情境卡片 */
-    .visitor-card {
-      background: #ffffff;
-      border: 3px solid #fdba74;
-      border-radius: 20px;
-      padding: 16px;
-      box-shadow: 0 8px 18px rgba(249, 115, 22, 0.08);
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-      position: relative;
-    }
-
-    @keyframes popIn {
-      from { opacity: 0; transform: translateY(18px) scale(0.96); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
-    .visitor-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .avatar-wrapper {
-      width: 58px;
-      height: 58px;
-      border-radius: 50%;
-      background: #fff7ed;
-      border: 2.5px solid #fb923c;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 30px;
-      flex-shrink: 0;
-      box-shadow: 0 4px 0 #fed7aa;
-    }
-
-    .visitor-info {
+    .meter-box {
       display: flex;
       flex-direction: column;
       gap: 2px;
     }
 
-    .visitor-name {
-      font-size: 16px;
-      font-weight: 900;
-      color: #7c2d12;
-    }
-
-    .visitor-status-tag {
+    .meter-label {
+      display: flex;
+      justify-content: space-between;
       font-size: 11px;
-      font-weight: 700;
-      color: #ea580c;
-      background: #ffedd5;
-      padding: 2px 8px;
-      border-radius: 6px;
-      align-self: flex-start;
+      font-weight: 800;
+      color: #475569;
     }
 
-    .speech-bubble {
-      background: #fffbeb;
-      border: 2px solid #fde68a;
-      border-radius: 14px;
-      padding: 14px;
-      font-size: 15px;
+    .meter-track {
+      height: 10px;
+      background: #e2e8f0;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid #cbd5e1;
+    }
+
+    .meter-fill-energy {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #10b981, #059669);
+      transition: width 0.3s ease;
+    }
+
+    .meter-fill-bladder {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #38bdf8, #0284c7);
+      transition: width 0.3s ease;
+    }
+
+    /* 地圖 Canvas 視窗 */
+    #canvas-container {
+      flex: 1;
+      position: relative;
+      background: #cbd5e1;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* 懸浮任務/提示卡 */
+    #objective-banner {
+      position: absolute;
+      top: 10px;
+      left: 12px;
+      right: 12px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(4px);
+      color: #ffffff;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 12px;
       font-weight: 700;
-      color: #1e293b;
-      line-height: 1.5;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid #f59e0b;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    #objective-banner .pulse-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #f59e0b;
+      box-shadow: 0 0 8px #f59e0b;
+      animation: pulse 1s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { transform: scale(0.8); opacity: 0.7; }
+      to { transform: scale(1.2); opacity: 1; }
+    }
+
+    /* 手機虛擬控制鈕 */
+    #touch-bar {
+      position: absolute;
+      bottom: 12px;
+      left: 12px;
+      right: 12px;
+      height: 110px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+      z-index: 15;
+    }
+
+    .dpad-box {
+      pointer-events: auto;
+      width: 110px;
+      height: 110px;
       position: relative;
     }
 
-    .speech-bubble::before {
-      content: "";
+    .dpad-btn {
       position: absolute;
-      top: -8px;
-      left: 28px;
-      border-width: 0 8px 8px 8px;
-      border-style: solid;
-      border-color: transparent transparent #fde68a transparent;
-    }
-
-    /* 三選一選項卡片組 */
-    .options-group {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: auto;
-    }
-
-    .option-btn {
-      background: #ffffff;
-      border: 2.5px solid #cbd5e1;
-      border-radius: 16px;
-      padding: 13px 16px;
-      font-size: 14px;
-      font-weight: 800;
-      color: #334155;
-      cursor: pointer;
-      text-align: left;
-      line-height: 1.4;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      box-shadow: 0 4px 0 #cbd5e1;
-      transition: all 0.1s ease;
-    }
-
-    .option-btn:hover {
-      border-color: #fb923c;
-      background: #fff7ed;
-      color: #9a3412;
-      box-shadow: 0 4px 0 #f97316;
-    }
-
-    .option-btn:active {
-      transform: translateY(3px);
-      box-shadow: 0 1px 0 #f97316;
-    }
-
-    .opt-number {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      background: #f1f5f9;
-      color: #64748b;
-      font-size: 12px;
+      width: 38px;
+      height: 38px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 2px solid #ea580c;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 900;
+      color: #7c2d12;
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-shrink: 0;
-      font-weight: 900;
+      box-shadow: 0 3px 0 #c2410c;
     }
 
-    /* 處置結果彈窗 (Bottom Sheet) */
-    .result-sheet {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: #ffffff;
-      border-top: 4px solid var(--primary);
-      border-radius: 24px 24px 0 0;
-      padding: 22px 20px env(safe-area-inset-bottom, 20px);
-      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.2);
-      display: none;
-      flex-direction: column;
-      gap: 14px;
-      z-index: 25;
-      animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    .dpad-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 #c2410c;
+      background: #fdba74;
     }
 
-    @keyframes slideUp {
-      from { transform: translateY(100%); }
-      to { transform: translateY(0); }
-    }
+    #btn-up { top: 0; left: 36px; }
+    #btn-down { bottom: 0; left: 36px; }
+    #btn-left { top: 36px; left: 0; }
+    #btn-right { top: 36px; right: 0; }
 
-    .result-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .result-tag {
-      font-size: 13px;
-      font-weight: 900;
-      padding: 4px 12px;
-      border-radius: 12px;
-    }
-
-    .tag-positive { background: #dcfce7; color: #15803d; }
-    .tag-negative { background: #fee2e2; color: #b91c1c; }
-
-    .stat-change {
-      font-size: 14px;
-      font-weight: 900;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .stat-gain { color: #16a34a; }
-    .stat-loss { color: #dc2626; }
-
-    .result-desc {
-      font-size: 14px;
-      color: #334155;
-      line-height: 1.55;
-      font-weight: 700;
-      background: #f8fafc;
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px solid #e2e8f0;
-    }
-
-    .next-btn {
-      width: 100%;
-      padding: 14px;
-      border-radius: 14px;
-      background: var(--primary);
+    #btn-interact {
+      pointer-events: auto;
+      width: 82px;
+      height: 82px;
+      border-radius: 50%;
+      background: #f97316;
       color: #ffffff;
-      font-size: 16px;
+      border: 3.5px solid #7c2d12;
+      box-shadow: 0 5px 0 #7c2d12;
+      font-size: 18px;
       font-weight: 900;
-      border: none;
-      cursor: pointer;
-      box-shadow: 0 4px 0 var(--primary-dark);
-      transition: all 0.1s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
     }
 
-    .next-btn:active {
+    #btn-interact:active {
       transform: translateY(3px);
-      box-shadow: 0 1px 0 var(--primary-dark);
+      box-shadow: 0 2px 0 #7c2d12;
+      background: #ea580c;
     }
 
-    /* 遊戲開始/結算全螢幕視窗 */
-    .modal-fullscreen {
+    #btn-interact small {
+      font-size: 10px;
+      color: #ffedd5;
+    }
+
+    /* 事件對話/決策彈窗 */
+    .dialog-overlay {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(15, 23, 42, 0.75);
-      backdrop-filter: blur(4px);
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(3px);
+      display: none;
+      flex-direction: column;
+      justify-content: flex-end;
+      z-index: 30;
+      padding: 14px;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .dialog-card {
+      background: #ffffff;
+      border-radius: 20px;
+      border: 3px solid #f97316;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .dialog-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 2px solid #ffedd5;
+      padding-bottom: 8px;
+    }
+
+    .dialog-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #fff7ed;
+      border: 2px solid #fb923c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .dialog-meta h3 {
+      font-size: 16px;
+      font-weight: 900;
+      color: #7c2d12;
+    }
+
+    .dialog-meta p {
+      font-size: 11px;
+      color: #ea580c;
+      font-weight: 700;
+    }
+
+    .dialog-desc {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1e293b;
+      line-height: 1.5;
+      background: #f8fafc;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .dialog-options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .opt-card {
+      background: #fffbeb;
+      border: 2px solid #fde68a;
+      border-radius: 12px;
+      padding: 11px 12px;
+      font-size: 13px;
+      font-weight: 800;
+      color: #78350f;
+      cursor: pointer;
+      text-align: left;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 0 #f59e0b;
+    }
+
+    .opt-card:active {
+      transform: translateY(2px);
+      box-shadow: none;
+      background: #fef08a;
+    }
+
+    .opt-time-tag {
+      font-size: 11px;
+      background: #f59e0b;
+      color: #ffffff;
+      padding: 3px 6px;
+      border-radius: 6px;
+      white-space: nowrap;
+      margin-left: 8px;
+    }
+
+    /* 結算/開始全螢幕視窗 */
+    .screen-modal {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(5px);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 24px;
+      padding: 20px;
       z-index: 50;
     }
 
-    .report-card {
+    .screen-card {
       width: 100%;
-      max-width: 340px;
+      max-width: 330px;
       background: #ffffff;
       border-radius: 24px;
       border: 4px solid #fdba74;
-      padding: 24px 20px;
+      padding: 22px 18px;
       text-align: center;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
       display: flex;
       flex-direction: column;
-      gap: 14px;
-      animation: popIn 0.35s ease-out;
+      gap: 12px;
     }
 
-    .report-emoji { font-size: 46px; line-height: 1; }
-    .report-title { font-size: 22px; font-weight: 900; color: #0f172a; }
-    .title-win { color: #16a34a; }
-    .title-lose { color: #dc2626; }
-
-    .report-badge {
-      font-size: 13px;
+    .screen-card h1 { font-size: 22px; font-weight: 900; color: #0f172a; }
+    .screen-badge {
+      font-size: 12px;
       font-weight: 800;
       color: #9a3412;
       background: #ffedd5;
-      padding: 6px 14px;
-      border-radius: 12px;
+      padding: 5px 12px;
+      border-radius: 10px;
       align-self: center;
       border: 1px dashed #ea580c;
     }
 
-    .report-stats-grid {
+    .screen-stats-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      gap: 8px;
       background: #f8fafc;
-      padding: 12px;
-      border-radius: 14px;
+      padding: 10px;
+      border-radius: 12px;
       border: 1px solid #e2e8f0;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 800;
       color: #475569;
     }
 
-    .report-stats-item span {
+    .screen-stats-grid span {
       display: block;
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 900;
       color: #0f172a;
       margin-top: 2px;
     }
 
-    .btn-group-column {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+    .btn-big {
+      width: 100%;
+      padding: 13px;
+      border-radius: 14px;
+      background: var(--primary);
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 900;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 0 var(--primary-dark);
     }
 
-    .share-btn {
-      padding: 12px;
+    .btn-big:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 var(--primary-dark);
+    }
+
+    .btn-share {
+      padding: 11px;
       border-radius: 12px;
       background: #0284c7;
       color: #ffffff;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 800;
       border: none;
       cursor: pointer;
       box-shadow: 0 3px 0 #0369a1;
     }
-
-    .share-btn:active {
-      transform: translateY(2px);
-      box-shadow: 0 1px 0 #0369a1;
-    }
   </style>
 </head>
 <body>
 
-  <div id="app-container">
-    <!-- 頂部打卡狀態儀表板 -->
-    <header class="dashboard">
-      <div class="dashboard-top">
-        <div class="app-title-badge">
+  <div id="game-wrapper">
+    <!-- 頂部 HUD 狀態欄 -->
+    <header>
+      <div class="hud-top">
+        <div class="badge-role">
           <span>🎒</span>
-          <span>校安值勤中</span>
+          <span>值勤校安老師</span>
         </div>
-        <div style="display: flex; gap: 8px; align-items: center;">
-          <button class="sound-btn" id="sound-btn" onclick="toggleAudio()">🔊</button>
-          <div class="time-badge">
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button id="btn-sound" onclick="toggleAudio()" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:8px; padding:3px 8px; font-size:13px; cursor:pointer;">🔊</button>
+          <div class="clock-pill">
             <span>⏰</span>
-            <span id="time-display">15:30</span>
+            <span id="ui-clock">08:00</span>
           </div>
         </div>
       </div>
 
-      <div class="stats-row">
-        <div class="san-container">
-          <div class="san-meta">
-            <span>❤️ 精神理智值 (SAN)</span>
-            <span id="san-text">100 / 100</span>
+      <div class="hud-meters">
+        <div class="meter-box">
+          <div class="meter-label">
+            <span>⚡ 精力值 (SAN)</span>
+            <span id="ui-energy-val">100%</span>
           </div>
-          <div class="san-bar-track">
-            <div class="san-bar-fill" id="san-bar"></div>
+          <div class="meter-track">
+            <div class="meter-fill-energy" id="ui-energy-bar"></div>
           </div>
         </div>
-        <div class="case-count-box">
-          已排解: <span id="solved-count" style="color: var(--primary); font-weight: 900;">0</span> 件
+        <div class="meter-box">
+          <div class="meter-label">
+            <span>💧 膀胱壓力 (憋尿)</span>
+            <span id="ui-bladder-val">0%</span>
+          </div>
+          <div class="meter-track">
+            <div class="meter-fill-bladder" id="ui-bladder-bar"></div>
+          </div>
         </div>
       </div>
     </header>
 
-    <!-- 舞台區：卡片式訪客情境與選項 -->
-    <main class="stage-container" id="stage">
-      <div class="visitor-card" id="visitor-card">
-        <div class="visitor-header">
-          <div class="avatar-wrapper" id="avatar-icon">🎒</div>
-          <div class="visitor-info">
-            <div class="visitor-name" id="visitor-name">同學走進學務處...</div>
-            <div class="visitor-status-tag" id="visitor-tag">求助中</div>
+    <!-- 2D 俯視地圖舞台 -->
+    <div id="canvas-container">
+      <div id="objective-banner">
+        <div class="pulse-dot"></div>
+        <span id="ui-objective">跟隨金色箭頭光點，前往處理最高優先級案件！</span>
+      </div>
+
+      <canvas id="gameCanvas" width="480" height="520"></canvas>
+
+      <!-- 觸控按鍵與互動鍵 -->
+      <div id="touch-bar">
+        <div class="dpad-box">
+          <button class="dpad-btn" id="btn-up">▲</button>
+          <button class="dpad-btn" id="btn-down">▼</button>
+          <button class="dpad-btn" id="btn-left">◀</button>
+          <button class="dpad-btn" id="btn-right">▶</button>
+        </div>
+        <button id="btn-interact" onclick="triggerInteract()">
+          <span>[ E ]</span>
+          <small>調查/處理</small>
+        </button>
+      </div>
+    </div>
+
+    <!-- 處置對話視窗 -->
+    <div class="dialog-overlay" id="dialog-overlay">
+      <div class="dialog-card">
+        <div class="dialog-header">
+          <div class="dialog-avatar" id="dlg-avatar">📝</div>
+          <div class="dialog-meta">
+            <h3 id="dlg-title">事件名稱</h3>
+            <p id="dlg-tag">急迫性：普通</p>
           </div>
         </div>
-        <div class="speech-bubble" id="speech-text">
-          稍等一下，下一位同學正在敲門走進辦公室...
-        </div>
+        <div class="dialog-desc" id="dlg-desc">情境說明...</div>
+        <div class="dialog-options" id="dlg-options"></div>
       </div>
-
-      <!-- 選項清單 -->
-      <div class="options-group" id="options-box"></div>
-    </main>
-
-    <!-- 處置結果彈出層 (Bottom Sheet) -->
-    <div class="result-sheet" id="result-sheet">
-      <div class="result-header">
-        <div class="result-tag" id="result-tag">處置完畢</div>
-        <div class="stat-change" id="stat-change">SAN +10</div>
-      </div>
-      <div class="result-desc" id="result-desc">
-        同學點點頭，收好東西放心地離開了學務處。
-      </div>
-      <button class="next-btn" onclick="nextVisitor()">接待下一位訪客 ➔</button>
     </div>
 
-    <!-- 全螢幕開始視窗 -->
-    <div class="modal-fullscreen" id="start-modal">
-      <div class="report-card">
-        <div class="report-emoji">🏫</div>
-        <h1 class="report-title">今天也要平安下班！</h1>
-        <div class="report-badge">學務處校安日常版</div>
-        <p style="font-size: 13px; color: #475569; line-height: 1.6; font-weight: 700;">
-          現在是 15:30，距離 17:00 準時打卡下班只剩最後一個半小時！<br><br>
-          各班同學、導師與家長的棘手難題排山倒海而來，<br>
-          做出正確抉擇，保護你的理智值（SAN）平安下班！
+    <!-- 開始視窗 -->
+    <div class="screen-modal" id="modal-start">
+      <div class="screen-card">
+        <div style="font-size:42px;">🏫</div>
+        <h1>今天也要平安下班！</h1>
+        <div class="screen-badge">校安人員的一天・日常模擬</div>
+        <p style="font-size:13px; color:#475569; line-height:1.6; font-weight:700;">
+          現在是上午 08:00，目標撐到 17:00 準時打卡！<br><br>
+          地圖上的<b>金色光點與箭頭</b>會引導你到緊急事件（❗）。<br>
+          累了請去沙發休息回精力，渴了請喝水，<br>
+          但請切記<b>按時去洗手間</b>，憋尿過度將直接送醫！
         </p>
-        <button class="next-btn" onclick="startGame()">開始今日值勤 📋</button>
+        <button class="btn-big" onclick="startGame()">打卡開始值勤 📋</button>
       </div>
     </div>
 
-    <!-- 全螢幕結算卡片視窗 -->
-    <div class="modal-fullscreen" id="end-modal" style="display: none;">
-      <div class="report-card">
-        <div class="report-emoji" id="end-emoji">🎉</div>
-        <h2 class="report-title" id="end-title">平安下班！</h2>
-        <div class="report-badge" id="end-badge">金牌校安守護者</div>
-        <p style="font-size: 13px; color: #475569; line-height: 1.5; font-weight: 700;" id="end-desc">
+    <!-- 結算視窗 -->
+    <div class="screen-modal" id="modal-end" style="display:none;">
+      <div class="screen-card">
+        <div style="font-size:42px;" id="end-emoji">🎉</div>
+        <h2 id="end-title" style="font-size:20px; font-weight:900;">平安下班！</h2>
+        <div class="screen-badge" id="end-badge">金牌校安守護者</div>
+        <p style="font-size:13px; color:#475569; line-height:1.5; font-weight:700;" id="end-desc">
           鐘聲響起，你保全了最後的理智，準時打卡撤退！
         </p>
 
-        <div class="report-stats-grid">
-          <div class="report-stats-item">
-            排解事件
-            <span id="end-solved">0</span>
+        <div class="screen-stats-grid">
+          <div>
+            處理案件
+            <span id="end-cases">0 件</span>
           </div>
-          <div class="report-stats-item">
-            剩餘理智
-            <span id="end-san">100%</span>
+          <div>
+            剩餘精力
+            <span id="end-energy">100%</span>
           </div>
         </div>
 
-        <div class="btn-group-column">
-          <button class="share-btn" onclick="copyShareText()">📋 複製戰績發 Threads / IG</button>
-          <button class="next-btn" onclick="restartGame()">再值勤一天 ⏰</button>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <button class="btn-share" onclick="copyShare()">📋 複製戰績發 Threads / IG</button>
+          <button class="btn-big" onclick="startGame()">再值勤一天 ⏰</button>
         </div>
       </div>
     </div>
   </div>
 
   <script>
-    /* ==========================================================
-       Web Audio API：音效系統（免外掛音檔）
-       ========================================================== */
     let audioCtx = null;
     let isMuted = false;
 
@@ -608,7 +621,7 @@
     function toggleAudio() {
       initAudio();
       isMuted = !isMuted;
-      document.getElementById('sound-btn').innerText = isMuted ? '🔇' : '🔊';
+      document.getElementById('btn-sound').innerText = isMuted ? '🔇' : '🔊';
     }
 
     function playTone(freq, type = 'sine', duration = 0.12, gainVal = 0.1) {
@@ -627,444 +640,586 @@
       } catch (e) { }
     }
 
-    function playSuccessSound() {
+    function playSuccess() {
       playTone(523.25, 'triangle', 0.08, 0.15);
       setTimeout(() => playTone(659.25, 'triangle', 0.1, 0.15), 60);
       setTimeout(() => playTone(783.99, 'triangle', 0.18, 0.2), 120);
     }
 
-    function playDamageSound() {
-      playTone(220, 'sawtooth', 0.12, 0.18);
-      setTimeout(() => playTone(140, 'sawtooth', 0.25, 0.18), 80);
+    function playDing() {
+      playTone(880, 'sine', 0.15, 0.1);
     }
 
-    function playBellSound() {
+    function playWarning() {
+      playTone(220, 'sawtooth', 0.15, 0.18);
+      setTimeout(() => playTone(150, 'sawtooth', 0.25, 0.18), 100);
+    }
+
+    function playBell() {
       playTone(659.25, 'sine', 0.3, 0.2);
       setTimeout(() => playTone(523.25, 'sine', 0.4, 0.2), 250);
       setTimeout(() => playTone(587.33, 'sine', 0.3, 0.2), 500);
       setTimeout(() => playTone(392.00, 'sine', 0.6, 0.2), 750);
     }
 
-    function triggerHaptic(type) {
-      if (!('vibrate' in navigator)) return;
-      try {
-        if (type === 'success') navigator.vibrate([35, 50, 40]);
-        else if (type === 'wrong') navigator.vibrate(180);
-      } catch (e) { }
-    }
+    let isPlaying = false;
+    let gameMinutes = 8 * 60;
+    const targetMinutes = 17 * 60;
+    let energy = 100;
+    let bladder = 0;
+    let solvedCount = 0;
+    let peeForcedCount = 0;
 
-    /* ==========================================================
-       8 大高共鳴真實校園難題題庫
-       ========================================================== */
-    const visitorsPool = [
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const uiClock = document.getElementById('ui-clock');
+    const uiEnergyVal = document.getElementById('ui-energy-val');
+    const uiEnergyBar = document.getElementById('ui-energy-bar');
+    const uiBladderVal = document.getElementById('ui-bladder-val');
+    const uiBladderBar = document.getElementById('ui-bladder-bar');
+    const uiObjective = document.getElementById('ui-objective');
+
+    const dialogOverlay = document.getElementById('dialog-overlay');
+    const dlgAvatar = document.getElementById('dlg-avatar');
+    const dlgTitle = document.getElementById('dlg-title');
+    const dlgTag = document.getElementById('dlg-tag');
+    const dlgDesc = document.getElementById('dlg-desc');
+    const dlgOptions = document.getElementById('dlg-options');
+
+    const modalStart = document.getElementById('modal-start');
+    const modalEnd = document.getElementById('modal-end');
+
+    const player = {
+      x: 240,
+      y: 280,
+      r: 16,
+      speed: 3.5,
+      facing: 'down',
+      walkFrame: 0
+    };
+
+    const facilities = [
+      { id: 'desk', name: '校安值勤電腦', x: 210, y: 160, w: 70, h: 42, icon: '💻', type: 'pc' },
+      { id: 'phone', name: '緊急陳情電話', x: 290, y: 160, w: 40, h: 42, icon: '☎️', type: 'phone' },
+      { id: 'sofa', name: '休閒會客沙發', x: 40, y: 340, w: 85, h: 50, icon: '🛋️', type: 'rest' },
+      { id: 'water', name: '溫熱飲水機', x: 380, y: 340, w: 45, h: 45, icon: '🚰', type: 'water' },
+      { id: 'toilet', name: '學務處洗手間', x: 40, y: 100, w: 60, h: 50, icon: '🚻', type: 'toilet' },
+      { id: 'gate', name: '學務處服務大門', x: 380, y: 100, w: 60, h: 50, icon: '🚪', type: 'gate' }
+    ];
+
+    let activeEvents = [];
+    let focusedEvent = null;
+
+    const eventTemplates = [
       {
-        name: "高二３班 陳同學",
-        avatar: "📱",
-        tag: "急得快哭出來",
-        speech: "老師！有人把我的醜照截圖做成表情包發在 Threads 告白粉專，底下好多人在嘲笑我，我明天不想來學校了...",
+        id: 'threads_bully',
+        name: 'Threads 告白版公審事件',
+        avatar: '📱',
+        desc: '學生哭著衝進來：「老師！有人在 Threads 告白粉專放我的惡搞醜照，全校都在傳...」',
+        urgent: true,
+        x: 370, y: 140,
         options: [
-          {
-            text: "截圖留存證據！我陪你找輔導老師與生輔組，發函要求平台下架並啟動校安關懷。",
-            san: 10,
-            feedback: "你溫和堅定地指導截圖存證並通報平台下架，同學鬆了一大口氣，感覺有了依靠！"
-          },
-          {
-            text: "網路上的留言過兩天大家就忘了啦，把手機關掉去操場跑跑步！",
-            san: -15,
-            feedback: "同學覺得被輕描淡寫敷衍，委屈地紅著眼眶走出學務處...你的心裡一陣內疚。（SAN -15）"
-          },
-          {
-            text: "叫你班上兄弟一起去貼文底下留言開戰，看誰戰力比較強！",
-            san: -25,
-            feedback: "兩小時後雙方在留言區爆發集體大混戰，家長氣沖沖打進學務處咆哮...（SAN -25）"
-          }
+          { text: '截圖存證！立刻指導存證並發函要求平台撤文，啟動校安關懷。', time: 30, energy: -5, bladder: 10, msg: '迅速穩定學生情緒並成功下架貼文！' },
+          { text: '先安撫他喝杯溫水，通報生輔組長協同調查發文 IP。', time: 45, energy: -10, bladder: 15, msg: '生輔組長介入，鎖定同班發文者進行輔導。' },
+          { text: '叫他不要看手機，幾天後大家就忘了。', time: 10, energy: -20, bladder: 5, msg: '處置不當！家長直衝校長室抗議學校消極！（精力大損）' }
         ]
       },
       {
-        name: "高一１班 林同學",
-        avatar: "💨",
-        tag: "神神秘秘探頭",
-        speech: "報告老師...三樓最底部的男廁裡面有很濃的水果甜味，好像有隔壁班同學躲在裡面偷抽電子煙...",
+        id: 'vape_alert',
+        name: '男廁電子煙突擊檢舉',
+        avatar: '💨',
+        desc: '巡堂組長通報：「三樓洗手間傳來濃烈水果煙霧甜味，疑似多人聚集抽電子煙！」',
+        urgent: true,
+        x: 70, y: 170,
         options: [
-          {
-            text: "謝謝你機警反映！我立刻帶上生輔組老師過去巡查，並保密你的吹哨身分。",
-            san: 12,
-            feedback: "你神速突擊成功查獲違禁品，同時妥善保護了報信同學的身分，成就感滿滿！"
-          },
-          {
-            text: "你現在跟我一起進去，直接當面指給我看是誰！",
-            san: -15,
-            feedback: "同學當場嚇得臉色發白，深怕被當成抓耙子報復，學務處信任度扣分。（SAN -15）"
-          },
-          {
-            text: "那個煙彈很貴學生買不起啦，應該只是芳香劑的味道吧？",
-            san: -20,
-            feedback: "十分鐘後廁所響起煙霧警報，教務主任親自過來關切你剛才在幹嘛...（SAN -20）"
-          }
+          { text: '攜帶密錄設備與生輔組突擊臨檢，依法查扣違禁品並通報。', time: 40, energy: -15, bladder: 15, msg: '查獲違禁煙彈並依菸害防制法開立紀錄！' },
+          { text: '廣播各班導師立刻到三樓廁所前集合共同盤查。', time: 30, energy: -10, bladder: 10, msg: '學生聞風四散，僅查獲遺留煙盒。' },
+          { text: '那是芳香劑吧？晚點巡邏再去看看。', time: 15, energy: -25, bladder: 5, msg: '廁所警報大作！引起全校疏散混亂！（精力重扣）' }
         ]
       },
       {
-        name: "高三５班 張同學",
-        avatar: "🧋",
-        tag: "手足無措",
-        speech: "老師！我偷訂的 10 杯連鎖手搖飲到了，但警衛杯杯把外送員擋在校門口說要全部沒收倒掉...",
+        id: 'phone_parent',
+        name: '怒火中燒的家長來電',
+        avatar: '☎️',
+        desc: '電話瘋狂大響！家長咆哮：「我家小孩昨天被同學瞪，現在就調全校監視器給我看！」',
+        urgent: true,
+        x: 305, y: 180,
         options: [
-          {
-            text: "校規規定外送需集中在專區！我先幫你領回代管，放學後憑學生證來學務處領取。",
-            san: 8,
-            feedback: "既維持了校門安管規定，又化解了外送員與警衛的僵局，同學感動得差點跪下。"
-          },
-          {
-            text: "警衛做得好！你現在去旁邊罰站，飲料當場依校規充公倒掉！",
-            san: -12,
-            feedback: "同學在走廊崩潰抗議，引來大批學生圍觀喧嘩，你的血壓瞬間升高。（SAN -12）"
-          },
-          {
-            text: "趁警衛低頭登記，你繞去體育館圍牆偷翻過去接過來！",
-            san: -30,
-            feedback: "同學翻牆不慎扭傷腳踝送醫，校安通報表填寫倒數計時開始...（SAN -30）"
-          }
+          { text: '傾聽安撫並委婉說明校園監視器調閱要點與個資法規程序。', time: 25, energy: -10, bladder: 10, msg: '成功降溫家長情緒，轉入正式調閱申請流程。' },
+          { text: '直接請生輔組長與學務主任接聽協調。', time: 20, energy: -5, bladder: 10, msg: '主任接手協處，化解了辦公室衝突。' },
+          { text: '跟家長回嗆「全校監視器照不到眼睛啦！」', time: 10, energy: -30, bladder: 5, msg: '家長直接打 1999 與民代檢舉！校長震怒！（精力崩潰）' }
         ]
       },
       {
-        name: "高一４班 游同學",
-        avatar: "🎮",
-        tag: "一臉單純興奮",
-        speech: "老師！網路大神說要免費送我手遊超絕版造型，只要我拍學生證跟提供手機認證碼給他，很划算吧！",
+        id: 'gate_biker',
+        name: '校門口改管飆車聚集',
+        avatar: '🛵',
+        desc: '警衛室按對講機急呼：「側門口有校外改管水車無照聚集挑釁放學學生！」',
+        urgent: true,
+        x: 370, y: 180,
         options: [
-          {
-            text: "千萬不能給！這是典型的詐騙個資與人頭戶套路，立刻封鎖對方！",
-            san: 15,
-            feedback: "你當場拆解防詐手法並幫忙封鎖，及時挽救了同學的零用錢與帳戶安全！"
-          },
-          {
-            text: "天下沒有白吃的午餐，但先給他看看，真的拿到造型立刻改密碼？",
-            san: -25,
-            feedback: "半小時後同學的門號被盜用狂發詐騙簡訊，家長殺來學校要求校安負責...（SAN -25）"
-          },
-          {
-            text: "都快高中了還被這種騙，手機先交出來保管一週！",
-            san: -15,
-            feedback: "同學憤憤不平，暗地裡還是偷用同學手機傳了驗證碼...（SAN -15）"
-          }
+          { text: '身穿反光背心手持指揮棒壓制現場，並通報轄區派出所巡邏網。', time: 35, energy: -15, bladder: 15, msg: '警方警笛響起，校外人士迅速四散撤離！' },
+          { text: '廣播全校學生暫緩由側門離校，引導改走正門。', time: 25, energy: -10, bladder: 10, msg: '有效隔絕危險接觸，確保學生平安！' },
+          { text: '叫學校體育老師拿球棒去趕人。', time: 15, energy: -35, bladder: 5, msg: '爆發重大校門衝突登上即時頭條新聞！（處置失當）' }
         ]
       },
       {
-        name: "高二２班 黃同學",
-        avatar: "🛵",
-        tag: "緊張發抖",
-        speech: "報告老師...隔壁班同學放學要逼我借他機車去載妹子，但他根本沒有駕照，不借他就要找人堵我...",
+        id: 'pc_report',
+        name: '教育部甲級通報時限',
+        avatar: '💻',
+        desc: '電腦螢幕跳出紅色警示：【教育部校安通報限時 2 小時完成結報，倒數中！】',
+        urgent: false,
+        x: 235, y: 180,
         options: [
-          {
-            text: "絕對不能借！無照駕駛害人害己，放學我跟教官親自護送你出校門，並找該生導師會談。",
-            san: 12,
-            feedback: "正義感爆棚的處置！成功瓦解了放學堵人的威脅，該生對你投以無比崇拜的眼光！"
-          },
-          {
-            text: "你就跟他說車子剛好沒油了，自己想辦法找藉口推掉啦。",
-            san: -15,
-            feedback: "放學後對方發現你的車明明停在車棚，直接在校外引發推擠爭執...（SAN -15）"
-          },
-          {
-            text: "他敢騎你就借啊，被警察抓到開罰單六千塊也是算他的。",
-            san: -35,
-            feedback: "放學後傳來該生在路口自摔撞上路邊賓士的消息，全學務處今晚全員加班...（SAN -35）"
-          }
-        ]
-      },
-      {
-        name: "一年三班 鄭同學",
-        avatar: "🤢",
-        tag: "臉色慘白冒冷汗",
-        speech: "老師...下一節要考數學段考，我肚子痛到站不起來、手一直發抖，我好想翻牆翹課回家...",
-        options: [
-          {
-            text: "深呼吸！翻牆太危險，我立刻背你到健康中心休息，我來向任課老師請假說明。",
-            san: 12,
-            feedback: "你的溫暖與效率讓焦慮過度的學生瞬間放鬆，校護也讚許你的及時送醫處置！"
-          },
-          {
-            text: "考個段考而已裝什麼病？回去教室坐好，不會寫全部猜C！",
-            san: -20,
-            feedback: "同學在教室考試時當場過度換氣昏厥，全校救護車警笛鳴響...（SAN -20）"
-          },
-          {
-            text: "想翹課自己動作俐落點，別被側門監視器拍到就好。",
-            san: -30,
-            feedback: "同學翻牆時褲子被鐵絲網勾破摔進花圃，家長要求調閱全校監視器...（SAN -30）"
-          }
-        ]
-      },
-      {
-        name: "三年六班 籃球隊代表",
-        avatar: "🏀",
-        tag: "滿頭大汗怒氣衝衝",
-        speech: "老師！別班帶球棒來操場搶全場籃球架，還推倒我們的球袋，雙方現在在球場中央對峙！",
-        options: [
-          {
-            text: "大家別衝動！我拿大聲公與哨子立刻過去隔開雙方，體育組長隨後就到！",
-            san: 12,
-            feedback: "你宏亮的哨音與威嚴的氣場震懾全場，三分鐘內成功平息一場潛在集體鬥毆！"
-          },
-          {
-            text: "打球有肢體摩擦很正常，都是男子漢自己講開解決！",
-            san: -20,
-            feedback: "兩分鐘後操場傳來救護車鳴笛，群架爆發登上即時社會新聞...（SAN -20）"
-          },
-          {
-            text: "有種就去校門口大馬路打，不要在校園裡面丟人現眼！",
-            san: -30,
-            feedback: "學生當真移師校門口，里長與轄區派出所巡邏車同時殺進學校...（SAN -30）"
-          }
-        ]
-      },
-      {
-        name: "校門口 陳情家長",
-        avatar: "📢",
-        tag: "氣勢洶洶殺入",
-        speech: "你們學校是怎麼管的？我家小孩說昨天在走廊被別班同學白眼，我現在就要看監視器錄影！",
-        options: [
-          {
-            text: "家長您先請坐喝杯溫水。調閱監視器需依校園安全規定填寫申請表，我請生輔組長為您說明。",
-            san: 10,
-            feedback: "一杯溫茶與專業法規流程成功降溫了家長的怒火，展現出教科書等級的危機處理！"
-          },
-          {
-            text: "被翻白眼而已也要看監視器？全校監視器哪照得到眼睛往哪看！",
-            san: -25,
-            feedback: "家長當場暴怒拍桌，直奔校長室投訴校安態度惡劣...（SAN -25）"
-          },
-          {
-            text: "監視器主機壞掉一個月了啦，什麼都沒錄到。",
-            san: -30,
-            feedback: "家長直接打 1999 市民熱線與民代服務處檢舉學校安全防護失職...（SAN -30）"
-          }
+          { text: '調閱晨間就醫紀錄，嚴謹填寫校安通報事實表並送核。', time: 45, energy: -15, bladder: 20, msg: '準時完成教育部甲級通報歸檔！' },
+          { text: '快速套用公文範本並簡要陳述送出。', time: 25, energy: -5, bladder: 10, msg: '成功踩線通報，稍後需補件。' }
         ]
       }
     ];
 
-    /* ==========================================================
-       狀態管理
-       ========================================================== */
-    let gameTimeState = 15.5 * 60; // 15:30
-    const targetTimeState = 17.0 * 60; // 17:00
-    let san = 100;
-    const maxSan = 100;
-    let solvedCount = 0;
-    let currentVisitor = null;
-    let availableDeck = [];
+    const keys = { up: false, down: false, left: false, right: false };
 
-    const timeDisplay = document.getElementById('time-display');
-    const sanBar = document.getElementById('san-bar');
-    const sanText = document.getElementById('san-text');
-    const solvedText = document.getElementById('solved-count');
+    window.addEventListener('keydown', e => {
+      const k = e.key.toLowerCase();
+      if (k === 'w' || k === 'arrowup') keys.up = true;
+      if (k === 's' || k === 'arrowdown') keys.down = true;
+      if (k === 'a' || k === 'arrowleft') keys.left = true;
+      if (k === 'd' || k === 'arrowright') keys.right = true;
+      if (k === 'e' || k === ' ') triggerInteract();
+    });
 
-    const avatarIcon = document.getElementById('avatar-icon');
-    const visitorName = document.getElementById('visitor-name');
-    const visitorTag = document.getElementById('visitor-tag');
-    const speechText = document.getElementById('speech-text');
-    const optionsBox = document.getElementById('options-box');
+    window.addEventListener('keyup', e => {
+      const k = e.key.toLowerCase();
+      if (k === 'w' || k === 'arrowup') keys.up = false;
+      if (k === 's' || k === 'arrowdown') keys.down = false;
+      if (k === 'a' || k === 'arrowleft') keys.left = false;
+      if (k === 'd' || k === 'arrowright') keys.right = false;
+    });
 
-    const resultSheet = document.getElementById('result-sheet');
-    const resultTag = document.getElementById('result-tag');
-    const statChange = document.getElementById('stat-change');
-    const resultDesc = document.getElementById('result-desc');
+    function bindTouchBtn(id, dir) {
+      const el = document.getElementById(id);
+      const press = e => { e.preventDefault(); keys[dir] = true; };
+      const release = e => { e.preventDefault(); keys[dir] = false; };
+      el.addEventListener('touchstart', press, { passive: false });
+      el.addEventListener('touchend', release, { passive: false });
+      el.addEventListener('touchcancel', release, { passive: false });
+      el.addEventListener('mousedown', press);
+      el.addEventListener('mouseup', release);
+    }
+    bindTouchBtn('btn-up', 'up');
+    bindTouchBtn('btn-down', 'down');
+    bindTouchBtn('btn-left', 'left');
+    bindTouchBtn('btn-right', 'right');
 
-    const startModal = document.getElementById('start-modal');
-    const endModal = document.getElementById('end-modal');
+    function advanceTime(mins, energyDelta, bladderDelta) {
+      gameMinutes += mins;
+      energy = Math.max(0, Math.min(100, energy + energyDelta));
+      bladder = Math.max(0, Math.min(100, bladder + bladderDelta));
 
-    function shuffle(arr) {
-      const a = [...arr];
-      for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
+      updateHUD();
+
+      if (bladder >= 95) {
+        peeForcedCount++;
+        playWarning();
+        alert("⚠️ 憋尿過度！你無法再忍受了，被迫衝向洗手間！");
+        player.x = 80;
+        player.y = 120;
+        bladder = 0;
+        gameMinutes += 20;
+        energy -= 10;
+        updateHUD();
+
+        if (peeForcedCount >= 3) {
+          endGame('bladder');
+          return;
+        }
       }
-      return a;
-    }
 
-    function updateTimeDisplay() {
-      const hours = Math.floor(gameTimeState / 60);
-      const mins = Math.floor(gameTimeState % 60);
-      timeDisplay.innerText = `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
-    }
-
-    function updateSanDisplay() {
-      sanBar.style.width = `${Math.max(0, (san / maxSan) * 100)}%`;
-      sanText.innerText = `${san} / ${maxSan}`;
-
-      if (san <= 30) {
-        sanBar.style.background = 'linear-gradient(90deg, #dc2626, #991b1b)';
-      } else if (san <= 60) {
-        sanBar.style.background = 'linear-gradient(90deg, #f59e0b, #d97706)';
-      } else {
-        sanBar.style.background = 'linear-gradient(90deg, #f43f5e, #e11d48)';
-      }
-    }
-
-    function loadNextVisitor() {
-      resultSheet.style.display = 'none';
-
-      if (gameTimeState >= targetTimeState) {
-        endGame(true);
+      if (energy <= 0) {
+        endGame('faint');
         return;
       }
 
-      if (availableDeck.length === 0) {
-        availableDeck = shuffle(visitorsPool);
+      if (gameMinutes >= targetMinutes) {
+        endGame('win');
+        return;
       }
 
-      currentVisitor = availableDeck.pop();
+      refreshEvents();
+    }
 
-      avatarIcon.innerText = currentVisitor.avatar;
-      visitorName.innerText = currentVisitor.name;
-      visitorTag.innerText = currentVisitor.tag;
-      speechText.innerText = currentVisitor.speech;
+    function updateHUD() {
+      const h = Math.floor(gameMinutes / 60);
+      const m = Math.floor(gameMinutes % 60);
+      uiClock.innerText = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
 
-      // 觸發卡片彈跳進場動畫
-      const card = document.getElementById('visitor-card');
-      card.style.animation = 'none';
-      card.offsetHeight; // reflow
-      card.style.animation = 'popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)';
+      uiEnergyVal.innerText = `${energy}%`;
+      uiEnergyBar.style.width = `${energy}%`;
+      if (energy <= 30) {
+        uiEnergyBar.style.background = 'linear-gradient(90deg, #ef4444, #b91c1c)';
+      } else {
+        uiEnergyBar.style.background = 'linear-gradient(90deg, #10b981, #059669)';
+      }
 
-      // 隨機打亂選項
-      optionsBox.innerHTML = '';
-      const shuffledOptions = shuffle(currentVisitor.options);
+      uiBladderVal.innerText = `${bladder}%`;
+      uiBladderBar.style.width = `${bladder}%`;
+      if (bladder >= 75) {
+        uiBladderBar.style.background = 'linear-gradient(90deg, #ef4444, #dc2626)';
+      } else {
+        uiBladderBar.style.background = 'linear-gradient(90deg, #38bdf8, #0284c7)';
+      }
+    }
 
-      shuffledOptions.forEach((opt, idx) => {
+    function refreshEvents() {
+      if (activeEvents.length === 0) {
+        const pool = eventTemplates.filter(t => !activeEvents.some(a => a.id === t.id));
+        if (pool.length > 0) {
+          const nextEvt = pool[Math.floor(Math.random() * pool.length)];
+          activeEvents.push({ ...nextEvt });
+        }
+      }
+
+      focusedEvent = activeEvents.find(e => e.urgent) || activeEvents[0] || null;
+
+      if (focusedEvent) {
+        uiObjective.innerText = `【緊急案件】跟隨金色箭頭導引前往：${focusedEvent.name}！`;
+      } else {
+        uiObjective.innerText = "目前學務處無重大通報，可至沙發休息或去洗手間！";
+      }
+    }
+
+    function triggerInteract() {
+      if (!isPlaying || dialogOverlay.style.display === 'flex') return;
+
+      for (let i = 0; i < activeEvents.length; i++) {
+        const evt = activeEvents[i];
+        const dist = Math.hypot(player.x - evt.x, player.y - evt.y);
+        if (dist < 42) {
+          openEventDialog(evt, i);
+          return;
+        }
+      }
+
+      for (const fac of facilities) {
+        const dist = Math.hypot(player.x - (fac.x + fac.w/2), player.y - (fac.y + fac.h/2));
+        if (dist < 46) {
+          handleFacilityInteract(fac);
+          return;
+        }
+      }
+    }
+
+    function handleFacilityInteract(fac) {
+      if (fac.type === 'rest') {
+        playDing();
+        if (confirm("🛋️ 在會客沙發稍微閉目養神 20 分鐘？（精力 +20，時間 +20分）")) {
+          advanceTime(20, 20, 5);
+        }
+      } else if (fac.type === 'water') {
+        playDing();
+        if (confirm("🚰 喝一杯溫開水補充體力？（精力 +5，尿意 +25%）")) {
+          advanceTime(5, 5, 25);
+        }
+      } else if (fac.type === 'toilet') {
+        playDing();
+        if (confirm("🚻 前往洗手間解放膀胱？（尿意清空至 0%，時間 +10分）")) {
+          bladder = 0;
+          advanceTime(10, 0, 0);
+        }
+      } else if (fac.type === 'pc') {
+        playDing();
+        alert("💻 校安電腦系統正常運行中，暫無未送審之公文！");
+      } else if (fac.type === 'phone') {
+        playDing();
+        alert("☎️ 電話線路暢通中，暫無民眾投訴。");
+      }
+    }
+
+    function openEventDialog(evt, index) {
+      playDing();
+      dlgAvatar.innerText = evt.avatar;
+      dlgTitle.innerText = evt.name;
+      dlgTag.innerText = evt.urgent ? "🚨 最高優先級！" : "📋 一般行政案件";
+      dlgTag.style.color = evt.urgent ? "#dc2626" : "#ea580c";
+      dlgDesc.innerText = evt.desc;
+
+      dlgOptions.innerHTML = '';
+      evt.options.forEach(opt => {
         const btn = document.createElement('button');
-        btn.className = 'option-btn';
+        btn.className = 'opt-card';
         btn.innerHTML = `
-          <div class="opt-number">${idx + 1}</div>
-          <div>${opt.text}</div>
+          <span>${opt.text}</span>
+          <span class="opt-time-tag">耗時 ${opt.time}m</span>
         `;
-        btn.onclick = () => chooseOption(opt);
-        optionsBox.appendChild(btn);
+        btn.onclick = () => {
+          dialogOverlay.style.display = 'none';
+          alert(`處置結果：${opt.msg}`);
+          if (opt.energy >= 0) playSuccess();
+          else playWarning();
+
+          solvedCount++;
+          activeEvents.splice(index, 1);
+          advanceTime(opt.time, opt.energy, opt.bladder);
+        };
+        dlgOptions.appendChild(btn);
       });
-    }
 
-    function chooseOption(opt) {
-      san = Math.max(0, Math.min(maxSan, san + opt.san));
-      updateSanDisplay();
-
-      // 每題消耗 12 ~ 15 分鐘
-      gameTimeState += 15;
-      updateTimeDisplay();
-
-      if (opt.san >= 0) {
-        playSuccessSound();
-        triggerHaptic('success');
-        solvedCount++;
-        solvedText.innerText = solvedCount;
-
-        resultTag.innerText = "處置合宜 🎉";
-        resultTag.className = "result-tag tag-positive";
-        statChange.className = "stat-change stat-gain";
-        statChange.innerText = `SAN +${opt.san}`;
-      } else {
-        playDamageSound();
-        triggerHaptic('wrong');
-
-        resultTag.innerText = "精神耗損 💥";
-        resultTag.className = "result-tag tag-negative";
-        statChange.className = "stat-change stat-loss";
-        statChange.innerText = `SAN ${opt.san}`;
-      }
-
-      resultDesc.innerText = opt.feedback;
-      resultSheet.style.display = 'flex';
-
-      if (san <= 0) {
-        setTimeout(() => endGame(false), 900);
-      }
-    }
-
-    function nextVisitor() {
-      if (san <= 0) {
-        endGame(false);
-      } else if (gameTimeState >= targetTimeState) {
-        endGame(true);
-      } else {
-        loadNextVisitor();
-      }
+      dialogOverlay.style.display = 'flex';
     }
 
     function startGame() {
       initAudio();
-      startModal.style.display = 'none';
-      endModal.style.display = 'none';
-      resultSheet.style.display = 'none';
+      modalStart.style.display = 'none';
+      modalEnd.style.display = 'none';
+      dialogOverlay.style.display = 'none';
 
-      gameTimeState = 15.5 * 60;
-      san = 100;
+      isPlaying = true;
+      gameMinutes = 8 * 60;
+      energy = 100;
+      bladder = 0;
       solvedCount = 0;
-      solvedText.innerText = '0';
-      updateTimeDisplay();
-      updateSanDisplay();
-      availableDeck = shuffle(visitorsPool);
-      loadNextVisitor();
+      peeForcedCount = 0;
+
+      player.x = 240;
+      player.y = 280;
+
+      activeEvents = [
+        { ...eventTemplates[0] },
+        { ...eventTemplates[4] }
+      ];
+
+      updateHUD();
+      refreshEvents();
     }
 
-    function restartGame() {
-      startGame();
-    }
-
-    function endGame(win) {
-      resultSheet.style.display = 'none';
-      endModal.style.display = 'flex';
+    function endGame(status) {
+      isPlaying = false;
+      modalEnd.style.display = 'flex';
 
       const endEmoji = document.getElementById('end-emoji');
       const endTitle = document.getElementById('end-title');
       const endBadge = document.getElementById('end-badge');
       const endDesc = document.getElementById('end-desc');
-      const endSolved = document.getElementById('end-solved');
-      const endSan = document.getElementById('end-san');
+      const endCases = document.getElementById('end-cases');
+      const endEnergy = document.getElementById('end-energy');
 
-      endSolved.innerText = `${solvedCount} 件`;
-      endSan.innerText = `${san}%`;
+      endCases.innerText = `${solvedCount} 件`;
+      endEnergy.innerText = `${energy}%`;
 
-      if (win) {
-        playBellSound();
-        triggerHaptic('success');
+      if (status === 'win') {
+        playBell();
         endEmoji.innerText = "🎉";
-        endTitle.innerText = "平安下班！";
-        endTitle.className = "report-title title-win";
+        endTitle.innerText = "17:00 準時打卡下班！";
+        endTitle.style.color = "#16a34a";
 
-        if (san >= 85) {
+        if (energy >= 70) {
           endBadge.innerText = "🏆 金牌佛光校安神仙";
-          endDesc.innerHTML = "17:00 打卡鐘聲敲響！面對排山倒海的荒唐考驗，你面帶微笑化解所有危機，理智滿格優雅離校！";
-        } else if (san >= 50) {
-          endBadge.innerText = "🛡️ 學務處定海神針";
-          endDesc.innerHTML = "雖然被幾位天兵學生耗損了些許精力，但你依舊穩如泰山，成功在放學鐘聲下踩線撤退！";
+          endDesc.innerHTML = "面對一整天無休止的突發狀況，你精準調配時間、照顧好身心，優雅地在放學鐘聲下踏出校門！";
         } else {
-          endBadge.innerText = "🏃 驚險逃亡打卡戰士";
-          endDesc.innerHTML = "殘血存活！差一點點理智線就要在走廊斷裂了...趁長官還沒交辦新公文，拔腿狂奔出校門！";
+          endBadge.innerText = "🏃 驚險踩線撤退戰士";
+          endDesc.innerHTML = "雖然耗盡了大半心力，但在最後一刻成功化解所有校安危機，平安下班回家休息！";
         }
-      } else {
-        playDamageSound();
-        triggerHaptic('wrong');
+      } else if (status === 'faint') {
+        playWarning();
         endEmoji.innerText = "💀";
-        endTitle.innerText = "理智斷線，被迫加班！";
-        endTitle.className = "report-title title-lose";
-        endBadge.innerText = "🪦 走廊心力交瘁苦主";
-        endDesc.innerHTML = "你的理智值（SAN）歸零了！在非理性陳情與連鎖突發事件的轟炸下，今天只好多喝杯苦茶留在學務處填寫檢討通報單了...";
+        endTitle.innerText = "過勞昏倒！送醫打點滴！";
+        endTitle.style.color = "#dc2626";
+        endBadge.innerText = "🪦 學務處過勞苦主";
+        endDesc.innerHTML = "精力徹底歸零！你只顧著處理別人的危機，卻忘了在沙發閉目養神，被救護車送往急診休息...";
+      } else if (status === 'bladder') {
+        playWarning();
+        endEmoji.innerText = "🩺";
+        endTitle.innerText = "膀胱抗議！泌尿科報到！";
+        endTitle.style.color = "#dc2626";
+        endBadge.innerText = "🚽 憋尿職人下場悲劇";
+        endDesc.innerHTML = "你連續憋尿超過三次！身體向你發出最後通牒，醫生勒令你立刻放下公文住院休養！";
       }
     }
 
-    function copyShareText() {
-      const isWin = san > 0;
+    function copyShare() {
+      const title = document.getElementById('end-title').innerText;
       const badge = document.getElementById('end-badge').innerText;
-      const text = isWin
-        ? `【今天也要平安下班！校安日常版】🎒\n我今天在學務處成功平安下班了！🎉\n⏰ 值勤結算：17:00 準時打卡\n❤️ 剩餘理智：${san}%\n📋 化解危機：${solvedCount} 件\n獲得稱號：${badge}\n願天下校安人員都能準時下班！`
-        : `【今天也要平安下班！校安日常版】💀\n我在下班前 10 分鐘理智斷線了...\n💔 陣亡原因：學務處日常精神污染\n📋 堅持處理了 ${solvedCount} 件校園突發事件\n今晚只能在學務處含淚加班填公文了...`;
+      const text = `【今天也要平安下班：校安人員的一天】🎒\n結局：${title}\n榮獲稱號：${badge}\n⏰ 達成時間：17:00 打卡\n⚡ 剩餘精力：${energy}%\n📋 處理案件：${solvedCount} 件\n願全體教育與校安人員都能準時下班！`;
 
       if (navigator.clipboard) {
         navigator.clipboard.writeText(text).then(() => {
-          alert("戰績文字已複製到剪貼簿！可直接貼到 Threads 或 IG 分享！");
+          alert("戰績已複製到剪貼簿！可直接貼到 Threads 或 IG 限動！");
         });
       } else {
         alert("複製成功：\n" + text);
       }
     }
+
+    function update() {
+      if (!isPlaying || dialogOverlay.style.display === 'flex') return;
+
+      let dx = 0, dy = 0;
+      if (keys.up) dy -= 1;
+      if (keys.down) dy += 1;
+      if (keys.left) { dx -= 1; player.facing = 'left'; }
+      if (keys.right) { dx += 1; player.facing = 'right'; }
+
+      if (dx !== 0 && dy !== 0) {
+        dx *= 0.7071;
+        dy *= 0.7071;
+      }
+
+      if (dx !== 0 || dy !== 0) player.walkFrame += 0.2;
+      else player.walkFrame = 0;
+
+      player.x += dx * player.speed;
+      player.y += dy * player.speed;
+
+      player.x = Math.max(25, Math.min(canvas.width - 25, player.x));
+      player.y = Math.max(90, Math.min(canvas.height - 30, player.y));
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < canvas.width; x += 32) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+      }
+      for (let y = 0; y < canvas.height; y += 32) {
+        ctx.beginPath();
+        ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+      }
+
+      ctx.fillStyle = '#64748b';
+      ctx.fillRect(0, 70, canvas.width, 10);
+
+      facilities.forEach(fac => {
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.roundRect(fac.x, fac.y, fac.w, fac.h, 10);
+        ctx.fill();
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.font = '20px sans-serif';
+        ctx.fillText(fac.icon, fac.x + fac.w/2 - 10, fac.y + fac.h/2 + 7);
+
+        ctx.fillStyle = '#475569';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.fillText(fac.name, fac.x + fac.w/2 - ctx.measureText(fac.name).width/2, fac.y + fac.h + 14);
+      });
+
+      if (focusedEvent) {
+        ctx.save();
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([6, 6]);
+        ctx.beginPath();
+        ctx.moveTo(player.x, player.y);
+        ctx.lineTo(focusedEvent.x, focusedEvent.y);
+        ctx.stroke();
+
+        const timePulse = Date.now() / 200;
+        for (let i = 0.2; i < 0.9; i += 0.25) {
+          const px = player.x + (focusedEvent.x - player.x) * ((i + timePulse * 0.1) % 1);
+          const py = player.y + (focusedEvent.y - player.y) * ((i + timePulse * 0.1) % 1);
+          ctx.fillStyle = '#fbbf24';
+          ctx.beginPath();
+          ctx.arc(px, py, 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      activeEvents.forEach(evt => {
+        ctx.fillStyle = evt.urgent ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)';
+        ctx.beginPath();
+        ctx.arc(evt.x, evt.y, 22, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.font = '22px sans-serif';
+        ctx.fillText(evt.avatar, evt.x - 11, evt.y + 8);
+
+        const bob = Math.sin(Date.now() / 150) * 4;
+        ctx.fillStyle = evt.urgent ? '#dc2626' : '#f59e0b';
+        ctx.font = 'bold 22px sans-serif';
+        ctx.fillText(evt.urgent ? '❗' : '❕', evt.x - 6, evt.y - 20 + bob);
+      });
+
+      const wBob = Math.sin(player.walkFrame) * 2;
+      ctx.save();
+      ctx.translate(player.x, player.y + wBob);
+
+      ctx.fillStyle = 'rgba(0,0,0,0.15)';
+      ctx.beginPath();
+      ctx.ellipse(0, 16, 14, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#3b82f6';
+      ctx.beginPath();
+      ctx.roundRect(-12, -4, 24, 20, 5);
+      ctx.fill();
+
+      ctx.fillStyle = '#facc15';
+      ctx.fillRect(-10, 0, 20, 12);
+      ctx.fillStyle = '#10b981';
+      ctx.fillRect(-10, 4, 20, 3);
+
+      ctx.fillStyle = '#ffedd5';
+      ctx.beginPath();
+      ctx.arc(0, -14, 15, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#7c2d12';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      ctx.fillStyle = '#1e3a8a';
+      ctx.beginPath();
+      ctx.ellipse(0, -26, 13, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#0f172a';
+      const lookOffset = player.facing === 'left' ? -3 : (player.facing === 'right' ? 3 : 0);
+      ctx.beginPath();
+      ctx.arc(-4 + lookOffset, -14, 2, 0, Math.PI * 2);
+      ctx.arc(4 + lookOffset, -14, 2, 0, Math.PI * 2);
+      ctx.fill();
+
+      let nearby = false;
+      for (const evt of activeEvents) {
+        if (Math.hypot(player.x - evt.x, player.y - evt.y) < 42) {
+          nearby = true; break;
+        }
+      }
+      for (const fac of facilities) {
+        if (Math.hypot(player.x - (fac.x + fac.w/2), player.y - (fac.y + fac.h/2)) < 46) {
+          nearby = true; break;
+        }
+      }
+
+      if (nearby) {
+        ctx.fillStyle = '#f97316';
+        ctx.beginPath();
+        ctx.roundRect(-22, -46, 44, 18, 6);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.fillText('[ E ] 互動', -20, -33);
+      }
+
+      ctx.restore();
+    }
+
+    function gameLoop() {
+      update();
+      render();
+      requestAnimationFrame(gameLoop);
+    }
+
+    requestAnimationFrame(gameLoop);
   </script>
 </body>
 </html>
