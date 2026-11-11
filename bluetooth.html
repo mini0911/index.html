@@ -117,6 +117,12 @@
         const LIFF_ID = "2010768591-SwfwcK3q"; 
         const FIREBASE_DB_URL = "https://movie-76596-default-rtdb.asia-southeast1.firebasedatabase.app/";
         const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzf-cXjOr3neShtkf5tnMyTbOayb2xAL4FOzNnGu2Ts5Swamx1n8WHA24DO3d5x7A_H3w/exec";
+        
+        // 備援預設名單（若 Firebase 尚未設定或離線時使用）
+        const defaultStudents = [
+            { id: "11401011", name: "測試學生" }
+        ];
+
         let database = null;
         let lineUserId = "";
         let lineDisplayName = "";
@@ -316,7 +322,7 @@
 
                 let lineNotified = false;
 
-                // 🌟 核心修復：單軌主動推播（僅呼叫後端發送官方收據，不使用 liff.sendMessages，避免觸發對話框二次誤判）
+                // 6. 單軌主動推播
                 if (GAS_WEB_APP_URL && lineUserId && lineUserId.startsWith("U")) {
                     try {
                         await fetch(GAS_WEB_APP_URL, {
@@ -337,7 +343,7 @@
                     }
                 }
 
-                // 6. 渲染簽到完成介面
+                // 7. 渲染簽到完成介面
                 document.getElementById('form-section').classList.add('hidden');
                 const successScreen = document.getElementById('success-screen');
                 successScreen.classList.remove('hidden');
