@@ -36,7 +36,7 @@
                 <span>即時打卡安檢</span>
             </div>
             <h1 class="text-2xl font-black tracking-tight">實時簽到系統</h1>
-            <p class="text-xs text-blue-200/90 mt-1" id="liff-status">正在連線至認證伺服器...</p>
+            <p class="text-xs text-blue-200/90 mt-1 transition-all" id="liff-status">正在連線至認證伺服器...</p>
         </div>
 
         <!-- Check-in Form Body -->
@@ -117,16 +117,11 @@
         const LIFF_ID = "2010768591-SwfwcK3q"; 
         const FIREBASE_DB_URL = "https://movie-76596-default-rtdb.asia-southeast1.firebasedatabase.app/";
         const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzf-cXjOr3neShtkf5tnMyTbOayb2xAL4FOzNnGu2Ts5Swamx1n8WHA24DO3d5x7A_H3w/exec";
-        
-        // 備援預設名單（若 Firebase 尚未設定或離線時使用）
-        const defaultStudents = [
-            { id: "11401011", name: "測試學生" }
-        ];
 
         let database = null;
         let lineUserId = "";
         let lineDisplayName = "";
-        let currentStudents = [...defaultStudents];
+        let currentStudents = []; // 完全改由雲端名單即時載入
 
         function getTodayDateStr(dateObj = new Date()) {
             const y = dateObj.getFullYear();
@@ -143,39 +138,58 @@
             console.error("Firebase 初始化失敗:", e);
         }
 
-        // 啟動 LIFF 並抓取真實 LINE 身分
+        // 啟動 LIFF（含 3 秒防卡死機制與環境識別）
         async function initLIFF() {
             const statusEl = document.getElementById('liff-status');
+
+            if (window.location.protocol === 'file:') {
+                console.warn("偵測到本機檔案協定 (file://)，切換為本機安全模擬模式");
+                setupFallbackIdentity("🖥️ 本機測試模式（非 HTTPS 環境）");
+                return;
+            }
+
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error("LIFF 連線逾時")), 3000)
+            );
+
             try {
-                if (LIFF_ID && LIFF_ID.length > 5) {
-                    await liff.init({ liffId: LIFF_ID });
+                if (window.liff && LIFF_ID && LIFF_ID.length > 5) {
+                    await Promise.race([
+                        liff.init({ liffId: LIFF_ID }),
+                        timeoutPromise
+                    ]);
+
                     if (liff.isLoggedIn()) {
                         const profile = await liff.getProfile();
                         lineUserId = profile.userId;
                         lineDisplayName = profile.displayName || "LINE 同學";
                         statusEl.innerText = `👤 已認證：${lineDisplayName}`;
-                    } else {
+                    } else if (liff.isInClient && liff.isInClient()) {
+                        statusEl.innerText = "⚠️ 授權確認中...";
                         liff.login();
+                    } else {
+                        setupFallbackIdentity("🌐 外部瀏覽器（安全裝置模式）");
                     }
                 } else {
-                    setupFallbackIdentity();
+                    setupFallbackIdentity("📡 網頁已連線至安全基地台");
                 }
             } catch (err) {
-                console.warn("LIFF 啟用失敗，切換為瀏覽器相容模式:", err);
-                setupFallbackIdentity();
+                console.warn("LIFF 啟用失敗或超時，自動切換至相容模式:", err);
+                setupFallbackIdentity("📡 網頁已連線至安全基地台");
             }
         }
 
-        function setupFallbackIdentity() {
+        function setupFallbackIdentity(customNotice) {
             let localDevId = localStorage.getItem('device_fingerprint_id');
             if (!localDevId) {
                 localDevId = 'DEV_' + Math.random().toString(36).substring(2, 10);
                 localStorage.setItem('device_fingerprint_id', localDevId);
             }
             lineUserId = localDevId;
-            document.getElementById('liff-status').innerText = "📡 網頁已連線至安全基地台";
+            document.getElementById('liff-status').innerText = customNotice || "📡 網頁已連線至安全基地台";
         }
 
+        // 從 Firebase 載入最新名單
         async function fetchRosterFromFirebase() {
             if (!database) return;
             try {
@@ -194,7 +208,7 @@
                     }
                 }
             } catch(e) {
-                console.warn("無法取得雲端名單，繼續使用預設名單備援", e);
+                console.warn("無法取得雲端學生名單:", e);
             }
         }
 
