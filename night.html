@@ -1,106 +1,1242 @@
-// ==========================================
-// 1. 遊戲資料庫 (直接沿用之前的 JSON 結構)
-// ==========================================
-const BobaDatabase = {
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>手搖飲物語 - 模擬經營網頁版 MVP</title>
+  <style>
+    :root {
+      --bg-color: #f4efe6;
+      --panel-bg: #ffffff;
+      --primary: #d97724;
+      --primary-dark: #b45b12;
+      --accent: #2e8b57;
+      --text-main: #3b2f2f;
+      --text-sub: #7a6a5e;
+      --border: #e2d6c5;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft JhengHei", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #2c241e;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: var(--text-main);
+    }
+
+    /* 手機直式比例主容器 */
+    #game-container {
+      width: 100%;
+      max-width: 480px;
+      height: 100vh;
+      max-height: 860px;
+      background-color: var(--bg-color);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+    }
+
+    /* 頂部狀態列 */
+    #top-bar {
+      background: #3b2f2f;
+      color: #fff;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      z-index: 10;
+    }
+
+    .stat-group {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .stat-badge {
+      background: rgba(255,255,255,0.12);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .speed-btn {
+      background: var(--primary);
+      border: none;
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    /* 遊戲主畫布區 */
+    #canvas-wrapper {
+      flex: 1;
+      position: relative;
+      background: #e8dec8;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* 浮動事件提示橫幅 */
+    #toast-banner {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-80px);
+      background: rgba(59, 47, 47, 0.94);
+      color: #ffd166;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: bold;
+      white-space: nowrap;
+      transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+      z-index: 20;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    #toast-banner.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* 底部操作面板 */
+    #bottom-panel {
+      background: var(--panel-bg);
+      border-top: 2px solid var(--border);
+      padding: 10px 12px 14px;
+      z-index: 10;
+    }
+
+    .nav-tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .nav-btn {
+      background: var(--bg-color);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 4px;
+      font-size: 13px;
+      font-weight: bold;
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      transition: all 0.15s;
+    }
+
+    .nav-btn:active {
+      transform: scale(0.96);
+    }
+
+    .nav-btn.highlight {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary-dark);
+    }
+
+    /* 彈出式功能抽屜 (Modal) */
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: none;
+      justify-content: center;
+      align-items: flex-end;
+      z-index: 30;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-sheet {
+      background: var(--panel-bg);
+      width: 100%;
+      max-height: 82%;
+      border-radius: 18px 18px 0 0;
+      padding: 18px 16px 24px;
+      overflow-y: auto;
+      animation: slideUp 0.22s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-title {
+      font-size: 17px;
+      font-weight: 800;
+    }
+
+    .close-btn {
+      background: #eee;
+      border: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    /* 表單與卡片樣式 */
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: var(--text-sub);
+    }
+
+    select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-color);
+      font-size: 14px;
+      color: var(--text-main);
+    }
+
+    .action-btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 6px;
+    }
+
+    .action-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .card-item {
+      background: var(--bg-color);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-info h4 {
+      margin: 0 0 4px 0;
+      font-size: 14px;
+    }
+
+    .card-info p {
+      margin: 0;
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    .tag-super {
+      background: #ffbe0b;
+      color: #3b2f2f;
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: bold;
+      margin-left: 4px;
+    }
+
+    .small-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 7px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .small-btn:disabled {
+      background: #bbb;
+    }
+  </style>
+</head>
+<body>
+
+<div id="game-container">
+  <!-- 頂部狀態欄 -->
+  <div id="top-bar">
+    <div class="stat-group">
+      <div class="stat-badge">💰 $<span id="ui-money">500</span></div>
+      <div class="stat-badge">💡 <span id="ui-insp">30</span></div>
+    </div>
+    <div class="stat-group">
+      <span id="ui-date" style="font-size:12px; color:#e2d6c5;">第1年 4月 (春)</span>
+      <button class="speed-btn" id="btn-speed">1x</button>
+    </div>
+  </div>
+
+  <!-- 畫布遊戲主舞台 -->
+  <div id="canvas-wrapper">
+    <canvas id="gameCanvas"></canvas>
+    <div id="toast-banner">歡迎來到手搖飲物語！</div>
+  </div>
+
+  <!-- 底部功能選單 -->
+  <div id="bottom-panel">
+    <div class="nav-tabs">
+      <button class="nav-btn highlight" onclick="openModal('modal-research')">
+        <span>🧪</span><span>飲品研發</span>
+      </button>
+      <button class="nav-btn" onclick="openModal('modal-menu')">
+        <span>🧋</span><span>店內菜單</span>
+      </button>
+      <button class="nav-btn" onclick="openModal('modal-shop')">
+        <span>🏪</span><span>設備店員</span>
+      </button>
+      <button class="nav-btn" onclick="openModal('modal-customers')">
+        <span>👥</span><span>客群圖鑑</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 1. 飲品研發視窗 -->
+  <div class="modal-overlay" id="modal-research">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title">🧪 飲品相性研發 (消耗 💡10)</span>
+        <button class="close-btn" onclick="closeModals()">✕</button>
+      </div>
+      <div class="form-group">
+        <label>1. 選擇茶底（必選）</label>
+        <select id="sel-tea"></select>
+      </div>
+      <div class="form-group">
+        <label>2. 選擇配料（可選）</label>
+        <select id="sel-topping"></select>
+      </div>
+      <div class="form-group">
+        <label>3. 選擇風味/基底（可選）</label>
+        <select id="sel-flavor"></select>
+      </div>
+      <button class="action-btn" id="btn-do-research" onclick="executeResearch()">搖杯研發！(-10 💡)</button>
+      <div id="research-hint" style="margin-top:12px; font-size:12px; color:var(--text-sub); line-height:1.5;">
+        💡 <b>相性小提示：</b>試試「阿薩姆紅茶 + 黑糖珍珠 + 小農鮮奶」，或「四季春青茶 + 椰果 + 百香果醬」！
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. 店內菜單視窗 -->
+  <div class="modal-overlay" id="modal-menu">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title">🧋 目前上架菜單</span>
+        <button class="close-btn" onclick="closeModals()">✕</button>
+      </div>
+      <div id="menu-list-container"></div>
+    </div>
+  </div>
+
+  <!-- 3. 設備與店員升級視窗 -->
+  <div class="modal-overlay" id="modal-shop">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title">🏪 設備擴充與店員培訓</span>
+        <button class="close-btn" onclick="closeModals()">✕</button>
+      </div>
+      <div id="upgrade-list-container"></div>
+      <button class="action-btn" style="background:#888; margin-top:16px; font-size:12px; padding:8px;" onclick="resetSaveData()">重置遊戲存檔</button>
+    </div>
+  </div>
+
+  <!-- 4. 客群圖鑑視窗 -->
+  <div class="modal-overlay" id="modal-customers">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title">👥 顧客群體與解鎖進度</span>
+        <button class="close-btn" onclick="closeModals()">✕</button>
+      </div>
+      <div id="customer-list-container"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================================
+// 1. 遊戲靜態資料庫 (BobaDatabase)
+// ============================================================================
+const DB = {
   ingredients: [
-    { id: "tea_assam", name: "阿薩姆紅茶", category: "BaseTea", cost: 10, teaFlavor: 25, fullness: 5, appearance: 10, coolness: 15 },
-    { id: "tea_four_seasons", name: "四季春青茶", category: "BaseTea", cost: 12, teaFlavor: 30, fullness: 5, appearance: 15, coolness: 25 },
-    { id: "top_boba", name: "黑糖珍珠", category: "Topping", cost: 15, teaFlavor: 5, fullness: 35, appearance: 25, coolness: 0 },
-    { id: "flav_milk", name: "小農鮮奶", category: "Flavor", cost: 20, teaFlavor: 15, fullness: 25, appearance: 20, coolness: 10 }
+    // 茶底
+    { id: "tea_assam", name: "阿薩姆紅茶", cat: "tea", cost: 10, tea: 25, full: 5, app: 10, cool: 15, unlocked: true },
+    { id: "tea_four", name: "四季春青茶", cat: "tea", cost: 12, tea: 30, full: 5, app: 15, cool: 25, unlocked: true },
+    { id: "tea_oolong", name: "炭焙鐵觀音", cat: "tea", cost: 15, tea: 35, full: 5, app: 15, cool: 10, unlocked: true },
+    // 配料
+    { id: "top_boba", name: "黑糖珍珠", cat: "topping", cost: 15, tea: 5, full: 35, app: 25, cool: 0, unlocked: true },
+    { id: "top_coco", name: "椰果", cat: "topping", cost: 8, tea: 0, full: 20, app: 15, cool: 20, unlocked: true },
+    { id: "top_cheese", name: "海鹽奶蓋", cat: "topping", cost: 18, tea: 10, full: 20, app: 40, cool: 5, unlocked: true },
+    { id: "top_grass", name: "嫩仙草凍", cat: "topping", cost: 12, tea: 10, full: 25, app: 15, cool: 30, unlocked: false }, // 高中生Lv3解鎖
+    // 風味
+    { id: "flav_milk", name: "小農鮮奶", cat: "flavor", cost: 20, tea: 15, full: 25, app: 20, cool: 10, unlocked: true },
+    { id: "flav_passion", name: "百香果醬", cat: "flavor", cost: 12, tea: 5, full: 10, app: 25, cool: 35, unlocked: true },
+    { id: "flav_lemon", name: "屏東檸檬汁", cat: "flavor", cost: 10, tea: 5, full: 5, app: 15, cool: 40, unlocked: false } // 網紅Lv3解鎖
   ],
   combos: [
     {
-      teaId: "tea_assam",
-      toppingId: "top_boba",
-      flavorId: "flav_milk",
-      resultDrinkName: "黑糖珍珠鮮奶茶",
-      synergyRating: "SuperMatch",
-      priceMultiplier: 1.5,
-      bonusStats: { teaFlavor: 20, fullness: 25, appearance: 30, coolness: 0 }
+      tea: "tea_assam", topping: "top_boba", flavor: "flav_milk",
+      name: "黑糖珍珠鮮奶茶", rating: "★絕妙神組合★", mult: 1.5,
+      bonus: { tea: 20, full: 25, app: 30, cool: 0 }, unlockCust: "Tourist"
+    },
+    {
+      tea: "tea_four", topping: "top_coco", flavor: "flav_passion",
+      name: "百香雙響炮", rating: "★清爽絕配★", mult: 1.35,
+      bonus: { tea: 10, full: 15, app: 20, cool: 40 }, unlockCust: null
+    },
+    {
+      tea: "tea_oolong", topping: "top_cheese", flavor: "",
+      name: "海鹽奶蓋鐵觀音", rating: "★大人味契合★", mult: 1.4,
+      bonus: { tea: 25, full: 10, app: 45, cool: 10 }, unlockCust: "Influencer"
+    },
+    {
+      tea: "tea_four", topping: "top_grass", flavor: "flav_milk",
+      name: "仙草凍鮮奶青", rating: "★古早懷舊★", mult: 1.35,
+      bonus: { tea: 15, full: 30, app: 15, cool: 25 }, unlockCust: null
     }
-  ]
+  ],
+  customers: {
+    Student: {
+      id: "Student", name: "放學高中生", color: "#3a86ff", maxBudget: 65,
+      w: { tea: 0.1, full: 0.6, app: 0.1, cool: 0.2 }, targetScore: 40,
+      lv3UnlockCust: "Engineer", lv3UnlockIng: "top_grass"
+    },
+    Engineer: {
+      id: "Engineer", name: "竹科工程師", color: "#8338ec", maxBudget: 95,
+      w: { tea: 0.5, full: 0.1, app: 0.1, cool: 0.3 }, targetScore: 55,
+      lv3UnlockCust: "Influencer", lv3UnlockIng: null
+    },
+    Influencer: {
+      id: "Influencer", name: "IG打卡網紅", color: "#ff006e", maxBudget: 130,
+      w: { tea: 0.15, full: 0.05, app: 0.65, cool: 0.15 }, targetScore: 65,
+      lv3UnlockCust: "Tourist", lv3UnlockIng: "flav_lemon"
+    },
+    Tourist: {
+      id: "Tourist", name: "外國觀光客", color: "#fb5607", maxBudget: 160,
+      w: { tea: 0.25, full: 0.35, app: 0.3, cool: 0.1 }, targetScore: 75,
+      lv3UnlockCust: null, lv3UnlockIng: null
+    }
+  }
 };
 
-// ==========================================
-// 2. 遊戲核心狀態與存檔系統 (localStorage)
-// ==========================================
-class BobaGameEngine {
-  constructor() {
-    this.state = this.loadGame() || {
-      money: 500,          // 新台幣
-      inspiration: 30,     // 💡靈感點數
-      menu: [],            // 已研發上架的飲品
-      customerLevels: {    // 客群等級
-        Student: { level: 1, exp: 0 }
-      }
-    };
-  }
+// ============================================================================
+// 2. 遊戲核心存檔與狀態管理
+// ============================================================================
+const SAVE_KEY = "boba_shop_mvp_v1";
 
-  // 核心方法：飲品研發配對 (對應 C# 的 ResearchNewDrink)
-  researchDrink(teaId, toppingId = "", flavorId = "") {
-    if (this.state.inspiration < 10) {
-      return { success: false, msg: "靈感點數不足（需要 10 點）！" };
+let gameState = loadGame() || {
+  money: 500,
+  inspiration: 35,
+  monthIndex: 3, // 0=1月 ... 3=4月
+  year: 1,
+  unlockedIngredients: ["tea_assam", "tea_four", "tea_oolong", "top_boba", "top_coco", "top_cheese", "flav_milk", "flav_passion"],
+  menu: [
+    {
+      name: "招牌阿薩姆紅茶",
+      rating: "基礎款",
+      hasTopping: false,
+      price: 35,
+      stats: { tea: 25, full: 5, app: 10, cool: 15 },
+      soldCount: 0
     }
-
-    const tea = BobaDatabase.ingredients.find(i => i.id === teaId);
-    const topping = BobaDatabase.ingredients.find(i => i.id === toppingId);
-    const flavor = BobaDatabase.ingredients.find(i => i.id === flavorId);
-
-    if (!tea) return { success: false, msg: "請選擇茶底！" };
-
-    this.state.inspiration -= 10;
-
-    // 累加基礎數值
-    let baseCost = tea.cost + (topping?.cost || 0) + (flavor?.cost || 0);
-    let stats = {
-      teaFlavor: tea.teaFlavor + (topping?.teaFlavor || 0) + (flavor?.teaFlavor || 0),
-      fullness: tea.fullness + (topping?.fullness || 0) + (flavor?.fullness || 0),
-      appearance: tea.appearance + (topping?.appearance || 0) + (flavor?.appearance || 0),
-      coolness: tea.coolness + (topping?.coolness || 0) + (flavor?.coolness || 0)
-    };
-
-    // 檢查相性組合
-    const matched = BobaDatabase.combos.find(
-      c => c.teaId === teaId && (c.toppingId || "") === toppingId && (c.flavorId || "") === flavorId
-    );
-
-    let newDrink = {};
-    if (matched) {
-      newDrink = {
-        name: matched.resultDrinkName,
-        rating: matched.synergyRating,
-        stats: {
-          teaFlavor: stats.teaFlavor + matched.bonusStats.teaFlavor,
-          fullness: stats.fullness + matched.bonusStats.fullness,
-          appearance: stats.appearance + matched.bonusStats.appearance,
-          coolness: stats.coolness + matched.bonusStats.coolness
-        }
-      };
-      const total = Object.values(newDrink.stats).reduce((a, b) => a + b, 0);
-      newDrink.sellPrice = Math.round((baseCost * 1.5 + total * 0.25) * matched.priceMultiplier);
-    } else {
-      const prefix = (flavor ? flavor.name : "") + (topping ? topping.name : "");
-      newDrink = {
-        name: `${prefix}${tea.name}`,
-        rating: "Normal",
-        stats: stats
-      };
-      const total = Object.values(stats).reduce((a, b) => a + b, 0);
-      newDrink.sellPrice = Math.round(baseCost * 1.5 + total * 0.2);
-    }
-
-    this.state.menu.push(newDrink);
-    this.saveGame();
-    return { success: true, drink: newDrink };
+  ],
+  customers: {
+    Student: { unlocked: true, level: 1, exp: 0, nextExp: 80, claimedLv3: false },
+    Engineer: { unlocked: false, level: 1, exp: 0, nextExp: 100, claimedLv3: false },
+    Influencer: { unlocked: false, level: 1, exp: 0, nextExp: 120, claimedLv3: false },
+    Tourist: { unlocked: false, level: 1, exp: 0, nextExp: 150, claimedLv3: false }
+  },
+  upgrades: {
+    secondSealer: false,   // 第二台封口機
+    secondStaff: false,    // 招募第二位店員
+    staffSpeedLv: 1,       // 店員搖杯速度等級
+    neonSignLv: 0          // 霓虹打卡牆等級（增加魅力分）
   }
+};
 
-  // 自動存檔至瀏覽器
-  saveGame() {
-    localStorage.setItem("boba_shop_save_v1", JSON.stringify(this.state));
-  }
+function saveGame() {
+  localStorage.setItem(SAVE_KEY, JSON.stringify(gameState));
+}
 
-  loadGame() {
-    const raw = localStorage.getItem("boba_shop_save_v1");
+function loadGame() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
     return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+
+function resetSaveData() {
+  if (confirm("確定要清除所有進度重新開始嗎？")) {
+    localStorage.removeItem(SAVE_KEY);
+    location.reload();
   }
 }
+
+// ============================================================================
+// 3. Canvas 2.5D 吧檯與人物狀態機系統
+// ============================================================================
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+let gameSpeed = 1;
+let lastTime = performance.now();
+let monthTimer = 0;
+let spawnTimer = 0;
+
+// 浮動飄字陣列 (例如 +$65, +💡5)
+let floatingTexts = [];
+// 全域製作訂單佇列
+let orderQueue = [];
+// 場景中的機台、店員與顧客
+let stations = [];
+let staffs = [];
+let customersOnScreen = [];
+
+function resizeCanvas() {
+  const wrapper = document.getElementById("canvas-wrapper");
+  canvas.width = wrapper.clientWidth;
+  canvas.height = wrapper.clientHeight;
+  initSceneLayout();
+}
+window.addEventListener("resize", resizeCanvas);
+
+// 初始化吧檯機台與店員座標（依螢幕比例自適應）
+function initSceneLayout() {
+  const w = canvas.width;
+  const h = canvas.height;
+
+  // 保留舊機台佔用狀態
+  stations = [
+    { id: "tea1", type: "TeaBrewer", label: "煮茶機", x: w * 0.2, y: h * 0.22, color: "#8d5524", time: 1.2, user: null },
+    { id: "top1", type: "ToppingBar", label: "配料台", x: w * 0.45, y: h * 0.22, color: "#e07a5f", time: 1.0, user: null },
+    { id: "shake1", type: "Shaker", label: "雪克機", x: w * 0.7, y: h * 0.22, color: "#3d405b", time: 1.4, user: null },
+    { id: "seal1", type: "Sealer", label: "封口機1", x: w * 0.82, y: h * 0.42, color: "#2a9d8f", time: 1.3, user: null }
+  ];
+
+  if (gameState.upgrades.secondSealer) {
+    stations.push({ id: "seal2", type: "Sealer", label: "封口機2", x: w * 0.62, y: h * 0.42, color: "#2a9d8f", time: 1.3, user: null });
+  }
+
+  // 收銀櫃檯座標
+  stations.push({ id: "counter", type: "Counter", label: "點餐出餐台", x: w * 0.25, y: h * 0.52, color: "#d97724", time: 0.4, user: null });
+
+  // 初始化店員
+  if (staffs.length === 0) {
+    staffs.push(createStaff("店員小美", w * 0.35, h * 0.36, "#f4a261"));
+  }
+  if (gameState.upgrades.secondStaff && staffs.length < 2) {
+    staffs.push(createStaff("店員阿豪", w * 0.55, h * 0.36, "#4cc9f0"));
+  }
+}
+
+function createStaff(name, x, y, color) {
+  return {
+    name, x, y, color,
+    state: "IDLE", // IDLE, MOVING, WORKING, WAITING
+    order: null,
+    targetStation: null,
+    workTimer: 0,
+    workDuration: 1
+  };
+}
+
+// 取得當前季節與清涼度加成
+function getSeasonInfo() {
+  const m = (gameState.monthIndex % 12) + 1;
+  if (m >= 6 && m <= 8) return { name: "夏", coolMult: 1.35 };
+  if (m === 12 || m <= 2) return { name: "冬", coolMult: 0.65 };
+  return { name: m >= 3 && m <= 5 ? "春" : "秋", coolMult: 1.0 };
+}
+
+// 生成新顧客
+function spawnCustomer() {
+  if (customersOnScreen.length >= 4) return;
+
+  const unlockedKeys = Object.keys(gameState.customers).filter(k => gameState.customers[k].unlocked);
+  const pickKey = unlockedKeys[Math.floor(Math.random() * unlockedKeys.length)];
+  const arch = DB.customers[pickKey];
+
+  const queueIndex = customersOnScreen.length;
+  customersOnScreen.push({
+    archetypeId: pickKey,
+    name: arch.name,
+    color: arch.color,
+    x: canvas.width * 0.25,
+    y: canvas.height * 0.92,
+    targetX: canvas.width * 0.25,
+    targetY: canvas.height * (0.64 + queueIndex * 0.08),
+    state: "WALKING_IN", // WALKING_IN, ORDERING, WAITING_DRINK, LEAVING
+    bubbleText: "",
+    chosenDrink: null
+  });
+}
+
+// 顧客到達櫃檯：挑選飲料並下單
+function customerPlaceOrder(cust) {
+  const arch = DB.customers[cust.archetypeId];
+  const prog = gameState.customers[cust.archetypeId];
+  const maxBudget = arch.maxBudget * (1 + (prog.level - 1) * 0.1);
+
+  const affordable = gameState.menu.filter(d => d.price <= maxBudget);
+  if (affordable.length === 0) {
+    cust.bubbleText = "💸 太貴了...";
+    cust.state = "LEAVING";
+    cust.targetY = canvas.height + 40;
+    return;
+  }
+
+  const season = getSeasonInfo();
+  let bestDrink = affordable[0];
+  let bestScore = -1;
+
+  affordable.forEach(d => {
+    let score = d.stats.tea * arch.w.tea +
+                d.stats.full * arch.w.full +
+                d.stats.app * arch.w.app +
+                (d.stats.cool * season.coolMult) * arch.w.cool;
+    if (d.rating.includes("★")) score *= 1.15;
+    if (score > bestScore) {
+      bestScore = score;
+      bestDrink = d;
+    }
+  });
+
+  cust.chosenDrink = bestDrink;
+  cust.bubbleText = `點了 ${bestDrink.name}`;
+  cust.state = "WAITING_DRINK";
+
+  // 建立店員製作步驟佇列
+  let steps = ["TeaBrewer"];
+  if (bestDrink.hasTopping) steps.push("ToppingBar");
+  steps.push("Shaker", "Sealer", "Counter");
+
+  orderQueue.push({
+    drink: bestDrink,
+    customer: cust,
+    matchScore: bestScore,
+    steps: steps
+  });
+}
+
+// 訂單完成：顧客取餐結帳與成長計算
+function completeOrderForCustomer(order) {
+  const cust = order.customer;
+  const arch = DB.customers[cust.archetypeId];
+  const prog = gameState.customers[cust.archetypeId];
+  const drink = order.drink;
+
+  // 1. 收入與銷量
+  gameState.money += drink.price;
+  drink.soldCount = (drink.soldCount || 0) + 1;
+
+  // 2. 滿意度與靈感點數
+  const charmBonus = gameState.upgrades.neonSignLv * 8;
+  const satisfaction = Math.min(1.5, Math.max(0.4, (order.matchScore + charmBonus) / arch.targetScore));
+  const earnedInsp = Math.max(2, Math.round(5 * satisfaction * (1 + prog.level * 0.15)));
+  gameState.inspiration += earnedInsp;
+
+  // 飄字特效
+  addFloatingText(`+$${drink.price}`, cust.x - 15, cust.y - 30, "#2e8b57");
+  addFloatingText(`+💡${earnedInsp}`, cust.x + 20, cust.y - 45, "#e07a5f");
+
+  // 3. 客群經驗與升級連鎖
+  if (prog.level < 5) {
+    prog.exp += Math.round(22 * satisfaction);
+    if (prog.exp >= prog.nextExp) {
+      prog.exp -= prog.nextExp;
+      prog.level++;
+      prog.nextExp = Math.round(prog.nextExp * 1.5);
+      showToast(`🎉 ${arch.name} 升至 Lv.${prog.level}！`);
+
+      // Lv.3 解鎖連鎖獎勵
+      if (prog.level >= 3 && !prog.claimedLv3) {
+        prog.claimedLv3 = true;
+        if (arch.lv3UnlockCust && !gameState.customers[arch.lv3UnlockCust].unlocked) {
+          gameState.customers[arch.lv3UnlockCust].unlocked = true;
+          showToast(`✨ 新客群登場：【${DB.customers[arch.lv3UnlockCust].name}】！`);
+        }
+        if (arch.lv3UnlockIng && !gameState.unlockedIngredients.includes(arch.lv3UnlockIng)) {
+          gameState.unlockedIngredients.push(arch.lv3UnlockIng);
+          const ingObj = DB.ingredients.find(i => i.id === arch.lv3UnlockIng);
+          showToast(`🎁 獲贈新配料：【${ingObj.name}】！`);
+        }
+      }
+    }
+  }
+
+  cust.bubbleText = satisfaction >= 1.1 ? "😍 超好喝！" : "😋 滿足~";
+  cust.state = "LEAVING";
+  cust.targetY = canvas.height + 40;
+
+  updateTopUI();
+  saveGame();
+}
+
+// 更新店員狀態機 (FSM)
+function updateStaffs(dt) {
+  const speedMult = 1 + (gameState.upgrades.staffSpeedLv - 1) * 0.2;
+
+  staffs.forEach(s => {
+    if (s.state === "IDLE") {
+      if (orderQueue.length > 0) {
+        s.order = orderQueue.shift();
+        assignNextStation(s);
+      }
+    } else if (s.state === "WAITING") {
+      tryReserveStation(s, s.pendingStationType);
+    } else if (s.state === "MOVING") {
+      const tx = s.targetStation.x;
+      const ty = s.targetStation.y + 34;
+      const dx = tx - s.x;
+      const dy = ty - s.y;
+      const dist = Math.hypot(dx, dy);
+      const step = 140 * speedMult * dt;
+
+      if (dist <= step) {
+        s.x = tx;
+        s.y = ty;
+        s.state = "WORKING";
+        s.workTimer = 0;
+        s.workDuration = Math.max(0.3, s.targetStation.time / speedMult);
+      } else {
+        s.x += (dx / dist) * step;
+        s.y += (dy / dist) * step;
+      }
+    } else if (s.state === "WORKING") {
+      s.workTimer += dt;
+      if (s.workTimer >= s.workDuration) {
+        s.targetStation.user = null;
+        s.targetStation = null;
+        assignNextStation(s);
+      }
+    }
+  });
+}
+
+function assignNextStation(staff) {
+  if (!staff.order || staff.order.steps.length === 0) {
+    completeOrderForCustomer(staff.order);
+    staff.order = null;
+    staff.state = "IDLE";
+    return;
+  }
+  const nextType = staff.order.steps.shift();
+  tryReserveStation(staff, nextType);
+}
+
+function tryReserveStation(staff, type) {
+  const freeStation = stations.find(st => st.type === type && st.user === null);
+  if (freeStation) {
+    freeStation.user = staff;
+    staff.targetStation = freeStation;
+    staff.pendingStationType = null;
+    staff.state = "MOVING";
+  } else {
+    staff.pendingStationType = type;
+    staff.state = "WAITING";
+  }
+}
+
+// 更新顧客移動與排隊
+function updateCustomers(dt) {
+  // 重新計算排隊位置
+  let activeIndex = 0;
+  customersOnScreen.forEach(c => {
+    if (c.state !== "LEAVING") {
+      c.targetY = canvas.height * (0.63 + activeIndex * 0.085);
+      activeIndex++;
+    }
+  });
+
+  for (let i = customersOnScreen.length - 1; i >= 0; i--) {
+    const c = customersOnScreen[i];
+    const dy = c.targetY - c.y;
+    if (Math.abs(dy) > 2) {
+      c.y += Math.sign(dy) * 95 * dt;
+    } else {
+      c.y = c.targetY;
+      if (c.state === "WALKING_IN" && c.y <= canvas.height * 0.64) {
+        c.state = "ORDERING";
+        customerPlaceOrder(c);
+      }
+    }
+
+    if (c.state === "LEAVING" && c.y > canvas.height + 20) {
+      customersOnScreen.splice(i, 1);
+    }
+  }
+}
+
+function addFloatingText(text, x, y, color) {
+  floatingTexts.push({ text, x, y, color, alpha: 1.0, timer: 0 });
+}
+
+// ============================================================================
+// 4. Canvas 畫面繪製迴圈
+// ============================================================================
+function drawScene() {
+  const w = canvas.width;
+  const h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  // 1. 繪製木質地板網格
+  ctx.fillStyle = "#e6d7be";
+  ctx.fillRect(0, 0, w, h);
+  ctx.strokeStyle = "rgba(139, 107, 74, 0.15)";
+  ctx.lineWidth = 1;
+  const gridSize = 36;
+  for (let x = 0; x < w; x += gridSize) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+  }
+  for (let y = 0; y < h; y += gridSize) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+  }
+
+  // 2. 繪製吧檯區與顧客排隊區分隔線
+  ctx.fillStyle = "#d4bfa0";
+  ctx.fillRect(0, h * 0.54, w, 12);
+  ctx.fillStyle = "#8c6d46";
+  ctx.font = "bold 11px sans-serif";
+  ctx.fillText("▲ 吧檯作業區", 12, h * 0.52);
+  ctx.fillText("▼ 顧客排隊與打卡區", 12, h * 0.59);
+
+  // 若有購買霓虹打卡牆，繪製在右側
+  if (gameState.upgrades.neonSignLv > 0) {
+    ctx.fillStyle = "#2b2d42";
+    ctx.beginPath();
+    ctx.roundRect(w * 0.62, h * 0.68, w * 0.32, 48, 8);
+    ctx.fill();
+    ctx.strokeStyle = "#ff006e";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = "#ffbe0b";
+    ctx.font = "bold 12px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(`✨ 網美打卡牆 Lv.${gameState.upgrades.neonSignLv}`, w * 0.78, h * 0.68 + 28);
+    ctx.textAlign = "left";
+  }
+
+  // 3. 繪製吧檯設備機台
+  stations.forEach(st => {
+    ctx.fillStyle = "rgba(0,0,0,0.15)";
+    ctx.beginPath();
+    ctx.ellipse(st.x, st.y + 18, 24, 10, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = st.color;
+    ctx.beginPath();
+    ctx.roundRect(st.x - 22, st.y - 18, 44, 34, 6);
+    ctx.fill();
+
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 11px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(st.label, st.x, st.y + 3);
+    ctx.textAlign = "left";
+  });
+
+  // 4. 繪製店員與頭頂進度條
+  staffs.forEach(s => {
+    drawCharacter(s.x, s.y, s.color, s.name);
+
+    if (s.state === "WORKING") {
+      const ratio = Math.min(1, s.workTimer / s.workDuration);
+      ctx.fillStyle = "#333";
+      ctx.fillRect(s.x - 20, s.y - 34, 40, 6);
+      ctx.fillStyle = "#06d6a0";
+      ctx.fillRect(s.x - 19, s.y - 33, 38 * ratio, 4);
+    } else if (s.state === "WAITING") {
+      ctx.font = "14px sans-serif";
+      ctx.fillText("💦", s.x - 7, s.y - 28);
+    }
+  });
+
+  // 5. 繪製顧客與點單氣泡
+  customersOnScreen.forEach(c => {
+    drawCharacter(c.x, c.y, c.color, c.name);
+    if (c.bubbleText) {
+      ctx.font = "bold 11px sans-serif";
+      const tw = ctx.measureText(c.bubbleText).width + 14;
+      ctx.fillStyle = "rgba(255,255,255,0.92)";
+      ctx.beginPath();
+      ctx.roundRect(c.x + 18, c.y - 24, tw, 22, 10);
+      ctx.fill();
+      ctx.strokeStyle = "#d97724";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.fillStyle = "#3b2f2f";
+      ctx.fillText(c.bubbleText, c.x + 25, c.y - 9);
+    }
+  });
+
+  // 6. 繪製飄字特效
+  floatingTexts.forEach(ft => {
+    ctx.globalAlpha = ft.alpha;
+    ctx.fillStyle = ft.color;
+    ctx.font = "bold 15px sans-serif";
+    ctx.fillText(ft.text, ft.x, ft.y);
+    ctx.globalAlpha = 1.0;
+  });
+}
+
+function drawCharacter(x, y, color, label) {
+  // 陰影
+  ctx.fillStyle = "rgba(0,0,0,0.2)";
+  ctx.beginPath();
+  ctx.ellipse(x, y + 14, 13, 6, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 身體
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.roundRect(x - 11, y - 8, 22, 22, 8);
+  ctx.fill();
+
+  // 頭部
+  ctx.fillStyle = "#ffedd8";
+  ctx.beginPath();
+  ctx.arc(x, y - 14, 10, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 名稱標籤
+  ctx.fillStyle = "#3b2f2f";
+  ctx.font = "bold 10px sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText(label, x, y + 25);
+  ctx.textAlign = "left";
+}
+
+// 遊戲主迴圈
+function gameLoop(now) {
+  const rawDt = (now - lastTime) / 1000;
+  lastTime = now;
+  const dt = Math.min(rawDt, 0.1) * gameSpeed;
+
+  // 遊戲時間推進 (每 18 秒過一個遊戲月)
+  monthTimer += dt;
+  if (monthTimer >= 18) {
+    monthTimer = 0;
+    gameState.monthIndex++;
+    if (gameState.monthIndex % 12 === 0) gameState.year++;
+    updateTopUI();
+    saveGame();
+  }
+
+  // 定時生成顧客
+  spawnTimer += dt;
+  if (spawnTimer >= 3.2) {
+    spawnTimer = 0;
+    spawnCustomer();
+  }
+
+  updateStaffs(dt);
+  updateCustomers(dt);
+
+  // 更新飄字
+  for (let i = floatingTexts.length - 1; i >= 0; i--) {
+    const ft = floatingTexts[i];
+    ft.timer += dt;
+    ft.y -= 28 * dt;
+    ft.alpha = Math.max(0, 1 - ft.timer / 1.2);
+    if (ft.timer >= 1.2) floatingTexts.splice(i, 1);
+  }
+
+  drawScene();
+  requestAnimationFrame(gameLoop);
+}
+
+// ============================================================================
+// 5. UI 互動與研發/升級邏輯
+// ============================================================================
+function updateTopUI() {
+  document.getElementById("ui-money").textContent = gameState.money;
+  document.getElementById("ui-insp").textContent = gameState.inspiration;
+  const m = (gameState.monthIndex % 12) + 1;
+  const season = getSeasonInfo();
+  document.getElementById("ui-date").textContent = `第${gameState.year}年 ${m}月 (${season.name})`;
+}
+
+document.getElementById("btn-speed").addEventListener("click", function () {
+  gameSpeed = gameSpeed === 1 ? 2 : 1;
+  this.textContent = `${gameSpeed}x`;
+});
+
+let toastTimeout;
+function showToast(msg) {
+  const el = document.getElementById("toast-banner");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => el.classList.remove("show"), 3200);
+}
+
+function openModal(id) {
+  closeModals();
+  if (id === "modal-research") renderResearchForm();
+  if (id === "modal-menu") renderMenuList();
+  if (id === "modal-shop") renderUpgradeList();
+  if (id === "modal-customers") renderCustomerList();
+  document.getElementById(id).classList.add("active");
+}
+
+function closeModals() {
+  document.querySelectorAll(".modal-overlay").forEach(el => el.classList.remove("active"));
+}
+
+// 渲染研發下拉選單
+function renderResearchForm() {
+  const selTea = document.getElementById("sel-tea");
+  const selTop = document.getElementById("sel-topping");
+  const selFlav = document.getElementById("sel-flavor");
+
+  selTea.innerHTML = "";
+  selTop.innerHTML = `<option value="">-- 不加配料 --</option>`;
+  selFlav.innerHTML = `<option value="">-- 不加風味 --</option>`;
+
+  DB.ingredients.forEach(ing => {
+    if (!gameState.unlockedIngredients.includes(ing.id)) return;
+    const opt = `<option value="${ing.id}">${ing.name} (茶${ing.tea}/飽${ing.full}/顏${ing.app}/涼${ing.cool})</option>`;
+    if (ing.cat === "tea") selTea.innerHTML += opt;
+    if (ing.cat === "topping") selTop.innerHTML += opt;
+    if (ing.cat === "flavor") selFlav.innerHTML += opt;
+  });
+
+  document.getElementById("btn-do-research").disabled = gameState.inspiration < 10;
+}
+
+// 執行飲品研發配對
+function executeResearch() {
+  if (gameState.inspiration < 10) return;
+
+  const teaId = document.getElementById("sel-tea").value;
+  const topId = document.getElementById("sel-topping").value;
+  const flavId = document.getElementById("sel-flavor").value;
+
+  const tea = DB.ingredients.find(i => i.id === teaId);
+  const top = DB.ingredients.find(i => i.id === topId);
+  const flav = DB.ingredients.find(i => i.id === flavId);
+
+  gameState.inspiration -= 10;
+
+  let baseCost = tea.cost + (top ? top.cost : 0) + (flav ? flav.cost : 0);
+  let stats = {
+    tea: tea.tea + (top ? top.tea : 0) + (flav ? flav.tea : 0),
+    full: tea.full + (top ? top.full : 0) + (flav ? flav.full : 0),
+    app: tea.app + (top ? top.app : 0) + (flav ? flav.app : 0),
+    cool: tea.cool + (top ? top.cool : 0) + (flav ? flav.cool : 0)
+  };
+
+  // 比對相性組合表
+  const combo = DB.combos.find(c => c.tea === teaId && c.topping === topId && c.flavor === flavId);
+
+  let drinkName, rating, price;
+  if (combo) {
+    drinkName = combo.name;
+    rating = combo.rating;
+    stats.tea += combo.bonus.tea;
+    stats.full += combo.bonus.full;
+    stats.app += combo.bonus.app;
+    stats.cool += combo.bonus.cool;
+    const sum = stats.tea + stats.full + stats.app + stats.cool;
+    price = Math.round((baseCost * 1.4 + sum * 0.22) * combo.mult);
+
+    if (combo.unlockCust && !gameState.customers[combo.unlockCust].unlocked) {
+      gameState.customers[combo.unlockCust].unlocked = true;
+      showToast(`🌟 觸發神組合【${drinkName}】，解鎖新客人【${DB.customers[combo.unlockCust].name}】！`);
+    } else {
+      showToast(`🌟 研發出相性飲品：【${drinkName}】($${price})！`);
+    }
+  } else {
+    drinkName = `${flav ? flav.name : ""}${top ? top.name : ""}${tea.name}`;
+    rating = "普通搭配";
+    const sum = stats.tea + stats.full + stats.app + stats.cool;
+    price = Math.round(baseCost * 1.4 + sum * 0.18);
+    showToast(`🧋 研發完成：【${drinkName}】($${price})`);
+  }
+
+  gameState.menu.push({
+    name: drinkName,
+    rating: rating,
+    hasTopping: Boolean(top),
+    price: price,
+    stats: stats,
+    soldCount: 0
+  });
+
+  updateTopUI();
+  saveGame();
+  closeModals();
+}
+
+// 渲染店內菜單列表
+function renderMenuList() {
+  const container = document.getElementById("menu-list-container");
+  container.innerHTML = gameState.menu.map((d, idx) => `
+    <div class="card-item">
+      <div class="card-info">
+        <h4>${d.name} ${d.rating.includes("★") ? `<span class="tag-super">${d.rating}</span>` : ""}</h4>
+        <p>售價：<b>$${d.price}</b> ｜ 已售出：${d.soldCount || 0} 杯</p>
+        <p>茶韻 ${d.stats.tea} · 飽足 ${d.stats.full} · 顏值 ${d.stats.app} · 清涼 ${d.stats.cool}</p>
+      </div>
+      ${gameState.menu.length > 1 ? `<button class="small-btn" style="background:#d9534f;" onclick="removeMenu(${idx})">下架</button>` : ""}
+    </div>
+  `).join("");
+}
+
+function removeMenu(index) {
+  gameState.menu.splice(index, 1);
+  saveGame();
+  renderMenuList();
+}
+
+// 渲染設備與店員升級列表
+function renderUpgradeList() {
+  const u = gameState.upgrades;
+  const speedCost = u.staffSpeedLv * 250;
+  const neonCost = (u.neonSignLv + 1) * 300;
+
+  const html = `
+    <div class="card-item">
+      <div class="card-info">
+        <h4>增設第二台封口機</h4>
+        <p>解決尖峰時段封口機排隊塞車問題</p>
+      </div>
+      <button class="small-btn" ${u.secondSealer || gameState.money < 400 ? "disabled" : ""} onclick="buyUpgrade('sealer', 400)">
+        ${u.secondSealer ? "已購買" : "$400"}
+      </button>
+    </div>
+    <div class="card-item">
+      <div class="card-info">
+        <h4>招募第二位店員（阿豪）</h4>
+        <p>雙人同時搖杯出餐，營收翻倍</p>
+      </div>
+      <button class="small-btn" ${u.secondStaff || gameState.money < 600 ? "disabled" : ""} onclick="buyUpgrade('staff', 600)">
+        ${u.secondStaff ? "已招募" : "$600"}
+      </button>
+    </div>
+    <div class="card-item">
+      <div class="card-info">
+        <h4>店員搖杯特訓 (目前 Lv.${u.staffSpeedLv})</h4>
+        <p>提升所有店員移動與製作速度 +20%</p>
+      </div>
+      <button class="small-btn" ${gameState.money < speedCost ? "disabled" : ""} onclick="buyUpgrade('speed', ${speedCost})">
+        $${speedCost}
+      </button>
+    </div>
+    <div class="card-item">
+      <div class="card-info">
+        <h4>店門口網美打卡牆 (目前 Lv.${u.neonSignLv})</h4>
+        <p>大幅提升顧客滿意度與 💡 靈感點數掉落</p>
+      </div>
+      <button class="small-btn" ${gameState.money < neonCost ? "disabled" : ""} onclick="buyUpgrade('neon', ${neonCost})">
+        $${neonCost}
+      </button>
+    </div>
+  `;
+  document.getElementById("upgrade-list-container").innerHTML = html;
+}
+
+function buyUpgrade(type, cost) {
+  if (gameState.money < cost) return;
+  gameState.money -= cost;
+
+  if (type === "sealer") gameState.upgrades.secondSealer = true;
+  if (type === "staff") gameState.upgrades.secondStaff = true;
+  if (type === "speed") gameState.upgrades.staffSpeedLv++;
+  if (type === "neon") gameState.upgrades.neonSignLv++;
+
+  initSceneLayout();
+  updateTopUI();
+  saveGame();
+  renderUpgradeList();
+  showToast("✅ 升級完成！");
+}
+
+// 渲染客群圖鑑
+function renderCustomerList() {
+  const container = document.getElementById("customer-list-container");
+  container.innerHTML = Object.keys(DB.customers).map(key => {
+    const arch = DB.customers[key];
+    const prog = gameState.customers[key];
+    if (!prog.unlocked) {
+      return `
+        <div class="card-item" style="opacity:0.55;">
+          <div class="card-info">
+            <h4>🔒 尚未解鎖的客群</h4>
+            <p>提升現有客群等級或研發神組合飲品即可吸引上門</p>
+          </div>
+        </div>
+      `;
+    }
+    return `
+      <div class="card-item">
+        <div class="card-info">
+          <h4 style="color:${arch.color};">${arch.name} (Lv.${prog.level})</h4>
+          <p>預算上限：$${Math.round(arch.maxBudget * (1 + (prog.level - 1) * 0.1))} ｜ 升級經驗：${prog.exp}/${prog.nextExp}</p>
+          <p>Lv.3 里程碑：解鎖新客群與限定配料</p>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+// 啟動遊戲
+resizeCanvas();
+updateTopUI();
+spawnCustomer();
+requestAnimationFrame(gameLoop);
+</script>
+</body>
+</html>
