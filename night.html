@@ -1,569 +1,106 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>校安風暴 - 萌寵校園版</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
-        
-        body {
-            /* 改用圓潤可愛的字體 */
-            font-family: 'Nunito', sans-serif;
-            background-color: #fff7ed; /* 溫暖的粉橘色底 (orange-50) */
-            color: #334155; /* Slate 700 */
-            overflow-x: hidden;
+// ==========================================
+// 1. 遊戲資料庫 (直接沿用之前的 JSON 結構)
+// ==========================================
+const BobaDatabase = {
+  ingredients: [
+    { id: "tea_assam", name: "阿薩姆紅茶", category: "BaseTea", cost: 10, teaFlavor: 25, fullness: 5, appearance: 10, coolness: 15 },
+    { id: "tea_four_seasons", name: "四季春青茶", category: "BaseTea", cost: 12, teaFlavor: 30, fullness: 5, appearance: 15, coolness: 25 },
+    { id: "top_boba", name: "黑糖珍珠", category: "Topping", cost: 15, teaFlavor: 5, fullness: 35, appearance: 25, coolness: 0 },
+    { id: "flav_milk", name: "小農鮮奶", category: "Flavor", cost: 20, teaFlavor: 15, fullness: 25, appearance: 20, coolness: 10 }
+  ],
+  combos: [
+    {
+      teaId: "tea_assam",
+      toppingId: "top_boba",
+      flavorId: "flav_milk",
+      resultDrinkName: "黑糖珍珠鮮奶茶",
+      synergyRating: "SuperMatch",
+      priceMultiplier: 1.5,
+      bonusStats: { teaFlavor: 20, fullness: 25, appearance: 30, coolness: 0 }
+    }
+  ]
+};
+
+// ==========================================
+// 2. 遊戲核心狀態與存檔系統 (localStorage)
+// ==========================================
+class BobaGameEngine {
+  constructor() {
+    this.state = this.loadGame() || {
+      money: 500,          // 新台幣
+      inspiration: 30,     // 💡靈感點數
+      menu: [],            // 已研發上架的飲品
+      customerLevels: {    // 客群等級
+        Student: { level: 1, exp: 0 }
+      }
+    };
+  }
+
+  // 核心方法：飲品研發配對 (對應 C# 的 ResearchNewDrink)
+  researchDrink(teaId, toppingId = "", flavorId = "") {
+    if (this.state.inspiration < 10) {
+      return { success: false, msg: "靈感點數不足（需要 10 點）！" };
+    }
+
+    const tea = BobaDatabase.ingredients.find(i => i.id === teaId);
+    const topping = BobaDatabase.ingredients.find(i => i.id === toppingId);
+    const flavor = BobaDatabase.ingredients.find(i => i.id === flavorId);
+
+    if (!tea) return { success: false, msg: "請選擇茶底！" };
+
+    this.state.inspiration -= 10;
+
+    // 累加基礎數值
+    let baseCost = tea.cost + (topping?.cost || 0) + (flavor?.cost || 0);
+    let stats = {
+      teaFlavor: tea.teaFlavor + (topping?.teaFlavor || 0) + (flavor?.teaFlavor || 0),
+      fullness: tea.fullness + (topping?.fullness || 0) + (flavor?.fullness || 0),
+      appearance: tea.appearance + (topping?.appearance || 0) + (flavor?.appearance || 0),
+      coolness: tea.coolness + (topping?.coolness || 0) + (flavor?.coolness || 0)
+    };
+
+    // 檢查相性組合
+    const matched = BobaDatabase.combos.find(
+      c => c.teaId === teaId && (c.toppingId || "") === toppingId && (c.flavorId || "") === flavorId
+    );
+
+    let newDrink = {};
+    if (matched) {
+      newDrink = {
+        name: matched.resultDrinkName,
+        rating: matched.synergyRating,
+        stats: {
+          teaFlavor: stats.teaFlavor + matched.bonusStats.teaFlavor,
+          fullness: stats.fullness + matched.bonusStats.fullness,
+          appearance: stats.appearance + matched.bonusStats.appearance,
+          coolness: stats.coolness + matched.bonusStats.coolness
         }
+      };
+      const total = Object.values(newDrink.stats).reduce((a, b) => a + b, 0);
+      newDrink.sellPrice = Math.round((baseCost * 1.5 + total * 0.25) * matched.priceMultiplier);
+    } else {
+      const prefix = (flavor ? flavor.name : "") + (topping ? topping.name : "");
+      newDrink = {
+        name: `${prefix}${tea.name}`,
+        rating: "Normal",
+        stats: stats
+      };
+      const total = Object.values(stats).reduce((a, b) => a + b, 0);
+      newDrink.sellPrice = Math.round(baseCost * 1.5 + total * 0.2);
+    }
 
-        /* 柔和的自訂捲軸 */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #fef2f2; 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #fca5a5; 
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #f87171; 
-        }
+    this.state.menu.push(newDrink);
+    this.saveGame();
+    return { success: true, drink: newDrink };
+  }
 
-        /* 進度條平滑過渡與圓角 */
-        .progress-bar {
-            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+  // 自動存檔至瀏覽器
+  saveGame() {
+    localStorage.setItem("boba_shop_save_v1", JSON.stringify(this.state));
+  }
 
-        /* 警示動畫改為柔和的紅色脈衝 */
-        .alert-pulse {
-            animation: pulse-cute-red 2s infinite;
-        }
-        @keyframes pulse-cute-red {
-            0%, 100% { background-color: #fef2f2; border-color: #fca5a5; }
-            50% { background-color: #ffffff; border-color: transparent; }
-        }
-
-        /* 角色表情跳動動畫 */
-        .bounce-emoji {
-            animation: bounce-soft 1s ease infinite alternate;
-        }
-        @keyframes bounce-soft {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-10px); }
-        }
-    </style>
-</head>
-<body class="min-h-screen flex flex-col p-4 md:p-6 lg:p-8">
-
-    <!-- 啟動畫面 -->
-    <div id="startScreen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-orange-50/90 backdrop-blur-sm">
-        <div class="max-w-md w-full bg-white p-8 rounded-[2rem] shadow-xl text-center border-4 border-pink-100">
-            <div class="text-6xl mb-4">🏫✨</div>
-            <h1 class="text-4xl font-extrabold mb-4 text-slate-700 tracking-tight">校安風暴<br><span class="text-2xl text-pink-400">萌寵校園版</span></h1>
-            <p class="text-slate-500 mb-8 text-sm font-semibold">
-                保持學生開心，維持校園秩序，<br>也別忘了讓主任休息喔！😫
-            </p>
-            <button onclick="startGame()" class="w-full bg-pink-400 hover:bg-pink-500 text-white font-bold py-4 px-6 rounded-2xl transition-all duration-200 transform hover:scale-105 shadow-md">
-                開始執勤 🚀
-            </button>
-        </div>
-    </div>
-
-    <!-- 遊戲結束畫面 -->
-    <div id="gameOverScreen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-orange-50/90 backdrop-blur-sm hidden">
-        <div class="max-w-md w-full bg-white p-8 rounded-[2rem] shadow-xl text-center border-4 border-red-200">
-            <div class="text-7xl mb-4" id="gameOverEmoji">💥</div>
-            <h1 class="text-4xl font-extrabold mb-2 text-red-500">危機爆發</h1>
-            <p id="gameOverReason" class="text-slate-600 mb-8 font-semibold"></p>
-            <button onclick="location.reload()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-4 px-6 rounded-2xl transition-all duration-200 transform hover:scale-105 shadow-sm">
-                重新開始 🔄
-            </button>
-        </div>
-    </div>
-
-    <!-- 頂部資訊列 -->
-    <header class="flex justify-between items-end mb-6 pb-4 border-b-2 border-orange-100">
-        <div class="flex items-center gap-3">
-            <div class="text-3xl bg-white p-2 rounded-xl shadow-sm border border-orange-50">🏫</div>
-            <div>
-                <h1 class="text-2xl font-extrabold text-slate-700">學務處控制中心</h1>
-                <p class="text-sm font-bold text-pink-400 mt-1">Campus Crisis Simulator</p>
-            </div>
-        </div>
-        <div class="text-right bg-white py-2 px-4 rounded-2xl shadow-sm border border-orange-50">
-            <div id="ui-day" class="text-sm font-extrabold text-teal-500 mb-1">第 1 天</div>
-            <div id="ui-time" class="text-3xl font-extrabold text-slate-700 tracking-wider">08:00</div>
-        </div>
-    </header>
-
-    <!-- 頂部儀表板 (粉彩風格) -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <!-- 學生士氣 -->
-        <div id="card-morale" class="bg-white rounded-2xl p-5 shadow-sm border-2 border-transparent transition-colors">
-            <div class="flex justify-between items-center mb-3">
-                <span class="text-sm font-bold text-slate-500 flex items-center gap-1">🥰 士氣</span>
-                <span id="ui-morale-val" class="text-xl font-extrabold text-pink-500">80</span>
-            </div>
-            <div class="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
-                <div id="bar-morale" class="h-full bg-pink-400 rounded-full progress-bar" style="width: 80%;"></div>
-            </div>
-        </div>
-        
-        <!-- 校園秩序 -->
-        <div id="card-discipline" class="bg-white rounded-2xl p-5 shadow-sm border-2 border-transparent transition-colors">
-            <div class="flex justify-between items-center mb-3">
-                <span class="text-sm font-bold text-slate-500 flex items-center gap-1">📏 秩序</span>
-                <span id="ui-discipline-val" class="text-xl font-extrabold text-amber-500">60</span>
-            </div>
-            <div class="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
-                <div id="bar-discipline" class="h-full bg-amber-400 rounded-full progress-bar" style="width: 60%;"></div>
-            </div>
-        </div>
-
-        <!-- 人員精力 -->
-        <div id="card-stamina" class="bg-white rounded-2xl p-5 shadow-sm border-2 border-transparent transition-colors">
-            <div class="flex justify-between items-center mb-3">
-                <span class="text-sm font-bold text-slate-500 flex items-center gap-1">⚡ 精力</span>
-                <span id="ui-stamina-val" class="text-xl font-extrabold text-teal-500">100</span>
-            </div>
-            <div class="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
-                <div id="bar-stamina" class="h-full bg-teal-400 rounded-full progress-bar" style="width: 100%;"></div>
-            </div>
-        </div>
-
-        <!-- 預算資金 -->
-        <div class="bg-white rounded-2xl p-5 shadow-sm border-2 border-purple-50">
-            <div class="flex justify-between items-center mb-1">
-                <span class="text-sm font-bold text-slate-500 flex items-center gap-1">💰 預算</span>
-                <span class="text-xl font-extrabold text-purple-500">$<span id="ui-budget-val">1000</span></span>
-            </div>
-            <div class="text-xs font-semibold text-slate-400 mt-2">用於解鎖系統升級</div>
-        </div>
-    </div>
-
-    <!-- 主要互動區 -->
-    <div class="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        <!-- 左側/中央：角色舞台與事件面板 -->
-        <div class="lg:col-span-2 flex flex-col gap-4">
-            
-            <!-- 角色舞台 (Character Stage) -->
-            <div id="stageContainer" class="bg-white rounded-3xl p-6 shadow-sm border border-orange-100 flex justify-center items-end pb-4 gap-4 md:gap-8 transition-all duration-300 h-48 md:h-64 relative overflow-hidden">
-                <!-- 裝飾背景元素 -->
-                <div class="absolute -top-4 -left-4 text-4xl opacity-20">✨</div>
-                <div class="absolute -bottom-2 -right-2 text-5xl opacity-20">🌸</div>
-                
-                <!-- 角色 2D Avatars (DiceBear) -->
-                <img id="avatar-student1" class="w-24 h-24 md:w-32 md:h-32 transition-transform duration-300 hover:scale-105 z-10 drop-shadow-sm" src="https://api.dicebear.com/9.x/avataaars/svg?seed=Student1" alt="學生 A" />
-                <img id="avatar-officer" class="w-32 h-32 md:w-48 md:h-48 transition-transform duration-300 hover:scale-105 z-20 drop-shadow-md mx-2 md:mx-6" src="https://api.dicebear.com/9.x/avataaars/svg?seed=Officer" alt="學務主任" />
-                <img id="avatar-student2" class="w-24 h-24 md:w-32 md:h-32 transition-transform duration-300 hover:scale-105 z-10 drop-shadow-sm" src="https://api.dicebear.com/9.x/avataaars/svg?seed=Student2" alt="學生 B" />
-            </div>
-
-            <!-- 事件與決策面板 -->
-            <div class="bg-white rounded-3xl shadow-sm border border-orange-100 flex-1 flex flex-col relative overflow-hidden min-h-[300px]">
-                
-                <!-- 平靜狀態 (無事件時顯示) -->
-                <div id="idleState" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 transition-opacity duration-300 bg-orange-50/30">
-                    <div class="text-5xl mb-4 bounce-emoji text-yellow-400">✨</div>
-                    <p class="text-xl font-bold text-slate-500">校園和平，持續巡邏中...</p>
-                    <p class="text-sm mt-2 font-semibold opacity-70">等待突發事件發生</p>
-                </div>
-
-                <!-- 決策事件面板 -->
-                <div id="eventPanel" class="absolute inset-0 bg-white p-6 md:p-8 flex flex-col opacity-0 pointer-events-none transition-opacity duration-300 z-10">
-                    <div class="mb-2 flex items-center gap-2">
-                        <span class="px-3 py-1 bg-red-100 text-red-500 text-xs font-extrabold rounded-full tracking-wider">⚠️ 緊急事件</span>
-                    </div>
-                    <h2 id="eventTitle" class="text-2xl font-extrabold text-slate-700 mb-3 mt-2">事件標題</h2>
-                    <p id="eventDesc" class="text-slate-600 font-semibold mb-6 leading-relaxed flex-1 text-sm md:text-base">
-                        事件描述...
-                    </p>
-                    
-                    <div id="eventChoices" class="flex flex-col gap-3 mt-auto">
-                        <!-- 選項按鈕動態生成 -->
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- 右側：狀態紀錄日誌 (Status Log) -->
-        <div class="bg-white rounded-3xl shadow-sm border border-orange-100 flex flex-col h-[400px] lg:h-auto">
-            <div class="p-5 border-b-2 border-orange-50 bg-orange-50/50 rounded-t-3xl flex justify-between items-center">
-                <h3 class="font-extrabold text-slate-600 flex items-center gap-2">📝 校園日誌</h3>
-            </div>
-            <div id="statusLog" class="flex-1 p-5 overflow-y-auto space-y-4 font-semibold text-sm">
-                <!-- 日誌項目將透過 JS 生成 -->
-            </div>
-        </div>
-
-    </div>
-
-    <script>
-        // --- 遊戲狀態 ---
-        let state = {
-            morale: 80,
-            discipline: 60,
-            stamina: 100,
-            budget: 1000,
-            day: 1,
-            timeMinutes: 8 * 60, // 08:00
-            gameOver: false,
-            activeEvent: null,
-            modifiers: {
-                autoRollCall: false // LINE機器人
-            }
-        };
-
-        const GAME_SPEED = 2000; 
-        const MINUTES_PER_TICK = 30; 
-        let gameLoopTimer = null;
-
-        // --- 事件資料庫 (加入角色表情設定) ---
-        const eventPool = [
-            {
-                id: "e1",
-                title: "走廊大亂鬥",
-                desc: "走廊發生嚴重的學生肢體衝突，兩派人馬互相叫囂，周圍聚集了大量圍觀學生，氣氛十分緊張！",
-                emojis: ['😠', '💥', '🤬'], // [左側, 中央, 右側]
-                choices: [
-                    {
-                        text: "強硬介入：嚴厲記過處分",
-                        reqBudget: 0,
-                        effects: { discipline: 15, morale: -20, stamina: -10, budget: 0 },
-                        log: "採取了最嚴厲的處分。秩序瞬間恢復，但學生群體極度不滿。"
-                    },
-                    {
-                        text: "柔性勸導：帶回輔導室深談",
-                        reqBudget: 0,
-                        effects: { discipline: 5, morale: 10, stamina: -30, budget: 0 },
-                        log: "花費大量精力深度輔導，成功化解心結，維持了士氣。"
-                    }
-                ]
-            },
-            {
-                id: "e2",
-                title: "網路社群抗議",
-                desc: "學生強烈不滿近期實施的服儀校規，在 IG 與 Threads 上發起連署抗議，逐漸引起媒體注意。",
-                emojis: ['🧑‍🏫', '📱', '📢'],
-                choices: [
-                    {
-                        text: "強勢壓制：強制下架貼文",
-                        reqBudget: 0,
-                        effects: { discipline: 20, morale: -30, stamina: -5, budget: 0 },
-                        log: "強勢平息風波，看似恢復秩序，但學生心中的怒火已埋下。"
-                    },
-                    {
-                        text: "柔性溝通：舉辦師生披薩座談",
-                        reqBudget: 50,
-                        effects: { discipline: -5, morale: 20, stamina: -25, budget: -50 },
-                        log: "花費 $50 舉辦座談會。學生感受到被重視，士氣大增！🥰"
-                    }
-                ]
-            },
-            {
-                id: "e3",
-                title: "行政庶務地獄",
-                desc: "每天早自習的紙本點名繁瑣耗時，教職員四處奔波確認，巡邏校園的時間被嚴重壓縮。",
-                isUnique: true,
-                emojis: ['😫', '📄', '🗂️'],
-                choices: [
-                    {
-                        text: "維持現狀：繼續紙本點名",
-                        reqBudget: 0,
-                        effects: { discipline: 0, morale: 0, stamina: -20, budget: 0 },
-                        log: "維持傳統做法。繁雜的行政庶務持續消耗精力。"
-                    },
-                    {
-                        text: "科技升級：導入 LINE 點名機器人",
-                        reqBudget: 300,
-                        effects: { discipline: 5, morale: 5, stamina: 40, budget: -300 },
-                        action: () => { state.modifiers.autoRollCall = true; },
-                        log: "斥資 $300 導入自動化系統！永久降低了教職員日常的疲勞消耗！🤖✨"
-                    }
-                ]
-            }
-        ];
-
-        let availableEvents = [...eventPool];
-
-        // --- 核心邏輯 ---
-        function startGame() {
-            document.getElementById('startScreen').classList.add('hidden');
-            addLog("系統初始化完畢。今日校園任務開始！✨", "system");
-            updateUI();
-            gameLoopTimer = setInterval(gameTick, GAME_SPEED);
-        }
-
-        function gameTick() {
-            if (state.gameOver) return;
-            if (state.activeEvent) return;
-
-            state.timeMinutes += MINUTES_PER_TICK;
-            
-            if (state.timeMinutes >= 17 * 60) { // 17:00 放學
-                state.day += 1;
-                state.timeMinutes = 8 * 60;
-                
-                state.stamina = Math.min(100, state.stamina + 50);
-                state.budget += 200; 
-                addLog(`===== 第 ${state.day} 天開始 =====`, "system");
-                addLog("獲得每日教育局撥款 $200，教職員休息恢復精力。💤", "success");
-            }
-
-            let staminaDrain = state.modifiers.autoRollCall ? 0 : 2; 
-            applyStatChange('stamina', -staminaDrain);
-            
-            // 25% 機率觸發事件
-            if (Math.random() < 0.25) {
-                triggerRandomEvent();
-            }
-
-            updateUI();
-            checkGameOver();
-        }
-
-        function formatTime(minutes) {
-            let h = Math.floor(minutes / 60).toString().padStart(2, '0');
-            let m = (minutes % 60).toString().padStart(2, '0');
-            return `${h}:${m}`;
-        }
-
-        function applyStatChange(stat, amount) {
-            if(amount === 0) return;
-            state[stat] = state[stat] + amount;
-            
-            if (stat !== 'budget') {
-                if (state[stat] > 100) state[stat] = 100;
-                if (state[stat] < 0) state[stat] = 0;
-            }
-        }
-
-        // --- 事件處理 ---
-        function triggerRandomEvent() {
-            if (availableEvents.length === 0) return;
-            
-            const randomIndex = Math.floor(Math.random() * availableEvents.length);
-            const evt = availableEvents[randomIndex];
-            state.activeEvent = evt;
-            
-            document.getElementById('idleState').style.opacity = '0';
-            const panel = document.getElementById('eventPanel');
-            
-            document.getElementById('eventTitle').textContent = evt.title;
-            document.getElementById('eventDesc').textContent = evt.desc;
-            
-            const choicesContainer = document.getElementById('eventChoices');
-            choicesContainer.innerHTML = '';
-            
-            evt.choices.forEach((choice, index) => {
-                const btn = document.createElement('button');
-                const canAfford = state.budget >= choice.reqBudget;
-                
-                // 可愛粉彩風格按鈕
-                btn.className = `text-left w-full p-4 rounded-2xl border-2 transition-all duration-200 flex flex-col gap-1 transform 
-                    ${canAfford ? 'bg-orange-50 hover:bg-orange-100 hover:scale-[1.02] border-orange-100 hover:border-orange-300 shadow-sm' : 'bg-slate-50 border-slate-100 opacity-50 cursor-not-allowed'}`;
-                
-                let effectsText = [];
-                if (choice.effects.morale) effectsText.push(`士氣 ${choice.effects.morale > 0 ? '+'+choice.effects.morale : choice.effects.morale}`);
-                if (choice.effects.discipline) effectsText.push(`秩序 ${choice.effects.discipline > 0 ? '+'+choice.effects.discipline : choice.effects.discipline}`);
-                if (choice.effects.stamina) effectsText.push(`精力 ${choice.effects.stamina > 0 ? '+'+choice.effects.stamina : choice.effects.stamina}`);
-                if (choice.effects.budget) effectsText.push(`預算 ${choice.effects.budget > 0 ? '+'+choice.effects.budget : choice.effects.budget}`);
-                
-                btn.innerHTML = `
-                    <span class="font-extrabold text-slate-700 text-lg">${choice.text}</span>
-                    <div class="text-xs font-bold ${canAfford ? 'text-pink-400' : 'text-red-400'} flex gap-3">
-                        ${canAfford ? '預期影響: ' + effectsText.join(' | ') : '💰 資金不足 (需要 $'+choice.reqBudget+')'}
-                    </div>
-                `;
-                
-                if (canAfford) {
-                    btn.onclick = () => resolveEvent(evt, choice, randomIndex);
-                }
-                
-                choicesContainer.appendChild(btn);
-            });
-
-            updateCharacters(); // 更新表情為事件狀態
-
-            setTimeout(() => {
-                panel.style.opacity = '1';
-                panel.style.pointerEvents = 'auto';
-            }, 100);
-            
-            addLog(`【突發】${evt.title}`, "warning");
-        }
-
-        function resolveEvent(evt, choice, eventIndex) {
-            applyStatChange('morale', choice.effects.morale || 0);
-            applyStatChange('discipline', choice.effects.discipline || 0);
-            applyStatChange('stamina', choice.effects.stamina || 0);
-            applyStatChange('budget', choice.effects.budget || 0);
-            
-            if (choice.action) choice.action();
-            
-            addLog(`決策：${choice.text}`, "normal");
-            addLog(`結果：${choice.log}`, "info");
-
-            if (evt.isUnique) {
-                availableEvents.splice(eventIndex, 1);
-            }
-
-            const panel = document.getElementById('eventPanel');
-            panel.style.opacity = '0';
-            panel.style.pointerEvents = 'none';
-            
-            setTimeout(() => {
-                document.getElementById('idleState').style.opacity = '1';
-                state.activeEvent = null;
-                updateUI();
-                checkGameOver();
-            }, 300);
-        }
-
-        // --- 動態表情更新 (Character Stage) ---
-        function updateCharacters() {
-            const officer = document.getElementById('avatar-officer');
-            const student1 = document.getElementById('avatar-student1');
-            const student2 = document.getElementById('avatar-student2');
-            const stage = document.getElementById('stageContainer');
-
-            // DiceBear API 基礎設定檔 (髮型、衣服、背景色等)
-            const baseOfficer = "https://api.dicebear.com/9.x/avataaars/svg?seed=Officer&top=shortHairShortFlat&facialHair=beardLight&clothing=blazerShirt&backgroundColor=b6e3f4&radius=50";
-            const baseStudent1 = "https://api.dicebear.com/9.x/avataaars/svg?seed=Student1&top=longHairStraight&clothing=collarSweater&backgroundColor=ffdfbf&radius=50";
-            const baseStudent2 = "https://api.dicebear.com/9.x/avataaars/svg?seed=Student2&top=shortHairSides&clothing=hoodie&backgroundColor=c0aede&radius=50";
-
-            // 預設表情變數
-            let officerMouth = 'smile', officerEyes = 'default';
-            let s1Mouth = 'smile', s1Eyes = 'default';
-            let s2Mouth = 'smile', s2Eyes = 'default';
-
-            // 遇到事件時：全體驚嚇/緊張
-            if (state.activeEvent) {
-                officerMouth = 'scream'; officerEyes = 'surprised';
-                s1Mouth = 'sad'; s1Eyes = 'cry';
-                s2Mouth = 'sad'; s2Eyes = 'surprised';
-                
-                stage.classList.add('bg-red-50', 'border-red-200');
-                stage.classList.remove('bg-white', 'border-orange-100');
-            } else {
-                // 平靜狀態：背景重置
-                stage.classList.remove('bg-red-50', 'border-red-200');
-                stage.classList.add('bg-white', 'border-orange-100');
-
-                // 根據數值決定主任表情 (受精力影響)
-                if (state.stamina <= 30) { officerMouth = 'sad'; officerEyes = 'cry'; }
-                else if (state.stamina >= 80) { officerMouth = 'smile'; officerEyes = 'happy'; }
-                else { officerMouth = 'serious'; officerEyes = 'default'; }
-
-                // 根據數值決定左側學生表情 (受士氣影響)
-                if (state.morale <= 30) { s1Mouth = 'sad'; s1Eyes = 'cry'; }
-                else if (state.morale >= 80) { s1Mouth = 'smile'; s1Eyes = 'happy'; }
-                else { s1Mouth = 'default'; s1Eyes = 'default'; }
-
-                // 根據數值決定右側學生表情 (受秩序影響)
-                if (state.discipline <= 30) { s2Mouth = 'sad'; s2Eyes = 'squint'; } 
-                else if (state.discipline >= 80) { s2Mouth = 'smile'; s2Eyes = 'happy'; }
-                else { s2Mouth = 'default'; s2Eyes = 'default'; }
-            }
-
-            // 更新圖片 URL
-            officer.src = `${baseOfficer}&mouth=${officerMouth}&eyes=${officerEyes}`;
-            student1.src = `${baseStudent1}&mouth=${s1Mouth}&eyes=${s1Eyes}`;
-            student2.src = `${baseStudent2}&mouth=${s2Mouth}&eyes=${s2Eyes}`;
-        }
-
-        // --- UI 更新 ---
-        function updateUI() {
-            document.getElementById('ui-day').textContent = `第 ${state.day} 天`;
-            document.getElementById('ui-time').textContent = formatTime(state.timeMinutes);
-
-            const updateBar = (statId, value, colorClass) => {
-                document.getElementById(`ui-${statId}-val`).textContent = value;
-                const bar = document.getElementById(`bar-${statId}`);
-                const card = document.getElementById(`card-${statId}`);
-                
-                bar.style.width = `${value}%`;
-                
-                if (value <= 20) {
-                    bar.className = `h-full rounded-full progress-bar bg-red-400`;
-                    card.classList.add('alert-pulse');
-                    card.classList.remove('border-transparent');
-                } else {
-                    bar.className = `h-full rounded-full progress-bar ${colorClass}`;
-                    card.classList.remove('alert-pulse');
-                    card.classList.add('border-transparent');
-                }
-            };
-
-            updateBar('morale', state.morale, 'bg-pink-400');
-            updateBar('discipline', state.discipline, 'bg-amber-400');
-            updateBar('stamina', state.stamina, 'bg-teal-400');
-            
-            document.getElementById('ui-budget-val').textContent = state.budget;
-
-            // 確保非事件狀態下，表情也會隨數值動態改變
-            if(!state.activeEvent) updateCharacters();
-        }
-
-        function addLog(message, type = "normal") {
-            const logContainer = document.getElementById('statusLog');
-            const logEntry = document.createElement('div');
-            
-            let timeStr = `[D${state.day} ${formatTime(state.timeMinutes)}]`;
-            let colorClass = "text-slate-600";
-            
-            if (type === "warning") colorClass = "text-orange-500 font-bold";
-            if (type === "system") colorClass = "text-purple-500 font-extrabold";
-            if (type === "info") colorClass = "text-teal-600";
-            if (type === "success") colorClass = "text-pink-500 font-bold";
-            
-            logEntry.className = `${colorClass} mb-2 opacity-0 transition-opacity duration-500 pb-3 border-b border-orange-50 last:border-0`;
-            logEntry.innerHTML = `<span class="text-slate-400 mr-2 text-xs">${timeStr}</span> ${message}`;
-            
-            logContainer.prepend(logEntry); 
-            
-            setTimeout(() => logEntry.style.opacity = '1', 50);
-
-            if (logContainer.children.length > 25) {
-                logContainer.removeChild(logContainer.lastChild);
-            }
-        }
-
-        // --- 結束條件 ---
-        function checkGameOver() {
-            if (state.gameOver) return;
-
-            let isOver = false;
-            let reason = "";
-            let emoji = "💥";
-
-            if (state.morale <= 0) {
-                isOver = true;
-                emoji = "😭";
-                reason = "學生士氣歸零。全校發生大規模罷課抗議，家長會與媒體強力介入，校園徹底停擺！";
-            } else if (state.discipline <= 0) {
-                isOver = true;
-                emoji = "😈";
-                reason = "校園秩序徹底崩潰。幫派勢力與霸凌事件完全失控，教育局接管了學校安全事務！";
-            }
-
-            if (isOver) {
-                state.gameOver = true;
-                clearInterval(gameLoopTimer);
-                
-                document.getElementById('gameOverReason').textContent = reason;
-                document.getElementById('gameOverEmoji').textContent = emoji;
-                const modal = document.getElementById('gameOverScreen');
-                modal.classList.remove('hidden');
-                
-                setTimeout(() => {
-                    modal.style.opacity = '1';
-                }, 100);
-            }
-        }
-    </script>
-</body>
-</html>
+  loadGame() {
+    const raw = localStorage.getItem("boba_shop_save_v1");
+    return raw ? JSON.parse(raw) : null;
+  }
+}
