@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>今天也要平安下班｜旗艦完全體（雲端同步＋排行榜＋道具＋五日挑戰）</title>
+  <title>今天也要平安下班｜終極完全體（雲端同步＋成就稱號＋限時QTE＋環境音＋隨堂考）</title>
   <style>
     :root {
       --bg-dark: #090d16;
@@ -64,26 +64,26 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 8px;
-      gap: 4px;
+      gap: 3px;
     }
 
     .clock-pill {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
       background: rgba(56, 189, 248, 0.15);
       border: 1px solid rgba(56, 189, 248, 0.4);
       color: var(--accent-blue);
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 800;
-      padding: 4px 8px;
+      padding: 4px 7px;
       border-radius: 999px;
       white-space: nowrap;
     }
 
     .shift-progress-wrap {
       flex: 1;
-      margin: 0 3px;
+      margin: 0 2px;
       height: 6px;
       background: #1e293b;
       border-radius: 999px;
@@ -101,7 +101,7 @@
       background: rgba(255, 255, 255, 0.1);
       border: 1px solid rgba(255, 255, 255, 0.25);
       color: #fff;
-      font-size: 10.5px;
+      font-size: 10px;
       font-weight: 700;
       padding: 4px 6px;
       border-radius: 999px;
@@ -225,13 +225,55 @@
       z-index: 10;
     }
 
+    /* 限時緊急應變 QTE 倒數條 */
+    #qte-timer-box {
+      width: 100%;
+      background: rgba(127, 29, 29, 0.9);
+      border: 1.5px solid #ef4444;
+      border-radius: 10px;
+      padding: 5px 10px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 0 15px rgba(239, 68, 68, 0.45);
+      animation: pulseAlert 0.8s infinite alternate;
+    }
+
+    @keyframes pulseAlert {
+      from { box-shadow: 0 0 8px rgba(239, 68, 68, 0.3); }
+      to { box-shadow: 0 0 18px rgba(239, 68, 68, 0.85); }
+    }
+
+    .qte-label {
+      font-size: 11px;
+      font-weight: 900;
+      color: #fecaca;
+      white-space: nowrap;
+    }
+
+    .qte-bar-bg {
+      flex: 1;
+      height: 7px;
+      background: #450a0a;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    #qte-bar-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #fbbf24, #ef4444);
+      transition: width 0.1s linear;
+    }
+
     #swipe-preview-banner {
       width: 100%;
-      min-height: 38px;
+      min-height: 36px;
       background: rgba(15, 23, 42, 0.92);
       border: 1px solid rgba(56, 189, 248, 0.35);
       border-radius: 11px;
-      padding: 6px 10px;
+      padding: 5px 10px;
       margin-bottom: 8px;
       display: flex;
       justify-content: center;
@@ -254,7 +296,7 @@
       position: relative;
       width: 100%;
       flex: 1;
-      max-height: 450px;
+      max-height: 440px;
       background: #1e293b;
       border-radius: 22px;
       overflow: hidden;
@@ -641,7 +683,7 @@
     .form-row-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 7px; }
     .mini-num-label { font-size: 10px; color: #94a3b8; text-align: center; }
 
-    /* 排行榜與圖鑑列表 */
+    /* 成就、排行榜與圖鑑列表 */
     .scroll-list {
       width: 100%;
       display: flex;
@@ -673,6 +715,33 @@
       border-radius: 10px;
       padding: 8px 12px;
     }
+
+    /* 午休校安知識隨堂考彈窗 */
+    .quiz-card {
+      width: 100%;
+      max-width: 340px;
+      background: rgba(15, 23, 42, 0.98);
+      border: 2px solid #38bdf8;
+      border-radius: 20px;
+      padding: 20px 16px;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.85);
+    }
+
+    .quiz-opt-btn {
+      width: 100%;
+      text-align: left;
+      background: #1e293b;
+      border: 1.5px solid rgba(56, 189, 248, 0.4);
+      color: #f8fafc;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+
+    .quiz-opt-btn:active { background: rgba(56, 189, 248, 0.28); }
 
     #save-toast {
       position: fixed;
@@ -707,8 +776,10 @@
       </div>
       <div style="display:flex; gap:3px;">
         <button class="icon-btn cast-btn" onclick="openCastModal()">🔒 角色(<span id="cast-count">8</span>)</button>
-        <button class="icon-btn" onclick="openLeaderboard()">🏅 排行</button>
+        <button class="icon-btn" onclick="openAchievements()">🎖️ <span id="hud-ach">0</span>/4</button>
+        <button class="icon-btn" onclick="openLeaderboard()">🏅</button>
         <button class="icon-btn" onclick="openGallery()">🏆 <span id="hud-unlock">0</span>/10</button>
+        <button id="bgm-btn" class="icon-btn active-audio" onclick="toggleBGM()">🎵</button>
         <button id="voice-btn" class="icon-btn active-audio" onclick="toggleVoice()">🗣️</button>
         <button id="sfx-btn" class="icon-btn active-audio" onclick="toggleSFX()">🔊</button>
       </div>
@@ -744,8 +815,13 @@
     </div>
   </div>
 
-  <!-- 中央：可左右滑動的事件卡牌 -->
+  <!-- 中央：限時緊急應變 QTE 倒數條 ＋ 可左右滑動的事件卡牌 -->
   <div id="card-arena">
+    <div id="qte-timer-box" class="hidden">
+      <span class="qte-label">🚨 緊急應變倒數 <span id="qte-sec-text">8.0</span>s</span>
+      <div class="qte-bar-bg"><div id="qte-bar-fill"></div></div>
+    </div>
+
     <div id="swipe-preview-banner">👈 左右滑動卡牌，或點擊下方按鈕做決策 👉</div>
 
     <div id="event-card">
@@ -785,7 +861,7 @@
 
   <!-- 開場封面 -->
   <div id="start-modal" class="modal-screen">
-    <div class="tag-pill">ULTIMATE EDITION ・ 雲端同步＋五日挑戰</div>
+    <div class="tag-pill">COMPLETE EDITION ・ 成就稱號＋限時QTE＋環境音</div>
     <h1 class="main-title">今天也要平安下班<br>：校園群像生存模擬器</h1>
     <div class="cloud-badge" id="cover-cloud-status">🟢 已綁定 Firebase 雲端（全服同步＋排行榜）</div>
 
@@ -805,12 +881,22 @@
     </div>
 
     <div class="btn-stack">
-      <button class="btn-primary" onclick="startNewShift()">🔊 開啟語音與道具・開始值勤</button>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-        <button class="btn-secondary" style="border-color:#38bdf8; color:#bae6fd;" onclick="openLeaderboard()">🏅 全服排行榜</button>
-        <button class="btn-secondary" onclick="openGallery()">🏆 結局圖鑑 (<span id="cover-unlock">0</span>/10)</button>
+      <button class="btn-primary" onclick="startNewShift()">🔊 開啟語音與環境音・開始值勤</button>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px;">
+        <button class="btn-secondary" style="border-color:#a855f7; color:#e9d5ff; padding:9px 4px;" onclick="openAchievements()">🎖️ 成就 (<span id="cover-ach">0</span>/4)</button>
+        <button class="btn-secondary" style="border-color:#38bdf8; color:#bae6fd; padding:9px 4px;" onclick="openLeaderboard()">🏅 排行榜</button>
+        <button class="btn-secondary" style="padding:9px 4px;" onclick="openGallery()">🏆 圖鑑 (<span id="cover-unlock">0</span>/10)</button>
       </div>
-      <button class="btn-secondary" style="border-color:#fbbf24; color:#fde68a;" onclick="openCastModal()">🔒 管理員後台（角色／劇本／密碼）</button>
+      <button class="btn-secondary" style="border-color:#fbbf24; color:#fde68a;" onclick="openCastModal()">🔒 管理員後台（角色／劇本／聲線試聽）</button>
+    </div>
+  </div>
+
+  <!-- 午休校安知識隨堂考彩蛋彈窗 -->
+  <div id="quiz-modal" class="modal-screen hidden" style="z-index: 45;">
+    <div class="quiz-card">
+      <div class="tag-pill" style="border-color:#38bdf8; color:#38bdf8;">💡 午休突發・校安SOP隨堂考</div>
+      <h3 style="font-size:16px; font-weight:900; color:#f8fafc; margin-bottom:10px; line-height:1.45;" id="quiz-question">題目載入中</h3>
+      <div id="quiz-options"></div>
     </div>
   </div>
 
@@ -831,16 +917,14 @@
     </div>
   </div>
 
-  <!-- 管理員進階後台（角色編輯/刪除、自訂加減分、JSON劇本匯出匯入） -->
+  <!-- 管理員進階後台 -->
   <div id="cast-modal" class="modal-screen hidden">
     <div class="tag-pill">🔓 ADMIN STUDIO ・ CLOUD SYNC</div>
     <h2 class="main-title" style="font-size: 19px;">管理員角色與劇本編輯工坊</h2>
 
     <div class="cast-scroll">
-      <!-- 1. 現有角色庫（支援換圖、編輯、刪除自訂角色） -->
       <div class="cast-grid" id="cast-grid-list"></div>
 
-      <!-- 2. 新增／編輯角色與自訂四維加減分數 -->
       <div class="panel-box">
         <div class="panel-title">
           <span id="editor-form-title">➕ 新增全新角色與專屬事件卡</span>
@@ -848,16 +932,18 @@
         </div>
         <div class="form-row-2">
           <input type="text" class="form-input" id="new-char-name" placeholder="角色稱呼（例：教官李組長）" maxlength="12" />
-          <select class="form-input" id="new-char-voice">
-            <option value="officer">聲線：沉穩專業</option>
-            <option value="parent_angry">聲線：高亢激動</option>
-            <option value="student">聲線：年輕活潑</option>
-            <option value="elder">聲線：低沉威嚴</option>
-          </select>
+          <div style="display:flex; gap:4px;">
+            <select class="form-input" id="new-char-voice" style="flex:1;">
+              <option value="officer">聲線：沉穩專業</option>
+              <option value="parent_angry">聲線：高亢激動</option>
+              <option value="student">聲線：年輕活潑</option>
+              <option value="elder">聲線：低沉威嚴</option>
+            </select>
+            <button class="cast-mini-btn" style="height:31px; padding:0 8px; font-size:11px;" onclick="previewCustomVoice()">🗣️ 試聽</button>
+          </div>
         </div>
         <input type="text" class="form-input" id="new-char-event" placeholder="該角色登場的突發狀況台詞" maxlength="70" />
 
-        <!-- 左滑選項與四維數值 -->
         <input type="text" class="form-input" id="new-char-left" placeholder="◀ 左滑選項文字（例：依規定協助勸導）" maxlength="24" />
         <div class="form-row-4">
           <div><div class="mini-num-label">安全</div><input type="number" class="form-input" id="l-safety" value="15" step="5" /></div>
@@ -866,7 +952,6 @@
           <div><div class="mini-num-label">理智</div><input type="number" class="form-input" id="l-sanity" value="-5" step="5" /></div>
         </div>
 
-        <!-- 右滑選項與四維數值 -->
         <input type="text" class="form-input" id="new-char-right" placeholder="▶ 右滑選項文字（例：強硬開單登記）" maxlength="24" />
         <div class="form-row-4">
           <div><div class="mini-num-label">安全</div><input type="number" class="form-input" id="r-safety" value="-10" step="5" /></div>
@@ -885,7 +970,6 @@
         <button class="btn-primary" id="save-char-submit-btn" style="width:100%; padding:9px; font-size:13px;" onclick="saveCharacterForm()">✨ 確認新增並雲端同步</button>
       </div>
 
-      <!-- 3. 劇本包匯出/匯入 與 密碼變更 -->
       <div class="panel-box" style="border-color: rgba(56, 189, 248, 0.45); margin-bottom: 0;">
         <div class="panel-title" style="color: var(--accent-blue);"><span>📦 劇本包備份 ＆ 管理員密碼</span></div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px;">
@@ -908,15 +992,17 @@
     </div>
   </div>
 
-  <!-- 結局結算畫面（含全服排行榜登錄 ＋ 一鍵產生戰績分享圖） -->
+  <!-- 結局結算畫面 -->
   <div id="end-modal" class="modal-screen hidden">
     <div class="tag-pill" id="end-badge">ENDING</div>
     <h2 class="main-title" id="end-title">結局標題</h2>
     <p class="sub-desc" id="end-desc">結局說明</p>
 
-    <!-- 通關分數登錄全服排行榜 -->
-    <div id="score-submit-box" class="panel-box hidden" style="width:100%; max-width:320px; text-align:left;">
-      <div class="panel-title"><span>🏅 登錄全服校安生存排行榜（得分：<span id="final-score-num">0</span>）</span></div>
+    <div id="score-submit-box" class="panel-box hidden" style="width:100%; max-width:330px; text-align:left;">
+      <div class="panel-title"><span>🏅 登錄全服排行榜（得分：<span id="final-score-num">0</span>）</span></div>
+      <select class="form-input" id="title-select-box" style="margin-bottom:6px;">
+        <option value="">稱號：無掛載稱號</option>
+      </select>
       <div style="display:flex; gap:6px;">
         <input type="text" class="form-input" id="player-nickname-input" style="margin-bottom:0;" placeholder="輸入你的校安暱稱" maxlength="10" />
         <button class="btn-primary" id="submit-score-btn" style="padding:8px 12px; font-size:12px; white-space:nowrap;" onclick="submitScoreToLeaderboard()">登錄上榜</button>
@@ -924,11 +1010,12 @@
     </div>
 
     <div class="btn-stack">
-      <button class="btn-primary" style="background:linear-gradient(135deg,#059669,#10b981);" onclick="generateShareCard()">📸 生成戰績分享圖（存圖發限動）</button>
+      <button class="btn-primary" style="background:linear-gradient(135deg,#059669,#10b981);" onclick="generateShareCard()">📸 生成戰績分享圖（含稱號勳章）</button>
       <button class="btn-primary" onclick="startNewShift()">再輪一次班（隨機新事件）</button>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-        <button class="btn-secondary" onclick="openLeaderboard()">🏅 查看排行榜</button>
-        <button class="btn-secondary" onclick="openGallery()">🏆 結局圖鑑</button>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px;">
+        <button class="btn-secondary" style="padding:9px 4px;" onclick="openAchievements()">🎖️ 成就</button>
+        <button class="btn-secondary" style="padding:9px 4px;" onclick="openLeaderboard()">🏅 排行</button>
+        <button class="btn-secondary" style="padding:9px 4px;" onclick="openGallery()">🏆 圖鑑</button>
       </div>
     </div>
   </div>
@@ -944,13 +1031,20 @@
     </div>
   </div>
 
+  <!-- 成就徽章牆視窗 -->
+  <div id="ach-modal" class="modal-screen hidden">
+    <div class="tag-pill">ACHIEVEMENT BADGES & TITLES</div>
+    <h2 class="main-title" style="font-size: 21px;">🎖️ 校安執勤成就勳章牆</h2>
+    <p class="sub-desc" style="margin-bottom:10px;">解鎖成就後，登錄全服排行榜時可掛載專屬閃亮稱號！</p>
+    <div class="scroll-list" id="ach-list"></div>
+    <button class="btn-primary" style="width:100%; max-width:300px;" onclick="document.getElementById('ach-modal').classList.add('hidden')">返回</button>
+  </div>
+
   <!-- 全服排行榜視窗 -->
   <div id="leaderboard-modal" class="modal-screen hidden">
     <div class="tag-pill">GLOBAL CAMPUS SAFETY RANKING</div>
     <h2 class="main-title" style="font-size: 21px;">🏅 全服金牌校安生存排行榜</h2>
-    <div class="scroll-list" id="leaderboard-list">
-      <div class="l-desc" style="text-align:center;">正在從 Firebase 載入最新戰績...</div>
-    </div>
+    <div class="scroll-list" id="leaderboard-list"></div>
     <button class="btn-primary" style="width:100%; max-width:300px;" onclick="document.getElementById('leaderboard-modal').classList.add('hidden')">返回</button>
   </div>
 
@@ -965,7 +1059,7 @@
 
 <script>
   // ==========================================
-  // 1. Firebase 雲端資料庫連線與排行榜同步核心
+  // 1. Firebase 雲端資料庫連線與同步核心
   // ==========================================
   const DEFAULT_FIREBASE_URL = "https://realtime-database-1c48d-default-rtdb.asia-southeast1.firebasedatabase.app";
   let firebaseBaseUrl = DEFAULT_FIREBASE_URL.replace(/\/$/, "");
@@ -1053,6 +1147,7 @@
           data.customEvents.forEach(ev => ALL_EVENTS.splice(ALL_EVENTS.length - 1, 0, ev));
         }
         await saveToIndexedDB();
+        checkCreatorAchievement();
         updateUnlockUI();
         renderCastGrid();
       }
@@ -1067,7 +1162,7 @@
   // ==========================================
   // 2. 本機 IndexedDB 離線快取
   // ==========================================
-  const DB_NAME = "CampusSafetyGameDB_V2";
+  const DB_NAME = "CampusSafetyGameDB_V3";
   const STORE_NAME = "customData";
 
   function openDB() {
@@ -1105,13 +1200,14 @@
           if (!ALL_EVENTS.some(x => x.charId === ev.charId)) ALL_EVENTS.splice(ALL_EVENTS.length - 1, 0, ev);
         });
       }
+      checkCreatorAchievement();
       updateUnlockUI();
       renderCastGrid();
     } catch (e) {}
   }
 
   // ==========================================
-  // 3. 角色庫與事件卡資料
+  // 3. 角色庫與事件卡資料（標記 urgent: true 為限時 8 秒 QTE 危機！）
   // ==========================================
   function makeCharacterPortrait(bg1, bg2, hairColor, outfitColor, accessory, emojiBadge) {
     const c = document.createElement("canvas");
@@ -1187,8 +1283,8 @@
       right: { label: "照抄去年校慶的舊配置圖交差了事", effect: { safety: -15, admin: -20, parent: 0, sanity: +15 } }
     },
     {
-      time: "10:20", tag: "籃球場意外衝突", charId: "student", filter: "", sfx: "alarm",
-      text: "阿豪在籃球場跟隔壁班搶籃板撞傷眉角流血，兩人還互相推擠嗆聲，現場圍了一圈同學拿手機拍攝！",
+      time: "10:20", tag: "籃球場意外衝突", charId: "student", filter: "", sfx: "alarm", urgent: true,
+      text: "【緊急】阿豪在籃球場跟隔壁班搶籃板撞傷眉角流血，兩人正互相推擠嗆聲，現場圍了一圈同學拿手機拍攝！",
       left: { label: "強勢隔開兩人、疏散圍觀群眾並護送包紮", effect: { safety: +20, admin: +15, parent: -10, sanity: -10 } },
       right: { label: "在場邊大喊「全部回教室」然後打電話找主任", effect: { safety: -15, admin: -15, parent: +15, sanity: +5 } }
     },
@@ -1199,14 +1295,14 @@
       right: { label: "冷淡回覆個人物品請自行保管，不負責協尋", effect: { safety: 0, admin: -10, parent: +25, sanity: +10 } }
     },
     {
-      time: "12:45", tag: "午休頂樓禁區", charId: "student", filter: "", sfx: "alarm",
-      text: "午休巡邏發現頂樓安全門警鈴被貼了膠帶消音，推開門看到阿豪正坐在女兒牆邊緣滑手機吹風！",
+      time: "12:45", tag: "午休頂樓禁區", charId: "student", filter: "", sfx: "alarm", urgent: true,
+      text: "【緊急】午休巡邏發現頂樓安全門警鈴被貼了膠帶消音，推開門看到阿豪正坐在女兒牆邊緣滑手機吹風！",
       left: { label: "放輕腳步靠近將人安全帶離，通報輔導室關懷", effect: { safety: +25, admin: +20, parent: -5, sanity: -10 } },
       right: { label: "大聲喝斥並當場記大過處分以儆效尤", effect: { safety: +10, admin: +5, parent: +20, sanity: -5 } }
     },
     {
-      time: "14:05", tag: "輔導室緊急支援", charId: "counselor", filter: "", sfx: "walkie",
-      text: "張老師氣喘吁吁跑來求救：「剛才晤談的高一新生情緒崩潰往校門衝出去了，請立刻幫我攔住他！」",
+      time: "14:05", tag: "輔導室緊急支援", charId: "counselor", filter: "", sfx: "walkie", urgent: true,
+      text: "【緊急】張老師氣喘吁吁跑來求救：「剛才晤談的高一新生情緒崩潰往校門衝出去了，請立刻幫我攔住他！」",
       left: { label: "通知警衛室先關小門，從側翼溫和攔截陪伴安撫", effect: { safety: +25, admin: +20, parent: -10, sanity: -10 } },
       right: { label: "在走廊大喊站住別跑！全力衝刺在後面追趕", effect: { safety: -10, admin: -10, parent: +15, sanity: -15 } }
     },
@@ -1235,8 +1331,8 @@
       right: { label: "寫一份檢討自己態度不佳的道歉聲明給長官交差", effect: { safety: -15, admin: +10, parent: -20, sanity: -20 } }
     },
     {
-      time: "17:15", tag: "黃昏可疑黑衣人", charId: "intruder", filter: "art-night", sfx: "alarm",
-      text: "中控室紅燈閃爍！一名戴鴨舌帽的黑衣人趁著黃昏翻過後門圍牆，正鬼鬼祟祟往二樓資訊機房移動！",
+      time: "17:15", tag: "黃昏可疑黑衣人", charId: "intruder", filter: "art-night", sfx: "alarm", urgent: true,
+      text: "【緊急】中控室紅燈閃爍！一名戴鴨舌帽的黑衣人趁著黃昏翻過後門圍牆，正鬼鬼祟祟往二樓資訊機房移動！",
       left: { label: "立即通報轄區派出所並啟動全校門禁遠端上鎖", effect: { safety: +30, admin: +20, parent: 0, sanity: -10 } },
       right: { label: "怕只是學生忘記拿書包，自己拿手電筒慢慢走上去", effect: { safety: -30, admin: -15, parent: 0, sanity: +5 } }
     },
@@ -1249,15 +1345,71 @@
   ];
 
   // ==========================================
-  // 4. 音效與台灣中文真人語音系統
+  // 4. 進階音效、背景環境音（雨聲白噪音／晴天節奏）與真人語音
   // ==========================================
-  let sfxOn = true, voiceOn = true, zhVoices = [];
+  let sfxOn = true, voiceOn = true, bgmOn = true, zhVoices = [];
+  let bgmTimer = null, bgmStep = 0, rainNoiseNode = null;
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
   let audioCtx = null;
 
   function ensureAudio() {
     if (!audioCtx) audioCtx = new AudioCtx();
     if (audioCtx.state === "suspended") audioCtx.resume();
+  }
+
+  function startAmbientBGM() {
+    stopAmbientBGM();
+    if (!bgmOn) return;
+    ensureAudio();
+
+    // 若目前天氣是梅雨鋒面，額外產生柔和雨聲白噪音環境音
+    if (currentWeather && currentWeather.id === "rain") {
+      const bufferSize = audioCtx.sampleRate * 2;
+      const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) output[i] = Math.random() * 2 - 1;
+
+      const whiteNoise = audioCtx.createBufferSource();
+      whiteNoise.buffer = noiseBuffer;
+      whiteNoise.loop = true;
+
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = "lowpass";
+      filter.frequency.value = 650;
+
+      const gain = audioCtx.createGain();
+      gain.gain.value = 0.035;
+
+      whiteNoise.connect(filter);
+      filter.connect(gain);
+      gain.connect(audioCtx.destination);
+      whiteNoise.start();
+      rainNoiseNode = whiteNoise;
+    }
+
+    // 輕快值勤背景旋律
+    const notes = [261.63, 329.63, 392.00, 329.63, 293.66, 349.23, 440.00, 349.23];
+    bgmTimer = setInterval(() => {
+      if (!bgmOn || !audioCtx || audioCtx.state !== "running") return;
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(notes[bgmStep % notes.length], now);
+      gain.gain.setValueAtTime(0.035, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(now); osc.stop(now + 0.34);
+      bgmStep++;
+    }, 440);
+  }
+
+  function stopAmbientBGM() {
+    if (bgmTimer) { clearInterval(bgmTimer); bgmTimer = null; }
+    if (rainNoiseNode) {
+      try { rainNoiseNode.stop(); } catch (e) {}
+      rainNoiseNode = null;
+    }
   }
 
   function playSFX(type) {
@@ -1334,6 +1486,21 @@
     speakText(card.text, ch.voice);
   }
 
+  function previewCustomVoice() {
+    const voiceType = document.getElementById("new-char-voice").value;
+    const sampleText = document.getElementById("new-char-event").value.trim() || "校安人員請注意，前方突發狀況需要立即支援！";
+    speakText(sampleText, voiceType);
+  }
+
+  function toggleBGM() {
+    bgmOn = !bgmOn;
+    const btn = document.getElementById("bgm-btn");
+    btn.classList.toggle("active-audio", bgmOn);
+    btn.textContent = bgmOn ? "🎵" : "🎵關";
+    if (bgmOn) startAmbientBGM();
+    else stopAmbientBGM();
+  }
+
   function toggleVoice() {
     voiceOn = !voiceOn;
     const btn = document.getElementById("voice-btn");
@@ -1351,13 +1518,60 @@
   }
 
   // ==========================================
-  // 5. 隨機天氣 Buff ＋ 校安執勤道具背包系統
+  // 5. 成就勳章與專屬稱號系統
+  // ==========================================
+  const ACHIEVEMENTS = [
+    { id: "iron_wall", title: "🛡️ 鐵壁校安", name: "零失誤鐵壁", desc: "單局通關時，「校園安全」全程從未低於 50%。" },
+    { id: "zen_master", title: "🧘 禪修大師", name: "情緒穩如泰山", desc: "單局通關時，「個人理智」始終維持在 40%～60% 之間。" },
+    { id: "no_items", title: "⚡ 裸裝戰神", name: "道具零消耗通關", desc: "在「週一至五連續生存戰」中不使用任何道具通關。" },
+    { id: "creator", title: "🎭 劇本導演", name: "校園世界創造者", desc: "在管理員後台新增至少 3 位自訂角色。" }
+  ];
+
+  let unlockedAchs = JSON.parse(localStorage.getItem("campus_unlocked_achs") || "[]");
+  let runSafetyNeverBelow50 = true;
+  let runSanityAlwaysBalanced = true;
+  let runUsedAnyItem = false;
+
+  function unlockAchievement(achId) {
+    if (!unlockedAchs.includes(achId)) {
+      unlockedAchs.push(achId);
+      localStorage.setItem("campus_unlocked_achs", JSON.stringify(unlockedAchs));
+      updateUnlockUI();
+      const meta = ACHIEVEMENTS.find(a => a.id === achId);
+      if (meta) showSaveToast(`🎖️ 解鎖成就稱號：【${meta.title}】！`);
+    }
+  }
+
+  function checkCreatorAchievement() {
+    const customCount = CHARACTER_ROSTER.filter(c => c.id.startsWith("custom_")).length;
+    if (customCount >= 3) unlockAchievement("creator");
+  }
+
+  function openAchievements() {
+    playSFX("walkie");
+    const list = document.getElementById("ach-list");
+    list.innerHTML = "";
+    ACHIEVEMENTS.forEach(a => {
+      const isUnlocked = unlockedAchs.includes(a.id);
+      const div = document.createElement("div");
+      div.className = "list-card" + (isUnlocked ? " unlocked" : "");
+      div.innerHTML = `
+        <div class="l-title">${isUnlocked ? a.title + "｜" + a.name + "（已解鎖）" : "🔒 " + a.name + "（未解鎖）"}</div>
+        <div class="l-desc">${a.desc}</div>
+      `;
+      list.appendChild(div);
+    });
+    document.getElementById("ach-modal").classList.remove("hidden");
+  }
+
+  // ==========================================
+  // 6. 天氣 Buff ＋ 道具背包 ＋ 午休校安隨堂考彩蛋
   // ==========================================
   const WEATHERS = [
     { id: "sunny", label: "☀️ 晴朗微風（平穩日）", mod: {} },
-    { id: "rain", label: "🌧️ 梅雨鋒面（家長情緒波動 +50%）", mod: { parentMult: 1.5 } },
+    { id: "rain", label: "🌧️ 梅雨鋒面（雨聲＋家長波動+50%）", mod: { parentMult: 1.5 } },
     { id: "inspect", label: "📋 督學週（長官信任扣分加倍）", mod: { adminPenaltyMult: 1.5 } },
-    { id: "tea", label: "🧋 主任請飲料（個人理智上限緩衝）", mod: { sanityBonus: 10 } }
+    { id: "tea", label: "🧋 主任請飲料（個人理智緩衝+10）", mod: { sanityBonus: 10 } }
   ];
 
   const TACTICAL_ITEMS = [
@@ -1366,18 +1580,37 @@
     { id: "coffee", name: "☕ 冰美式", desc: "喝下冰美式續命！個人理智回復 +25%" }
   ];
 
+  const QUIZ_BANK = [
+    {
+      q: "發現不明校外人士翻牆進入校園，校安人員第一時間最標準的處置為何？",
+      options: ["A. 立刻開啟密錄器、無線電通報警衛室封鎖動線並保持安全距離", "B. 怕驚動對方，不通報直接獨自衝進昏暗地下室搜查"],
+      correct: 0
+    },
+    {
+      q: "氣憤的家長衝進辦公室大聲咆哮並拿手機對著你錄影，下列何者最恰當？",
+      options: ["A. 伸手搶下對方手機把影片刪掉", "B. 退後一步保持距離、開啟執勤密錄器並請至會談區調閱監控"],
+      correct: 1
+    },
+    {
+      q: "放學尖峰時段校門口突降大雨導致家長車輛並排違停，首要任務為何？",
+      options: ["A. 穿戴反光背心與雨具指揮人車分流，優先確保學生路隊安全", "B. 站在屋簷下等雨停再出去處理"],
+      correct: 0
+    }
+  ];
+
   let currentWeather = WEATHERS[0];
   let activeItems = [];
+  let quizTriggeredThisShift = false;
 
   function rollDailyWeatherAndItems() {
     currentWeather = WEATHERS[Math.floor(Math.random() * WEATHERS.length)];
     document.getElementById("weather-label").textContent = currentWeather.label;
     if (currentWeather.mod.sanityBonus) stats.sanity = Math.min(85, stats.sanity + currentWeather.mod.sanityBonus);
 
-    // 隨機發放 2 個執勤保命道具
     const pool = [...TACTICAL_ITEMS].sort(() => Math.random() - 0.5);
     activeItems = pool.slice(0, 2).map(it => ({ ...it, used: false }));
     renderItemBar();
+    startAmbientBGM();
   }
 
   function renderItemBar() {
@@ -1397,24 +1630,102 @@
     const it = activeItems[idx];
     if (!it || it.used) return;
     it.used = true;
+    runUsedAnyItem = true;
     playSFX("item");
 
-    if (it.id === "bodycam") {
-      stats.parent = Math.max(10, stats.parent - 25);
-    } else if (it.id === "radio") {
+    if (it.id === "bodycam") stats.parent = Math.max(10, stats.parent - 25);
+    else if (it.id === "radio") {
       stats.safety = Math.min(90, stats.safety + 20);
       stats.admin = Math.min(90, stats.admin + 20);
-    } else if (it.id === "coffee") {
-      stats.sanity = Math.min(90, stats.sanity + 25);
-    }
+    } else if (it.id === "coffee") stats.sanity = Math.min(90, stats.sanity + 25);
 
     renderMeters();
     renderItemBar();
     showSaveToast(it.desc);
   }
 
+  function triggerNoonQuiz() {
+    stopQTE();
+    quizTriggeredThisShift = true;
+    playSFX("phone");
+    const qObj = QUIZ_BANK[Math.floor(Math.random() * QUIZ_BANK.length)];
+    document.getElementById("quiz-question").textContent = qObj.q;
+    const optBox = document.getElementById("quiz-options");
+    optBox.innerHTML = "";
+
+    qObj.options.forEach((optText, idx) => {
+      const btn = document.createElement("button");
+      btn.className = "quiz-opt-btn";
+      btn.textContent = optText;
+      btn.onclick = () => {
+        document.getElementById("quiz-modal").classList.add("hidden");
+        if (idx === qObj.correct) {
+          playSFX("win");
+          // 答對補充 1 個隨機道具！
+          const extra = TACTICAL_ITEMS[Math.floor(Math.random() * TACTICAL_ITEMS.length)];
+          activeItems.push({ ...extra, used: false });
+          renderItemBar();
+          showSaveToast(`🎉 答對了！獲得額外執勤道具【${extra.name}】！`);
+        } else {
+          playSFX("fail");
+          stats.sanity = Math.max(5, stats.sanity - 10);
+          renderMeters();
+          showSaveToast("😅 答錯囉！午休被主任念了一頓（理智 -10%）");
+        }
+        loadCard();
+      };
+      optBox.appendChild(btn);
+    });
+    document.getElementById("quiz-modal").classList.remove("hidden");
+  }
+
   // ==========================================
-  // 6. 管理員密碼鎖、角色編輯/刪除與劇本 JSON 匯出匯入
+  // 7. 限時緊急應變 QTE 倒數計時器（8 秒危機！）
+  // ==========================================
+  let qteTimer = null;
+  let qteRemaining = 8.0;
+
+  function startQTE() {
+    stopQTE();
+    qteRemaining = 8.0;
+    const box = document.getElementById("qte-timer-box");
+    const fill = document.getElementById("qte-bar-fill");
+    const txt = document.getElementById("qte-sec-text");
+    box.classList.remove("hidden");
+    fill.style.width = "100%";
+    txt.textContent = "8.0";
+
+    qteTimer = setInterval(() => {
+      if (isGameOver) { stopQTE(); return; }
+      qteRemaining -= 0.1;
+      if (qteRemaining <= 0) {
+        stopQTE();
+        // 超時懲罰：錯失黃金處置時間！
+        playSFX("alarm");
+        stats.safety = Math.max(0, stats.safety - 25);
+        stats.admin = Math.max(0, stats.admin - 20);
+        if (stats.safety < 50) runSafetyNeverBelow50 = false;
+        renderMeters();
+        showSaveToast("⏰ 猶豫超時！錯失黃金處置時機（安全-25、信任-20）");
+
+        if (stats.safety <= 0) return triggerEnding("safety_zero");
+        if (stats.admin <= 0) return triggerEnding("admin_zero");
+        turnIndex++;
+        loadCard();
+      } else {
+        fill.style.width = ((qteRemaining / 8.0) * 100) + "%";
+        txt.textContent = qteRemaining.toFixed(1);
+      }
+    }, 100);
+  }
+
+  function stopQTE() {
+    if (qteTimer) { clearInterval(qteTimer); qteTimer = null; }
+    document.getElementById("qte-timer-box").classList.add("hidden");
+  }
+
+  // ==========================================
+  // 8. 管理員密碼鎖、角色編輯/刪除與劇本 JSON 匯出匯入
   // ==========================================
   let pendingNewCharImg = null;
   let editingCharId = null;
@@ -1613,6 +1924,7 @@
 
     resetCharEditor();
     renderCastGrid();
+    checkCreatorAchievement();
     playSFX("win");
     await pushDataToFirebase();
   }
@@ -1640,6 +1952,7 @@
           ALL_EVENTS.length = 0;
           parsed.events.forEach(ev => ALL_EVENTS.push(ev));
           renderCastGrid();
+          checkCreatorAchievement();
           await pushDataToFirebase();
           showSaveToast("📥 劇本包匯入成功並已同步雲端！");
         }
@@ -1651,7 +1964,7 @@
   }
 
   // ==========================================
-  // 7. 十大結局定義（含週一至週五週末放假隱藏結局！）
+  // 9. 十大結局定義
   // ==========================================
   const ENDINGS = {
     safety_zero: { badge: "💀 結局 1/10｜校園失守", title: "校園安全歸零：全校大亂鬥", desc: "因為多次退讓與疏於巡檢，校園陷入混亂，你連夜被召回寫檢討報告！" },
@@ -1667,11 +1980,11 @@
   };
 
   // ==========================================
-  // 8. 遊戲核心循環（含五日連續模式、計分與全服排行榜）
+  // 10. 遊戲核心循環（整合 QTE 限時、隨堂考彩蛋、成就檢定與排行榜）
   // ==========================================
   let stats = { safety: 50, admin: 50, parent: 50, sanity: 50 };
   let activeDeck = [], turnIndex = 0, selectedMode = "normal", isGameOver = false;
-  let currentDay = 1; // 1 ~ 5（五日模式使用）
+  let currentDay = 1;
   let lastRunScore = 0;
   let lastShareImageUrl = "";
   let unlocked = JSON.parse(localStorage.getItem("viral_campus_endings_v2") || "[]");
@@ -1704,6 +2017,8 @@
   function updateUnlockUI() {
     document.getElementById("hud-unlock").textContent = unlocked.length;
     document.getElementById("cover-unlock").textContent = unlocked.length;
+    document.getElementById("hud-ach").textContent = unlockedAchs.length;
+    document.getElementById("cover-ach").textContent = unlockedAchs.length;
     document.getElementById("cast-count").textContent = CHARACTER_ROSTER.length;
   }
 
@@ -1754,6 +2069,9 @@
     ensureAudio();
     stats = { safety: 50, admin: 50, parent: 50, sanity: 50 };
     currentDay = 1;
+    runSafetyNeverBelow50 = true;
+    runSanityAlwaysBalanced = true;
+    runUsedAnyItem = false;
     startDayShift();
   }
 
@@ -1762,6 +2080,7 @@
     document.getElementById("day-badge").textContent = selectedMode === "week" ? dayNames[currentDay - 1] : "單日";
     activeDeck = buildDeckForShift();
     turnIndex = 0;
+    quizTriggeredThisShift = false;
     isGameOver = false;
     rollDailyWeatherAndItems();
     clearPreview();
@@ -1772,6 +2091,7 @@
   }
 
   function loadCard() {
+    stopQTE();
     if (turnIndex >= activeDeck.length) {
       if (selectedMode === "week" && currentDay < 5) {
         currentDay++;
@@ -1781,6 +2101,12 @@
         return;
       }
       triggerEnding(selectedMode === "week" ? "win_weekend" : "win_normal");
+      return;
+    }
+
+    // 在關卡進行到一半（午休時段）隨機觸發一次「校安知識隨堂考」彩蛋
+    if (!quizTriggeredThisShift && turnIndex === Math.floor(activeDeck.length / 2) && Math.random() < 0.7) {
+      triggerNoonQuiz();
       return;
     }
 
@@ -1804,14 +2130,16 @@
 
     const cardEl = document.getElementById("event-card");
     cardEl.style.transform = "translateX(0) rotate(0deg)";
-    cardEl.style.borderColor = "rgba(255, 255, 255, 0.15)";
+    cardEl.style.borderColor = card.urgent ? "#ef4444" : "rgba(255, 255, 255, 0.15)";
 
     if (card.sfx) playSFX(card.sfx);
+    if (card.urgent) startQTE();
     setTimeout(() => speakCurrentCard(), 260);
   }
 
   function commitChoice(dir) {
     if (isGameOver) return;
+    stopQTE();
     const card = activeDeck[turnIndex];
     const choice = card[dir];
     clearPreview();
@@ -1825,7 +2153,6 @@
 
     ["safety", "admin", "parent", "sanity"].forEach(key => {
       let delta = choice.effect[key] || 0;
-      // 套用天氣 Buff 加成
       if (key === "parent" && currentWeather.mod.parentMult) delta = Math.round(delta * currentWeather.mod.parentMult);
       if (key === "admin" && delta < 0 && currentWeather.mod.adminPenaltyMult) delta = Math.round(delta * currentWeather.mod.adminPenaltyMult);
 
@@ -1835,6 +2162,9 @@
       if (delta > 0) box.classList.add("pulse-up");
       if (delta < 0) box.classList.add("pulse-down");
     });
+
+    if (stats.safety < 50) runSafetyNeverBelow50 = false;
+    if (stats.sanity < 40 || stats.sanity > 60) runSanityAlwaysBalanced = false;
 
     renderMeters();
 
@@ -1854,19 +2184,26 @@
   }
 
   function calculateBalanceScore() {
-    // 越接近 50 分完美平衡，分數越高
     const diff = Math.abs(stats.safety - 50) + Math.abs(stats.admin - 50) + Math.abs(stats.parent - 50) + Math.abs(stats.sanity - 50);
     const modeBonus = selectedMode === "week" ? 500 : (selectedMode === "full" ? 300 : 100);
     return Math.max(50, (200 - diff) * 5 + modeBonus);
   }
 
   function triggerEnding(endKey) {
+    stopQTE();
     isGameOver = true;
     saveEnding(endKey);
     const data = ENDINGS[endKey];
     const isWin = endKey === "win_normal" || endKey === "win_weekend";
     playSFX(isWin ? "win" : "fail");
     setTimeout(() => speakText(data.title + "。" + data.desc, "officer"), 350);
+
+    // 檢定成就稱號解鎖條件
+    if (isWin) {
+      if (runSafetyNeverBelow50) unlockAchievement("iron_wall");
+      if (runSanityAlwaysBalanced) unlockAchievement("zen_master");
+      if (selectedMode === "week" && !runUsedAnyItem) unlockAchievement("no_items");
+    }
 
     lastRunScore = calculateBalanceScore();
     const scoreBox = document.getElementById("score-submit-box");
@@ -1875,6 +2212,19 @@
       document.getElementById("final-score-num").textContent = lastRunScore;
       document.getElementById("submit-score-btn").disabled = false;
       document.getElementById("submit-score-btn").textContent = "登錄上榜";
+
+      // 填充已解鎖稱號下拉選單
+      const titleSel = document.getElementById("title-select-box");
+      titleSel.innerHTML = `<option value="">稱號：無掛載稱號</option>`;
+      unlockedAchs.forEach(aid => {
+        const meta = ACHIEVEMENTS.find(a => a.id === aid);
+        if (meta) {
+          const opt = document.createElement("option");
+          opt.value = `[${meta.title}] `;
+          opt.textContent = `掛載稱號：${meta.title}`;
+          titleSel.appendChild(opt);
+        }
+      });
     } else {
       scoreBox.classList.add("hidden");
     }
@@ -1886,10 +2236,11 @@
   }
 
   // ==========================================
-  // 9. 全服 Firebase 排行榜 ＋ 戰績分享圖生成
+  // 11. 全服 Firebase 排行榜 ＋ 戰績分享圖生成
   // ==========================================
   async function submitScoreToLeaderboard() {
-    const nick = document.getElementById("player-nickname-input").value.trim() || "無名校安英雄";
+    const titlePrefix = document.getElementById("title-select-box").value || "";
+    const nick = (titlePrefix + (document.getElementById("player-nickname-input").value.trim() || "無名校安英雄"));
     const btn = document.getElementById("submit-score-btn");
     btn.disabled = true;
     btn.textContent = "上傳中...";
@@ -1909,7 +2260,7 @@
         body: JSON.stringify(entry)
       });
       btn.textContent = "✅ 已上榜";
-      showSaveToast("🏅 戰績已成功登錄全服排行榜！");
+      showSaveToast("🏅 戰績與稱號已成功登錄全服排行榜！");
     } catch (e) {
       btn.disabled = false;
       btn.textContent = "重試";
@@ -1952,41 +2303,38 @@
   function generateShareCard() {
     playSFX("win");
     const c = document.createElement("canvas");
-    c.width = 540; c.height = 840;
+    c.width = 540; c.height = 860;
     const ctx = c.getContext("2d");
 
-    // 深藍質感卡片底色
-    const grad = ctx.createLinearGradient(0, 0, 0, 840);
+    const grad = ctx.createLinearGradient(0, 0, 0, 860);
     grad.addColorStop(0, "#0f172a");
     grad.addColorStop(1, "#020617");
     ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 540, 840);
+    ctx.fillRect(0, 0, 540, 860);
 
     ctx.strokeStyle = "#fbbf24";
     ctx.lineWidth = 6;
-    ctx.strokeRect(18, 18, 504, 804);
+    ctx.strokeRect(18, 18, 504, 824);
 
     ctx.fillStyle = "#fbbf24";
     ctx.font = "bold 20px sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("CAMPUS SAFETY SIMULATOR", 270, 72);
+    ctx.fillText("CAMPUS SAFETY SIMULATOR", 270, 68);
 
     ctx.fillStyle = "#ffffff";
     ctx.font = "900 32px sans-serif";
-    ctx.fillText("今天也要平安下班", 270, 118);
+    ctx.fillText("今天也要平安下班", 270, 114);
 
-    // 結局徽章與標題
     const badge = document.getElementById("end-badge").textContent;
     const title = document.getElementById("end-title").textContent;
     ctx.fillStyle = "#38bdf8";
-    ctx.font = "bold 20px sans-serif";
-    ctx.fillText(badge, 270, 175);
+    ctx.font = "bold 19px sans-serif";
+    ctx.fillText(badge, 270, 168);
 
     ctx.fillStyle = "#fde68a";
-    ctx.font = "900 24px sans-serif";
-    ctx.fillText(title.slice(0, 18), 270, 218);
+    ctx.font = "900 23px sans-serif";
+    ctx.fillText(title.slice(0, 18), 270, 210);
 
-    // 四項生存指標長條圖
     const meters = [
       { name: "🛡️ 校園安全", val: stats.safety },
       { name: "📋 長官信任", val: stats.admin },
@@ -1995,28 +2343,35 @@
     ];
     ctx.textAlign = "left";
     meters.forEach((m, i) => {
-      const y = 290 + i * 75;
+      const y = 278 + i * 72;
       ctx.fillStyle = "#e2e8f0";
-      ctx.font = "bold 20px sans-serif";
+      ctx.font = "bold 19px sans-serif";
       ctx.fillText(`${m.name}：${m.val}%`, 65, y);
 
       ctx.fillStyle = "#1e293b";
-      ctx.fillRect(65, y + 12, 410, 18);
+      ctx.fillRect(65, y + 11, 410, 16);
 
       ctx.fillStyle = (m.val <= 20 || m.val >= 85) ? "#ef4444" : "#38bdf8";
-      ctx.fillRect(65, y + 12, Math.round(410 * (m.val / 100)), 18);
+      ctx.fillRect(65, y + 11, Math.round(410 * (m.val / 100)), 16);
     });
 
-    // 底部總分與圖鑑收集度
     ctx.textAlign = "center";
     ctx.fillStyle = "#fbbf24";
-    ctx.font = "900 28px sans-serif";
-    ctx.fillText(`綜合平衡戰績：${lastRunScore} 分`, 270, 650);
+    ctx.font = "900 27px sans-serif";
+    ctx.fillText(`綜合平衡戰績：${lastRunScore} 分`, 270, 615);
+
+    // 繪製已解鎖成就徽章列
+    const badgeStr = unlockedAchs.length > 0
+      ? unlockedAchs.map(id => ACHIEVEMENTS.find(a => a.id === id)?.title || "").join(" ")
+      : "尚未解鎖特殊成就勳章";
+    ctx.fillStyle = "#e9d5ff";
+    ctx.font = "bold 16px sans-serif";
+    ctx.fillText(badgeStr, 270, 665);
 
     ctx.fillStyle = "#94a3b8";
-    ctx.font = "bold 18px sans-serif";
-    ctx.fillText(`職場結局圖鑑已解鎖：${unlocked.length} / 10 種`, 270, 695);
-    ctx.fillText("掃描或開啟網址・挑戰你的校安生存極限！", 270, 765);
+    ctx.font = "bold 17px sans-serif";
+    ctx.fillText(`職場結局圖鑑：${unlocked.length} / 10 ｜ 成就：${unlockedAchs.length} / 4`, 270, 715);
+    ctx.fillText("挑戰你的校安生存極限！", 270, 780);
 
     lastShareImageUrl = c.toDataURL("image/png");
     document.getElementById("share-card-img").src = lastShareImageUrl;
@@ -2052,7 +2407,7 @@
   function closeGallery() { document.getElementById("gallery-modal").classList.add("hidden"); }
 
   // ==========================================
-  // 10. 手勢左右拖曳卡牌支援
+  // 12. 手勢左右拖曳卡牌支援
   // ==========================================
   const cardEl = document.getElementById("event-card");
   let startX = 0, currentX = 0, isDragging = false;
@@ -2092,11 +2447,7 @@
   });
 
   bindImageFallbacks();
+  checkCreatorAchievement();
   updateUnlockUI();
   loadFromIndexedDB().then(() => {
-    pullDataFromFirebase(false);
-    startCloudPolling();
-  });
-</script>
-</body>
-</html>
+    pullDataFrom
