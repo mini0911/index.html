@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>今天也要平安下班｜多角色登場＋自由新增人物版</title>
+  <title>今天也要平安下班｜永久自動存檔＋自訂角色完整版</title>
   <style>
     :root {
       --bg-dark: #090d16;
@@ -51,7 +51,6 @@
       box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
     }
 
-    /* 頂部核心四維數值 */
     #top-hud {
       position: relative;
       z-index: 20;
@@ -122,7 +121,6 @@
       color: #fff;
     }
 
-    /* 四大生存數值格 */
     .meters-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -168,7 +166,6 @@
     .meter-track { width: 100%; height: 5px; background: #1e293b; border-radius: 999px; overflow: hidden; }
     .meter-fill { height: 100%; width: 50%; background: #38bdf8; border-radius: 999px; transition: width 0.3s ease, background 0.3s ease; }
 
-    /* 中央卡牌舞台 */
     #card-arena {
       position: relative;
       flex: 1;
@@ -205,7 +202,6 @@
       box-shadow: 0 0 18px rgba(251, 191, 36, 0.25);
     }
 
-    /* 實體事件卡牌 */
     #event-card {
       position: relative;
       width: 100%;
@@ -313,7 +309,6 @@
       font-weight: 500;
     }
 
-    /* 底部左右雙按鈕 */
     #bottom-controls {
       position: relative;
       z-index: 20;
@@ -353,7 +348,6 @@
       letter-spacing: 0.5px;
     }
 
-    /* 封面、結局與角色管理彈窗 */
     .modal-screen {
       position: absolute;
       inset: 0;
@@ -458,13 +452,12 @@
       cursor: pointer;
     }
 
-    /* 角色庫＆自由新增表單樣式 */
     .cast-scroll {
       width: 100%;
-      max-height: 62dvh;
+      max-height: 60dvh;
       overflow-y: auto;
       text-align: left;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
       padding-right: 4px;
     }
 
@@ -472,7 +465,7 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
 
     .cast-card {
@@ -506,6 +499,7 @@
       padding: 2px 6px;
       border-radius: 6px;
       cursor: pointer;
+      display: inline-block;
     }
 
     .add-char-box {
@@ -561,12 +555,31 @@
     .gallery-card.unlocked { border-color: rgba(56, 189, 248, 0.5); }
     .gallery-title { font-size: 12.5px; font-weight: 800; color: var(--accent-gold); margin-bottom: 2px; }
     .gallery-desc { font-size: 11.5px; color: var(--text-muted); }
+
+    #save-toast {
+      position: fixed;
+      top: 58px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 60;
+      background: rgba(34, 197, 94, 0.95);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 5px 14px;
+      border-radius: 999px;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      pointer-events: none;
+      white-space: nowrap;
+    }
   </style>
 </head>
 <body>
 
+<div id="save-toast">✅ 已自動永久存檔！重整網頁不會消失</div>
+
 <div id="app-frame">
-  <!-- 頂部：執勤時間軸 ＋ 四大生存指標 ＋ 角色庫/語音/音樂開關 -->
   <div id="top-hud">
     <div class="time-bar">
       <div class="clock-pill">🕒 <span id="clock-text">07:30</span></div>
@@ -605,7 +618,6 @@
     </div>
   </div>
 
-  <!-- 中央：可左右滑動的事件卡牌 -->
   <div id="card-arena">
     <div id="swipe-preview-banner">👈 左右滑動卡牌，或點擊下方按鈕做決策 👉</div>
 
@@ -628,7 +640,6 @@
     </div>
   </div>
 
-  <!-- 底部：雙向決策按鈕 -->
   <div id="bottom-controls">
     <button class="action-btn" id="btn-left"
       onmouseenter="previewChoice('left')" onmouseleave="clearPreview()"
@@ -646,10 +657,11 @@
 
   <!-- 開場封面 -->
   <div id="start-modal" class="modal-screen">
-    <div class="tag-pill">MULTI-CHARACTER & CUSTOM CAST EDITION</div>
+    <div class="tag-pill">AUTO-SAVE & EXPORT EDITION</div>
     <h1 class="main-title">今天也要平安下班<br>：校園群像生存模擬器</h1>
     <p class="sub-desc">
-      內建<strong>【校安陳宇、暴怒王先生、學務林主任、輔導室張老師、叛逆高三生、教育局督學、黑衣神秘人、校狗阿福】</strong> 8 大角色專屬立繪與聲線，還可<strong>自由新增你自己的角色與事件卡</strong>！
+      支援<strong>「自動永久存檔（重整不消失）」</strong>與<strong>「一鍵匯出含照片的獨立 HTML 檔」</strong>！<br>
+      隨時換上你的豆包圖片或新增角色，重整網頁通通都在！
     </p>
 
     <div class="mode-selector">
@@ -672,16 +684,14 @@
 
   <!-- 登場角色庫＆自由新增角色彈窗 -->
   <div id="cast-modal" class="modal-screen hidden">
-    <div class="tag-pill">CHARACTER ROSTER & CREATOR</div>
-    <h2 class="main-title" style="font-size: 21px;">校園登場人物庫＆自由新增角色</h2>
+    <div class="tag-pill">PERMANENT ROSTER & EXPORT</div>
+    <h2 class="main-title" style="font-size: 20px;">校園登場人物庫（自動永久存檔）</h2>
 
     <div class="cast-scroll">
-      <!-- 1. 現有角色列表（每個都支援點擊更換成你的豆包圖片） -->
       <div class="cast-grid" id="cast-grid-list"></div>
 
-      <!-- 2. 新增全新角色與專屬突發事件表單 -->
       <div class="add-char-box">
-        <div class="add-char-title">➕ 新增全新角色（立即加入抽題關卡！）</div>
+        <div class="add-char-title">➕ 新增全新角色（自動存檔並加入關卡！）</div>
         <div class="form-row-2">
           <input type="text" class="form-input" id="new-char-name" placeholder="角色稱呼（例：教官李組長）" maxlength="12" />
           <select class="form-input" id="new-char-voice">
@@ -691,23 +701,26 @@
             <option value="elder">聲線：低沉威嚴</option>
           </select>
         </div>
-        <input type="text" class="form-input" id="new-char-event" placeholder="該角色登場的突發狀況台詞（例：教官突然突擊檢查服儀！）" maxlength="65" />
+        <input type="text" class="form-input" id="new-char-event" placeholder="該角色登場的突發狀況台詞" maxlength="65" />
         <div class="form-row-2">
           <input type="text" class="form-input" id="new-char-left" placeholder="左滑選項（例：協助勸導）" maxlength="22" />
           <input type="text" class="form-input" id="new-char-right" placeholder="右滑選項（例：開單登記）" maxlength="22" />
         </div>
         <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;">
-          <span style="font-size:11.5px; color:#cbd5e1;">上傳角色立繪（不選則自動生成插畫）：</span>
+          <span style="font-size:11.5px; color:#cbd5e1;" id="new-char-file-label">上傳角色立繪（自動壓縮存檔）：</span>
           <label class="cast-upload-mini" style="padding:5px 10px; font-size:11px;">
             📁 選擇豆包圖片
             <input type="file" id="new-char-file" accept="image/*" class="hidden" onchange="previewNewCharImg(event)" />
           </label>
         </div>
-        <button class="btn-primary" style="width:100%; padding:10px; font-size:13.5px;" onclick="createNewCharacter()">✨ 確認新增角色並加入遊戲</button>
+        <button class="btn-primary" style="width:100%; padding:10px; font-size:13.5px;" onclick="createNewCharacter()">✨ 確認新增角色並永久保存</button>
       </div>
     </div>
 
-    <button class="btn-secondary" style="width:100%; max-width:310px;" onclick="closeCastModal()">完成並返回</button>
+    <div class="btn-stack" style="max-width:100%;">
+      <button class="btn-primary" style="background:linear-gradient(135deg,#059669,#10b981); padding:10px; font-size:13px;" onclick="exportStandaloneHTML()">💾 匯出永久版遊戲檔（打包所有新圖片給手機/GitHub用）</button>
+      <button class="btn-secondary" onclick="closeCastModal()">完成並返回</button>
+    </div>
   </div>
 
   <!-- 結局結算畫面 -->
@@ -730,134 +743,168 @@
   </div>
 </div>
 
-<script>
+<script id="game-engine-script">
   // ==========================================
-  // 1. 內建 8 大角色專屬立繪生成器（離線也有豐富群像角色，並支援豆包圖片替換）
+  // 1. 圖片自動壓縮轉 Base64 永存器（確保重整或匯出不卡頓）
+  // ==========================================
+  function compressImageToDataURL(file, callback) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const maxH = 960;
+        const scale = Math.min(1, maxH / img.height);
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        callback(canvas.toDataURL("image/jpeg", 0.85));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function showSaveToast(msg = "✅ 已自動永久存檔！重整網頁不會消失") {
+    const el = document.getElementById("save-toast");
+    el.textContent = msg;
+    el.style.opacity = "1";
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.style.opacity = "0"; }, 2400);
+  }
+
+  // ==========================================
+  // 2. 瀏覽器 IndexedDB 大容量永久資料庫
+  // ==========================================
+  const DB_NAME = "CampusSafetyGameDB";
+  const STORE_NAME = "customData";
+
+  function openDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, 1);
+      req.onupgradeneeded = () => req.result.createObjectStore(STORE_NAME);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async function saveToIndexedDB() {
+    try {
+      const db = await openDB();
+      const tx = db.transaction(STORE_NAME, "readwrite");
+      const store = tx.objectStore(STORE_NAME);
+      // 儲存角色庫（含換過的圖片與新增角色）與自訂事件
+      const customEvents = ALL_EVENTS.filter(e => e.isCustom);
+      store.put(CHARACTER_ROSTER, "roster");
+      store.put(customEvents, "customEvents");
+      showSaveToast();
+    } catch (err) {
+      console.warn("IndexedDB save failed:", err);
+    }
+  }
+
+  async function loadFromIndexedDB() {
+    try {
+      const db = await openDB();
+      const tx = db.transaction(STORE_NAME, "readonly");
+      const store = tx.objectStore(STORE_NAME);
+
+      const savedRoster = await new Promise(res => {
+        const r = store.get("roster");
+        r.onsuccess = () => res(r.result);
+        r.onerror = () => res(null);
+      });
+
+      const savedEvents = await new Promise(res => {
+        const r = store.get("customEvents");
+        r.onsuccess = () => res(r.result);
+        r.onerror = () => res(null);
+      });
+
+      if (savedRoster && Array.isArray(savedRoster) && savedRoster.length > 0) {
+        CHARACTER_ROSTER.length = 0;
+        savedRoster.forEach(item => CHARACTER_ROSTER.push(item));
+      }
+
+      if (savedEvents && Array.isArray(savedEvents) && savedEvents.length > 0) {
+        savedEvents.forEach(ev => {
+          if (!ALL_EVENTS.some(existing => existing.charId === ev.charId)) {
+            ALL_EVENTS.splice(ALL_EVENTS.length - 1, 0, ev);
+          }
+        });
+      }
+
+      updateUnlockUI();
+      renderCastGrid();
+    } catch (err) {
+      console.warn("IndexedDB load skipped:", err);
+    }
+  }
+
+  // ==========================================
+  // 3. 內建 8 大角色立繪生成器與資料（支援資料夾檔名自動載入）
   // ==========================================
   function makeCharacterPortrait(bg1, bg2, hairColor, outfitColor, accessory, emojiBadge) {
     const c = document.createElement("canvas");
     c.width = 450; c.height = 800;
     const ctx = c.getContext("2d");
-
-    // 戲劇漸層背景
     const grad = ctx.createLinearGradient(0, 0, 0, 800);
-    grad.addColorStop(0, bg1);
-    grad.addColorStop(1, bg2);
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 450, 800);
+    grad.addColorStop(0, bg1); grad.addColorStop(1, bg2);
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, 450, 800);
 
-    // 聚光燈光暈
-    const rad = ctx.createRadialGradient(225, 290, 20, 225, 290, 240);
-    rad.addColorStop(0, "rgba(255,255,255,0.22)");
-    rad.addColorStop(1, "rgba(255,255,255,0)");
-    ctx.fillStyle = rad;
-    ctx.fillRect(0, 0, 450, 800);
-
-    // 角色上半身服裝
     ctx.fillStyle = outfitColor;
-    ctx.beginPath();
-    ctx.roundRect(95, 360, 260, 320, 65);
-    ctx.fill();
+    ctx.beginPath(); ctx.roundRect(95, 360, 260, 320, 65); ctx.fill();
 
-    // 衣服細節（領帶、反光條或識別證）
     if (accessory === "vest") {
       ctx.fillStyle = "#fde047";
-      ctx.fillRect(105, 455, 240, 22);
-      ctx.fillRect(105, 520, 240, 22);
+      ctx.fillRect(105, 455, 240, 22); ctx.fillRect(105, 520, 240, 22);
     } else if (accessory === "tie") {
       ctx.fillStyle = "#dc2626";
-      ctx.beginPath();
-      ctx.moveTo(225, 370); ctx.lineTo(205, 480); ctx.lineTo(225, 510); ctx.lineTo(245, 480);
-      ctx.closePath(); ctx.fill();
-    } else if (accessory === "uniform") {
-      ctx.fillStyle = "#ffffff";
-      ctx.beginPath();
-      ctx.moveTo(185, 360); ctx.lineTo(225, 440); ctx.lineTo(265, 360);
-      ctx.closePath(); ctx.fill();
-    } else if (accessory === "hoodie") {
-      ctx.fillStyle = "#0f172a";
-      ctx.beginPath();
-      ctx.arc(225, 260, 125, Math.PI * 0.9, Math.PI * 2.1);
-      ctx.fill();
+      ctx.beginPath(); ctx.moveTo(225, 370); ctx.lineTo(205, 480); ctx.lineTo(225, 510); ctx.lineTo(245, 480); ctx.closePath(); ctx.fill();
     }
 
-    // 臉部與頭部（若為校狗角色則畫可愛狗狗）
     if (accessory === "dog") {
       ctx.fillStyle = "#d97706";
       ctx.beginPath(); ctx.ellipse(135, 280, 32, 65, 0.25, 0, Math.PI * 2); ctx.fill();
       ctx.beginPath(); ctx.ellipse(315, 280, 32, 65, -0.25, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = "#fbbf24";
       ctx.beginPath(); ctx.arc(225, 260, 95, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "#1e293b";
-      ctx.beginPath(); ctx.arc(190, 245, 12, 0, Math.PI * 2); ctx.arc(260, 245, 12, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.ellipse(225, 275, 18, 12, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "#f43f5e";
-      ctx.beginPath(); ctx.arc(225, 305, 16, 0, Math.PI); ctx.fill();
     } else {
       ctx.fillStyle = accessory === "hoodie" ? "#334155" : "#fed7aa";
-      ctx.beginPath();
-      ctx.arc(225, 260, 88, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 頭髮
+      ctx.beginPath(); ctx.arc(225, 260, 88, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = hairColor;
-      ctx.beginPath();
-      ctx.arc(225, 245, 92, Math.PI * 1.02, Math.PI * 1.98);
-      ctx.fill();
-
-      if (accessory === "long_hair") {
-        ctx.fillRect(133, 245, 28, 130);
-        ctx.fillRect(289, 245, 28, 130);
-      }
-
-      // 眼鏡配件
-      if (accessory === "glasses" || accessory === "tie") {
-        ctx.strokeStyle = "#f8fafc";
-        ctx.lineWidth = 4;
-        ctx.strokeRect(168, 240, 44, 28);
-        ctx.strokeRect(238, 240, 44, 28);
-        ctx.beginPath(); ctx.moveTo(212, 254); ctx.lineTo(238, 254); ctx.stroke();
-      }
-
-      // 眼睛
-      ctx.fillStyle = "#0f172a";
-      ctx.beginPath();
-      ctx.arc(190, 255, 8, 0, Math.PI * 2);
-      ctx.arc(260, 255, 8, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(225, 245, 92, Math.PI * 1.02, Math.PI * 1.98); ctx.fill();
     }
-
-    // 右上角角色徽章浮水印
     ctx.font = "44px sans-serif";
     ctx.fillText(emojiBadge, 365, 85);
-
     return c.toDataURL("image/png");
   }
 
-  // 內建 8 大校園人物陣容（支援隨時新增第 9、第 10 位自訂人物！）
+  /* EMBEDDED_ROSTER_START */
   const CHARACTER_ROSTER = [
     { id: "officer", name: "陳宇（校安人員）", role: "主角・第一線校安", voice: "officer", img: "./officer.jpg", fallback: makeCharacterPortrait("#1e3a8a", "#0f172a", "#1e293b", "#1d4ed8", "vest", "👮‍♂️") },
     { id: "parent", name: "王先生（恐龍家長）", role: "反派・財大氣粗家長", voice: "parent_angry", img: "./parent.jpg", fallback: makeCharacterPortrait("#7f1d1d", "#0f172a", "#1e293b", "#334155", "tie", "🕴️") },
-    { id: "director", name: "林主任（學務主任）", role: "長官・危機處理主管", voice: "elder", img: makeCharacterPortrait("#065f46", "#0f172a", "#475569", "#1e293b", "glasses", "👨‍💼") },
-    { id: "counselor", name: "張老師（輔導老師）", role: "同事・溫柔心輔教師", voice: "student", img: makeCharacterPortrait("#831843", "#1e1b4b", "#78350f", "#db2777", "long_hair", "👩‍🏫") },
-    { id: "student", name: "阿豪（叛逆高三生）", role: "學生・愛騎車闖禍王", voice: "student", img: makeCharacterPortrait("#9a3412", "#0f172a", "#292524", "#2563eb", "uniform", "🎒") },
-    { id: "inspector", name: "趙督學（教育局視察）", role: "長官・突襲考核官", voice: "elder", img: makeCharacterPortrait("#312e81", "#090d16", "#94a3b8", "#334155", "glasses", "🧐") },
-    { id: "intruder", name: "鴨舌帽黑衣人", role: "懸疑・校外可疑人士", voice: "parent_angry", img: makeCharacterPortrait("#18181b", "#000000", "#09090b", "#18181b", "hoodie", "🕵️") },
-    { id: "dog", name: "校狗阿福（米克斯）", role: "萌寵・校園巡邏吉祥物", voice: "student", img: makeCharacterPortrait("#92400e", "#1c1917", "#b45309", "#d97706", "dog", "🐕") }
+    { id: "director", name: "林主任（學務主任）", role: "長官・危機處理主管", voice: "elder", img: "./director.jpg", fallback: makeCharacterPortrait("#065f46", "#0f172a", "#475569", "#1e293b", "glasses", "👨‍💼") },
+    { id: "counselor", name: "張老師（輔導老師）", role: "同事・溫柔心輔教師", voice: "student", img: "./counselor.jpg", fallback: makeCharacterPortrait("#831843", "#1e1b4b", "#78350f", "#db2777", "long_hair", "👩‍🏫") },
+    { id: "student", name: "阿豪（叛逆高三生）", role: "學生・愛騎車闖禍王", voice: "student", img: "./student.jpg", fallback: makeCharacterPortrait("#9a3412", "#0f172a", "#292524", "#2563eb", "uniform", "🎒") },
+    { id: "inspector", name: "趙督學（教育局視察）", role: "長官・突襲考核官", voice: "elder", img: "./inspector.jpg", fallback: makeCharacterPortrait("#312e81", "#090d16", "#94a3b8", "#334155", "glasses", "🧐") },
+    { id: "intruder", name: "鴨舌帽黑衣人", role: "懸疑・校外可疑人士", voice: "parent_angry", img: "./intruder.jpg", fallback: makeCharacterPortrait("#18181b", "#000000", "#09090b", "#18181b", "hoodie", "🕵️") },
+    { id: "dog", name: "校狗阿福（米克斯）", role: "萌寵・校園巡邏吉祥物", voice: "student", img: "./dog.jpg", fallback: makeCharacterPortrait("#92400e", "#1c1917", "#b45309", "#d97706", "dog", "🐕") }
   ];
+  /* EMBEDDED_ROSTER_END */
 
-  // 檢查圖片載入，若本機尚未放入 officer.jpg / parent.jpg 則自動使用內建高畫質插畫不破圖
-  CHARACTER_ROSTER.forEach(ch => {
-    if (!ch.img.startsWith("data:")) {
-      const testImg = new Image();
-      testImg.onerror = () => { ch.img = ch.fallback; };
-      testImg.src = ch.img;
-    }
-  });
+  function bindImageFallbacks() {
+    CHARACTER_ROSTER.forEach(ch => {
+      if (ch.img && !ch.img.startsWith("data:") && ch.fallback) {
+        const testImg = new Image();
+        testImg.onerror = () => { ch.img = ch.fallback; renderCastGrid(); };
+        testImg.src = ch.img;
+      }
+    });
+  }
 
-  // ==========================================
-  // 2. 多角色事件卡庫（每位角色都有專屬登場事件！）
-  // ==========================================
+  /* EMBEDDED_EVENTS_START */
   const ALL_EVENTS = [
     {
       time: "07:30", tag: "早自習校門導護", charId: "parent", filter: "art-danger", sfx: "alarm",
@@ -944,9 +991,10 @@
       right: { label: "摸摸阿福的頭說交給夜班保全，準時五點半打卡！", effect: { safety: 0, admin: -5, parent: 0, sanity: +20 } }
     }
   ];
+  /* EMBEDDED_EVENTS_END */
 
   // ==========================================
-  // 3. 音效與台灣中文真人語音系統
+  // 4. 音效與台灣中文真人語音系統
   // ==========================================
   let sfxOn = true, voiceOn = true, zhVoices = [];
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -1047,7 +1095,7 @@
   }
 
   // ==========================================
-  // 4. 登場角色庫管理與「自由新增角色」功能
+  // 5. 角色庫管理、自動永久存檔與匯出獨立 HTML 檔
   // ==========================================
   let pendingNewCharImg = null;
 
@@ -1085,24 +1133,24 @@
   function replaceCharImage(event, idx) {
     const file = event.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-      CHARACTER_ROSTER[idx].img = e.target.result;
+    compressImageToDataURL(file, async (compressedDataUrl) => {
+      CHARACTER_ROSTER[idx].img = compressedDataUrl;
       renderCastGrid();
       playSFX("win");
-    };
-    reader.readAsDataURL(file);
+      await saveToIndexedDB();
+    });
   }
 
   function previewNewCharImg(event) {
     const file = event.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => { pendingNewCharImg = e.target.result; };
-    reader.readAsDataURL(file);
+    compressImageToDataURL(file, (compressedDataUrl) => {
+      pendingNewCharImg = compressedDataUrl;
+      document.getElementById("new-char-file-label").textContent = "✅ 已選取圖片（準備好永久存檔）";
+    });
   }
 
-  function createNewCharacter() {
+  async function createNewCharacter() {
     const name = document.getElementById("new-char-name").value.trim() || "新登場人物";
     const voice = document.getElementById("new-char-voice").value;
     const eventText = document.getElementById("new-char-event").value.trim() || `${name}突然出現在學安室門口，要求你立刻協助處理一項突發校園狀況！`;
@@ -1112,7 +1160,6 @@
     const newId = "custom_" + Date.now();
     const avatarUrl = pendingNewCharImg || makeCharacterPortrait("#1d4ed8", "#090d16", "#1e293b", "#0284c7", "glasses", "⭐");
 
-    // 1. 加入角色陣容庫
     CHARACTER_ROSTER.push({
       id: newId,
       name: name,
@@ -1121,32 +1168,53 @@
       img: avatarUrl
     });
 
-    // 2. 自動為這位新角色生成一張專屬突發事件卡，並排入遊戲題庫！
     ALL_EVENTS.splice(ALL_EVENTS.length - 1, 0, {
       time: "15:40",
       tag: "自訂角色突發事件",
       charId: newId,
       filter: "",
       sfx: "walkie",
+      isCustom: true,
       text: eventText,
       left: { label: leftLabel, effect: { safety: +15, admin: +15, parent: -10, sanity: -10 } },
       right: { label: rightLabel, effect: { safety: -10, admin: -10, parent: +10, sanity: +15 } }
     });
 
-    // 清空表單並刷新列表
     document.getElementById("new-char-name").value = "";
     document.getElementById("new-char-event").value = "";
     document.getElementById("new-char-left").value = "";
     document.getElementById("new-char-right").value = "";
+    document.getElementById("new-char-file-label").textContent = "上傳角色立繪（自動壓縮存檔）：";
     pendingNewCharImg = null;
 
     renderCastGrid();
     playSFX("win");
-    speakText(`新角色${name}已加入校園！`, voice);
+    speakText(`新角色${name}已加入並永久存檔！`, voice);
+    await saveToIndexedDB();
+  }
+
+  // 一鍵匯出包含所有最新圖片與自訂角色的獨立 index.html 檔案
+  function exportStandaloneHTML() {
+    let htmlContent = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+    const cleanRoster = CHARACTER_ROSTER.map(c => ({
+      id: c.id, name: c.name, role: c.role, voice: c.voice, img: c.img
+    }));
+    const rosterCode = `/* EMBEDDED_ROSTER_START */\n  const CHARACTER_ROSTER = ${JSON.stringify(cleanRoster)};\n  /* EMBEDDED_ROSTER_END */`;
+    const eventsCode = `/* EMBEDDED_EVENTS_START */\n  const ALL_EVENTS = ${JSON.stringify(ALL_EVENTS)};\n  /* EMBEDDED_EVENTS_END */`;
+
+    htmlContent = htmlContent.replace(/\/\* EMBEDDED_ROSTER_START \*\/[\s\S]*?\/\* EMBEDDED_ROSTER_END \*\//, rosterCode);
+    htmlContent = htmlContent.replace(/\/\* EMBEDDED_EVENTS_START \*\/[\s\S]*?\/\* EMBEDDED_EVENTS_END \*\//, eventsCode);
+
+    const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "index.html";
+    a.click();
+    showSaveToast("💾 已匯出永久版 index.html！傳到手機或 GitHub 都能直接玩");
   }
 
   // ==========================================
-  // 5. 九大結局與遊戲主循環
+  // 6. 九大結局與遊戲主循環
   // ==========================================
   const ENDINGS = {
     safety_zero: { badge: "💀 結局 1/9｜校園失守", title: "校園安全歸零：全校大亂鬥", desc: "因為多次退讓與疏於巡檢，校園陷入混亂，你連夜被召回寫檢討報告！" },
@@ -1173,9 +1241,7 @@
 
   function buildDeckForShift() {
     if (selectedMode === "full") return [...ALL_EVENTS];
-    // 確保玩家自己新增的自訂角色事件一定會優先登場！
-    const customIndices = [];
-    const normalIndices = [];
+    const customIndices = [], normalIndices = [];
     ALL_EVENTS.forEach((ev, idx) => {
       if (ev.charId.startsWith("custom_")) customIndices.push(idx);
       else normalIndices.push(idx);
@@ -1358,7 +1424,6 @@
     document.getElementById("gallery-modal").classList.add("hidden");
   }
 
-  // 手勢左右拖曳卡牌支援
   const cardEl = document.getElementById("event-card");
   let startX = 0, currentX = 0, isDragging = false;
 
@@ -1404,7 +1469,10 @@
     currentX = 0;
   });
 
+  // 網頁啟動時自動從 IndexedDB 載入永久存檔的角色與圖片
+  bindImageFallbacks();
   updateUnlockUI();
+  loadFromIndexedDB();
 </script>
 </body>
 </html>
