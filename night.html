@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>校安危機處理模擬器｜今天也要平安下班</title>
+  <title>今天也要平安下班｜多角色登場＋自由新增人物版</title>
   <style>
     :root {
-      --bg-dark: #0f172a;
-      --panel-bg: rgba(15, 23, 42, 0.92);
+      --bg-dark: #090d16;
+      --card-bg: rgba(15, 23, 42, 0.92);
       --accent-blue: #38bdf8;
       --accent-gold: #fbbf24;
       --danger-red: #ef4444;
@@ -25,7 +25,7 @@
     }
 
     body {
-      background-color: #020617;
+      background-color: #030712;
       color: var(--text-main);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", sans-serif;
       display: flex;
@@ -35,754 +35,1376 @@
       overflow: hidden;
     }
 
-    /* 手機直式 9:16 主舞台容器 */
-    #game-container {
+    #app-frame {
       position: relative;
       width: 100%;
-      max-width: 450px;
+      max-width: 440px;
       height: 100dvh;
       max-height: 880px;
-      background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+      background: var(--bg-dark);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       overflow: hidden;
-      box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
       border-left: 1px solid rgba(255, 255, 255, 0.08);
       border-right: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
     }
 
-    /* 背景層（支援填入豆包生成的背景圖） */
-    #scene-bg {
-      position: absolute;
-      inset: 0;
-      background-size: cover;
-      background-position: center;
-      transition: all 0.5s ease;
-      z-index: 0;
-    }
-
-    #scene-overlay {
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 50% 35%, rgba(15, 23, 42, 0.25) 0%, rgba(2, 6, 23, 0.85) 100%);
-      z-index: 1;
-    }
-
-    /* 頂部狀態欄：壓力值血條 & 地點資訊 */
-    #hud-top {
+    /* 頂部核心四維數值 */
+    #top-hud {
       position: relative;
-      z-index: 10;
-      padding: 14px 16px 10px;
-      background: linear-gradient(180deg, rgba(2, 6, 23, 0.9) 0%, rgba(2, 6, 23, 0) 100%);
+      z-index: 20;
+      padding: 12px 14px 8px;
+      background: linear-gradient(180deg, rgba(3, 7, 18, 0.96) 0%, rgba(3, 7, 18, 0.75) 100%);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
 
-    .hud-row {
+    .time-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
+      gap: 4px;
     }
 
-    .location-badge {
+    .clock-pill {
+      display: flex;
+      align-items: center;
+      gap: 4px;
       background: rgba(56, 189, 248, 0.15);
       border: 1px solid rgba(56, 189, 248, 0.4);
       color: var(--accent-blue);
-      font-size: 12px;
-      font-weight: 700;
-      padding: 4px 10px;
+      font-size: 11.5px;
+      font-weight: 800;
+      padding: 4px 8px;
       border-radius: 999px;
-      letter-spacing: 0.5px;
+      white-space: nowrap;
     }
 
-    .audio-btn {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #fff;
-      font-size: 12px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      cursor: pointer;
-    }
-
-    .stress-wrapper {
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 10px;
-      padding: 8px 12px;
-    }
-
-    .stress-header {
-      display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-      font-weight: 600;
-      margin-bottom: 5px;
-    }
-
-    .stress-bar-bg {
-      width: 100%;
-      height: 8px;
+    .shift-progress-wrap {
+      flex: 1;
+      margin: 0 4px;
+      height: 6px;
       background: #1e293b;
       border-radius: 999px;
       overflow: hidden;
     }
 
-    #stress-bar-fill {
+    #shift-progress-fill {
       height: 100%;
-      width: 20%;
-      background: linear-gradient(90deg, #22c55e, #eab308);
-      border-radius: 999px;
-      transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1), background 0.4s ease;
+      width: 0%;
+      background: linear-gradient(90deg, #38bdf8, #fbbf24);
+      transition: width 0.35s ease;
     }
 
-    /* 中央角色立繪舞台 */
-    #character-stage {
+    .icon-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 7px;
+      border-radius: 999px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .icon-btn.active-audio {
+      background: rgba(56, 189, 248, 0.22);
+      border-color: var(--accent-blue);
+      color: #e0f2fe;
+    }
+
+    .icon-btn.cast-btn {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      border-color: #fde68a;
+      color: #fff;
+    }
+
+    /* 四大生存數值格 */
+    .meters-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+
+    .meter-item {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 6px 6px 7px;
+      text-align: center;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .meter-item.pulse-up { border-color: #22c55e; transform: scale(1.05); }
+    .meter-item.pulse-down { border-color: #ef4444; transform: scale(0.95); }
+
+    .meter-icon {
+      font-size: 14px;
+      margin-bottom: 2px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .delta-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: transparent;
+      transition: background 0.15s ease, transform 0.15s ease;
+    }
+
+    .delta-dot.active {
+      background: var(--accent-gold);
+      transform: scale(1.4);
+      box-shadow: 0 0 8px var(--accent-gold);
+    }
+
+    .meter-name { font-size: 10px; color: var(--text-muted); font-weight: 700; margin-bottom: 4px; }
+    .meter-track { width: 100%; height: 5px; background: #1e293b; border-radius: 999px; overflow: hidden; }
+    .meter-fill { height: 100%; width: 50%; background: #38bdf8; border-radius: 999px; transition: width 0.3s ease, background 0.3s ease; }
+
+    /* 中央卡牌舞台 */
+    #card-arena {
       position: relative;
-      z-index: 5;
       flex: 1;
       display: flex;
+      flex-direction: column;
       justify-content: center;
-      align-items: flex-end;
-      padding-bottom: 10px;
-      pointer-events: none;
-    }
-
-    #character-sprite {
-      width: 260px;
-      height: 320px;
-      display: flex;
-      justify-content: center;
-      align-items: flex-end;
-      transition: transform 0.3s ease, filter 0.3s ease, opacity 0.3s ease;
-      filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.7));
-    }
-
-    #character-sprite img {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-      border-radius: 12px;
-    }
-
-    .sprite-shake {
-      animation: shake 0.35s ease-in-out;
-    }
-
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-8px); }
-      50% { transform: translateX(8px); }
-      75% { transform: translateX(-5px); }
-    }
-
-    /* 底部對話框與選項互動區 */
-    #dialogue-panel {
-      position: relative;
-      z-index: 15;
-      background: var(--panel-bg);
-      backdrop-filter: blur(12px);
-      border-top: 1px solid rgba(56, 189, 248, 0.3);
-      border-radius: 20px 20px 0 0;
-      padding: 16px 18px 22px;
-      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.6);
-    }
-
-    .speaker-row {
-      display: flex;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 8px;
+      padding: 10px 16px;
+      z-index: 10;
     }
 
-    #speaker-name {
-      font-size: 15px;
-      font-weight: 800;
+    #swipe-preview-banner {
+      width: 100%;
+      min-height: 42px;
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 12px;
+      padding: 7px 12px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
       color: var(--accent-gold);
-      letter-spacing: 0.5px;
+      opacity: 0.45;
+      transition: all 0.2s ease;
     }
 
-    #speaker-role {
-      font-size: 11px;
-      color: var(--text-muted);
-      background: rgba(255, 255, 255, 0.08);
-      padding: 2px 8px;
-      border-radius: 4px;
+    #swipe-preview-banner.active {
+      opacity: 1;
+      border-color: var(--accent-gold);
+      box-shadow: 0 0 18px rgba(251, 191, 36, 0.25);
     }
 
-    #dialogue-text {
-      font-size: 15px;
-      line-height: 1.65;
-      color: var(--text-main);
-      min-height: 76px;
-      margin-bottom: 14px;
-      cursor: pointer;
-    }
-
-    /* 選項按鈕列表 */
-    #choices-container {
+    /* 實體事件卡牌 */
+    #event-card {
+      position: relative;
+      width: 100%;
+      flex: 1;
+      max-height: 470px;
+      background: #1e293b;
+      border-radius: 22px;
+      overflow: hidden;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.75);
+      touch-action: none;
+      cursor: grab;
+      transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s ease;
       display: flex;
       flex-direction: column;
-      gap: 9px;
+      justify-content: space-between;
     }
 
-    .choice-btn {
-      width: 100%;
-      text-align: left;
-      background: rgba(30, 41, 59, 0.9);
-      border: 1px solid rgba(56, 189, 248, 0.35);
-      color: #f8fafc;
+    #event-card:active { cursor: grabbing; }
+
+    #card-art {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center 15%;
+      transform: scale(1.08);
+      transition: background-image 0.3s ease, filter 0.3s ease;
+      z-index: 0;
+    }
+
+    .art-danger { filter: contrast(1.18) saturate(1.3) sepia(0.2) hue-rotate(-25deg); }
+    .art-night { filter: contrast(1.2) brightness(0.75) hue-rotate(190deg); }
+    .art-morning { filter: brightness(1.08) saturate(1.1) sepia(0.08); }
+
+    #card-gradient {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        180deg,
+        rgba(3, 7, 18, 0.65) 0%,
+        rgba(3, 7, 18, 0.05) 35%,
+        rgba(3, 7, 18, 0.85) 68%,
+        rgba(3, 7, 18, 0.98) 100%
+      );
+      z-index: 1;
+    }
+
+    .card-top-tag {
+      position: relative;
+      z-index: 5;
       padding: 12px 14px;
-      border-radius: 12px;
-      font-size: 14px;
-      font-weight: 600;
-      line-height: 1.4;
-      cursor: pointer;
-      transition: all 0.18s ease;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
-    .choice-btn:active {
-      transform: scale(0.98);
-      background: rgba(56, 189, 248, 0.25);
-      border-color: var(--accent-blue);
-    }
-
-    .choice-tag {
+    .event-badge {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(251, 191, 36, 0.5);
+      color: var(--accent-gold);
       font-size: 11px;
-      color: var(--accent-blue);
-      margin-left: 8px;
-      white-space: nowrap;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 999px;
     }
 
-    .next-hint {
-      text-align: right;
-      font-size: 12px;
+    .card-bottom-info {
+      position: relative;
+      z-index: 5;
+      padding: 16px 16px 18px;
+    }
+
+    .speaker-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .char-title {
+      font-size: 15px;
+      font-weight: 900;
       color: var(--accent-blue);
-      animation: pulse 1.2s infinite;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .replay-voice-btn {
+      background: rgba(56, 189, 248, 0.22);
+      border: 1px solid rgba(56, 189, 248, 0.5);
+      color: #e0f2fe;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 9px;
+      border-radius: 999px;
       cursor: pointer;
-      padding: 6px 0;
     }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 0.5; }
-      50% { opacity: 1; }
+    .event-desc {
+      font-size: 14.5px;
+      line-height: 1.58;
+      color: #f8fafc;
+      font-weight: 500;
     }
 
-    /* 封面與結局遮罩畫面 */
-    .overlay-screen {
+    /* 底部左右雙按鈕 */
+    #bottom-controls {
+      position: relative;
+      z-index: 20;
+      padding: 8px 14px 18px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      background: linear-gradient(0deg, rgba(3, 7, 18, 0.98) 0%, rgba(3, 7, 18, 0.8) 100%);
+    }
+
+    .action-btn {
+      background: rgba(30, 41, 59, 0.95);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #f8fafc;
+      border-radius: 14px;
+      padding: 11px 10px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.35;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+
+    .action-btn:active {
+      transform: scale(0.96);
+      background: rgba(56, 189, 248, 0.25);
+    }
+
+    .action-dir {
+      font-size: 10px;
+      color: var(--accent-gold);
+      letter-spacing: 0.5px;
+    }
+
+    /* 封面、結局與角色管理彈窗 */
+    .modal-screen {
       position: absolute;
       inset: 0;
-      z-index: 30;
-      background: rgba(2, 6, 23, 0.94);
-      backdrop-filter: blur(10px);
+      z-index: 40;
+      background: rgba(3, 7, 18, 0.96);
+      backdrop-filter: blur(12px);
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 28px 24px;
+      padding: 20px 18px;
       text-align: center;
+      overflow-y: auto;
     }
 
-    .hidden {
-      display: none !important;
-    }
+    .hidden { display: none !important; }
 
-    .cover-tag {
+    .tag-pill {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
       color: var(--accent-gold);
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      border: 1px solid rgba(251, 191, 36, 0.4);
+      border: 1px solid rgba(251, 191, 36, 0.45);
+      background: rgba(251, 191, 36, 0.1);
       padding: 4px 12px;
       border-radius: 999px;
-      margin-bottom: 14px;
+      margin-bottom: 10px;
     }
 
-    .cover-title {
-      font-size: 26px;
+    .main-title {
+      font-size: 24px;
       font-weight: 900;
-      line-height: 1.35;
-      margin-bottom: 12px;
+      line-height: 1.3;
+      margin-bottom: 8px;
       background: linear-gradient(90deg, #fff, #38bdf8);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
-    .cover-desc {
-      font-size: 14px;
+    .sub-desc {
+      font-size: 13px;
       color: var(--text-muted);
-      line-height: 1.6;
-      margin-bottom: 28px;
+      line-height: 1.55;
+      margin-bottom: 16px;
     }
 
-    .primary-btn {
+    .mode-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      width: 100%;
+      max-width: 310px;
+      margin-bottom: 14px;
+    }
+
+    .mode-btn {
+      background: rgba(30, 41, 59, 0.85);
+      border: 1.5px solid rgba(56, 189, 248, 0.3);
+      border-radius: 12px;
+      padding: 9px 8px;
+      color: #cbd5e1;
+      cursor: pointer;
+    }
+
+    .mode-btn.active {
+      background: rgba(56, 189, 248, 0.18);
+      border-color: var(--accent-gold);
+      color: #fff;
+    }
+
+    .mode-title { font-size: 13px; font-weight: 800; color: var(--accent-gold); }
+    .mode-sub { font-size: 11px; color: var(--text-muted); }
+
+    .btn-stack {
+      width: 100%;
+      max-width: 310px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .btn-primary {
       background: linear-gradient(135deg, #0284c7, #2563eb);
       color: #fff;
       border: none;
-      padding: 14px 32px;
+      padding: 13px 18px;
       border-radius: 12px;
-      font-size: 16px;
+      font-size: 14.5px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 8px 22px rgba(37, 99, 235, 0.45);
+    }
+
+    .btn-secondary {
+      background: rgba(30, 41, 59, 0.9);
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-size: 13px;
       font-weight: 700;
       cursor: pointer;
-      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
-      transition: transform 0.15s ease;
     }
 
-    .primary-btn:active {
-      transform: scale(0.96);
+    /* 角色庫＆自由新增表單樣式 */
+    .cast-scroll {
+      width: 100%;
+      max-height: 62dvh;
+      overflow-y: auto;
+      text-align: left;
+      margin-bottom: 14px;
+      padding-right: 4px;
     }
 
-    .ending-badge {
-      font-size: 13px;
-      font-weight: 800;
-      padding: 5px 14px;
-      border-radius: 999px;
-      margin-bottom: 12px;
+    .cast-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
     }
 
-    .ending-good { background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid #22c55e; }
-    .ending-bad { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
-    .ending-hidden { background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
+    .cast-card {
+      background: rgba(30, 41, 59, 0.9);
+      border: 1.5px solid rgba(56, 189, 248, 0.3);
+      border-radius: 12px;
+      padding: 8px 6px;
+      text-align: center;
+      position: relative;
+    }
+
+    .cast-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: center 15%;
+      border: 2px solid var(--accent-gold);
+      margin: 0 auto 5px;
+      display: block;
+      background: #0f172a;
+    }
+
+    .cast-name { font-size: 11.5px; font-weight: 800; color: #f8fafc; }
+    .cast-role { font-size: 10px; color: var(--accent-blue); margin-bottom: 4px; }
+    .cast-upload-mini {
+      font-size: 10px;
+      background: rgba(56, 189, 248, 0.2);
+      border: 1px solid rgba(56, 189, 248, 0.45);
+      color: #e0f2fe;
+      padding: 2px 6px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .add-char-box {
+      background: rgba(15, 23, 42, 0.95);
+      border: 1.5px solid rgba(251, 191, 36, 0.45);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .add-char-title {
+      font-size: 13.5px;
+      font-weight: 900;
+      color: var(--accent-gold);
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #fff;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      margin-bottom: 8px;
+      user-select: text;
+    }
+
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .gallery-grid {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 18px;
+      text-align: left;
+      max-height: 55dvh;
+      overflow-y: auto;
+    }
+
+    .gallery-card {
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 9px 12px;
+    }
+
+    .gallery-card.unlocked { border-color: rgba(56, 189, 248, 0.5); }
+    .gallery-title { font-size: 12.5px; font-weight: 800; color: var(--accent-gold); margin-bottom: 2px; }
+    .gallery-desc { font-size: 11.5px; color: var(--text-muted); }
   </style>
 </head>
 <body>
 
-<div id="game-container">
-  <!-- 背景圖層 -->
-  <div id="scene-bg"></div>
-  <div id="scene-overlay"></div>
-
-  <!-- 頂部 HUD 狀態列 -->
-  <div id="hud-top">
-    <div class="hud-row">
-      <span id="location-label" class="location-badge">📍 學務處／學安室・16:45</span>
-      <button id="audio-toggle" class="audio-btn" onclick="toggleAudio()">🔊 音效開</button>
-    </div>
-    <div class="stress-wrapper">
-      <div class="stress-header">
-        <span>校安人員壓力指數</span>
-        <span id="stress-text" style="color: #4ade80;">20%（冷靜可控）</span>
+<div id="app-frame">
+  <!-- 頂部：執勤時間軸 ＋ 四大生存指標 ＋ 角色庫/語音/音樂開關 -->
+  <div id="top-hud">
+    <div class="time-bar">
+      <div class="clock-pill">🕒 <span id="clock-text">07:30</span></div>
+      <div class="shift-progress-wrap">
+        <div id="shift-progress-fill"></div>
       </div>
-      <div class="stress-bar-bg">
-        <div id="stress-bar-fill"></div>
+      <div style="display:flex; gap:4px;">
+        <button class="icon-btn cast-btn" onclick="openCastModal()">👥 角色(<span id="cast-count">8</span>)</button>
+        <button class="icon-btn" onclick="openGallery()">🏆 <span id="hud-unlock">0</span>/9</button>
+        <button id="voice-btn" class="icon-btn active-audio" onclick="toggleVoice()">🗣️</button>
+        <button id="sfx-btn" class="icon-btn active-audio" onclick="toggleSFX()">🔊</button>
+      </div>
+    </div>
+
+    <div class="meters-grid">
+      <div class="meter-item" id="box-safety">
+        <div class="meter-icon">🛡️ <span class="delta-dot" id="dot-safety"></span></div>
+        <div class="meter-name">校園安全</div>
+        <div class="meter-track"><div class="meter-fill" id="bar-safety"></div></div>
+      </div>
+      <div class="meter-item" id="box-admin">
+        <div class="meter-icon">📋 <span class="delta-dot" id="dot-admin"></span></div>
+        <div class="meter-name">長官信任</div>
+        <div class="meter-track"><div class="meter-fill" id="bar-admin"></div></div>
+      </div>
+      <div class="meter-item" id="box-parent">
+        <div class="meter-icon">💢 <span class="delta-dot" id="dot-parent"></span></div>
+        <div class="meter-name">家長情緒</div>
+        <div class="meter-track"><div class="meter-fill" id="bar-parent"></div></div>
+      </div>
+      <div class="meter-item" id="box-sanity">
+        <div class="meter-icon">🧠 <span class="delta-dot" id="dot-sanity"></span></div>
+        <div class="meter-name">個人理智</div>
+        <div class="meter-track"><div class="meter-fill" id="bar-sanity"></div></div>
       </div>
     </div>
   </div>
 
-  <!-- 中央角色立繪舞台 -->
-  <div id="character-stage">
-    <div id="character-sprite"></div>
+  <!-- 中央：可左右滑動的事件卡牌 -->
+  <div id="card-arena">
+    <div id="swipe-preview-banner">👈 左右滑動卡牌，或點擊下方按鈕做決策 👉</div>
+
+    <div id="event-card">
+      <div id="card-art"></div>
+      <div id="card-gradient"></div>
+
+      <div class="card-top-tag">
+        <span class="event-badge" id="card-tag">早自習導護</span>
+        <span class="event-badge" style="border-color: rgba(56,189,248,0.5); color: #38bdf8;" id="turn-counter">距離下班 12 關</span>
+      </div>
+
+      <div class="card-bottom-info">
+        <div class="speaker-row">
+          <div class="char-title" id="card-speaker">👮‍♂️ 陳宇（校安人員）</div>
+          <button class="replay-voice-btn" onclick="speakCurrentCard()">🔊 重聽語音</button>
+        </div>
+        <div class="event-desc" id="card-text">事件載入中...</div>
+      </div>
+    </div>
   </div>
 
-  <!-- 底部對話框與選項 -->
-  <div id="dialogue-panel">
-    <div class="speaker-row">
-      <span id="speaker-name">系統提示</span>
-      <span id="speaker-role">事件紀錄</span>
-    </div>
-    <div id="dialogue-text" onclick="handleDialogueClick()">點擊開始執勤...</div>
-    <div id="choices-container"></div>
+  <!-- 底部：雙向決策按鈕 -->
+  <div id="bottom-controls">
+    <button class="action-btn" id="btn-left"
+      onmouseenter="previewChoice('left')" onmouseleave="clearPreview()"
+      onclick="commitChoice('left')">
+      <span class="action-dir">◀ 左滑選擇</span>
+      <span id="left-text">選項 A</span>
+    </button>
+    <button class="action-btn" id="btn-right"
+      onmouseenter="previewChoice('right')" onmouseleave="clearPreview()"
+      onclick="commitChoice('right')">
+      <span class="action-dir">右滑選擇 ▶</span>
+      <span id="right-text">選項 B</span>
+    </button>
   </div>
 
   <!-- 開場封面 -->
-  <div id="start-screen" class="overlay-screen">
-    <div class="cover-tag">CAMPUS SAFETY SIMULATOR</div>
-    <h1 class="cover-title">校園安全危機處理<br>：放學前的突發衝突</h1>
-    <p class="cover-desc">
-      距離下班只剩 15 分鐘，學務處大門卻被氣勢洶洶的家長推開。<br>
-      身為第一線校安人員，你的每一個應對與蒐證決策，都將決定事態走向與多重結局。
+  <div id="start-modal" class="modal-screen">
+    <div class="tag-pill">MULTI-CHARACTER & CUSTOM CAST EDITION</div>
+    <h1 class="main-title">今天也要平安下班<br>：校園群像生存模擬器</h1>
+    <p class="sub-desc">
+      內建<strong>【校安陳宇、暴怒王先生、學務林主任、輔導室張老師、叛逆高三生、教育局督學、黑衣神秘人、校狗阿福】</strong> 8 大角色專屬立繪與聲線，還可<strong>自由新增你自己的角色與事件卡</strong>！
     </p>
-    <button class="primary-btn" onclick="startGame()">佩戴對講機・開始值勤</button>
+
+    <div class="mode-selector">
+      <div class="mode-btn active" id="mode-normal" onclick="selectMode('normal')">
+        <div class="mode-title">☀️ 一般值勤班</div>
+        <div class="mode-sub">隨機 12 關（含自訂角色）</div>
+      </div>
+      <div class="mode-btn" id="mode-full" onclick="selectMode('full')">
+        <div class="mode-title">🔥 全天魔鬼班</div>
+        <div class="mode-sub">完整全天事件挑戰</div>
+      </div>
+    </div>
+
+    <div class="btn-stack">
+      <button class="btn-primary" onclick="startNewShift()">🔊 開啟語音與音效・開始值勤</button>
+      <button class="btn-secondary" style="border-color:#fbbf24; color:#fde68a;" onclick="openCastModal()">👥 管理登場人物 / 新增自訂角色</button>
+      <button class="btn-secondary" onclick="openGallery()">🏆 查看職場結局圖鑑 (<span id="cover-unlock">0</span>/9)</button>
+    </div>
+  </div>
+
+  <!-- 登場角色庫＆自由新增角色彈窗 -->
+  <div id="cast-modal" class="modal-screen hidden">
+    <div class="tag-pill">CHARACTER ROSTER & CREATOR</div>
+    <h2 class="main-title" style="font-size: 21px;">校園登場人物庫＆自由新增角色</h2>
+
+    <div class="cast-scroll">
+      <!-- 1. 現有角色列表（每個都支援點擊更換成你的豆包圖片） -->
+      <div class="cast-grid" id="cast-grid-list"></div>
+
+      <!-- 2. 新增全新角色與專屬突發事件表單 -->
+      <div class="add-char-box">
+        <div class="add-char-title">➕ 新增全新角色（立即加入抽題關卡！）</div>
+        <div class="form-row-2">
+          <input type="text" class="form-input" id="new-char-name" placeholder="角色稱呼（例：教官李組長）" maxlength="12" />
+          <select class="form-input" id="new-char-voice">
+            <option value="officer">聲線：沉穩專業</option>
+            <option value="parent_angry">聲線：高亢激動</option>
+            <option value="student">聲線：年輕活潑</option>
+            <option value="elder">聲線：低沉威嚴</option>
+          </select>
+        </div>
+        <input type="text" class="form-input" id="new-char-event" placeholder="該角色登場的突發狀況台詞（例：教官突然突擊檢查服儀！）" maxlength="65" />
+        <div class="form-row-2">
+          <input type="text" class="form-input" id="new-char-left" placeholder="左滑選項（例：協助勸導）" maxlength="22" />
+          <input type="text" class="form-input" id="new-char-right" placeholder="右滑選項（例：開單登記）" maxlength="22" />
+        </div>
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;">
+          <span style="font-size:11.5px; color:#cbd5e1;">上傳角色立繪（不選則自動生成插畫）：</span>
+          <label class="cast-upload-mini" style="padding:5px 10px; font-size:11px;">
+            📁 選擇豆包圖片
+            <input type="file" id="new-char-file" accept="image/*" class="hidden" onchange="previewNewCharImg(event)" />
+          </label>
+        </div>
+        <button class="btn-primary" style="width:100%; padding:10px; font-size:13.5px;" onclick="createNewCharacter()">✨ 確認新增角色並加入遊戲</button>
+      </div>
+    </div>
+
+    <button class="btn-secondary" style="width:100%; max-width:310px;" onclick="closeCastModal()">完成並返回</button>
   </div>
 
   <!-- 結局結算畫面 -->
-  <div id="ending-screen" class="overlay-screen hidden">
-    <div id="ending-type" class="ending-badge ending-good">S 級完美結局</div>
-    <h2 id="ending-title" class="cover-title">危機化解・準時打卡下班</h2>
-    <p id="ending-desc" class="cover-desc">結局說明文字</p>
-    <button class="primary-btn" onclick="startGame()">重新挑戰其他分支</button>
+  <div id="end-modal" class="modal-screen hidden">
+    <div class="tag-pill" id="end-badge">ENDING</div>
+    <h2 class="main-title" id="end-title">結局標題</h2>
+    <p class="sub-desc" id="end-desc">結局說明</p>
+    <div class="btn-stack">
+      <button class="btn-primary" onclick="startNewShift()">再輪一次班（隨機新事件）</button>
+      <button class="btn-secondary" onclick="openGallery()">查看已解鎖結局圖鑑</button>
+    </div>
+  </div>
+
+  <!-- 圖鑑視窗 -->
+  <div id="gallery-modal" class="modal-screen hidden">
+    <div class="tag-pill">CAREER ENDINGS (9 TYPES)</div>
+    <h2 class="main-title" style="font-size: 22px;">校安人員生存結局圖鑑</h2>
+    <div class="gallery-grid" id="gallery-list"></div>
+    <button class="btn-primary" onclick="closeGallery()">返回遊戲</button>
   </div>
 </div>
 
 <script>
   // ==========================================
-  // 1. 內建角色立繪庫（可直接替換成豆包生成的圖片網址）
+  // 1. 內建 8 大角色專屬立繪生成器（離線也有豐富群像角色，並支援豆包圖片替換）
   // ==========================================
-  const CHARACTERS = {
-    none: { name: "旁白", role: "現場狀況", svg: "" },
-    officer: {
-      name: "陳宇（你）",
-      role: "校安人員",
-      // 若要用豆包圖片，將 imageUrl 改為圖片路徑（如 "./officer.png"）即可自動覆蓋 SVG
-      imageUrl: "",
-      svg: `<svg viewBox="0 0 220 280" width="220" height="280">
-              <circle cx="110" cy="72" r="38" fill="#fcd5b5"/>
-              <path d="M72 68 Q75 26 110 26 Q145 26 148 68 Q135 45 110 46 Q85 45 72 68 Z" fill="#1e293b"/>
-              <circle cx="97" cy="72" r="3.5" fill="#0f172a"/>
-              <circle cx="123" cy="72" r="3.5" fill="#0f172a"/>
-              <path d="M102 90 Q110 95 118 90" stroke="#9a3412" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-              <path d="M55 130 L165 130 L180 280 L40 280 Z" fill="#0f172a"/>
-              <path d="M70 130 L150 130 L158 280 L62 280 Z" fill="#1d4ed8"/>
-              <rect x="65" y="185" width="90" height="10" fill="#fde047"/>
-              <rect x="62" y="215" width="96" height="10" fill="#fde047"/>
-              <rect x="122" y="148" width="24" height="12" rx="2" fill="#f8fafc"/>
-              <text x="134" y="157" font-size="7" font-weight="bold" fill="#0f172a" text-anchor="middle">校安</text>
-            </svg>`
-    },
-    parent_angry: {
-      name: "王先生",
-      role: "情緒激動家長",
-      imageUrl: "",
-      svg: `<svg viewBox="0 0 220 280" width="220" height="280">
-              <circle cx="110" cy="72" r="39" fill="#fed7aa"/>
-              <path d="M72 62 Q110 22 148 62 L145 45 Q110 18 75 45 Z" fill="#334155"/>
-              <path d="M88 64 L103 70 M132 64 L117 70" stroke="#7f1d1d" stroke-width="3" stroke-linecap="round"/>
-              <circle cx="96" cy="74" r="3.5" fill="#0f172a"/>
-              <circle cx="124" cy="74" r="3.5" fill="#0f172a"/>
-              <ellipse cx="110" cy="94" rx="10" ry="7" fill="#991b1b"/>
-              <path d="M48 130 L172 130 L185 280 L35 280 Z" fill="#1e293b"/>
-              <path d="M98 130 L122 130 L114 195 L106 195 Z" fill="#dc2626"/>
-            </svg>`
-    },
-    parent_shock: {
-      name: "王先生",
-      role: "態度轉變家長",
-      imageUrl: "",
-      svg: `<svg viewBox="0 0 220 280" width="220" height="280">
-              <circle cx="110" cy="72" r="39" fill="#e2e8f0"/>
-              <path d="M72 62 Q110 22 148 62 L145 45 Q110 18 75 45 Z" fill="#334155"/>
-              <circle cx="96" cy="74" r="4.5" fill="#0f172a"/>
-              <circle cx="124" cy="74" r="4.5" fill="#0f172a"/>
-              <path d="M100 95 Q110 88 120 95" stroke="#475569" stroke-width="2.5" fill="none"/>
-              <path d="M48 130 L172 130 L185 280 L35 280 Z" fill="#1e293b"/>
-              <path d="M98 130 L122 130 L114 195 L106 195 Z" fill="#64748b"/>
-            </svg>`
-    },
-    director: {
-      name: "林主任",
-      role: "學務主任",
-      imageUrl: "",
-      svg: `<svg viewBox="0 0 220 280" width="220" height="280">
-              <circle cx="110" cy="74" r="37" fill="#fde68a"/>
-              <path d="M72 78 Q72 28 110 28 Q148 28 148 78 L152 115 L68 115 Z" fill="#475569"/>
-              <circle cx="97" cy="74" r="3.5" fill="#0f172a"/>
-              <circle cx="123" cy="74" r="3.5" fill="#0f172a"/>
-              <rect x="87" y="68" width="18" height="12" rx="2" stroke="#0f172a" stroke-width="2" fill="none"/>
-              <rect x="115" y="68" width="18" height="12" rx="2" stroke="#0f172a" stroke-width="2" fill="none"/>
-              <path d="M55 130 L165 130 L176 280 L44 280 Z" fill="#334155"/>
-            </svg>`
+  function makeCharacterPortrait(bg1, bg2, hairColor, outfitColor, accessory, emojiBadge) {
+    const c = document.createElement("canvas");
+    c.width = 450; c.height = 800;
+    const ctx = c.getContext("2d");
+
+    // 戲劇漸層背景
+    const grad = ctx.createLinearGradient(0, 0, 0, 800);
+    grad.addColorStop(0, bg1);
+    grad.addColorStop(1, bg2);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 450, 800);
+
+    // 聚光燈光暈
+    const rad = ctx.createRadialGradient(225, 290, 20, 225, 290, 240);
+    rad.addColorStop(0, "rgba(255,255,255,0.22)");
+    rad.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = rad;
+    ctx.fillRect(0, 0, 450, 800);
+
+    // 角色上半身服裝
+    ctx.fillStyle = outfitColor;
+    ctx.beginPath();
+    ctx.roundRect(95, 360, 260, 320, 65);
+    ctx.fill();
+
+    // 衣服細節（領帶、反光條或識別證）
+    if (accessory === "vest") {
+      ctx.fillStyle = "#fde047";
+      ctx.fillRect(105, 455, 240, 22);
+      ctx.fillRect(105, 520, 240, 22);
+    } else if (accessory === "tie") {
+      ctx.fillStyle = "#dc2626";
+      ctx.beginPath();
+      ctx.moveTo(225, 370); ctx.lineTo(205, 480); ctx.lineTo(225, 510); ctx.lineTo(245, 480);
+      ctx.closePath(); ctx.fill();
+    } else if (accessory === "uniform") {
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.moveTo(185, 360); ctx.lineTo(225, 440); ctx.lineTo(265, 360);
+      ctx.closePath(); ctx.fill();
+    } else if (accessory === "hoodie") {
+      ctx.fillStyle = "#0f172a";
+      ctx.beginPath();
+      ctx.arc(225, 260, 125, Math.PI * 0.9, Math.PI * 2.1);
+      ctx.fill();
     }
-  };
 
-  // ==========================================
-  // 2. 劇本節點與多重結局分支資料（可自由擴充節點）
-  // ==========================================
-  const STORY_NODES = {
-    start: {
-      location: "📍 學務處／學安室・16:45",
-      bgGradient: "linear-gradient(180deg, #1e293b 0%, #0f172a 100%)",
-      char: "parent_angry",
-      shake: true,
-      sound: "alert",
-      text: "「砰！」學務處大門被用力推開。一名身穿西裝的家長氣沖沖走進來，一把將手機拍在桌上：「你們校安怎麼當的？剛才在穿堂攔下我兒子，害他差點來不及補習！」",
-      choices: [
-        { text: "保持冷靜並開啟密錄器，先請家長到會談區就座", stressDelta: -5, next: "calm_record", tag: "標準SOP" },
-        { text: "立刻大聲反駁：「是你兒子無照騎車衝進校園！」", stressDelta: +30, next: "argue_back", tag: "正面硬剛" },
-        { text: "低頭道歉息事寧人，答應不記違規直接放行", stressDelta: +20, next: "give_in", tag: "妥協退讓" }
-      ]
-    },
-
-    calm_record: {
-      location: "📍 學安會談區・16:48",
-      bgGradient: "linear-gradient(180deg, #0f172a 0%, #1e3a8a 100%)",
-      char: "officer",
-      shake: false,
-      sound: "click",
-      text: "你穩住語氣，指了指胸前的執勤密錄器並按下提示燈：「王先生您好，為了保障雙方權益，現場全程錄音錄影。請先坐下，我們一起看校門口的即時監視器畫面。」",
-      choices: [
-        { text: "調出雲端備份影像，客觀說明人車分流安全規範", stressDelta: -10, next: "show_cctv", tag: "證據說話" },
-        { text: "順便警告他若再鬧事就直接通報轄區派出所", stressDelta: +25, next: "threat_police", tag: "語氣過激" }
-      ]
-    },
-
-    argue_back: {
-      location: "📍 學務處大廳・16:47",
-      bgGradient: "linear-gradient(180deg, #450a0a 0%, #0f172a 100%)",
-      char: "parent_angry",
-      shake: true,
-      sound: "danger",
-      text: "家長聽到「無照」二字徹底暴怒，舉起手機對著你的臉錄影：「好啊！學校人員態度這麼惡劣，我現在就發上爆料公社跟議員服務處！」圍觀學生越來越多。",
-      choices: [
-        { text: "深呼吸退後一步，立即無線電呼叫學務主任支援並隔離圍觀學生", stressDelta: +10, next: "director_arrive", tag: "緊急止血" },
-        { text: "伸手去搶家長正在錄影的手機要求刪除", stressDelta: +50, next: "ending_bad_grab", tag: "高風險行為" }
-      ]
-    },
-
-    give_in: {
-      location: "📍 校門口穿堂・16:50",
-      bgGradient: "linear-gradient(180deg, #1e293b 0%, #0f172a 100%)",
-      char: "director",
-      shake: false,
-      sound: "alert",
-      text: "你剛放行不到兩分鐘，穿堂突然傳來刺耳煞車聲！該名學生騎車險些擦撞放學路隊，學務主任聞訊趕來臉色鐵青：「剛才不是已經攔下來了嗎？怎麼又放行？」",
-      choices: [
-        { text: "坦承疏失並立刻啟動校安通報與交通組協助", stressDelta: +15, next: "ending_normal_report", tag: "補救處置" }
-      ]
-    },
-
-    show_cctv: {
-      location: "📍 監視器中控螢幕前・16:52",
-      bgGradient: "linear-gradient(180deg, #0f172a 0%, #064e3b 100%)",
-      char: "parent_shock",
-      shake: true,
-      sound: "success",
-      text: "螢幕清晰顯示：剛才該名學生騎車高速衝過斑馬線，差一點撞上一年級新生，是你及時吹哨攔停才避免事故。王先生看著畫面額頭冒汗，氣焰瞬間消了一半……",
-      choices: [
-        { text: "給予台階下：依校規完成安全輔導登記，並提醒接送動線", stressDelta: -5, next: "ending_perfect", tag: "完美收尾" },
-        { text: "發現畫面角落還有一名可疑黑衣人趁亂翻牆進入校園！", stressDelta: +15, next: "ending_hidden_intruder", tag: "隱藏線索" }
-      ]
-    },
-
-    threat_police: {
-      location: "📍 學安會談區・16:51",
-      bgGradient: "linear-gradient(180deg, #450a0a 0%, #0f172a 100%)",
-      char: "director",
-      shake: false,
-      sound: "alert",
-      text: "家長聽到報警立刻情緒失控拍桌，學務主任趕緊出來打圓場。雖然最後順利登記違規，但家長隔天仍投訴了溝通態度問題。",
-      choices: [
-        { text: "完成書面事件紀錄表並提交檢討報告", stressDelta: 0, next: "ending_normal_report", tag: "完成勤務" }
-      ]
-    },
-
-    director_arrive: {
-      location: "📍 學務處會談室・16:55",
-      bgGradient: "linear-gradient(180deg, #1e293b 0%, #0f172a 100%)",
-      char: "director",
-      shake: false,
-      sound: "click",
-      text: "林主任迅速疏散圍觀學生，並接手安撫家長情緒；你則冷靜備份了校門口監視器畫面交給主任佐證，成功化解公關危機。",
-      choices: [
-        { text: "填寫校安事件紀錄表，結束驚險的一天", stressDelta: -10, next: "ending_normal_report", tag: "平安下班" }
-      ]
-    },
-
-    // ==========================================
-    // 3. 多重結局定義
-    // ==========================================
-    ending_perfect: {
-      isEnding: true,
-      badgeClass: "ending-good",
-      badgeText: "S 級完美結局｜專業典範",
-      title: "證據說話・準時平安下班",
-      desc: "你全程遵守校安 SOP，情緒穩定、密錄器與監視器證據完整，不僅讓家長心服口服簽下安全切結書，還守護了放學師生安全。17:00 準時打卡下班！"
-    },
-    ending_normal_report: {
-      isEnding: true,
-      badgeClass: "ending-good",
-      badgeText: "B 級普通結局｜有驚無險",
-      desc: "雖然過程中一度陷入溝通僵局與壓力飆升，但最終仍透過團隊協作與監視器佐證完成事件處置。記得下次第一時間開啟密錄器與影像佐證會更輕鬆！"
-    },
-    ending_bad_grab: {
-      isEnding: true,
-      badgeClass: "ending-bad",
-      badgeText: "D 級危機結局｜公關風暴",
-      desc: "在未經同意下伸手碰觸家長手機引發肢體拉扯，畫面被旁人拍下上傳網路，演變成嚴重投訴事件，今晚得留下來寫三千字事件檢討報告了……"
-    },
-    ending_hidden_intruder: {
-      isEnding: true,
-      badgeClass: "ending-hidden",
-      badgeText: "★ 隱藏懸疑結局｜第 2 集開啟",
-      title: "發現校外可疑人士入侵！",
-      desc: "你敏銳地從監視器角落發現趁亂翻牆進入的鴨舌帽黑衣人！你立刻按下無線電全校通報啟動門禁封鎖——真正的校園安全守護戰現在才剛開始！"
-    }
-  };
-
-  // ==========================================
-  // 4. 遊戲狀態與音效引擎
-  // ==========================================
-  let stress = 20;
-  let audioEnabled = true;
-  let typingTimer = null;
-  let isTyping = false;
-  let currentFullText = "";
-
-  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-  function playTone(type) {
-    if (!audioEnabled) return;
-    if (audioCtx.state === "suspended") audioCtx.resume();
-
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-
-    const now = audioCtx.currentTime;
-    if (type === "click") {
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(620, now);
-      gain.gain.setValueAtTime(0.08, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-      osc.start(now);
-      osc.stop(now + 0.08);
-    } else if (type === "alert" || type === "danger") {
-      osc.type = "sawtooth";
-      osc.frequency.setValueAtTime(220, now);
-      osc.frequency.linearRampToValueAtTime(140, now + 0.25);
-      gain.gain.setValueAtTime(0.12, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-      osc.start(now);
-      osc.stop(now + 0.25);
-    } else if (type === "success") {
-      osc.type = "triangle";
-      osc.frequency.setValueAtTime(523.25, now);
-      osc.frequency.setValueAtTime(659.25, now + 0.1);
-      gain.gain.setValueAtTime(0.1, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
-      osc.start(now);
-      osc.stop(now + 0.28);
-    }
-  }
-
-  function toggleAudio() {
-    audioEnabled = !audioEnabled;
-    document.getElementById("audio-toggle").textContent = audioEnabled ? "🔊 音效開" : "🔇 靜音";
-  }
-
-  function updateStressUI() {
-    stress = Math.max(0, Math.min(100, stress));
-    const fill = document.getElementById("stress-bar-fill");
-    const label = document.getElementById("stress-text");
-
-    fill.style.width = stress + "%";
-    if (stress < 40) {
-      fill.style.background = "linear-gradient(90deg, #22c55e, #38bdf8)";
-      label.style.color = "#4ade80";
-      label.textContent = `${stress}%（冷靜可控）`;
-    } else if (stress < 75) {
-      fill.style.background = "linear-gradient(90deg, #eab308, #f97316)";
-      label.style.color = "#fbbf24";
-      label.textContent = `${stress}%（氣氛緊繃）`;
+    // 臉部與頭部（若為校狗角色則畫可愛狗狗）
+    if (accessory === "dog") {
+      ctx.fillStyle = "#d97706";
+      ctx.beginPath(); ctx.ellipse(135, 280, 32, 65, 0.25, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(315, 280, 32, 65, -0.25, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#fbbf24";
+      ctx.beginPath(); ctx.arc(225, 260, 95, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#1e293b";
+      ctx.beginPath(); ctx.arc(190, 245, 12, 0, Math.PI * 2); ctx.arc(260, 245, 12, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(225, 275, 18, 12, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#f43f5e";
+      ctx.beginPath(); ctx.arc(225, 305, 16, 0, Math.PI); ctx.fill();
     } else {
-      fill.style.background = "linear-gradient(90deg, #ef4444, #b91c1c)";
-      label.style.color = "#f87171";
-      label.textContent = `${stress}%（瀕臨失控！）`;
+      ctx.fillStyle = accessory === "hoodie" ? "#334155" : "#fed7aa";
+      ctx.beginPath();
+      ctx.arc(225, 260, 88, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 頭髮
+      ctx.fillStyle = hairColor;
+      ctx.beginPath();
+      ctx.arc(225, 245, 92, Math.PI * 1.02, Math.PI * 1.98);
+      ctx.fill();
+
+      if (accessory === "long_hair") {
+        ctx.fillRect(133, 245, 28, 130);
+        ctx.fillRect(289, 245, 28, 130);
+      }
+
+      // 眼鏡配件
+      if (accessory === "glasses" || accessory === "tie") {
+        ctx.strokeStyle = "#f8fafc";
+        ctx.lineWidth = 4;
+        ctx.strokeRect(168, 240, 44, 28);
+        ctx.strokeRect(238, 240, 44, 28);
+        ctx.beginPath(); ctx.moveTo(212, 254); ctx.lineTo(238, 254); ctx.stroke();
+      }
+
+      // 眼睛
+      ctx.fillStyle = "#0f172a";
+      ctx.beginPath();
+      ctx.arc(190, 255, 8, 0, Math.PI * 2);
+      ctx.arc(260, 255, 8, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // 右上角角色徽章浮水印
+    ctx.font = "44px sans-serif";
+    ctx.fillText(emojiBadge, 365, 85);
+
+    return c.toDataURL("image/png");
+  }
+
+  // 內建 8 大校園人物陣容（支援隨時新增第 9、第 10 位自訂人物！）
+  const CHARACTER_ROSTER = [
+    { id: "officer", name: "陳宇（校安人員）", role: "主角・第一線校安", voice: "officer", img: "./officer.jpg", fallback: makeCharacterPortrait("#1e3a8a", "#0f172a", "#1e293b", "#1d4ed8", "vest", "👮‍♂️") },
+    { id: "parent", name: "王先生（恐龍家長）", role: "反派・財大氣粗家長", voice: "parent_angry", img: "./parent.jpg", fallback: makeCharacterPortrait("#7f1d1d", "#0f172a", "#1e293b", "#334155", "tie", "🕴️") },
+    { id: "director", name: "林主任（學務主任）", role: "長官・危機處理主管", voice: "elder", img: makeCharacterPortrait("#065f46", "#0f172a", "#475569", "#1e293b", "glasses", "👨‍💼") },
+    { id: "counselor", name: "張老師（輔導老師）", role: "同事・溫柔心輔教師", voice: "student", img: makeCharacterPortrait("#831843", "#1e1b4b", "#78350f", "#db2777", "long_hair", "👩‍🏫") },
+    { id: "student", name: "阿豪（叛逆高三生）", role: "學生・愛騎車闖禍王", voice: "student", img: makeCharacterPortrait("#9a3412", "#0f172a", "#292524", "#2563eb", "uniform", "🎒") },
+    { id: "inspector", name: "趙督學（教育局視察）", role: "長官・突襲考核官", voice: "elder", img: makeCharacterPortrait("#312e81", "#090d16", "#94a3b8", "#334155", "glasses", "🧐") },
+    { id: "intruder", name: "鴨舌帽黑衣人", role: "懸疑・校外可疑人士", voice: "parent_angry", img: makeCharacterPortrait("#18181b", "#000000", "#09090b", "#18181b", "hoodie", "🕵️") },
+    { id: "dog", name: "校狗阿福（米克斯）", role: "萌寵・校園巡邏吉祥物", voice: "student", img: makeCharacterPortrait("#92400e", "#1c1917", "#b45309", "#d97706", "dog", "🐕") }
+  ];
+
+  // 檢查圖片載入，若本機尚未放入 officer.jpg / parent.jpg 則自動使用內建高畫質插畫不破圖
+  CHARACTER_ROSTER.forEach(ch => {
+    if (!ch.img.startsWith("data:")) {
+      const testImg = new Image();
+      testImg.onerror = () => { ch.img = ch.fallback; };
+      testImg.src = ch.img;
+    }
+  });
+
+  // ==========================================
+  // 2. 多角色事件卡庫（每位角色都有專屬登場事件！）
+  // ==========================================
+  const ALL_EVENTS = [
+    {
+      time: "07:30", tag: "早自習校門導護", charId: "parent", filter: "art-danger", sfx: "alarm",
+      text: "清晨七點半校門口大塞車，王先生直接把黑色轎車停在斑馬線正中央放小孩下車，後方機車差點追撞！",
+      left: { label: "吹哨請他往前開至家長接送區再下車", effect: { safety: +15, admin: +10, parent: +15, sanity: -5 } },
+      right: { label: "揮手示意趕快開走就好，不開單也不攔停", effect: { safety: -15, admin: -10, parent: -10, sanity: +5 } }
+    },
+    {
+      time: "08:05", tag: "早晨翻牆遲到", charId: "student", filter: "art-morning", sfx: "walkie",
+      text: "阿豪帶著四名高二學生背著書包翻越側門矮牆想躲避遲到登記，結果褲管勾到鐵欄杆掛在半空中大喊救命！",
+      left: { label: "立刻衝過去扶下學生並帶回學安室安全教育", effect: { safety: +20, admin: +15, parent: +5, sanity: -10 } },
+      right: { label: "先拍照存證傳給生教組長再慢慢過去放人", effect: { safety: -10, admin: +10, parent: +15, sanity: +5 } }
+    },
+    {
+      time: "08:45", tag: "校狗巡邏奇遇", charId: "dog", filter: "art-morning", sfx: "walkie",
+      text: "校狗阿福突然對著總務處倉庫草叢瘋狂吠叫，還叼出一串不知道是哪位老師遺失的備用教室鑰匙圈！",
+      left: { label: "摸摸阿福獎勵肉乾，立刻把鑰匙送回總務處清點", effect: { safety: +15, admin: +15, parent: 0, sanity: +10 } },
+      right: { label: "隨手把鑰匙掛在警衛室牆上等失主自己來找", effect: { safety: -15, admin: -10, parent: 0, sanity: +5 } }
+    },
+    {
+      time: "09:30", tag: "學務處緊急會議", charId: "director", filter: "", sfx: "walkie",
+      text: "林主任把你叫進辦公室：「下週校慶園遊會預計湧入兩千名校外人士，動線規劃跟緊急救護站你打算怎麼安排？」",
+      left: { label: "提出人車分流與重點樓層門禁管制企劃案", effect: { safety: +20, admin: +20, parent: 0, sanity: -15 } },
+      right: { label: "照抄去年校慶的舊配置圖交差了事", effect: { safety: -15, admin: -20, parent: 0, sanity: +15 } }
+    },
+    {
+      time: "10:20", tag: "籃球場意外衝突", charId: "student", filter: "", sfx: "alarm",
+      text: "阿豪在籃球場跟隔壁班搶籃板撞傷眉角流血，兩人還互相推擠嗆聲，現場圍了一圈同學拿手機拍攝！",
+      left: { label: "強勢隔開兩人、疏散圍觀群眾並護送包紮", effect: { safety: +20, admin: +15, parent: -10, sanity: -10 } },
+      right: { label: "在場邊大喊「全部回教室」然後打電話找主任", effect: { safety: -15, admin: -15, parent: +15, sanity: +5 } }
+    },
+    {
+      time: "11:30", tag: "家長電話轟炸", charId: "parent", filter: "art-danger", sfx: "phone",
+      text: "學安室電話響個不停，王先生打來怒吼：「我兒子說他早上名牌水壺忘在穿堂，你們校安有沒有幫忙保管？」",
+      left: { label: "耐心安撫並協助調閱穿堂監視器幫學生找回水壺", effect: { safety: +5, admin: +10, parent: -20, sanity: -15 } },
+      right: { label: "冷淡回覆個人物品請自行保管，不負責協尋", effect: { safety: 0, admin: -10, parent: +25, sanity: +10 } }
+    },
+    {
+      time: "12:45", tag: "午休頂樓禁區", charId: "student", filter: "", sfx: "alarm",
+      text: "午休巡邏發現頂樓安全門警鈴被貼了膠帶消音，推開門看到阿豪正坐在女兒牆邊緣滑手機吹風！",
+      left: { label: "放輕腳步靠近將人安全帶離，通報輔導室關懷", effect: { safety: +25, admin: +20, parent: -5, sanity: -10 } },
+      right: { label: "大聲喝斥並當場記大過處分以儆效尤", effect: { safety: +10, admin: +5, parent: +20, sanity: -5 } }
+    },
+    {
+      time: "14:05", tag: "輔導室緊急支援", charId: "counselor", filter: "", sfx: "walkie",
+      text: "張老師氣喘吁吁跑來求救：「剛才晤談的高一新生情緒崩潰往校門衝出去了，請立刻幫我攔住他！」",
+      left: { label: "通知警衛室先關小門，從側翼溫和攔截陪伴安撫", effect: { safety: +25, admin: +20, parent: -10, sanity: -10 } },
+      right: { label: "在走廊大喊站住別跑！全力衝刺在後面追趕", effect: { safety: -10, admin: -10, parent: +15, sanity: -15 } }
+    },
+    {
+      time: "14:40", tag: "教育局突襲訪視", charId: "inspector", filter: "", sfx: "walkie",
+      text: "趙督學無預警走進學安室抽查：「請出示本學期校園安全地圖、監視器妥善率紀錄與防震演練簽到表！」",
+      left: { label: "平時都有歸檔，從容拿出完整資料夾逐一簡報", effect: { safety: +10, admin: +25, parent: 0, sanity: -10 } },
+      right: { label: "慌張翻找抽屜並推說承辦組長剛好請假不在", effect: { safety: -5, admin: -25, parent: 0, sanity: -15 } }
+    },
+    {
+      time: "15:15", tag: "辦公室強勢對峙", charId: "parent", filter: "art-danger", sfx: "slam",
+      text: "砰的一聲，王先生推開大門把手機拍在桌上：「你們校安怎麼當的？攔我兒子的車害他差點趕不上補習！」",
+      left: { label: "冷靜開啟密錄器，請他坐下調閱雲端監控", effect: { safety: +10, admin: +10, parent: -15, sanity: -5 } },
+      right: { label: "直接回嗆：是你兒子無照騎車衝進校園！", effect: { safety: +5, admin: -15, parent: +30, sanity: -15 } }
+    },
+    {
+      time: "16:10", tag: "暴雨放學導護", charId: "officer", filter: "", sfx: "alarm",
+      text: "突然下起傾盆大雨！接送家長的轎車全部違停在校門口紅線並排，後方公車按喇叭按到震天響，交通完全打結。",
+      left: { label: "穿上雨衣衝進雨中吹哨指揮加速分流", effect: { safety: +25, admin: +15, parent: -10, sanity: -20 } },
+      right: { label: "站在穿堂屋簷下用大聲公廣播勸導", effect: { safety: -15, admin: -10, parent: +10, sanity: +10 } }
+    },
+    {
+      time: "16:45", tag: "長官臨時交辦", charId: "director", filter: "", sfx: "phone",
+      text: "林主任急忙走過來：「家長會長剛才打給校長抱怨交通導護太嚴格，校長要你寫一份委婉的說明報告！」",
+      left: { label: "附上完整違規監視器截圖，不卑不亢陳述安全立場", effect: { safety: +15, admin: +15, parent: +5, sanity: -10 } },
+      right: { label: "寫一份檢討自己態度不佳的道歉聲明給長官交差", effect: { safety: -15, admin: +10, parent: -20, sanity: -20 } }
+    },
+    {
+      time: "17:15", tag: "黃昏可疑黑衣人", charId: "intruder", filter: "art-night", sfx: "alarm",
+      text: "中控室紅燈閃爍！一名戴鴨舌帽的黑衣人趁著黃昏翻過後門圍牆，正鬼鬼祟祟往二樓資訊機房移動！",
+      left: { label: "立即通報轄區派出所並啟動全校門禁遠端上鎖", effect: { safety: +30, admin: +20, parent: 0, sanity: -10 } },
+      right: { label: "怕只是學生忘記拿書包，自己拿手電筒慢慢走上去", effect: { safety: -30, admin: -15, parent: 0, sanity: +5 } }
+    },
+    {
+      time: "17:29", tag: "下班前一分鐘", charId: "dog", filter: "", sfx: "walkie",
+      text: "時鐘指向五點二十九分，你正準備打卡下班，校狗阿福突然咬著你的褲管往地下室停車場方向拉，似乎發現了什麼！",
+      left: { label: "跟著阿福去巡檢地下室確認門窗安全再走", effect: { safety: +20, admin: +15, parent: 0, sanity: -10 } },
+      right: { label: "摸摸阿福的頭說交給夜班保全，準時五點半打卡！", effect: { safety: 0, admin: -5, parent: 0, sanity: +20 } }
+    }
+  ];
+
+  // ==========================================
+  // 3. 音效與台灣中文真人語音系統
+  // ==========================================
+  let sfxOn = true, voiceOn = true, zhVoices = [];
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  let audioCtx = null;
+
+  function ensureAudio() {
+    if (!audioCtx) audioCtx = new AudioCtx();
+    if (audioCtx.state === "suspended") audioCtx.resume();
+  }
+
+  function playSFX(type) {
+    if (!sfxOn) return;
+    ensureAudio();
+    const now = audioCtx.currentTime;
+    if (type === "walkie") {
+      [1480, 1850].forEach((f, i) => {
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.type = "square"; o.frequency.setValueAtTime(f, now + i * 0.08);
+        g.gain.setValueAtTime(0.18, now + i * 0.08); g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.06);
+        o.connect(g); g.connect(audioCtx.destination); o.start(now + i * 0.08); o.stop(now + i * 0.08 + 0.07);
+      });
+    } else if (type === "slam") {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = "triangle"; o.frequency.setValueAtTime(150, now); o.frequency.exponentialRampToValueAtTime(38, now + 0.28);
+      g.gain.setValueAtTime(0.55, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      o.connect(g); g.connect(audioCtx.destination); o.start(now); o.stop(now + 0.32);
+    } else if (type === "alarm") {
+      [780, 560, 780].forEach((f, i) => {
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.type = "sawtooth"; o.frequency.setValueAtTime(f, now + i * 0.14);
+        g.gain.setValueAtTime(0.22, now + i * 0.14); g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.14 + 0.13);
+        o.connect(g); g.connect(audioCtx.destination); o.start(now + i * 0.14); o.stop(now + i * 0.14 + 0.14);
+      });
+    } else if (type === "phone") {
+      for (let i = 0; i < 4; i++) {
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.type = "sine"; o.frequency.setValueAtTime(i % 2 === 0 ? 950 : 1200, now + i * 0.07);
+        g.gain.setValueAtTime(0.2, now + i * 0.07); g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.06);
+        o.connect(g); g.connect(audioCtx.destination); o.start(now + i * 0.07); o.stop(now + i * 0.07 + 0.07);
+      }
+    } else if (type === "swipe") {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = "triangle"; o.frequency.setValueAtTime(520, now); o.frequency.exponentialRampToValueAtTime(720, now + 0.14);
+      g.gain.setValueAtTime(0.28, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+      o.connect(g); g.connect(audioCtx.destination); o.start(now); o.stop(now + 0.17);
+    } else if (type === "win" || type === "fail") {
+      const freqs = type === "win" ? [523.25, 659.25, 783.99, 1046.5] : [260, 215, 165];
+      freqs.forEach((f, i) => {
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.type = type === "win" ? "triangle" : "sawtooth"; o.frequency.setValueAtTime(f, now + i * 0.12);
+        g.gain.setValueAtTime(0.28, now + i * 0.12); g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.12 + 0.3);
+        o.connect(g); g.connect(audioCtx.destination); o.start(now + i * 0.12); o.stop(now + i * 0.12 + 0.32);
+      });
     }
   }
 
-  function startGame() {
-    stress = 20;
-    updateStressUI();
-    document.getElementById("start-screen").classList.add("hidden");
-    document.getElementById("ending-screen").classList.add("hidden");
-    playTone("click");
-    renderNode("start");
+  function loadVoices() {
+    if (!("speechSynthesis" in window)) return;
+    zhVoices = window.speechSynthesis.getVoices().filter(v => v.lang.includes("zh"));
+  }
+  if ("speechSynthesis" in window) { loadVoices(); window.speechSynthesis.onvoiceschanged = loadVoices; }
+
+  function speakText(text, voiceType = "officer") {
+    if (!voiceOn || !("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "zh-TW";
+    const tw = zhVoices.find(v => v.lang === "zh-TW") || zhVoices[0];
+    if (tw) u.voice = tw;
+    if (voiceType === "parent_angry") { u.pitch = 1.18; u.rate = 1.18; }
+    else if (voiceType === "student") { u.pitch = 1.25; u.rate = 1.15; }
+    else if (voiceType === "elder") { u.pitch = 0.85; u.rate = 1.05; }
+    else { u.pitch = 1.02; u.rate = 1.12; }
+    window.speechSynthesis.speak(u);
   }
 
-  function renderNode(nodeId) {
-    const node = STORY_NODES[nodeId];
-    if (!node) return;
+  function speakCurrentCard() {
+    if (isGameOver || turnIndex >= activeDeck.length) return;
+    const card = activeDeck[turnIndex];
+    const ch = CHARACTER_ROSTER.find(c => c.id === card.charId) || CHARACTER_ROSTER[0];
+    speakText(card.text, ch.voice);
+  }
 
-    // 檢查是否為結局節點
-    if (node.isEnding) {
-      const endScreen = document.getElementById("ending-screen");
-      const badge = document.getElementById("ending-type");
-      badge.className = "ending-badge " + node.badgeClass;
-      badge.textContent = node.badgeText;
-      document.getElementById("ending-title").textContent = node.title;
-      document.getElementById("ending-desc").textContent = node.desc;
-      endScreen.classList.remove("hidden");
+  function toggleVoice() {
+    voiceOn = !voiceOn;
+    const btn = document.getElementById("voice-btn");
+    btn.classList.toggle("active-audio", voiceOn);
+    btn.textContent = voiceOn ? "🗣️" : "🤐";
+    if (!voiceOn && "speechSynthesis" in window) window.speechSynthesis.cancel();
+    else speakCurrentCard();
+  }
+
+  function toggleSFX() {
+    sfxOn = !sfxOn;
+    const btn = document.getElementById("sfx-btn");
+    btn.classList.toggle("active-audio", sfxOn);
+    btn.textContent = sfxOn ? "🔊" : "🔇";
+  }
+
+  // ==========================================
+  // 4. 登場角色庫管理與「自由新增角色」功能
+  // ==========================================
+  let pendingNewCharImg = null;
+
+  function openCastModal() {
+    playSFX("walkie");
+    renderCastGrid();
+    document.getElementById("cast-modal").classList.remove("hidden");
+  }
+
+  function closeCastModal() {
+    playSFX("walkie");
+    document.getElementById("cast-modal").classList.add("hidden");
+  }
+
+  function renderCastGrid() {
+    document.getElementById("cast-count").textContent = CHARACTER_ROSTER.length;
+    const grid = document.getElementById("cast-grid-list");
+    grid.innerHTML = "";
+    CHARACTER_ROSTER.forEach((ch, idx) => {
+      const card = document.createElement("div");
+      card.className = "cast-card";
+      card.innerHTML = `
+        <img src="${ch.img}" class="cast-avatar" alt="${ch.name}" />
+        <div class="cast-name">${ch.name}</div>
+        <div class="cast-role">${ch.role}</div>
+        <label class="cast-upload-mini">
+          🖼️ 換圖
+          <input type="file" accept="image/*" class="hidden" onchange="replaceCharImage(event, ${idx})" />
+        </label>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  function replaceCharImage(event, idx) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      CHARACTER_ROSTER[idx].img = e.target.result;
+      renderCastGrid();
+      playSFX("win");
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function previewNewCharImg(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => { pendingNewCharImg = e.target.result; };
+    reader.readAsDataURL(file);
+  }
+
+  function createNewCharacter() {
+    const name = document.getElementById("new-char-name").value.trim() || "新登場人物";
+    const voice = document.getElementById("new-char-voice").value;
+    const eventText = document.getElementById("new-char-event").value.trim() || `${name}突然出現在學安室門口，要求你立刻協助處理一項突發校園狀況！`;
+    const leftLabel = document.getElementById("new-char-left").value.trim() || "依規定標準程序協助處理";
+    const rightLabel = document.getElementById("new-char-right").value.trim() || "先口頭安撫並請對方稍候";
+
+    const newId = "custom_" + Date.now();
+    const avatarUrl = pendingNewCharImg || makeCharacterPortrait("#1d4ed8", "#090d16", "#1e293b", "#0284c7", "glasses", "⭐");
+
+    // 1. 加入角色陣容庫
+    CHARACTER_ROSTER.push({
+      id: newId,
+      name: name,
+      role: "自訂新角色",
+      voice: voice,
+      img: avatarUrl
+    });
+
+    // 2. 自動為這位新角色生成一張專屬突發事件卡，並排入遊戲題庫！
+    ALL_EVENTS.splice(ALL_EVENTS.length - 1, 0, {
+      time: "15:40",
+      tag: "自訂角色突發事件",
+      charId: newId,
+      filter: "",
+      sfx: "walkie",
+      text: eventText,
+      left: { label: leftLabel, effect: { safety: +15, admin: +15, parent: -10, sanity: -10 } },
+      right: { label: rightLabel, effect: { safety: -10, admin: -10, parent: +10, sanity: +15 } }
+    });
+
+    // 清空表單並刷新列表
+    document.getElementById("new-char-name").value = "";
+    document.getElementById("new-char-event").value = "";
+    document.getElementById("new-char-left").value = "";
+    document.getElementById("new-char-right").value = "";
+    pendingNewCharImg = null;
+
+    renderCastGrid();
+    playSFX("win");
+    speakText(`新角色${name}已加入校園！`, voice);
+  }
+
+  // ==========================================
+  // 5. 九大結局與遊戲主循環
+  // ==========================================
+  const ENDINGS = {
+    safety_zero: { badge: "💀 結局 1/9｜校園失守", title: "校園安全歸零：全校大亂鬥", desc: "因為多次退讓與疏於巡檢，校園陷入混亂，你連夜被召回寫檢討報告！" },
+    safety_max: { badge: "🤖 結局 2/9｜過度執法", title: "安全指數爆表：把學校變成軍事基地", desc: "你的警戒心強到連校長忘記帶識別證都被你壓制，隔天被調去偏遠檔案室！" },
+    admin_zero: { badge: "📉 結局 3/9｜考核危機", title: "長官信任歸零：年終約聘不續聘", desc: "學務處電話被投訴到爆線，人事室通知你下個月不用來了……" },
+    admin_max: { badge: "💼 結局 4/9｜能者過勞", title: "長官信任爆表：榮升全年無休總務兼校安", desc: "校長決定把全校所有行政與安全業務都交給你一個人扛，從此再也沒有準時下班過！" },
+    parent_zero: { badge: "🙇 結局 5/9｜卑微妥協", title: "家長情緒歸零：淪為免費泊車小弟", desc: "家長們把你當成專屬禮賓司機使喚，完全喪失校安威嚴！" },
+    parent_max: { badge: "🔥 結局 6/9｜炎上風暴", title: "家長怒氣爆表：議員服務處大軍壓境", desc: "隔天一早十幾位家長帶著民意代表包圍校門口開記者會，你直接登上晚間新聞頭條！" },
+    sanity_zero: { badge: "😵 結局 7/9｜精神耗弱", title: "個人理智歸零：當場在穿堂仰天長嘯", desc: "連環突發狀況徹底擊潰了你的神經，你脫下背心在操場大喊我不幹啦！" },
+    sanity_max: { badge: "🏖️ 結局 8/9｜佛系擺爛", title: "理智過於佛系：靈魂出竅打卡機", desc: "你徹底看破紅塵，被學生封為校園裡最神秘的禪修大師！" },
+    win_normal: { badge: "🎉 完美通關 9/9｜生存大師", title: "17:30 準時打卡！今天也平安下班了！", desc: "你在校園安全、長官信任、家長情緒與個人理智之間維持了完美平衡，準時下班！" }
+  };
+
+  let stats = { safety: 50, admin: 50, parent: 50, sanity: 50 };
+  let activeDeck = [], turnIndex = 0, selectedMode = "normal", isGameOver = false;
+  let unlocked = JSON.parse(localStorage.getItem("viral_campus_endings") || "[]");
+
+  function selectMode(mode) {
+    selectedMode = mode;
+    document.getElementById("mode-normal").classList.toggle("active", mode === "normal");
+    document.getElementById("mode-full").classList.toggle("active", mode === "full");
+    playSFX("walkie");
+  }
+
+  function buildDeckForShift() {
+    if (selectedMode === "full") return [...ALL_EVENTS];
+    // 確保玩家自己新增的自訂角色事件一定會優先登場！
+    const customIndices = [];
+    const normalIndices = [];
+    ALL_EVENTS.forEach((ev, idx) => {
+      if (ev.charId.startsWith("custom_")) customIndices.push(idx);
+      else normalIndices.push(idx);
+    });
+    for (let i = normalIndices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [normalIndices[i], normalIndices[j]] = [normalIndices[j], normalIndices[i]];
+    }
+    const needNormal = Math.max(4, 12 - customIndices.length);
+    const picked = [...customIndices, ...normalIndices.slice(0, needNormal)].sort((a, b) => a - b);
+    return picked.map(idx => ALL_EVENTS[idx]);
+  }
+
+  function updateUnlockUI() {
+    document.getElementById("hud-unlock").textContent = unlocked.length;
+    document.getElementById("cover-unlock").textContent = unlocked.length;
+    document.getElementById("cast-count").textContent = CHARACTER_ROSTER.length;
+  }
+
+  function saveEnding(id) {
+    if (!unlocked.includes(id)) {
+      unlocked.push(id);
+      localStorage.setItem("viral_campus_endings", JSON.stringify(unlocked));
+      updateUnlockUI();
+    }
+  }
+
+  function renderMeters() {
+    ["safety", "admin", "parent", "sanity"].forEach(key => {
+      const val = Math.max(0, Math.min(100, stats[key]));
+      const bar = document.getElementById("bar-" + key);
+      bar.style.width = val + "%";
+      if (val <= 20 || val >= 85) bar.style.background = "#ef4444";
+      else if (val <= 35 || val >= 70) bar.style.background = "#fbbf24";
+      else bar.style.background = "#38bdf8";
+    });
+  }
+
+  function previewChoice(dir) {
+    if (isGameOver || turnIndex >= activeDeck.length) return;
+    const card = activeDeck[turnIndex];
+    const choice = card[dir];
+    const banner = document.getElementById("swipe-preview-banner");
+    banner.textContent = (dir === "left" ? "◀ " : "▶ ") + choice.label;
+    banner.classList.add("active");
+
+    ["safety", "admin", "parent", "sanity"].forEach(key => {
+      const dot = document.getElementById("dot-" + key);
+      if (choice.effect[key] && choice.effect[key] !== 0) dot.classList.add("active");
+      else dot.classList.remove("active");
+    });
+  }
+
+  function clearPreview() {
+    const banner = document.getElementById("swipe-preview-banner");
+    banner.textContent = "👈 左右滑動卡牌，或點擊下方按鈕做決策 👉";
+    banner.classList.remove("active");
+    ["safety", "admin", "parent", "sanity"].forEach(key => {
+      document.getElementById("dot-" + key).classList.remove("active");
+    });
+  }
+
+  function startNewShift() {
+    ensureAudio();
+    stats = { safety: 50, admin: 50, parent: 50, sanity: 50 };
+    activeDeck = buildDeckForShift();
+    turnIndex = 0;
+    isGameOver = false;
+    clearPreview();
+    renderMeters();
+    document.getElementById("start-modal").classList.add("hidden");
+    document.getElementById("end-modal").classList.add("hidden");
+    loadCard();
+  }
+
+  function loadCard() {
+    if (turnIndex >= activeDeck.length) {
+      triggerEnding("win_normal");
       return;
     }
 
-    // 更新場景與音效
-    document.getElementById("location-label").textContent = node.location;
-    document.getElementById("scene-bg").style.background = node.bgGradient;
-    if (node.sound) playTone(node.sound);
+    const card = activeDeck[turnIndex];
+    const ch = CHARACTER_ROSTER.find(c => c.id === card.charId) || CHARACTER_ROSTER[0];
 
-    // 更新角色立繪
-    const charData = CHARACTERS[node.char] || CHARACTERS.none;
-    document.getElementById("speaker-name").textContent = charData.name;
-    document.getElementById("speaker-role").textContent = charData.role;
+    document.getElementById("clock-text").textContent = card.time;
+    document.getElementById("shift-progress-fill").style.width = ((turnIndex / activeDeck.length) * 100) + "%";
+    document.getElementById("turn-counter").textContent = `距離下班 ${activeDeck.length - turnIndex} 關`;
 
-    const spriteBox = document.getElementById("character-sprite");
-    spriteBox.classList.remove("sprite-shake");
-    if (charData.imageUrl) {
-      spriteBox.innerHTML = `<img src="${charData.imageUrl}" alt="${charData.name}">`;
-    } else {
-      spriteBox.innerHTML = charData.svg;
-    }
-    if (node.shake) {
-      void spriteBox.offsetWidth; // 觸發重繪以重播震動動畫
-      spriteBox.classList.add("sprite-shake");
-    }
+    const artEl = document.getElementById("card-art");
+    artEl.style.backgroundImage = `url('${ch.img}')`;
+    artEl.style.backgroundPosition = ch.id === "officer" ? "center 18%" : "center 12%";
+    artEl.className = card.filter || "";
 
-    // 打字機效果輸出對話
-    const choicesBox = document.getElementById("choices-container");
-    choicesBox.innerHTML = "";
-    typeWriter(node.text, () => {
-      renderChoices(node.choices);
+    document.getElementById("card-tag").textContent = card.tag;
+    document.getElementById("card-speaker").textContent = ch.name;
+    document.getElementById("card-text").textContent = card.text;
+    document.getElementById("left-text").textContent = card.left.label;
+    document.getElementById("right-text").textContent = card.right.label;
+
+    const cardEl = document.getElementById("event-card");
+    cardEl.style.transform = "translateX(0) rotate(0deg)";
+    cardEl.style.borderColor = "rgba(255, 255, 255, 0.15)";
+
+    if (card.sfx) playSFX(card.sfx);
+    setTimeout(() => speakCurrentCard(), 260);
+  }
+
+  function commitChoice(dir) {
+    if (isGameOver) return;
+    const card = activeDeck[turnIndex];
+    const choice = card[dir];
+    clearPreview();
+
+    const cardEl = document.getElementById("event-card");
+    cardEl.style.transform = dir === "left"
+      ? "translateX(-120%) rotate(-14deg)"
+      : "translateX(120%) rotate(14deg)";
+
+    playSFX("swipe");
+
+    ["safety", "admin", "parent", "sanity"].forEach(key => {
+      const delta = choice.effect[key] || 0;
+      stats[key] = Math.max(0, Math.min(100, stats[key] + delta));
+      const box = document.getElementById("box-" + key);
+      box.classList.remove("pulse-up", "pulse-down");
+      if (delta > 0) box.classList.add("pulse-up");
+      if (delta < 0) box.classList.add("pulse-down");
     });
+
+    renderMeters();
+
+    setTimeout(() => {
+      if (stats.safety <= 0) return triggerEnding("safety_zero");
+      if (stats.safety >= 100) return triggerEnding("safety_max");
+      if (stats.admin <= 0) return triggerEnding("admin_zero");
+      if (stats.admin >= 100) return triggerEnding("admin_max");
+      if (stats.parent <= 0) return triggerEnding("parent_zero");
+      if (stats.parent >= 100) return triggerEnding("parent_max");
+      if (stats.sanity <= 0) return triggerEnding("sanity_zero");
+      if (stats.sanity >= 100) return triggerEnding("sanity_max");
+
+      turnIndex++;
+      loadCard();
+    }, 240);
   }
 
-  function typeWriter(text, onComplete) {
-    clearInterval(typingTimer);
-    isTyping = true;
-    currentFullText = text;
-    const textEl = document.getElementById("dialogue-text");
-    textEl.textContent = "";
-    let idx = 0;
+  function triggerEnding(endKey) {
+    isGameOver = true;
+    saveEnding(endKey);
+    const data = ENDINGS[endKey];
+    playSFX(endKey === "win_normal" ? "win" : "fail");
+    setTimeout(() => speakText(data.title + "。" + data.desc, "officer"), 350);
 
-    typingTimer = setInterval(() => {
-      textEl.textContent += text.charAt(idx);
-      idx++;
-      if (idx >= text.length) {
-        clearInterval(typingTimer);
-        isTyping = false;
-        if (onComplete) onComplete();
-      }
-    }, 24);
+    document.getElementById("end-badge").textContent = data.badge;
+    document.getElementById("end-title").textContent = data.title;
+    document.getElementById("end-desc").textContent = data.desc;
+    document.getElementById("end-modal").classList.remove("hidden");
   }
 
-  function handleDialogueClick() {
-    // 若正在打字中，點擊對話框可瞬間顯示完整句子
-    if (isTyping) {
-      clearInterval(typingTimer);
-      isTyping = false;
-      document.getElementById("dialogue-text").textContent = currentFullText;
-    }
-  }
-
-  function renderChoices(choices) {
-    const choicesBox = document.getElementById("choices-container");
-    choicesBox.innerHTML = "";
-
-    choices.forEach((choice) => {
-      const btn = document.createElement("button");
-      btn.className = "choice-btn";
-      btn.innerHTML = `
-        <span>${choice.text}</span>
-        <span class="choice-tag">${choice.tag || ""}</span>
+  function openGallery() {
+    playSFX("walkie");
+    const list = document.getElementById("gallery-list");
+    list.innerHTML = "";
+    Object.keys(ENDINGS).forEach(key => {
+      const item = ENDINGS[key];
+      const isUnlocked = unlocked.includes(key);
+      const div = document.createElement("div");
+      div.className = "gallery-card" + (isUnlocked ? " unlocked" : "");
+      div.innerHTML = `
+        <div class="gallery-title">${isUnlocked ? item.badge + "｜" + item.title : "🔒 " + item.badge + "｜尚未達成"}</div>
+        <div class="gallery-desc">${isUnlocked ? item.desc : "提示：嘗試讓對應生存指標歸零或爆表即可解鎖此結局！"}</div>
       `;
-      btn.onclick = () => {
-        playTone("click");
-        stress += choice.stressDelta || 0;
-        updateStressUI();
-
-        // 若壓力值爆表（>= 100），強制進入高壓力失敗結局
-        if (stress >= 100) {
-          renderNode("ending_bad_grab");
-        } else {
-          renderNode(choice.next);
-        }
-      };
-      choicesBox.appendChild(btn);
+      list.appendChild(div);
     });
+    document.getElementById("gallery-modal").classList.remove("hidden");
   }
+
+  function closeGallery() {
+    playSFX("walkie");
+    document.getElementById("gallery-modal").classList.add("hidden");
+  }
+
+  // 手勢左右拖曳卡牌支援
+  const cardEl = document.getElementById("event-card");
+  let startX = 0, currentX = 0, isDragging = false;
+
+  cardEl.addEventListener("pointerdown", (e) => {
+    if (isGameOver) return;
+    ensureAudio();
+    isDragging = true;
+    startX = e.clientX;
+    cardEl.style.transition = "none";
+    cardEl.setPointerCapture(e.pointerId);
+  });
+
+  cardEl.addEventListener("pointermove", (e) => {
+    if (!isDragging) return;
+    currentX = e.clientX - startX;
+    const rotate = currentX * 0.05;
+    cardEl.style.transform = `translateX(${currentX}px) rotate(${rotate}deg)`;
+
+    if (currentX < -35) {
+      cardEl.style.borderColor = "#38bdf8";
+      previewChoice("left");
+    } else if (currentX > 35) {
+      cardEl.style.borderColor = "#fbbf24";
+      previewChoice("right");
+    } else {
+      cardEl.style.borderColor = "rgba(255, 255, 255, 0.15)";
+      clearPreview();
+    }
+  });
+
+  cardEl.addEventListener("pointerup", () => {
+    if (!isDragging) return;
+    isDragging = false;
+    cardEl.style.transition = "transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s ease";
+
+    if (currentX < -85) commitChoice("left");
+    else if (currentX > 85) commitChoice("right");
+    else {
+      cardEl.style.transform = "translateX(0) rotate(0deg)";
+      cardEl.style.borderColor = "rgba(255, 255, 255, 0.15)";
+      clearPreview();
+    }
+    currentX = 0;
+  });
+
+  updateUnlockUI();
 </script>
 </body>
 </html>
