@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>今天也要平安下班｜動態番劇版（角色好感度羈絆＋前後連鎖事件卡）</title>
+  <title>今天也要平安下班｜大滿貫旗艦版（.mp4動態立繪＋今日執勤事件簿＋單卡試玩開關）</title>
   <style>
     :root {
       --bg-dark: #090d16;
@@ -167,7 +167,6 @@
     .meter-track { width: 100%; height: 5px; background: #1e293b; border-radius: 999px; overflow: hidden; }
     .meter-fill { height: 100%; width: 50%; background: #38bdf8; border-radius: 999px; transition: width 0.3s ease, background 0.3s ease; }
 
-    /* 天氣＋當前角色好感度羈絆＋執勤道具背包列 */
     .tactical-bar {
       display: flex;
       justify-content: space-between;
@@ -278,7 +277,7 @@
       box-shadow: 0 0 18px rgba(251, 191, 36, 0.25);
     }
 
-    /* 番劇動畫演出特效 */
+    /* 番劇動畫演出特效 ＋ .mp4 動態立繪影片播放器 */
     #event-card {
       position: relative;
       width: 100%;
@@ -326,6 +325,17 @@
       animation: kenBurnsBreath 7s ease-in-out infinite alternate;
       transition: background-image 0.3s ease, filter 0.3s ease;
       z-index: 0;
+    }
+
+    #card-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 15%;
+      z-index: 0;
+      display: none;
     }
 
     @keyframes kenBurnsBreath {
@@ -460,7 +470,7 @@
     .pin-input { width: 100%; background: #1e293b; border: 2px solid rgba(56, 189, 248, 0.45); color: #fff; padding: 10px; border-radius: 12px; font-size: 18px; font-weight: 800; letter-spacing: 4px; text-align: center; margin: 10px 0 6px; user-select: text; }
     .pin-error { color: #f87171; font-size: 12px; font-weight: 700; min-height: 18px; margin-bottom: 8px; }
 
-    .cast-scroll { width: 100%; max-height: 66dvh; overflow-y: auto; text-align: left; margin-bottom: 10px; padding-right: 4px; }
+    .cast-scroll { width: 100%; max-height: 68dvh; overflow-y: auto; text-align: left; margin-bottom: 10px; padding-right: 4px; }
     .cast-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-bottom: 12px; }
     .cast-card { background: rgba(30, 41, 59, 0.9); border: 1.5px solid rgba(56, 189, 248, 0.3); border-radius: 12px; padding: 7px 5px; text-align: center; position: relative; }
     .cast-del-btn { position: absolute; top: 4px; right: 4px; background: rgba(239, 68, 68, 0.85); color: #fff; border: none; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: 900; cursor: pointer; }
@@ -476,6 +486,21 @@
     .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
     .form-row-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 7px; }
     .mini-num-label { font-size: 10px; color: #94a3b8; text-align: center; }
+
+    /* 後台事件卡開關＋單卡試玩清單 */
+    .ev-manage-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 6px 8px;
+      margin-bottom: 5px;
+    }
+
+    .ev-manage-row.disabled-ev { opacity: 0.45; }
 
     .scroll-list { width: 100%; display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; text-align: left; max-height: 55dvh; overflow-y: auto; }
     .list-card { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 10px; padding: 9px 12px; }
@@ -553,6 +578,7 @@
 
     <div id="event-card">
       <div id="card-art"></div>
+      <video id="card-video" autoplay loop muted playsinline></video>
       <canvas id="fx-canvas"></canvas>
       <div id="speed-lines-overlay"></div>
       <div id="card-gradient"></div>
@@ -592,9 +618,9 @@
 
   <!-- 開場封面 -->
   <div id="start-modal" class="modal-screen">
-    <div class="tag-pill">BOND AFFINITY & CHAIN EVENTS EDITION</div>
+    <div class="tag-pill">GRAND SLAM EDITION ・ .MP4 動態立繪＋事件簿</div>
     <h1 class="main-title">今天也要平安下班<br>：校園群像生存模擬器</h1>
-    <div class="cloud-badge" id="cover-cloud-status">🟢 已綁定 Firebase 雲端（好感羈絆＋連鎖劇情）</div>
+    <div class="cloud-badge" id="cover-cloud-status">🟢 已綁定 Firebase 雲端（全系統完全體）</div>
 
     <div class="mode-selector">
       <div class="mode-btn active" id="mode-normal" onclick="selectMode('normal')">
@@ -619,7 +645,7 @@
         <button class="btn-secondary" style="border-color:#38bdf8; color:#bae6fd; padding:9px 3px;" onclick="openLeaderboard()">🏅 排行</button>
         <button class="btn-secondary" style="padding:9px 3px;" onclick="openGallery()">🏆 (<span id="cover-unlock">0</span>/11)</button>
       </div>
-      <button class="btn-secondary" style="border-color:#fbbf24; color:#fde68a;" onclick="openCastModal()">🔒 管理員後台（角色／劇本／聲線試聽）</button>
+      <button class="btn-secondary" style="border-color:#fbbf24; color:#fde68a;" onclick="openCastModal()">🔒 管理員後台（角色／.mp4動圖／事件開關試玩）</button>
     </div>
   </div>
 
@@ -658,14 +684,16 @@
     </div>
   </div>
 
-  <!-- 管理員進階後台 -->
+  <!-- 管理員進階後台（支援 .mp4 動圖上傳、事件卡開關、單卡即時試玩） -->
   <div id="cast-modal" class="modal-screen hidden">
-    <div class="tag-pill">🔓 ADMIN STUDIO ・ CLOUD SYNC</div>
-    <h2 class="main-title" style="font-size: 19px;">管理員角色與劇本編輯工坊</h2>
+    <div class="tag-pill">🔓 ADMIN STUDIO ・ .MP4 & CARD TESTER</div>
+    <h2 class="main-title" style="font-size: 19px;">管理員角色、動圖與事件編輯工坊</h2>
 
     <div class="cast-scroll">
+      <!-- 1. 角色庫（支援圖片與 .mp4/.webp 動態立繪上傳） -->
       <div class="cast-grid" id="cast-grid-list"></div>
 
+      <!-- 2. 新增／編輯角色與專屬事件卡 -->
       <div class="panel-box">
         <div class="panel-title">
           <span id="editor-form-title">➕ 新增全新角色與專屬事件卡</span>
@@ -702,15 +730,22 @@
         </div>
 
         <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;">
-          <span style="font-size:11px; color:#cbd5e1;" id="new-char-file-label">上傳角色立繪（自動壓縮雲端同步）：</span>
+          <span style="font-size:11px; color:#cbd5e1;" id="new-char-file-label">立繪（支援圖片或 .mp4/.webp 動圖）：</span>
           <label class="cast-mini-btn" style="padding:4px 9px; font-size:11px;">
-            📁 選擇豆包圖片
-            <input type="file" id="new-char-file" accept="image/*" class="hidden" onchange="previewNewCharImg(event)" />
+            📁 選擇圖片 / .mp4
+            <input type="file" id="new-char-file" accept="image/*,video/mp4,video/webm" class="hidden" onchange="previewNewCharImg(event)" />
           </label>
         </div>
         <button class="btn-primary" id="save-char-submit-btn" style="width:100%; padding:9px; font-size:13px;" onclick="saveCharacterForm()">✨ 確認新增並雲端同步</button>
       </div>
 
+      <!-- 3. 事件卡啟用開關與單卡即時試玩器 -->
+      <div class="panel-box" style="border-color: rgba(168, 85, 247, 0.45);">
+        <div class="panel-title" style="color: #e9d5ff;"><span>🎛️ 事件卡抽題開關 ＆ 單卡即時試玩</span></div>
+        <div id="event-manage-list" style="max-height: 170px; overflow-y: auto;"></div>
+      </div>
+
+      <!-- 4. 劇本包匯出/匯入 與 密碼變更 -->
       <div class="panel-box" style="border-color: rgba(56, 189, 248, 0.45); margin-bottom: 0;">
         <div class="panel-title" style="color: var(--accent-blue);"><span>📦 劇本包備份 ＆ 管理員密碼</span></div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px;">
@@ -733,7 +768,7 @@
     </div>
   </div>
 
-  <!-- 結局結算畫面 -->
+  <!-- 結局結算畫面（新增「📜 今日執勤事件簿回顧」按鈕） -->
   <div id="end-modal" class="modal-screen hidden">
     <div class="tag-pill" id="end-badge">ENDING</div>
     <h2 class="main-title" id="end-title">結局標題</h2>
@@ -751,7 +786,10 @@
     </div>
 
     <div class="btn-stack">
-      <button class="btn-primary" style="background:linear-gradient(135deg,#059669,#10b981);" onclick="generateShareCard()">📸 生成戰績分享圖（含稱號勳章）</button>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+        <button class="btn-primary" style="background:linear-gradient(135deg,#059669,#10b981); padding:10px 6px; font-size:12.5px;" onclick="generateShareCard()">📸 生成戰績分享圖</button>
+        <button class="btn-primary" style="background:linear-gradient(135deg,#7c3aed,#6d28d9); padding:10px 6px; font-size:12.5px;" onclick="openShiftLogModal()">📜 今日執勤事件簿</button>
+      </div>
       <button class="btn-primary" onclick="startNewShift()">再輪一次班（隨機新事件）</button>
       <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px;">
         <button class="btn-secondary" style="padding:9px 4px;" onclick="openAchievements()">🎖️ 成就</button>
@@ -759,6 +797,15 @@
         <button class="btn-secondary" style="padding:9px 4px;" onclick="openGallery()">🏆 圖鑑</button>
       </div>
     </div>
+  </div>
+
+  <!-- 今日執勤事件簿時間軸回顧視窗 -->
+  <div id="log-modal" class="modal-screen hidden" style="z-index: 52;">
+    <div class="tag-pill">DAILY SHIFT CHRONICLE</div>
+    <h2 class="main-title" style="font-size: 21px;">📜 今日執勤事件簿回顧</h2>
+    <p class="sub-desc" style="margin-bottom:10px;">完整記錄本局時間軸、決策選擇與四維指標變化：</p>
+    <div class="scroll-list" id="shift-log-list"></div>
+    <button class="btn-primary" style="width:100%; max-width:300px;" onclick="document.getElementById('log-modal').classList.add('hidden')">返回結算</button>
   </div>
 
   <!-- 戰績分享圖預覽彈窗 -->
@@ -876,7 +923,14 @@
     el._t = setTimeout(() => { el.style.opacity = "0"; }, 2600);
   }
 
-  function compressImageToDataURL(file, callback) {
+  // 支援圖片自動壓縮轉 DataURL，若是 .mp4 / .webm 影片則直接轉成 DataURL 保留動態播放
+  function processMediaFileToDataURL(file, callback) {
+    if (file.type.startsWith("video/")) {
+      const reader = new FileReader();
+      reader.onload = e => callback(e.target.result);
+      reader.readAsDataURL(file);
+      return;
+    }
     const reader = new FileReader();
     reader.onload = e => {
       const img = new Image();
@@ -901,11 +955,13 @@
       showSaveToast("⏳ 正在同步角色與劇本至 Firebase...");
       const nowTs = Date.now();
       const customEvents = ALL_EVENTS.filter(e => e.isCustom);
+      const disabledEventTags = ALL_EVENTS.filter(e => e.disabled).map(e => e.tag);
       const payload = {
         updatedAt: nowTs,
         adminPin: currentAdminPin,
         roster: CHARACTER_ROSTER.map(c => ({ id: c.id, name: c.name, role: c.role, voice: c.voice, img: c.img })),
-        customEvents: customEvents
+        customEvents: customEvents,
+        disabledEventTags: disabledEventTags
       };
       const resp = await fetch(`${firebaseBaseUrl}/campus_game_sync.json`, {
         method: "PUT",
@@ -916,7 +972,7 @@
       lastCloudTimestamp = nowTs;
       showSaveToast("☁️ 雲端同步完成！所有裝置已即時更新");
     } catch (err) {
-      showSaveToast("⚠️ 雲端寫入失敗，請確認 Firebase Rules 權限");
+      showSaveToast("⚠️ 雲端寫入失敗（若影片太大建議壓縮至 3MB 內）");
     }
   }
 
@@ -945,10 +1001,16 @@
           }
           data.customEvents.forEach(ev => ALL_EVENTS.splice(ALL_EVENTS.length - 1, 0, ev));
         }
+        if (Array.isArray(data.disabledEventTags)) {
+          ALL_EVENTS.forEach(ev => {
+            ev.disabled = data.disabledEventTags.includes(ev.tag);
+          });
+        }
         await saveToIndexedDB();
         checkCreatorAchievement();
         updateUnlockUI();
         renderCastGrid();
+        renderEventManageList();
       }
     } catch (e) {}
   }
@@ -961,7 +1023,7 @@
   // ==========================================
   // 3. 本機 IndexedDB 離線快取
   // ==========================================
-  const DB_NAME = "CampusSafetyGameDB_V5";
+  const DB_NAME = "CampusSafetyGameDB_V6";
   const STORE_NAME = "customData";
 
   function openDB() {
@@ -980,6 +1042,7 @@
       const store = tx.objectStore(STORE_NAME);
       store.put(CHARACTER_ROSTER, "roster");
       store.put(ALL_EVENTS.filter(e => e.isCustom), "customEvents");
+      store.put(ALL_EVENTS.filter(e => e.disabled).map(e => e.tag), "disabledTags");
     } catch (e) {}
   }
 
@@ -990,6 +1053,8 @@
       const store = tx.objectStore(STORE_NAME);
       const savedRoster = await new Promise(res => { const r = store.get("roster"); r.onsuccess = () => res(r.result); r.onerror = () => res(null); });
       const savedEvents = await new Promise(res => { const r = store.get("customEvents"); r.onsuccess = () => res(r.result); r.onerror = () => res(null); });
+      const savedDisabled = await new Promise(res => { const r = store.get("disabledTags"); r.onsuccess = () => res(r.result); r.onerror = () => res(null); });
+
       if (savedRoster && savedRoster.length > 0) {
         CHARACTER_ROSTER.length = 0;
         savedRoster.forEach(item => CHARACTER_ROSTER.push(item));
@@ -999,9 +1064,13 @@
           if (!ALL_EVENTS.some(x => x.charId === ev.charId)) ALL_EVENTS.splice(ALL_EVENTS.length - 1, 0, ev);
         });
       }
+      if (Array.isArray(savedDisabled)) {
+        ALL_EVENTS.forEach(ev => { ev.disabled = savedDisabled.includes(ev.tag); });
+      }
       checkCreatorAchievement();
       updateUnlockUI();
       renderCastGrid();
+      renderEventManageList();
     } catch (e) {}
   }
 
@@ -1046,7 +1115,6 @@
     { id: "dog", name: "校狗阿福（米克斯）", role: "萌寵・校園巡邏吉祥物", voice: "student", img: "./dog.jpg", fallback: makeCharacterPortrait("#92400e", "#1c1917", "#b45309", "#d97706", "dog", "🐕") }
   ];
 
-  // 角色好感度狀態（初始皆為 50，0~100）
   let affinityMap = {
     officer: 50, parent: 50, director: 50, counselor: 50,
     student: 50, inspector: 50, intruder: 50, dog: 50
@@ -1084,7 +1152,7 @@
 
   function bindImageFallbacks() {
     CHARACTER_ROSTER.forEach(ch => {
-      if (ch.img && !ch.img.startsWith("data:") && ch.fallback) {
+      if (ch.img && !ch.img.startsWith("data:") && !ch.img.endsWith(".mp4") && ch.fallback) {
         const testImg = new Image();
         testImg.onerror = () => { ch.img = ch.fallback; renderCastGrid(); };
         testImg.src = ch.img;
@@ -1092,7 +1160,6 @@
     });
   }
 
-  // 前後連鎖事件卡庫（當特定選擇觸發 chainNext 時，下一關會插播對應連鎖事件！）
   const CHAIN_EVENTS = {
     chain_parent_revenge: {
       time: "15:55", tag: "連鎖伏筆・家長再臨", charId: "parent", filter: "art-danger", sfx: "slam", urgent: false, isChain: true,
@@ -1583,7 +1650,7 @@
   }
 
   // ==========================================
-  // 9. 管理員密碼鎖、角色編輯/刪除與劇本 JSON 匯出匯入
+  // 9. 管理員密碼鎖、角色編輯、事件卡開關與單卡試玩
   // ==========================================
   let pendingNewCharImg = null;
   let editingCharId = null;
@@ -1617,6 +1684,7 @@
   function showAdminCastPanel() {
     resetCharEditor();
     renderCastGrid();
+    renderEventManageList();
     document.getElementById("cast-modal").classList.remove("hidden");
   }
 
@@ -1644,17 +1712,22 @@
     grid.innerHTML = "";
     CHARACTER_ROSTER.forEach((ch, idx) => {
       const isCustom = ch.id.startsWith("custom_");
+      const isVid = ch.img && (ch.img.endsWith(".mp4") || ch.img.startsWith("data:video/"));
+      const previewMedia = isVid
+        ? `<video src="${ch.img}" autoplay loop muted playsinline class="cast-avatar"></video>`
+        : `<img src="${ch.img}" class="cast-avatar" alt="${ch.name}" />`;
+
       const card = document.createElement("div");
       card.className = "cast-card";
       card.innerHTML = `
         ${isCustom ? `<button class="cast-del-btn" title="刪除自訂角色" onclick="deleteCustomChar('${ch.id}')">✕</button>` : ""}
-        <img src="${ch.img}" class="cast-avatar" alt="${ch.name}" />
+        ${previewMedia}
         <div class="cast-name">${ch.name}</div>
         <div class="cast-role">${ch.role}</div>
         <div class="cast-actions">
           <label class="cast-mini-btn">
-            🖼️ 換圖
-            <input type="file" accept="image/*" class="hidden" onchange="replaceCharImage(event, ${idx})" />
+            🖼️ 換圖/片
+            <input type="file" accept="image/*,video/mp4,video/webm" class="hidden" onchange="replaceCharImage(event, ${idx})" />
           </label>
           ${isCustom ? `<button class="cast-mini-btn" onclick="editCustomChar('${ch.id}')">✏️ 編輯</button>` : ""}
         </div>
@@ -1663,10 +1736,56 @@
     });
   }
 
+  function renderEventManageList() {
+    const box = document.getElementById("event-manage-list");
+    if (!box) return;
+    box.innerHTML = "";
+    ALL_EVENTS.forEach((ev, idx) => {
+      const row = document.createElement("div");
+      row.className = "ev-manage-row" + (ev.disabled ? " disabled-ev" : "");
+      row.innerHTML = `
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:11px; font-weight:800; color:#f8fafc; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${ev.time}・${ev.tag}</div>
+          <div style="font-size:10px; color:#94a3b8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${ev.text}</div>
+        </div>
+        <div style="display:flex; gap:4px;">
+          <button class="cast-mini-btn" style="background:rgba(34,197,94,0.22); border-color:#22c55e;" onclick="testSingleEventCard(${idx})">▶️ 試玩</button>
+          <button class="cast-mini-btn" onclick="toggleEventEnabled(${idx})">${ev.disabled ? "🚫 停用" : "✅ 啟用"}</button>
+        </div>
+      `;
+      box.appendChild(row);
+    });
+  }
+
+  async function toggleEventEnabled(idx) {
+    ALL_EVENTS[idx].disabled = !ALL_EVENTS[idx].disabled;
+    renderEventManageList();
+    playSFX("walkie");
+    await pushDataToFirebase();
+  }
+
+  // 單卡即時試玩：直接關閉後台並把該張事件卡插入目前畫面進行測試！
+  function testSingleEventCard(idx) {
+    const targetCard = ALL_EVENTS[idx];
+    if (!targetCard) return;
+    document.getElementById("cast-modal").classList.add("hidden");
+    document.getElementById("start-modal").classList.add("hidden");
+    document.getElementById("end-modal").classList.add("hidden");
+
+    ensureAudio();
+    resizeFXCanvas();
+    isGameOver = false;
+    activeDeck = [targetCard];
+    turnIndex = 0;
+    renderMeters();
+    loadCard();
+    showSaveToast(`▶️ 正在單卡試玩：【${targetCard.tag}】`);
+  }
+
   function replaceCharImage(event, idx) {
     const file = event.target.files[0];
     if (!file) return;
-    compressImageToDataURL(file, async (url) => {
+    processMediaFileToDataURL(file, async (url) => {
       CHARACTER_ROSTER[idx].img = url;
       renderCastGrid();
       playSFX("win");
@@ -1711,7 +1830,7 @@
     document.getElementById("new-char-event").value = "";
     document.getElementById("new-char-left").value = "";
     document.getElementById("new-char-right").value = "";
-    document.getElementById("new-char-file-label").textContent = "上傳角色立繪（自動壓縮雲端同步）：";
+    document.getElementById("new-char-file-label").textContent = "立繪（支援圖片或 .mp4/.webp 動圖）：";
   }
 
   async function deleteCustomChar(charId) {
@@ -1721,6 +1840,7 @@
     if (eIdx !== -1) ALL_EVENTS.splice(eIdx, 1);
     if (editingCharId === charId) resetCharEditor();
     renderCastGrid();
+    renderEventManageList();
     playSFX("swipe");
     await pushDataToFirebase();
     showSaveToast("🗑️ 已刪除自訂角色並同步雲端");
@@ -1729,9 +1849,9 @@
   function previewNewCharImg(event) {
     const file = event.target.files[0];
     if (!file) return;
-    compressImageToDataURL(file, (url) => {
+    processMediaFileToDataURL(file, (url) => {
       pendingNewCharImg = url;
-      document.getElementById("new-char-file-label").textContent = "✅ 已選取圖片";
+      document.getElementById("new-char-file-label").textContent = "✅ 已選取圖片 / 動圖";
     });
   }
 
@@ -1775,13 +1895,14 @@
       ALL_EVENTS.splice(ALL_EVENTS.length - 1, 0, {
         time: "15:40", tag: "自訂突發事件", charId: newId, filter: "", sfx: "walkie", isCustom: true,
         text: eventText,
-        left: { label: leftLabel, effect: leftEffect },
-        right: { label: rightLabel, effect: rightEffect }
+        left: { label: leftLabel, effect: leftEffect, bondDelta: +10 },
+        right: { label: rightLabel, effect: rightEffect, bondDelta: -5 }
       });
     }
 
     resetCharEditor();
     renderCastGrid();
+    renderEventManageList();
     checkCreatorAchievement();
     playSFX("win");
     await pushDataToFirebase();
@@ -1804,12 +1925,15 @@
     reader.onload = async e => {
       try {
         const parsed = JSON.parse(e.target.result);
-        if (Array.isArray(parsed.roster) && Array.isArray(parsed.events)) {
-          CHARACTER_ROSTER.length = 0;
-          parsed.roster.forEach(r => CHARACTER_ROSTER.push(r));
+        if (Array.isArray(parsed.events)) {
+          if (Array.isArray(parsed.roster) && parsed.roster.length > 0) {
+            CHARACTER_ROSTER.length = 0;
+            parsed.roster.forEach(r => CHARACTER_ROSTER.push(r));
+          }
           ALL_EVENTS.length = 0;
           parsed.events.forEach(ev => ALL_EVENTS.push(ev));
           renderCastGrid();
+          renderEventManageList();
           checkCreatorAchievement();
           await pushDataToFirebase();
           showSaveToast("📥 劇本包匯入成功並已同步雲端！");
@@ -1822,7 +1946,7 @@
   }
 
   // ==========================================
-  // 10. 十一大結局定義（新增羈絆摯友結局！）
+  // 10. 十一大結局定義
   // ==========================================
   const ENDINGS = {
     safety_zero: { badge: "💀 結局 1/11｜校園失守", title: "校園安全歸零：全校大亂鬥", desc: "因為多次退讓與疏於巡檢，校園陷入混亂，你連夜被召回寫檢討報告！" },
@@ -1839,13 +1963,14 @@
   };
 
   // ==========================================
-  // 11. 遊戲核心循環
+  // 11. 遊戲核心循環（含今日執勤事件簿紀錄）
   // ==========================================
   let stats = { safety: 50, admin: 50, parent: 50, sanity: 50 };
   let activeDeck = [], turnIndex = 0, selectedMode = "normal", isGameOver = false;
   let currentDay = 1;
   let lastRunScore = 0;
   let lastShareImageUrl = "";
+  let shiftLogs = []; // 記錄每關時間、角色、選擇與數值變化
   let unlocked = JSON.parse(localStorage.getItem("viral_campus_endings_v3") || "[]");
 
   function selectMode(mode) {
@@ -1857,10 +1982,13 @@
   }
 
   function buildDeckForShift() {
-    if (selectedMode === "full") return [...ALL_EVENTS];
+    const enabledPool = ALL_EVENTS.filter(ev => !ev.disabled);
+    const sourcePool = enabledPool.length > 0 ? enabledPool : ALL_EVENTS;
+    if (selectedMode === "full") return [...sourcePool];
+
     const countPerDay = selectedMode === "week" ? 6 : 12;
     const customIndices = [], normalIndices = [];
-    ALL_EVENTS.forEach((ev, idx) => {
+    sourcePool.forEach((ev, idx) => {
       if (ev.charId.startsWith("custom_")) customIndices.push(idx);
       else normalIndices.push(idx);
     });
@@ -1870,7 +1998,7 @@
     }
     const needNormal = Math.max(2, countPerDay - customIndices.length);
     const picked = [...customIndices, ...normalIndices.slice(0, needNormal)].sort((a, b) => a - b);
-    return picked.map(idx => ALL_EVENTS[idx]);
+    return picked.map(idx => sourcePool[idx]);
   }
 
   function updateUnlockUI() {
@@ -1930,6 +2058,7 @@
     stats = { safety: 50, admin: 50, parent: 50, sanity: 50 };
     affinityMap = { officer: 50, parent: 50, director: 50, counselor: 50, student: 50, inspector: 50, intruder: 50, dog: 50 };
     queuedChainEvent = null;
+    shiftLogs = [];
     currentDay = 1;
     runSafetyNeverBelow50 = true;
     runSanityAlwaysBalanced = true;
@@ -1955,7 +2084,6 @@
   function loadCard() {
     stopQTE();
 
-    // 若前一關選擇觸發了前後連鎖事件卡，優先插播連鎖卡！
     if (queuedChainEvent) {
       const chainCard = queuedChainEvent;
       queuedChainEvent = null;
@@ -1991,10 +2119,24 @@
     document.getElementById("chain-tag").classList.toggle("hidden", !card.isChain);
     updateAffinityPill();
 
+    // 支援靜態圖片或 .mp4/.webm 動態立繪影片自動切換播放
     const artEl = document.getElementById("card-art");
-    artEl.style.backgroundImage = `url('${ch.img}')`;
-    artEl.style.backgroundPosition = ch.id === "officer" ? "center 18%" : "center 12%";
-    artEl.className = card.filter || "";
+    const videoEl = document.getElementById("card-video");
+    const isVideo = ch.img && (ch.img.toLowerCase().endsWith(".mp4") || ch.img.startsWith("data:video/"));
+
+    if (isVideo) {
+      artEl.style.display = "none";
+      videoEl.style.display = "block";
+      videoEl.src = ch.img;
+      videoEl.className = card.filter || "";
+      videoEl.play().catch(() => {});
+    } else {
+      videoEl.style.display = "none";
+      artEl.style.display = "block";
+      artEl.style.backgroundImage = `url('${ch.img}')`;
+      artEl.style.backgroundPosition = ch.id === "officer" ? "center 18%" : "center 12%";
+      artEl.className = card.filter || "";
+    }
 
     document.getElementById("card-tag").textContent = card.tag;
     document.getElementById("card-speaker").textContent = ch.name;
@@ -2029,6 +2171,7 @@
     stopQTE();
     const card = activeDeck[turnIndex];
     const choice = card[dir];
+    const ch = CHARACTER_ROSTER.find(c => c.id === card.charId) || CHARACTER_ROSTER[0];
     clearPreview();
 
     const cardEl = document.getElementById("event-card");
@@ -2039,31 +2182,40 @@
 
     playSFX("swipe");
 
-    // 更新角色好感度
     const bDelta = choice.bondDelta || 0;
     const prevBond = getCharAffinity(card.charId);
     affinityMap[card.charId] = Math.max(0, Math.min(100, prevBond + bDelta));
 
-    // 若好感度達 70 以上，危機扣分可獲得羈絆支援減免
     const bondShield = affinityMap[card.charId] >= 70 ? 0.75 : 1.0;
 
-    // 排入前後連鎖事件
     if (choice.chainNext && CHAIN_EVENTS[choice.chainNext]) {
       queuedChainEvent = CHAIN_EVENTS[choice.chainNext];
       showSaveToast("🔗 選擇埋下伏筆！後續將觸發連鎖事件");
     }
 
+    const appliedDeltas = {};
     ["safety", "admin", "parent", "sanity"].forEach(key => {
       let delta = choice.effect[key] || 0;
       if (key === "parent" && currentWeather.mod.parentMult) delta = Math.round(delta * currentWeather.mod.parentMult);
       if (key === "admin" && delta < 0 && currentWeather.mod.adminPenaltyMult) delta = Math.round(delta * currentWeather.mod.adminPenaltyMult);
       if (delta < 0) delta = Math.round(delta * bondShield);
 
+      appliedDeltas[key] = delta;
       stats[key] = Math.max(0, Math.min(100, stats[key] + delta));
       const box = document.getElementById("box-" + key);
       box.classList.remove("pulse-up", "pulse-down");
       if (delta > 0) box.classList.add("pulse-up");
       if (delta < 0) box.classList.add("pulse-down");
+    });
+
+    // 寫入今日執勤事件簿日誌
+    shiftLogs.push({
+      day: document.getElementById("day-badge").textContent,
+      time: card.time,
+      tag: card.tag,
+      speaker: ch.name,
+      choiceLabel: choice.label,
+      deltas: appliedDeltas
     });
 
     if (stats.safety < 50) runSafetyNeverBelow50 = false;
@@ -2085,6 +2237,28 @@
       turnIndex++;
       loadCard();
     }, 240);
+  }
+
+  function openShiftLogModal() {
+    playSFX("walkie");
+    const list = document.getElementById("shift-log-list");
+    list.innerHTML = "";
+    if (shiftLogs.length === 0) {
+      list.innerHTML = `<div class="l-desc" style="text-align:center;">尚無執勤紀錄</div>`;
+    } else {
+      shiftLogs.forEach((entry, idx) => {
+        const fmt = (n) => (n > 0 ? `+${n}` : `${n}`);
+        const div = document.createElement("div");
+        div.className = "list-card unlocked";
+        div.innerHTML = `
+          <div class="l-title">#${idx + 1} [${entry.day} ${entry.time}] ${entry.tag}（${entry.speaker}）</div>
+          <div style="font-size:12px; color:#f8fafc; margin-bottom:3px;">決策：${entry.choiceLabel}</div>
+          <div class="l-desc">安全 ${fmt(entry.deltas.safety)} ｜ 信任 ${fmt(entry.deltas.admin)} ｜ 家長 ${fmt(entry.deltas.parent)} ｜ 理智 ${fmt(entry.deltas.sanity)}</div>
+        `;
+        list.appendChild(div);
+      });
+    }
+    document.getElementById("log-modal").classList.remove("hidden");
   }
 
   function calculateBalanceScore() {
