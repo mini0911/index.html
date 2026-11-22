@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>今天也要平安下班｜Firebase 跨裝置同步＋管理員密碼保護版</title>
+  <title>今天也要平安下班｜旗艦完全體（雲端同步＋排行榜＋道具＋五日挑戰）</title>
   <style>
     :root {
       --bg-dark: #090d16;
@@ -40,7 +40,7 @@
       width: 100%;
       max-width: 440px;
       height: 100dvh;
-      max-height: 880px;
+      max-height: 890px;
       background: var(--bg-dark);
       display: flex;
       flex-direction: column;
@@ -54,8 +54,8 @@
     #top-hud {
       position: relative;
       z-index: 20;
-      padding: 12px 14px 8px;
-      background: linear-gradient(180deg, rgba(3, 7, 18, 0.96) 0%, rgba(3, 7, 18, 0.75) 100%);
+      padding: 10px 12px 6px;
+      background: linear-gradient(180deg, rgba(3, 7, 18, 0.98) 0%, rgba(3, 7, 18, 0.8) 100%);
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
 
@@ -63,7 +63,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       gap: 4px;
     }
 
@@ -74,7 +74,7 @@
       background: rgba(56, 189, 248, 0.15);
       border: 1px solid rgba(56, 189, 248, 0.4);
       color: var(--accent-blue);
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 800;
       padding: 4px 8px;
       border-radius: 999px;
@@ -83,7 +83,7 @@
 
     .shift-progress-wrap {
       flex: 1;
-      margin: 0 4px;
+      margin: 0 3px;
       height: 6px;
       background: #1e293b;
       border-radius: 999px;
@@ -101,9 +101,9 @@
       background: rgba(255, 255, 255, 0.1);
       border: 1px solid rgba(255, 255, 255, 0.25);
       color: #fff;
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 700;
-      padding: 4px 7px;
+      padding: 4px 6px;
       border-radius: 999px;
       cursor: pointer;
       white-space: nowrap;
@@ -124,14 +124,15 @@
     .meters-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 6px;
+      gap: 5px;
+      margin-bottom: 6px;
     }
 
     .meter-item {
       background: rgba(15, 23, 42, 0.9);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-      padding: 6px 6px 7px;
+      border-radius: 9px;
+      padding: 5px 5px 6px;
       text-align: center;
       transition: transform 0.2s ease, border-color 0.2s ease;
     }
@@ -140,8 +141,8 @@
     .meter-item.pulse-down { border-color: #ef4444; transform: scale(0.95); }
 
     .meter-icon {
-      font-size: 14px;
-      margin-bottom: 2px;
+      font-size: 13px;
+      margin-bottom: 1px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -162,9 +163,56 @@
       box-shadow: 0 0 8px var(--accent-gold);
     }
 
-    .meter-name { font-size: 10px; color: var(--text-muted); font-weight: 700; margin-bottom: 4px; }
+    .meter-name { font-size: 10px; color: var(--text-muted); font-weight: 700; margin-bottom: 3px; }
     .meter-track { width: 100%; height: 5px; background: #1e293b; border-radius: 999px; overflow: hidden; }
     .meter-fill { height: 100%; width: 50%; background: #38bdf8; border-radius: 999px; transition: width 0.3s ease, background 0.3s ease; }
+
+    /* 天氣狀態＋執勤道具背包列 */
+    .tactical-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      padding-top: 2px;
+    }
+
+    .weather-pill {
+      font-size: 10.5px;
+      font-weight: 800;
+      color: #fde68a;
+      background: rgba(251, 191, 36, 0.12);
+      border: 1px solid rgba(251, 191, 36, 0.35);
+      padding: 3px 8px;
+      border-radius: 8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .items-row {
+      display: flex;
+      gap: 4px;
+    }
+
+    .item-btn {
+      background: rgba(30, 41, 59, 0.95);
+      border: 1px solid rgba(56, 189, 248, 0.45);
+      color: #e0f2fe;
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 3px 7px;
+      border-radius: 8px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: transform 0.12s ease;
+    }
+
+    .item-btn:active { transform: scale(0.92); }
+    .item-btn.used {
+      opacity: 0.32;
+      pointer-events: none;
+      text-decoration: line-through;
+    }
 
     #card-arena {
       position: relative;
@@ -173,23 +221,23 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 10px 16px;
+      padding: 8px 14px;
       z-index: 10;
     }
 
     #swipe-preview-banner {
       width: 100%;
-      min-height: 42px;
+      min-height: 38px;
       background: rgba(15, 23, 42, 0.92);
       border: 1px solid rgba(56, 189, 248, 0.35);
-      border-radius: 12px;
-      padding: 7px 12px;
-      margin-bottom: 10px;
+      border-radius: 11px;
+      padding: 6px 10px;
+      margin-bottom: 8px;
       display: flex;
       justify-content: center;
       align-items: center;
       text-align: center;
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 700;
       color: var(--accent-gold);
       opacity: 0.45;
@@ -206,7 +254,7 @@
       position: relative;
       width: 100%;
       flex: 1;
-      max-height: 470px;
+      max-height: 450px;
       background: #1e293b;
       border-radius: 22px;
       overflow: hidden;
@@ -253,7 +301,7 @@
     .card-top-tag {
       position: relative;
       z-index: 5;
-      padding: 12px 14px;
+      padding: 10px 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -265,25 +313,25 @@
       color: var(--accent-gold);
       font-size: 11px;
       font-weight: 800;
-      padding: 3px 10px;
+      padding: 3px 9px;
       border-radius: 999px;
     }
 
     .card-bottom-info {
       position: relative;
       z-index: 5;
-      padding: 16px 16px 18px;
+      padding: 14px 15px 16px;
     }
 
     .speaker-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
     }
 
     .char-title {
-      font-size: 15px;
+      font-size: 14.5px;
       font-weight: 900;
       color: var(--accent-blue);
       display: flex;
@@ -295,16 +343,16 @@
       background: rgba(56, 189, 248, 0.22);
       border: 1px solid rgba(56, 189, 248, 0.5);
       color: #e0f2fe;
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 800;
-      padding: 3px 9px;
+      padding: 2px 8px;
       border-radius: 999px;
       cursor: pointer;
     }
 
     .event-desc {
-      font-size: 14.5px;
-      line-height: 1.58;
+      font-size: 14px;
+      line-height: 1.55;
       color: #f8fafc;
       font-weight: 500;
     }
@@ -312,7 +360,7 @@
     #bottom-controls {
       position: relative;
       z-index: 20;
-      padding: 8px 14px 18px;
+      padding: 6px 14px 16px;
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
@@ -324,8 +372,8 @@
       border: 1px solid rgba(56, 189, 248, 0.4);
       color: #f8fafc;
       border-radius: 14px;
-      padding: 11px 10px;
-      font-size: 13px;
+      padding: 10px 9px;
+      font-size: 12.5px;
       font-weight: 700;
       line-height: 1.35;
       cursor: pointer;
@@ -333,7 +381,7 @@
       flex-direction: column;
       align-items: center;
       text-align: center;
-      gap: 4px;
+      gap: 3px;
       transition: all 0.15s ease;
     }
 
@@ -352,13 +400,13 @@
       position: absolute;
       inset: 0;
       z-index: 40;
-      background: rgba(3, 7, 18, 0.96);
+      background: rgba(3, 7, 18, 0.97);
       backdrop-filter: blur(12px);
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 20px 18px;
+      padding: 18px 16px;
       text-align: center;
       overflow-y: auto;
     }
@@ -374,11 +422,11 @@
       background: rgba(251, 191, 36, 0.1);
       padding: 4px 12px;
       border-radius: 999px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     .main-title {
-      font-size: 24px;
+      font-size: 23px;
       font-weight: 900;
       line-height: 1.3;
       margin-bottom: 8px;
@@ -391,35 +439,29 @@
       font-size: 13px;
       color: var(--text-muted);
       line-height: 1.55;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
 
     .cloud-badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 800;
-      padding: 5px 12px;
+      padding: 4px 11px;
       border-radius: 999px;
-      margin-bottom: 14px;
-      background: rgba(30, 41, 59, 0.9);
-      border: 1px solid rgba(148, 163, 184, 0.35);
-      color: #cbd5e1;
-    }
-
-    .cloud-badge.connected {
+      margin-bottom: 12px;
       background: rgba(34, 197, 94, 0.16);
-      border-color: #22c55e;
+      border: 1px solid #22c55e;
       color: #4ade80;
     }
 
     .mode-selector {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
       width: 100%;
-      max-width: 310px;
+      max-width: 340px;
       margin-bottom: 14px;
     }
 
@@ -427,35 +469,35 @@
       background: rgba(30, 41, 59, 0.85);
       border: 1.5px solid rgba(56, 189, 248, 0.3);
       border-radius: 12px;
-      padding: 9px 8px;
+      padding: 8px 4px;
       color: #cbd5e1;
       cursor: pointer;
     }
 
     .mode-btn.active {
-      background: rgba(56, 189, 248, 0.18);
+      background: rgba(56, 189, 248, 0.2);
       border-color: var(--accent-gold);
       color: #fff;
     }
 
-    .mode-title { font-size: 13px; font-weight: 800; color: var(--accent-gold); }
-    .mode-sub { font-size: 11px; color: var(--text-muted); }
+    .mode-title { font-size: 12px; font-weight: 800; color: var(--accent-gold); margin-bottom: 2px; }
+    .mode-sub { font-size: 10px; color: var(--text-muted); }
 
     .btn-stack {
       width: 100%;
-      max-width: 310px;
+      max-width: 330px;
       display: flex;
       flex-direction: column;
-      gap: 9px;
+      gap: 8px;
     }
 
     .btn-primary {
       background: linear-gradient(135deg, #0284c7, #2563eb);
       color: #fff;
       border: none;
-      padding: 13px 18px;
+      padding: 12px 16px;
       border-radius: 12px;
-      font-size: 14.5px;
+      font-size: 14px;
       font-weight: 800;
       cursor: pointer;
       box-shadow: 0 8px 22px rgba(37, 99, 235, 0.45);
@@ -465,27 +507,21 @@
       background: rgba(30, 41, 59, 0.9);
       color: #e2e8f0;
       border: 1px solid rgba(255, 255, 255, 0.2);
-      padding: 10px 16px;
+      padding: 10px 14px;
       border-radius: 12px;
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 700;
       cursor: pointer;
     }
 
-    /* 管理員密碼解鎖彈窗樣式 */
+    /* 管理員密碼解鎖彈窗 */
     .lock-card {
       width: 100%;
       max-width: 320px;
       background: rgba(15, 23, 42, 0.98);
       border: 2px solid rgba(251, 191, 36, 0.55);
       border-radius: 20px;
-      padding: 22px 18px;
-      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.85);
-    }
-
-    .lock-icon {
-      font-size: 38px;
-      margin-bottom: 8px;
+      padding: 20px 16px;
     }
 
     .pin-input {
@@ -493,66 +529,32 @@
       background: #1e293b;
       border: 2px solid rgba(56, 189, 248, 0.45);
       color: #fff;
-      padding: 11px 12px;
+      padding: 10px;
       border-radius: 12px;
       font-size: 18px;
       font-weight: 800;
       letter-spacing: 4px;
       text-align: center;
-      margin: 12px 0 6px;
+      margin: 10px 0 6px;
       user-select: text;
     }
 
-    .pin-error {
-      color: #f87171;
-      font-size: 12px;
-      font-weight: 700;
-      min-height: 18px;
-      margin-bottom: 10px;
-    }
+    .pin-error { color: #f87171; font-size: 12px; font-weight: 700; min-height: 18px; margin-bottom: 8px; }
 
-    .shake-anim {
-      animation: shakeBox 0.35s ease;
-    }
-
-    @keyframes shakeBox {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-8px); }
-      50% { transform: translateX(8px); }
-      75% { transform: translateX(-5px); }
-    }
-
+    /* 角色庫與後台進階編輯器 */
     .cast-scroll {
       width: 100%;
-      max-height: 62dvh;
+      max-height: 66dvh;
       overflow-y: auto;
       text-align: left;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       padding-right: 4px;
-    }
-
-    .firebase-box {
-      background: rgba(15, 23, 42, 0.95);
-      border: 1.5px solid rgba(56, 189, 248, 0.5);
-      border-radius: 14px;
-      padding: 11px 12px;
-      margin-bottom: 12px;
-    }
-
-    .firebase-title {
-      font-size: 13px;
-      font-weight: 900;
-      color: var(--accent-blue);
-      margin-bottom: 6px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
     }
 
     .cast-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
+      gap: 7px;
       margin-bottom: 12px;
     }
 
@@ -560,49 +562,67 @@
       background: rgba(30, 41, 59, 0.9);
       border: 1.5px solid rgba(56, 189, 248, 0.3);
       border-radius: 12px;
-      padding: 8px 6px;
+      padding: 7px 5px;
       text-align: center;
       position: relative;
     }
 
+    .cast-del-btn {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: rgba(239, 68, 68, 0.85);
+      color: #fff;
+      border: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      font-size: 10px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
     .cast-avatar {
-      width: 56px;
-      height: 56px;
+      width: 52px;
+      height: 52px;
       border-radius: 50%;
       object-fit: cover;
       object-position: center 15%;
       border: 2px solid var(--accent-gold);
-      margin: 0 auto 5px;
+      margin: 0 auto 4px;
       display: block;
       background: #0f172a;
     }
 
-    .cast-name { font-size: 11.5px; font-weight: 800; color: #f8fafc; }
-    .cast-role { font-size: 10px; color: var(--accent-blue); margin-bottom: 4px; }
-    .cast-upload-mini {
-      font-size: 10px;
+    .cast-name { font-size: 11px; font-weight: 800; color: #f8fafc; }
+    .cast-role { font-size: 9.5px; color: var(--accent-blue); margin-bottom: 4px; }
+    .cast-actions { display: flex; justify-content: center; gap: 3px; }
+    .cast-mini-btn {
+      font-size: 9.5px;
       background: rgba(56, 189, 248, 0.2);
       border: 1px solid rgba(56, 189, 248, 0.45);
       color: #e0f2fe;
-      padding: 2px 6px;
-      border-radius: 6px;
+      padding: 2px 5px;
+      border-radius: 5px;
       cursor: pointer;
-      display: inline-block;
     }
 
-    .add-char-box {
+    .panel-box {
       background: rgba(15, 23, 42, 0.95);
       border: 1.5px solid rgba(251, 191, 36, 0.45);
       border-radius: 14px;
-      padding: 12px;
-      margin-bottom: 12px;
+      padding: 11px;
+      margin-bottom: 10px;
     }
 
-    .add-char-title {
-      font-size: 13.5px;
+    .panel-title {
+      font-size: 13px;
       font-weight: 900;
       color: var(--accent-gold);
       margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .form-input {
@@ -610,47 +630,56 @@
       background: #1e293b;
       border: 1px solid rgba(255, 255, 255, 0.25);
       color: #fff;
-      padding: 8px 10px;
+      padding: 7px 9px;
       border-radius: 8px;
-      font-size: 12.5px;
-      margin-bottom: 8px;
+      font-size: 12px;
+      margin-bottom: 7px;
       user-select: text;
     }
 
-    .form-row-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-    }
+    .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .form-row-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 7px; }
+    .mini-num-label { font-size: 10px; color: #94a3b8; text-align: center; }
 
-    .gallery-grid {
+    /* 排行榜與圖鑑列表 */
+    .scroll-list {
       width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      margin-bottom: 18px;
+      gap: 7px;
+      margin-bottom: 14px;
       text-align: left;
       max-height: 55dvh;
       overflow-y: auto;
     }
 
-    .gallery-card {
-      background: rgba(30, 41, 59, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+    .list-card {
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 10px;
       padding: 9px 12px;
     }
 
-    .gallery-card.unlocked { border-color: rgba(56, 189, 248, 0.5); }
-    .gallery-title { font-size: 12.5px; font-weight: 800; color: var(--accent-gold); margin-bottom: 2px; }
-    .gallery-desc { font-size: 11.5px; color: var(--text-muted); }
+    .list-card.unlocked { border-color: rgba(56, 189, 248, 0.5); }
+    .l-title { font-size: 12.5px; font-weight: 800; color: var(--accent-gold); margin-bottom: 2px; }
+    .l-desc { font-size: 11.5px; color: var(--text-muted); }
+
+    .rank-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 10px;
+      padding: 8px 12px;
+    }
 
     #save-toast {
       position: fixed;
-      top: 58px;
+      top: 56px;
       left: 50%;
       transform: translateX(-50%);
-      z-index: 60;
+      z-index: 70;
       background: rgba(34, 197, 94, 0.95);
       color: #fff;
       font-size: 12px;
@@ -669,15 +698,17 @@
 <div id="save-toast">☁️ 已即時同步至 Firebase 雲端！</div>
 
 <div id="app-frame">
+  <!-- 頂部：時間軸 ＋ 四大生存指標 ＋ 天氣狀態與道具背包 -->
   <div id="top-hud">
     <div class="time-bar">
-      <div class="clock-pill">🕒 <span id="clock-text">07:30</span></div>
+      <div class="clock-pill">📅 <span id="day-badge">D1</span> 🕒 <span id="clock-text">07:30</span></div>
       <div class="shift-progress-wrap">
         <div id="shift-progress-fill"></div>
       </div>
-      <div style="display:flex; gap:4px;">
+      <div style="display:flex; gap:3px;">
         <button class="icon-btn cast-btn" onclick="openCastModal()">🔒 角色(<span id="cast-count">8</span>)</button>
-        <button class="icon-btn" onclick="openGallery()">🏆 <span id="hud-unlock">0</span>/9</button>
+        <button class="icon-btn" onclick="openLeaderboard()">🏅 排行</button>
+        <button class="icon-btn" onclick="openGallery()">🏆 <span id="hud-unlock">0</span>/10</button>
         <button id="voice-btn" class="icon-btn active-audio" onclick="toggleVoice()">🗣️</button>
         <button id="sfx-btn" class="icon-btn active-audio" onclick="toggleSFX()">🔊</button>
       </div>
@@ -705,8 +736,15 @@
         <div class="meter-track"><div class="meter-fill" id="bar-sanity"></div></div>
       </div>
     </div>
+
+    <!-- 天氣 Buff ＋ 校安執勤道具背包 -->
+    <div class="tactical-bar">
+      <div class="weather-pill" id="weather-label">☀️ 晴朗微風</div>
+      <div class="items-row" id="items-container"></div>
+    </div>
   </div>
 
+  <!-- 中央：可左右滑動的事件卡牌 -->
   <div id="card-arena">
     <div id="swipe-preview-banner">👈 左右滑動卡牌，或點擊下方按鈕做決策 👉</div>
 
@@ -729,6 +767,7 @@
     </div>
   </div>
 
+  <!-- 底部：雙向決策按鈕 -->
   <div id="bottom-controls">
     <button class="action-btn" id="btn-left"
       onmouseenter="previewChoice('left')" onmouseleave="clearPreview()"
@@ -746,37 +785,42 @@
 
   <!-- 開場封面 -->
   <div id="start-modal" class="modal-screen">
-    <div class="tag-pill">FIREBASE CLOUD SYNC & ADMIN LOCK</div>
+    <div class="tag-pill">ULTIMATE EDITION ・ 雲端同步＋五日挑戰</div>
     <h1 class="main-title">今天也要平安下班<br>：校園群像生存模擬器</h1>
-    <div class="cloud-badge connected" id="cover-cloud-status">🟢 已自動綁定 Firebase 雲端（跨裝置即時同步中）</div>
+    <div class="cloud-badge" id="cover-cloud-status">🟢 已綁定 Firebase 雲端（全服同步＋排行榜）</div>
 
     <div class="mode-selector">
       <div class="mode-btn active" id="mode-normal" onclick="selectMode('normal')">
-        <div class="mode-title">☀️ 一般值勤班</div>
-        <div class="mode-sub">隨機 12 關（含自訂角色）</div>
+        <div class="mode-title">☀️ 一般值勤</div>
+        <div class="mode-sub">單日隨機 12 關</div>
+      </div>
+      <div class="mode-btn" id="mode-week" onclick="selectMode('week')">
+        <div class="mode-title">📆 週一至五</div>
+        <div class="mode-sub">5 天連續生存戰</div>
       </div>
       <div class="mode-btn" id="mode-full" onclick="selectMode('full')">
-        <div class="mode-title">🔥 全天魔鬼班</div>
-        <div class="mode-sub">完整全天事件挑戰</div>
+        <div class="mode-title">🔥 魔鬼全日</div>
+        <div class="mode-sub">單日完整全事件</div>
       </div>
     </div>
 
     <div class="btn-stack">
-      <button class="btn-primary" onclick="startNewShift()">🔊 開啟語音與音效・開始值勤</button>
-      <button class="btn-secondary" style="border-color:#fbbf24; color:#fde68a;" onclick="openCastModal()">🔒 管理員後台 / 換圖與新增角色</button>
-      <button class="btn-secondary" onclick="openGallery()">🏆 查看職場結局圖鑑 (<span id="cover-unlock">0</span>/9)</button>
+      <button class="btn-primary" onclick="startNewShift()">🔊 開啟語音與道具・開始值勤</button>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+        <button class="btn-secondary" style="border-color:#38bdf8; color:#bae6fd;" onclick="openLeaderboard()">🏅 全服排行榜</button>
+        <button class="btn-secondary" onclick="openGallery()">🏆 結局圖鑑 (<span id="cover-unlock">0</span>/10)</button>
+      </div>
+      <button class="btn-secondary" style="border-color:#fbbf24; color:#fde68a;" onclick="openCastModal()">🔒 管理員後台（角色／劇本／密碼）</button>
     </div>
   </div>
 
   <!-- 管理員密碼驗證彈窗 -->
   <div id="admin-lock-modal" class="modal-screen hidden" style="z-index: 50;">
     <div class="lock-card" id="lock-card-box">
-      <div class="lock-icon">🔐</div>
+      <div style="font-size:36px; margin-bottom:6px;">🔐</div>
       <div class="tag-pill" style="margin-bottom:6px;">ADMIN ACCESS ONLY</div>
       <h3 style="font-size:18px; font-weight:900; color:#f8fafc; margin-bottom:4px;">管理員權限驗證</h3>
-      <p style="font-size:12px; color:#94a3b8; line-height:1.45;">
-        為防止玩家隨意更動雲端角色圖片，請輸入管理員密碼解鎖後台（預設密碼：<strong style="color:#fbbf24;">8888</strong>）
-      </p>
+      <p style="font-size:12px; color:#94a3b8;">請輸入管理員密碼解鎖後台（預設密碼：<strong style="color:#fbbf24;">8888</strong>）</p>
       <input type="password" class="pin-input" id="admin-pin-input" placeholder="請輸入密碼" maxlength="16"
         onkeydown="if(event.key==='Enter') verifyAdminPin()" />
       <div class="pin-error" id="admin-pin-error"></div>
@@ -787,28 +831,21 @@
     </div>
   </div>
 
-  <!-- 登場角色庫＆Firebase 雲端連線彈窗（需密碼解鎖才能進入） -->
+  <!-- 管理員進階後台（角色編輯/刪除、自訂加減分、JSON劇本匯出匯入） -->
   <div id="cast-modal" class="modal-screen hidden">
-    <div class="tag-pill">🔓 ADMIN PANEL ・ CLOUD SYNC</div>
-    <h2 class="main-title" style="font-size: 20px;">管理員角色庫＆雲端同步設定</h2>
+    <div class="tag-pill">🔓 ADMIN STUDIO ・ CLOUD SYNC</div>
+    <h2 class="main-title" style="font-size: 19px;">管理員角色與劇本編輯工坊</h2>
 
     <div class="cast-scroll">
-      <div class="firebase-box">
-        <div class="firebase-title">
-          <span>☁️ 已綁定專屬 Firebase 雲端資料庫</span>
-          <span id="modal-cloud-tag" style="font-size:11px; color:#4ade80;">🟢 雲端已連線</span>
-        </div>
-        <div style="display:flex; gap:6px;">
-          <input type="text" class="form-input" id="firebase-url-input" style="margin-bottom:0;" value="https://realtime-database-1c48d-default-rtdb.asia-southeast1.firebasedatabase.app" />
-          <button class="btn-primary" style="padding:8px 12px; font-size:12px; white-space:nowrap;" onclick="pullDataFromFirebase(false)">立即同步</button>
-        </div>
-      </div>
-
+      <!-- 1. 現有角色庫（支援換圖、編輯、刪除自訂角色） -->
       <div class="cast-grid" id="cast-grid-list"></div>
 
-      <!-- 新增全新角色表單 -->
-      <div class="add-char-box">
-        <div class="add-char-title">➕ 新增全新角色（自動同步至所有裝置！）</div>
+      <!-- 2. 新增／編輯角色與自訂四維加減分數 -->
+      <div class="panel-box">
+        <div class="panel-title">
+          <span id="editor-form-title">➕ 新增全新角色與專屬事件卡</span>
+          <button class="cast-mini-btn hidden" id="cancel-edit-btn" onclick="resetCharEditor()">取消編輯</button>
+        </div>
         <div class="form-row-2">
           <input type="text" class="form-input" id="new-char-name" placeholder="角色稱呼（例：教官李組長）" maxlength="12" />
           <select class="form-input" id="new-char-voice">
@@ -818,29 +855,49 @@
             <option value="elder">聲線：低沉威嚴</option>
           </select>
         </div>
-        <input type="text" class="form-input" id="new-char-event" placeholder="該角色登場的突發狀況台詞" maxlength="65" />
-        <div class="form-row-2">
-          <input type="text" class="form-input" id="new-char-left" placeholder="左滑選項（例：協助勸導）" maxlength="22" />
-          <input type="text" class="form-input" id="new-char-right" placeholder="右滑選項（例：開單登記）" maxlength="22" />
+        <input type="text" class="form-input" id="new-char-event" placeholder="該角色登場的突發狀況台詞" maxlength="70" />
+
+        <!-- 左滑選項與四維數值 -->
+        <input type="text" class="form-input" id="new-char-left" placeholder="◀ 左滑選項文字（例：依規定協助勸導）" maxlength="24" />
+        <div class="form-row-4">
+          <div><div class="mini-num-label">安全</div><input type="number" class="form-input" id="l-safety" value="15" step="5" /></div>
+          <div><div class="mini-num-label">信任</div><input type="number" class="form-input" id="l-admin" value="10" step="5" /></div>
+          <div><div class="mini-num-label">家長</div><input type="number" class="form-input" id="l-parent" value="-10" step="5" /></div>
+          <div><div class="mini-num-label">理智</div><input type="number" class="form-input" id="l-sanity" value="-5" step="5" /></div>
         </div>
+
+        <!-- 右滑選項與四維數值 -->
+        <input type="text" class="form-input" id="new-char-right" placeholder="▶ 右滑選項文字（例：強硬開單登記）" maxlength="24" />
+        <div class="form-row-4">
+          <div><div class="mini-num-label">安全</div><input type="number" class="form-input" id="r-safety" value="-10" step="5" /></div>
+          <div><div class="mini-num-label">信任</div><input type="number" class="form-input" id="r-admin" value="-10" step="5" /></div>
+          <div><div class="mini-num-label">家長</div><input type="number" class="form-input" id="r-parent" value="15" step="5" /></div>
+          <div><div class="mini-num-label">理智</div><input type="number" class="form-input" id="r-sanity" value="10" step="5" /></div>
+        </div>
+
         <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;">
-          <span style="font-size:11.5px; color:#cbd5e1;" id="new-char-file-label">上傳角色立繪（自動壓縮雲端同步）：</span>
-          <label class="cast-upload-mini" style="padding:5px 10px; font-size:11px;">
+          <span style="font-size:11px; color:#cbd5e1;" id="new-char-file-label">上傳角色立繪（自動壓縮雲端同步）：</span>
+          <label class="cast-mini-btn" style="padding:4px 9px; font-size:11px;">
             📁 選擇豆包圖片
             <input type="file" id="new-char-file" accept="image/*" class="hidden" onchange="previewNewCharImg(event)" />
           </label>
         </div>
-        <button class="btn-primary" style="width:100%; padding:10px; font-size:13.5px;" onclick="createNewCharacter()">✨ 確認新增並雲端同步</button>
+        <button class="btn-primary" id="save-char-submit-btn" style="width:100%; padding:9px; font-size:13px;" onclick="saveCharacterForm()">✨ 確認新增並雲端同步</button>
       </div>
 
-      <!-- 修改管理員密碼區塊（同步至雲端，所有裝置通用） -->
-      <div class="firebase-box" style="border-color: rgba(251, 191, 36, 0.45); margin-bottom: 0;">
-        <div class="firebase-title" style="color: var(--accent-gold);">
-          <span>🔑 變更管理員密碼（雲端同步生效）</span>
+      <!-- 3. 劇本包匯出/匯入 與 密碼變更 -->
+      <div class="panel-box" style="border-color: rgba(56, 189, 248, 0.45); margin-bottom: 0;">
+        <div class="panel-title" style="color: var(--accent-blue);"><span>📦 劇本包備份 ＆ 管理員密碼</span></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px;">
+          <button class="btn-secondary" style="padding:7px; font-size:11.5px;" onclick="exportScriptJSON()">📤 匯出劇本 JSON</button>
+          <label class="btn-secondary" style="padding:7px; font-size:11.5px; text-align:center; cursor:pointer;">
+            📥 匯入劇本 JSON
+            <input type="file" accept=".json" class="hidden" onchange="importScriptJSON(event)" />
+          </label>
         </div>
         <div style="display:flex; gap:6px;">
-          <input type="text" class="form-input" id="new-admin-pin-input" style="margin-bottom:0;" placeholder="輸入新密碼（至少 4 碼）" maxlength="16" />
-          <button class="btn-primary" style="background:linear-gradient(135deg,#d97706,#b45309); padding:8px 12px; font-size:12px; white-space:nowrap;" onclick="changeAdminPassword()">更新密碼</button>
+          <input type="text" class="form-input" id="new-admin-pin-input" style="margin-bottom:0;" placeholder="輸入新管理員密碼（至少 4 碼）" maxlength="16" />
+          <button class="btn-primary" style="background:linear-gradient(135deg,#d97706,#b45309); padding:7px 10px; font-size:11.5px; white-space:nowrap;" onclick="changeAdminPassword()">更新密碼</button>
         </div>
       </div>
     </div>
@@ -851,37 +908,70 @@
     </div>
   </div>
 
-  <!-- 結局結算畫面 -->
+  <!-- 結局結算畫面（含全服排行榜登錄 ＋ 一鍵產生戰績分享圖） -->
   <div id="end-modal" class="modal-screen hidden">
     <div class="tag-pill" id="end-badge">ENDING</div>
     <h2 class="main-title" id="end-title">結局標題</h2>
     <p class="sub-desc" id="end-desc">結局說明</p>
+
+    <!-- 通關分數登錄全服排行榜 -->
+    <div id="score-submit-box" class="panel-box hidden" style="width:100%; max-width:320px; text-align:left;">
+      <div class="panel-title"><span>🏅 登錄全服校安生存排行榜（得分：<span id="final-score-num">0</span>）</span></div>
+      <div style="display:flex; gap:6px;">
+        <input type="text" class="form-input" id="player-nickname-input" style="margin-bottom:0;" placeholder="輸入你的校安暱稱" maxlength="10" />
+        <button class="btn-primary" id="submit-score-btn" style="padding:8px 12px; font-size:12px; white-space:nowrap;" onclick="submitScoreToLeaderboard()">登錄上榜</button>
+      </div>
+    </div>
+
     <div class="btn-stack">
+      <button class="btn-primary" style="background:linear-gradient(135deg,#059669,#10b981);" onclick="generateShareCard()">📸 生成戰績分享圖（存圖發限動）</button>
       <button class="btn-primary" onclick="startNewShift()">再輪一次班（隨機新事件）</button>
-      <button class="btn-secondary" onclick="openGallery()">查看已解鎖結局圖鑑</button>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+        <button class="btn-secondary" onclick="openLeaderboard()">🏅 查看排行榜</button>
+        <button class="btn-secondary" onclick="openGallery()">🏆 結局圖鑑</button>
+      </div>
     </div>
   </div>
 
-  <!-- 圖鑑視窗 -->
+  <!-- 戰績分享圖預覽彈窗 -->
+  <div id="share-modal" class="modal-screen hidden" style="z-index: 55;">
+    <div class="tag-pill">SHARE YOUR SHIFT RECORD</div>
+    <h3 style="font-size:17px; font-weight:900; color:#f8fafc; margin-bottom:8px;">長按圖片儲存，或點擊下方按鈕下載</h3>
+    <img id="share-card-img" style="width:250px; border-radius:16px; border:2px solid #fbbf24; margin-bottom:12px; box-shadow:0 10px 30px rgba(0,0,0,0.8);" />
+    <div class="btn-stack">
+      <button class="btn-primary" onclick="downloadShareCard()">⬇️ 下載戰績圖片 (PNG)</button>
+      <button class="btn-secondary" onclick="document.getElementById('share-modal').classList.add('hidden')">關閉預覽</button>
+    </div>
+  </div>
+
+  <!-- 全服排行榜視窗 -->
+  <div id="leaderboard-modal" class="modal-screen hidden">
+    <div class="tag-pill">GLOBAL CAMPUS SAFETY RANKING</div>
+    <h2 class="main-title" style="font-size: 21px;">🏅 全服金牌校安生存排行榜</h2>
+    <div class="scroll-list" id="leaderboard-list">
+      <div class="l-desc" style="text-align:center;">正在從 Firebase 載入最新戰績...</div>
+    </div>
+    <button class="btn-primary" style="width:100%; max-width:300px;" onclick="document.getElementById('leaderboard-modal').classList.add('hidden')">返回</button>
+  </div>
+
+  <!-- 結局圖鑑視窗 -->
   <div id="gallery-modal" class="modal-screen hidden">
-    <div class="tag-pill">CAREER ENDINGS (9 TYPES)</div>
-    <h2 class="main-title" style="font-size: 22px;">校安人員生存結局圖鑑</h2>
-    <div class="gallery-grid" id="gallery-list"></div>
-    <button class="btn-primary" onclick="closeGallery()">返回遊戲</button>
+    <div class="tag-pill">CAREER ENDINGS (10 TYPES)</div>
+    <h2 class="main-title" style="font-size: 21px;">校安人員生存結局圖鑑</h2>
+    <div class="scroll-list" id="gallery-list"></div>
+    <button class="btn-primary" style="width:100%; max-width:300px;" onclick="closeGallery()">返回遊戲</button>
   </div>
 </div>
 
 <script>
   // ==========================================
-  // 1. Firebase Realtime Database 跨裝置雲端同步核心
+  // 1. Firebase 雲端資料庫連線與排行榜同步核心
   // ==========================================
   const DEFAULT_FIREBASE_URL = "https://realtime-database-1c48d-default-rtdb.asia-southeast1.firebasedatabase.app";
-
-  let firebaseBaseUrl = (localStorage.getItem("campus_game_fb_url") || DEFAULT_FIREBASE_URL).replace(/\/$/, "");
+  let firebaseBaseUrl = DEFAULT_FIREBASE_URL.replace(/\/$/, "");
   let cloudPollTimer = null;
   let lastCloudTimestamp = 0;
 
-  // 管理員密碼設定（預設 8888，修改後會自動同步至 Firebase 雲端）
   let currentAdminPin = localStorage.getItem("campus_game_admin_pin") || "8888";
   let isAdminUnlocked = false;
 
@@ -891,22 +981,6 @@
     el.style.opacity = "1";
     clearTimeout(el._t);
     el._t = setTimeout(() => { el.style.opacity = "0"; }, 2600);
-  }
-
-  function updateCloudStatusUI(connected, labelText) {
-    const coverBadge = document.getElementById("cover-cloud-status");
-    const modalTag = document.getElementById("modal-cloud-tag");
-    if (connected) {
-      coverBadge.classList.add("connected");
-      coverBadge.textContent = labelText || "🟢 已自動綁定 Firebase 雲端（跨裝置即時同步中）";
-      modalTag.style.color = "#4ade80";
-      modalTag.textContent = "🟢 雲端已連線";
-    } else {
-      coverBadge.classList.remove("connected");
-      coverBadge.textContent = labelText || "🔴 雲端連線異常（請檢查 Firebase Rules 權限）";
-      modalTag.style.color = "#f87171";
-      modalTag.textContent = "🔴 連線異常";
-    }
   }
 
   function compressImageToDataURL(file, callback) {
@@ -930,102 +1004,70 @@
 
   async function pushDataToFirebase() {
     await saveToIndexedDB();
-    if (!firebaseBaseUrl) return;
-
     try {
-      showSaveToast("⏳ 正在上傳資料至 Firebase 雲端...");
+      showSaveToast("⏳ 正在同步角色與劇本至 Firebase...");
       const nowTs = Date.now();
       const customEvents = ALL_EVENTS.filter(e => e.isCustom);
       const payload = {
         updatedAt: nowTs,
         adminPin: currentAdminPin,
-        roster: CHARACTER_ROSTER.map(c => ({
-          id: c.id, name: c.name, role: c.role, voice: c.voice, img: c.img
-        })),
+        roster: CHARACTER_ROSTER.map(c => ({ id: c.id, name: c.name, role: c.role, voice: c.voice, img: c.img })),
         customEvents: customEvents
       };
-
       const resp = await fetch(`${firebaseBaseUrl}/campus_game_sync.json`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
-
       if (!resp.ok) throw new Error("HTTP " + resp.status);
       lastCloudTimestamp = nowTs;
-      updateCloudStatusUI(true);
-      showSaveToast("☁️ 雲端同步完成！換任何手機或電腦打開都會有");
+      showSaveToast("☁️ 雲端同步完成！所有裝置已即時更新");
     } catch (err) {
-      console.error(err);
-      updateCloudStatusUI(false, "🔴 Firebase 寫入被拒（請在後台 Rules 設為 true）");
-      showSaveToast("⚠️ 寫入失敗，請確認 Firebase Rules 已設為 true");
+      showSaveToast("⚠️ 雲端寫入失敗，請確認 Firebase Rules 權限");
     }
   }
 
   async function pullDataFromFirebase(silent = false) {
-    const inputUrl = document.getElementById("firebase-url-input");
-    if (inputUrl && inputUrl.value.trim().startsWith("https://")) {
-      firebaseBaseUrl = inputUrl.value.trim().replace(/\/$/, "");
-      localStorage.setItem("campus_game_fb_url", firebaseBaseUrl);
-    }
-    if (!firebaseBaseUrl) return;
-
     try {
       const resp = await fetch(`${firebaseBaseUrl}/campus_game_sync.json?t=${Date.now()}`);
-      if (!resp.ok) throw new Error("HTTP " + resp.status);
+      if (!resp.ok) return;
       const data = await resp.json();
-
-      updateCloudStatusUI(true);
-
       if (!data) {
         if (!silent) await pushDataToFirebase();
         return;
       }
-
       if (data.updatedAt && data.updatedAt !== lastCloudTimestamp) {
         lastCloudTimestamp = data.updatedAt;
-
-        // 同步雲端最新管理員密碼
-        if (data.adminPin && typeof data.adminPin === "string") {
+        if (data.adminPin) {
           currentAdminPin = data.adminPin;
           localStorage.setItem("campus_game_admin_pin", currentAdminPin);
         }
-
         if (Array.isArray(data.roster) && data.roster.length > 0) {
           CHARACTER_ROSTER.length = 0;
           data.roster.forEach(item => CHARACTER_ROSTER.push(item));
         }
-
         if (Array.isArray(data.customEvents)) {
           for (let i = ALL_EVENTS.length - 1; i >= 0; i--) {
             if (ALL_EVENTS[i].isCustom) ALL_EVENTS.splice(i, 1);
           }
-          data.customEvents.forEach(ev => {
-            ALL_EVENTS.splice(ALL_EVENTS.length - 1, 0, ev);
-          });
+          data.customEvents.forEach(ev => ALL_EVENTS.splice(ALL_EVENTS.length - 1, 0, ev));
         }
-
         await saveToIndexedDB();
         updateUnlockUI();
         renderCastGrid();
-        if (!silent) showSaveToast("☁️ 已同步雲端最新人物與豆包圖片！");
       }
-    } catch (err) {
-      console.warn("Firebase pull failed:", err);
-      updateCloudStatusUI(false, "🔴 讀取失敗（請確認 Firebase Rules 設為 true）");
-    }
+    } catch (e) {}
   }
 
   function startCloudPolling() {
     if (cloudPollTimer) clearInterval(cloudPollTimer);
-    if (!firebaseBaseUrl) return;
     cloudPollTimer = setInterval(() => pullDataFromFirebase(true), 6000);
   }
 
   // ==========================================
-  // 2. 本機 IndexedDB 離線快取備援
+  // 2. 本機 IndexedDB 離線快取
   // ==========================================
-  const DB_NAME = "CampusSafetyGameDB";
+  const DB_NAME = "CampusSafetyGameDB_V2";
   const STORE_NAME = "customData";
 
   function openDB() {
@@ -1054,12 +1096,11 @@
       const store = tx.objectStore(STORE_NAME);
       const savedRoster = await new Promise(res => { const r = store.get("roster"); r.onsuccess = () => res(r.result); r.onerror = () => res(null); });
       const savedEvents = await new Promise(res => { const r = store.get("customEvents"); r.onsuccess = () => res(r.result); r.onerror = () => res(null); });
-
-      if (savedRoster && Array.isArray(savedRoster) && savedRoster.length > 0) {
+      if (savedRoster && savedRoster.length > 0) {
         CHARACTER_ROSTER.length = 0;
         savedRoster.forEach(item => CHARACTER_ROSTER.push(item));
       }
-      if (savedEvents && Array.isArray(savedEvents)) {
+      if (savedEvents) {
         savedEvents.forEach(ev => {
           if (!ALL_EVENTS.some(x => x.charId === ev.charId)) ALL_EVENTS.splice(ALL_EVENTS.length - 1, 0, ev);
         });
@@ -1070,7 +1111,7 @@
   }
 
   // ==========================================
-  // 3. 內建 8 大角色與 14 個基礎事件庫
+  // 3. 角色庫與事件卡資料
   // ==========================================
   function makeCharacterPortrait(bg1, bg2, hairColor, outfitColor, accessory, emojiBadge) {
     const c = document.createElement("canvas");
@@ -1079,22 +1120,13 @@
     const grad = ctx.createLinearGradient(0, 0, 0, 800);
     grad.addColorStop(0, bg1); grad.addColorStop(1, bg2);
     ctx.fillStyle = grad; ctx.fillRect(0, 0, 450, 800);
-
     ctx.fillStyle = outfitColor;
     ctx.beginPath(); ctx.roundRect(95, 360, 260, 320, 65); ctx.fill();
-
     if (accessory === "vest") {
       ctx.fillStyle = "#fde047";
       ctx.fillRect(105, 455, 240, 22); ctx.fillRect(105, 520, 240, 22);
-    } else if (accessory === "tie") {
-      ctx.fillStyle = "#dc2626";
-      ctx.beginPath(); ctx.moveTo(225, 370); ctx.lineTo(205, 480); ctx.lineTo(225, 510); ctx.lineTo(245, 480); ctx.closePath(); ctx.fill();
     }
-
     if (accessory === "dog") {
-      ctx.fillStyle = "#d97706";
-      ctx.beginPath(); ctx.ellipse(135, 280, 32, 65, 0.25, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.ellipse(315, 280, 32, 65, -0.25, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = "#fbbf24";
       ctx.beginPath(); ctx.arc(225, 260, 95, 0, Math.PI * 2); ctx.fill();
     } else {
@@ -1258,11 +1290,12 @@
         g.gain.setValueAtTime(0.2, now + i * 0.07); g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.06);
         o.connect(g); g.connect(audioCtx.destination); o.start(now + i * 0.07); o.stop(now + i * 0.07 + 0.07);
       }
-    } else if (type === "swipe") {
+    } else if (type === "swipe" || type === "item") {
       const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-      o.type = "triangle"; o.frequency.setValueAtTime(520, now); o.frequency.exponentialRampToValueAtTime(720, now + 0.14);
-      g.gain.setValueAtTime(0.28, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
-      o.connect(g); g.connect(audioCtx.destination); o.start(now); o.stop(now + 0.17);
+      o.type = "triangle"; o.frequency.setValueAtTime(type === "item" ? 660 : 520, now);
+      o.frequency.exponentialRampToValueAtTime(type === "item" ? 990 : 720, now + 0.16);
+      g.gain.setValueAtTime(0.3, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+      o.connect(g); g.connect(audioCtx.destination); o.start(now); o.stop(now + 0.19);
     } else if (type === "win" || type === "fail") {
       const freqs = type === "win" ? [523.25, 659.25, 783.99, 1046.5] : [260, 215, 165];
       freqs.forEach((f, i) => {
@@ -1318,79 +1351,122 @@
   }
 
   // ==========================================
-  // 5. 管理員密碼驗證與角色庫管理
+  // 5. 隨機天氣 Buff ＋ 校安執勤道具背包系統
+  // ==========================================
+  const WEATHERS = [
+    { id: "sunny", label: "☀️ 晴朗微風（平穩日）", mod: {} },
+    { id: "rain", label: "🌧️ 梅雨鋒面（家長情緒波動 +50%）", mod: { parentMult: 1.5 } },
+    { id: "inspect", label: "📋 督學週（長官信任扣分加倍）", mod: { adminPenaltyMult: 1.5 } },
+    { id: "tea", label: "🧋 主任請飲料（個人理智上限緩衝）", mod: { sanityBonus: 10 } }
+  ];
+
+  const TACTICAL_ITEMS = [
+    { id: "bodycam", name: "📹 密錄器", desc: "開啟密錄器！家長情緒大幅降溫 -25%" },
+    { id: "radio", name: "📻 叫支援", desc: "無線電呼叫支援！校園安全與長官信任 +20%" },
+    { id: "coffee", name: "☕ 冰美式", desc: "喝下冰美式續命！個人理智回復 +25%" }
+  ];
+
+  let currentWeather = WEATHERS[0];
+  let activeItems = [];
+
+  function rollDailyWeatherAndItems() {
+    currentWeather = WEATHERS[Math.floor(Math.random() * WEATHERS.length)];
+    document.getElementById("weather-label").textContent = currentWeather.label;
+    if (currentWeather.mod.sanityBonus) stats.sanity = Math.min(85, stats.sanity + currentWeather.mod.sanityBonus);
+
+    // 隨機發放 2 個執勤保命道具
+    const pool = [...TACTICAL_ITEMS].sort(() => Math.random() - 0.5);
+    activeItems = pool.slice(0, 2).map(it => ({ ...it, used: false }));
+    renderItemBar();
+  }
+
+  function renderItemBar() {
+    const box = document.getElementById("items-container");
+    box.innerHTML = "";
+    activeItems.forEach((it, idx) => {
+      const btn = document.createElement("button");
+      btn.className = "item-btn" + (it.used ? " used" : "");
+      btn.textContent = it.name;
+      btn.onclick = () => useTacticalItem(idx);
+      box.appendChild(btn);
+    });
+  }
+
+  function useTacticalItem(idx) {
+    if (isGameOver) return;
+    const it = activeItems[idx];
+    if (!it || it.used) return;
+    it.used = true;
+    playSFX("item");
+
+    if (it.id === "bodycam") {
+      stats.parent = Math.max(10, stats.parent - 25);
+    } else if (it.id === "radio") {
+      stats.safety = Math.min(90, stats.safety + 20);
+      stats.admin = Math.min(90, stats.admin + 20);
+    } else if (it.id === "coffee") {
+      stats.sanity = Math.min(90, stats.sanity + 25);
+    }
+
+    renderMeters();
+    renderItemBar();
+    showSaveToast(it.desc);
+  }
+
+  // ==========================================
+  // 6. 管理員密碼鎖、角色編輯/刪除與劇本 JSON 匯出匯入
   // ==========================================
   let pendingNewCharImg = null;
+  let editingCharId = null;
 
   function openCastModal() {
     playSFX("walkie");
-    if (isAdminUnlocked) {
-      showAdminCastPanel();
-    } else {
+    if (isAdminUnlocked) showAdminCastPanel();
+    else {
       document.getElementById("admin-pin-input").value = "";
       document.getElementById("admin-pin-error").textContent = "";
       document.getElementById("admin-lock-modal").classList.remove("hidden");
-      setTimeout(() => document.getElementById("admin-pin-input").focus(), 100);
     }
   }
 
-  function closeAdminLock() {
-    playSFX("walkie");
-    document.getElementById("admin-lock-modal").classList.add("hidden");
-  }
+  function closeAdminLock() { document.getElementById("admin-lock-modal").classList.add("hidden"); }
 
   function verifyAdminPin() {
-    const inputEl = document.getElementById("admin-pin-input");
-    const errEl = document.getElementById("admin-pin-error");
-    const entered = inputEl.value.trim();
-
-    if (entered === currentAdminPin) {
+    const val = document.getElementById("admin-pin-input").value.trim();
+    if (val === currentAdminPin) {
       isAdminUnlocked = true;
       playSFX("win");
       document.getElementById("admin-lock-modal").classList.add("hidden");
       showAdminCastPanel();
-      showSaveToast("🔓 管理員權限已解鎖！");
+      showSaveToast("🔓 管理員後台已解鎖！");
     } else {
       playSFX("fail");
-      errEl.textContent = "❌ 密碼錯誤，無法進入管理員後台";
-      inputEl.value = "";
-      const box = document.getElementById("lock-card-box");
-      box.classList.remove("shake-anim");
-      void box.offsetWidth;
-      box.classList.add("shake-anim");
+      document.getElementById("admin-pin-error").textContent = "❌ 密碼錯誤";
     }
   }
 
   function showAdminCastPanel() {
-    document.getElementById("firebase-url-input").value = firebaseBaseUrl;
+    resetCharEditor();
     renderCastGrid();
     document.getElementById("cast-modal").classList.remove("hidden");
   }
 
   function lockAndCloseAdmin() {
     isAdminUnlocked = false;
-    playSFX("walkie");
     document.getElementById("cast-modal").classList.add("hidden");
     showSaveToast("🔒 管理員後台已上鎖");
   }
 
-  function closeCastModal() {
-    playSFX("walkie");
-    document.getElementById("cast-modal").classList.add("hidden");
-  }
+  function closeCastModal() { document.getElementById("cast-modal").classList.add("hidden"); }
 
   async function changeAdminPassword() {
     const newPin = document.getElementById("new-admin-pin-input").value.trim();
-    if (newPin.length < 4) {
-      showSaveToast("⚠️ 新密碼至少需要 4 個字元");
-      return;
-    }
+    if (newPin.length < 4) { showSaveToast("⚠️ 密碼至少需 4 碼"); return; }
     currentAdminPin = newPin;
     localStorage.setItem("campus_game_admin_pin", currentAdminPin);
     document.getElementById("new-admin-pin-input").value = "";
-    playSFX("win");
     await pushDataToFirebase();
-    showSaveToast("🔑 管理員密碼已更新並同步至雲端！");
+    showSaveToast("🔑 管理員密碼已更新並同步雲端！");
   }
 
   function renderCastGrid() {
@@ -1398,114 +1474,219 @@
     const grid = document.getElementById("cast-grid-list");
     grid.innerHTML = "";
     CHARACTER_ROSTER.forEach((ch, idx) => {
+      const isCustom = ch.id.startsWith("custom_");
       const card = document.createElement("div");
       card.className = "cast-card";
       card.innerHTML = `
+        ${isCustom ? `<button class="cast-del-btn" title="刪除自訂角色" onclick="deleteCustomChar('${ch.id}')">✕</button>` : ""}
         <img src="${ch.img}" class="cast-avatar" alt="${ch.name}" />
         <div class="cast-name">${ch.name}</div>
         <div class="cast-role">${ch.role}</div>
-        <label class="cast-upload-mini">
-          🖼️ 換圖同步
-          <input type="file" accept="image/*" class="hidden" onchange="replaceCharImage(event, ${idx})" />
-        </label>
+        <div class="cast-actions">
+          <label class="cast-mini-btn">
+            🖼️ 換圖
+            <input type="file" accept="image/*" class="hidden" onchange="replaceCharImage(event, ${idx})" />
+          </label>
+          ${isCustom ? `<button class="cast-mini-btn" onclick="editCustomChar('${ch.id}')">✏️ 編輯</button>` : ""}
+        </div>
       `;
       grid.appendChild(card);
     });
   }
 
   function replaceCharImage(event, idx) {
-    if (!isAdminUnlocked) return;
     const file = event.target.files[0];
     if (!file) return;
-    compressImageToDataURL(file, async (compressedDataUrl) => {
-      CHARACTER_ROSTER[idx].img = compressedDataUrl;
+    compressImageToDataURL(file, async (url) => {
+      CHARACTER_ROSTER[idx].img = url;
       renderCastGrid();
       playSFX("win");
       await pushDataToFirebase();
     });
   }
 
-  function previewNewCharImg(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    compressImageToDataURL(file, (compressedDataUrl) => {
-      pendingNewCharImg = compressedDataUrl;
-      document.getElementById("new-char-file-label").textContent = "✅ 已選取圖片（準備好雲端同步）";
-    });
+  function editCustomChar(charId) {
+    const ch = CHARACTER_ROSTER.find(c => c.id === charId);
+    const ev = ALL_EVENTS.find(e => e.charId === charId);
+    if (!ch || !ev) return;
+
+    editingCharId = charId;
+    document.getElementById("editor-form-title").textContent = `✏️ 正在編輯：${ch.name}`;
+    document.getElementById("cancel-edit-btn").classList.remove("hidden");
+    document.getElementById("save-char-submit-btn").textContent = "💾 儲存修改並同步雲端";
+
+    document.getElementById("new-char-name").value = ch.name;
+    document.getElementById("new-char-voice").value = ch.voice;
+    document.getElementById("new-char-event").value = ev.text;
+    document.getElementById("new-char-left").value = ev.left.label;
+    document.getElementById("new-char-right").value = ev.right.label;
+
+    document.getElementById("l-safety").value = ev.left.effect.safety || 0;
+    document.getElementById("l-admin").value = ev.left.effect.admin || 0;
+    document.getElementById("l-parent").value = ev.left.effect.parent || 0;
+    document.getElementById("l-sanity").value = ev.left.effect.sanity || 0;
+
+    document.getElementById("r-safety").value = ev.right.effect.safety || 0;
+    document.getElementById("r-admin").value = ev.right.effect.admin || 0;
+    document.getElementById("r-parent").value = ev.right.effect.parent || 0;
+    document.getElementById("r-sanity").value = ev.right.effect.sanity || 0;
   }
 
-  async function createNewCharacter() {
-    if (!isAdminUnlocked) return;
-    const name = document.getElementById("new-char-name").value.trim() || "新登場人物";
-    const voice = document.getElementById("new-char-voice").value;
-    const eventText = document.getElementById("new-char-event").value.trim() || `${name}突然出現在學安室門口，要求你立刻協助處理一項突發校園狀況！`;
-    const leftLabel = document.getElementById("new-char-left").value.trim() || "依規定標準程序協助處理";
-    const rightLabel = document.getElementById("new-char-right").value.trim() || "先口頭安撫並請對方稍候";
-
-    const newId = "custom_" + Date.now();
-    const avatarUrl = pendingNewCharImg || makeCharacterPortrait("#1d4ed8", "#090d16", "#1e293b", "#0284c7", "glasses", "⭐");
-
-    CHARACTER_ROSTER.push({
-      id: newId,
-      name: name,
-      role: "自訂新角色",
-      voice: voice,
-      img: avatarUrl
-    });
-
-    ALL_EVENTS.splice(ALL_EVENTS.length - 1, 0, {
-      time: "15:40",
-      tag: "自訂角色突發事件",
-      charId: newId,
-      filter: "",
-      sfx: "walkie",
-      isCustom: true,
-      text: eventText,
-      left: { label: leftLabel, effect: { safety: +15, admin: +15, parent: -10, sanity: -10 } },
-      right: { label: rightLabel, effect: { safety: -10, admin: -10, parent: +10, sanity: +15 } }
-    });
-
+  function resetCharEditor() {
+    editingCharId = null;
+    pendingNewCharImg = null;
+    document.getElementById("editor-form-title").textContent = "➕ 新增全新角色與專屬事件卡";
+    document.getElementById("cancel-edit-btn").classList.add("hidden");
+    document.getElementById("save-char-submit-btn").textContent = "✨ 確認新增並雲端同步";
     document.getElementById("new-char-name").value = "";
     document.getElementById("new-char-event").value = "";
     document.getElementById("new-char-left").value = "";
     document.getElementById("new-char-right").value = "";
     document.getElementById("new-char-file-label").textContent = "上傳角色立繪（自動壓縮雲端同步）：";
-    pendingNewCharImg = null;
+  }
 
+  async function deleteCustomChar(charId) {
+    const cIdx = CHARACTER_ROSTER.findIndex(c => c.id === charId);
+    if (cIdx !== -1) CHARACTER_ROSTER.splice(cIdx, 1);
+    const eIdx = ALL_EVENTS.findIndex(e => e.charId === charId);
+    if (eIdx !== -1) ALL_EVENTS.splice(eIdx, 1);
+    if (editingCharId === charId) resetCharEditor();
+    renderCastGrid();
+    playSFX("swipe");
+    await pushDataToFirebase();
+    showSaveToast("🗑️ 已刪除自訂角色並同步雲端");
+  }
+
+  function previewNewCharImg(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    compressImageToDataURL(file, (url) => {
+      pendingNewCharImg = url;
+      document.getElementById("new-char-file-label").textContent = "✅ 已選取圖片";
+    });
+  }
+
+  async function saveCharacterForm() {
+    const name = document.getElementById("new-char-name").value.trim() || "自訂角色";
+    const voice = document.getElementById("new-char-voice").value;
+    const eventText = document.getElementById("new-char-event").value.trim() || `${name}出現在學安室門口，請求你協助處理突發狀況！`;
+    const leftLabel = document.getElementById("new-char-left").value.trim() || "依規定協助處理";
+    const rightLabel = document.getElementById("new-char-right").value.trim() || "口頭安撫勸導";
+
+    const leftEffect = {
+      safety: parseInt(document.getElementById("l-safety").value) || 0,
+      admin: parseInt(document.getElementById("l-admin").value) || 0,
+      parent: parseInt(document.getElementById("l-parent").value) || 0,
+      sanity: parseInt(document.getElementById("l-sanity").value) || 0
+    };
+    const rightEffect = {
+      safety: parseInt(document.getElementById("r-safety").value) || 0,
+      admin: parseInt(document.getElementById("r-admin").value) || 0,
+      parent: parseInt(document.getElementById("r-parent").value) || 0,
+      sanity: parseInt(document.getElementById("r-sanity").value) || 0
+    };
+
+    if (editingCharId) {
+      const ch = CHARACTER_ROSTER.find(c => c.id === editingCharId);
+      const ev = ALL_EVENTS.find(e => e.charId === editingCharId);
+      if (ch) {
+        ch.name = name;
+        ch.voice = voice;
+        if (pendingNewCharImg) ch.img = pendingNewCharImg;
+      }
+      if (ev) {
+        ev.text = eventText;
+        ev.left = { label: leftLabel, effect: leftEffect };
+        ev.right = { label: rightLabel, effect: rightEffect };
+      }
+    } else {
+      const newId = "custom_" + Date.now();
+      const avatarUrl = pendingNewCharImg || makeCharacterPortrait("#1d4ed8", "#090d16", "#1e293b", "#0284c7", "glasses", "⭐");
+      CHARACTER_ROSTER.push({ id: newId, name, role: "自訂新角色", voice, img: avatarUrl });
+      ALL_EVENTS.splice(ALL_EVENTS.length - 1, 0, {
+        time: "15:40", tag: "自訂突發事件", charId: newId, filter: "", sfx: "walkie", isCustom: true,
+        text: eventText,
+        left: { label: leftLabel, effect: leftEffect },
+        right: { label: rightLabel, effect: rightEffect }
+      });
+    }
+
+    resetCharEditor();
     renderCastGrid();
     playSFX("win");
-    speakText(`新角色${name}已加入並同步至雲端！`, voice);
     await pushDataToFirebase();
   }
 
+  function exportScriptJSON() {
+    const dataStr = JSON.stringify({ roster: CHARACTER_ROSTER, events: ALL_EVENTS }, null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "campus_safety_script_pack.json";
+    a.click();
+    showSaveToast("📤 已匯出劇本包 JSON 檔！");
+  }
+
+  function importScriptJSON(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async e => {
+      try {
+        const parsed = JSON.parse(e.target.result);
+        if (Array.isArray(parsed.roster) && Array.isArray(parsed.events)) {
+          CHARACTER_ROSTER.length = 0;
+          parsed.roster.forEach(r => CHARACTER_ROSTER.push(r));
+          ALL_EVENTS.length = 0;
+          parsed.events.forEach(ev => ALL_EVENTS.push(ev));
+          renderCastGrid();
+          await pushDataToFirebase();
+          showSaveToast("📥 劇本包匯入成功並已同步雲端！");
+        }
+      } catch (err) {
+        showSaveToast("⚠️ JSON 格式錯誤，匯入失敗");
+      }
+    };
+    reader.readAsText(file);
+  }
+
   // ==========================================
-  // 6. 九大結局與遊戲主循環
+  // 7. 十大結局定義（含週一至週五週末放假隱藏結局！）
   // ==========================================
   const ENDINGS = {
-    safety_zero: { badge: "💀 結局 1/9｜校園失守", title: "校園安全歸零：全校大亂鬥", desc: "因為多次退讓與疏於巡檢，校園陷入混亂，你連夜被召回寫檢討報告！" },
-    safety_max: { badge: "🤖 結局 2/9｜過度執法", title: "安全指數爆表：把學校變成軍事基地", desc: "你的警戒心強到連校長忘記帶識別證都被你壓制，隔天被調去偏遠檔案室！" },
-    admin_zero: { badge: "📉 結局 3/9｜考核危機", title: "長官信任歸零：年終約聘不續聘", desc: "學務處電話被投訴到爆線，人事室通知你下個月不用來了……" },
-    admin_max: { badge: "💼 結局 4/9｜能者過勞", title: "長官信任爆表：榮升全年無休總務兼校安", desc: "校長決定把全校所有行政與安全業務都交給你一個人扛，從此再也沒有準時下班過！" },
-    parent_zero: { badge: "🙇 結局 5/9｜卑微妥協", title: "家長情緒歸零：淪為免費泊車小弟", desc: "家長們把你當成專屬禮賓司機使喚，完全喪失校安威嚴！" },
-    parent_max: { badge: "🔥 結局 6/9｜炎上風暴", title: "家長怒氣爆表：議員服務處大軍壓境", desc: "隔天一早十幾位家長帶著民意代表包圍校門口開記者會，你直接登上晚間新聞頭條！" },
-    sanity_zero: { badge: "😵 結局 7/9｜精神耗弱", title: "個人理智歸零：當場在穿堂仰天長嘯", desc: "連環突發狀況徹底擊潰了你的神經，你脫下背心在操場大喊我不幹啦！" },
-    sanity_max: { badge: "🏖️ 結局 8/9｜佛系擺爛", title: "理智過於佛系：靈魂出竅打卡機", desc: "你徹底看破紅塵，被學生封為校園裡最神秘的禪修大師！" },
-    win_normal: { badge: "🎉 完美通關 9/9｜生存大師", title: "17:30 準時打卡！今天也平安下班了！", desc: "你在校園安全、長官信任、家長情緒與個人理智之間維持了完美平衡，準時下班！" }
+    safety_zero: { badge: "💀 結局 1/10｜校園失守", title: "校園安全歸零：全校大亂鬥", desc: "因為多次退讓與疏於巡檢，校園陷入混亂，你連夜被召回寫檢討報告！" },
+    safety_max: { badge: "🤖 結局 2/10｜過度執法", title: "安全指數爆表：把學校變成軍事基地", desc: "你的警戒心強到連校長忘記帶識別證都被你壓制，隔天被調去偏遠檔案室！" },
+    admin_zero: { badge: "📉 結局 3/10｜考核危機", title: "長官信任歸零：年終約聘不續聘", desc: "學務處電話被投訴到爆線，人事室通知你下個月不用來了……" },
+    admin_max: { badge: "💼 結局 4/10｜能者過勞", title: "長官信任爆表：榮升全年無休總務兼校安", desc: "校長決定把全校所有行政與安全業務都交給你一個人扛，從此再也沒有準時下班過！" },
+    parent_zero: { badge: "🙇 結局 5/10｜卑微妥協", title: "家長情緒歸零：淪為免費泊車小弟", desc: "家長們把你當成專屬禮賓司機使喚，完全喪失校安威嚴！" },
+    parent_max: { badge: "🔥 結局 6/10｜炎上風暴", title: "家長怒氣爆表：議員服務處大軍壓境", desc: "隔天一早十幾位家長帶著民意代表包圍校門口開記者會，你直接登上晚間新聞頭條！" },
+    sanity_zero: { badge: "😵 結局 7/10｜精神耗弱", title: "個人理智歸零：當場在穿堂仰天長嘯", desc: "連環突發狀況徹底擊潰了你的神經，你脫下背心在操場大喊我不幹啦！" },
+    sanity_max: { badge: "🏖️ 結局 8/10｜佛系擺爛", title: "理智過於佛系：靈魂出竅打卡機", desc: "你徹底看破紅塵，被學生封為校園裡最神秘的禪修大師！" },
+    win_normal: { badge: "🎉 完美通關 9/10｜單日生存大師", title: "17:30 準時打卡！今天也平安下班了！", desc: "你在校園安全、長官信任、家長情緒與個人理智之間維持了完美平衡，準時下班！" },
+    win_weekend: { badge: "👑 傳奇通關 10/10｜五日全勤傳說", title: "週五 17:30 打卡！迎來完美快樂週末！", desc: "不可思議！你連續五天承受高壓考驗並完美平衡四項指標，榮獲「地表最強校安人員」最高榮譽！" }
   };
 
+  // ==========================================
+  // 8. 遊戲核心循環（含五日連續模式、計分與全服排行榜）
+  // ==========================================
   let stats = { safety: 50, admin: 50, parent: 50, sanity: 50 };
   let activeDeck = [], turnIndex = 0, selectedMode = "normal", isGameOver = false;
-  let unlocked = JSON.parse(localStorage.getItem("viral_campus_endings") || "[]");
+  let currentDay = 1; // 1 ~ 5（五日模式使用）
+  let lastRunScore = 0;
+  let lastShareImageUrl = "";
+  let unlocked = JSON.parse(localStorage.getItem("viral_campus_endings_v2") || "[]");
 
   function selectMode(mode) {
     selectedMode = mode;
-    document.getElementById("mode-normal").classList.toggle("active", mode === "normal");
-    document.getElementById("mode-full").classList.toggle("active", mode === "full");
+    ["normal", "week", "full"].forEach(m => {
+      document.getElementById("mode-" + m).classList.toggle("active", mode === m);
+    });
     playSFX("walkie");
   }
 
   function buildDeckForShift() {
     if (selectedMode === "full") return [...ALL_EVENTS];
+    const countPerDay = selectedMode === "week" ? 6 : 12;
     const customIndices = [], normalIndices = [];
     ALL_EVENTS.forEach((ev, idx) => {
       if (ev.charId.startsWith("custom_")) customIndices.push(idx);
@@ -1515,7 +1696,7 @@
       const j = Math.floor(Math.random() * (i + 1));
       [normalIndices[i], normalIndices[j]] = [normalIndices[j], normalIndices[i]];
     }
-    const needNormal = Math.max(4, 12 - customIndices.length);
+    const needNormal = Math.max(2, countPerDay - customIndices.length);
     const picked = [...customIndices, ...normalIndices.slice(0, needNormal)].sort((a, b) => a - b);
     return picked.map(idx => ALL_EVENTS[idx]);
   }
@@ -1529,7 +1710,7 @@
   function saveEnding(id) {
     if (!unlocked.includes(id)) {
       unlocked.push(id);
-      localStorage.setItem("viral_campus_endings", JSON.stringify(unlocked));
+      localStorage.setItem("viral_campus_endings_v2", JSON.stringify(unlocked));
       updateUnlockUI();
     }
   }
@@ -1572,9 +1753,17 @@
   function startNewShift() {
     ensureAudio();
     stats = { safety: 50, admin: 50, parent: 50, sanity: 50 };
+    currentDay = 1;
+    startDayShift();
+  }
+
+  function startDayShift() {
+    const dayNames = ["週一", "週二", "週三", "週四", "週五"];
+    document.getElementById("day-badge").textContent = selectedMode === "week" ? dayNames[currentDay - 1] : "單日";
     activeDeck = buildDeckForShift();
     turnIndex = 0;
     isGameOver = false;
+    rollDailyWeatherAndItems();
     clearPreview();
     renderMeters();
     document.getElementById("start-modal").classList.add("hidden");
@@ -1584,7 +1773,14 @@
 
   function loadCard() {
     if (turnIndex >= activeDeck.length) {
-      triggerEnding("win_normal");
+      if (selectedMode === "week" && currentDay < 5) {
+        currentDay++;
+        playSFX("win");
+        showSaveToast(`🎉 順利下班！進入第 ${currentDay} 天（數值延續至隔日）`);
+        startDayShift();
+        return;
+      }
+      triggerEnding(selectedMode === "week" ? "win_weekend" : "win_normal");
       return;
     }
 
@@ -1593,7 +1789,7 @@
 
     document.getElementById("clock-text").textContent = card.time;
     document.getElementById("shift-progress-fill").style.width = ((turnIndex / activeDeck.length) * 100) + "%";
-    document.getElementById("turn-counter").textContent = `距離下班 ${activeDeck.length - turnIndex} 關`;
+    document.getElementById("turn-counter").textContent = `今日剩餘 ${activeDeck.length - turnIndex} 關`;
 
     const artEl = document.getElementById("card-art");
     artEl.style.backgroundImage = `url('${ch.img}')`;
@@ -1628,7 +1824,11 @@
     playSFX("swipe");
 
     ["safety", "admin", "parent", "sanity"].forEach(key => {
-      const delta = choice.effect[key] || 0;
+      let delta = choice.effect[key] || 0;
+      // 套用天氣 Buff 加成
+      if (key === "parent" && currentWeather.mod.parentMult) delta = Math.round(delta * currentWeather.mod.parentMult);
+      if (key === "admin" && delta < 0 && currentWeather.mod.adminPenaltyMult) delta = Math.round(delta * currentWeather.mod.adminPenaltyMult);
+
       stats[key] = Math.max(0, Math.min(100, stats[key] + delta));
       const box = document.getElementById("box-" + key);
       box.classList.remove("pulse-up", "pulse-down");
@@ -1653,17 +1853,182 @@
     }, 240);
   }
 
+  function calculateBalanceScore() {
+    // 越接近 50 分完美平衡，分數越高
+    const diff = Math.abs(stats.safety - 50) + Math.abs(stats.admin - 50) + Math.abs(stats.parent - 50) + Math.abs(stats.sanity - 50);
+    const modeBonus = selectedMode === "week" ? 500 : (selectedMode === "full" ? 300 : 100);
+    return Math.max(50, (200 - diff) * 5 + modeBonus);
+  }
+
   function triggerEnding(endKey) {
     isGameOver = true;
     saveEnding(endKey);
     const data = ENDINGS[endKey];
-    playSFX(endKey === "win_normal" ? "win" : "fail");
+    const isWin = endKey === "win_normal" || endKey === "win_weekend";
+    playSFX(isWin ? "win" : "fail");
     setTimeout(() => speakText(data.title + "。" + data.desc, "officer"), 350);
+
+    lastRunScore = calculateBalanceScore();
+    const scoreBox = document.getElementById("score-submit-box");
+    if (isWin) {
+      scoreBox.classList.remove("hidden");
+      document.getElementById("final-score-num").textContent = lastRunScore;
+      document.getElementById("submit-score-btn").disabled = false;
+      document.getElementById("submit-score-btn").textContent = "登錄上榜";
+    } else {
+      scoreBox.classList.add("hidden");
+    }
 
     document.getElementById("end-badge").textContent = data.badge;
     document.getElementById("end-title").textContent = data.title;
     document.getElementById("end-desc").textContent = data.desc;
     document.getElementById("end-modal").classList.remove("hidden");
+  }
+
+  // ==========================================
+  // 9. 全服 Firebase 排行榜 ＋ 戰績分享圖生成
+  // ==========================================
+  async function submitScoreToLeaderboard() {
+    const nick = document.getElementById("player-nickname-input").value.trim() || "無名校安英雄";
+    const btn = document.getElementById("submit-score-btn");
+    btn.disabled = true;
+    btn.textContent = "上傳中...";
+
+    try {
+      const modeLabel = selectedMode === "week" ? "五日連續戰" : (selectedMode === "full" ? "魔鬼全日班" : "一般值勤班");
+      const entry = {
+        name: nick,
+        score: lastRunScore,
+        mode: modeLabel,
+        unlockedCount: unlocked.length,
+        date: new Date().toLocaleDateString("zh-TW")
+      };
+      await fetch(`${firebaseBaseUrl}/campus_leaderboard.json`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(entry)
+      });
+      btn.textContent = "✅ 已上榜";
+      showSaveToast("🏅 戰績已成功登錄全服排行榜！");
+    } catch (e) {
+      btn.disabled = false;
+      btn.textContent = "重試";
+    }
+  }
+
+  async function openLeaderboard() {
+    playSFX("walkie");
+    document.getElementById("leaderboard-modal").classList.remove("hidden");
+    const list = document.getElementById("leaderboard-list");
+    list.innerHTML = `<div class="l-desc" style="text-align:center;">正在讀取雲端排行榜...</div>`;
+
+    try {
+      const resp = await fetch(`${firebaseBaseUrl}/campus_leaderboard.json?t=${Date.now()}`);
+      const data = await resp.json();
+      if (!data) {
+        list.innerHTML = `<div class="l-desc" style="text-align:center;">目前還沒有通關紀錄，快來搶下第一名！</div>`;
+        return;
+      }
+      const rows = Object.values(data).sort((a, b) => b.score - a.score).slice(0, 15);
+      list.innerHTML = "";
+      rows.forEach((r, idx) => {
+        const medal = idx === 0 ? "🥇" : (idx === 1 ? "🥈" : (idx === 2 ? "🥉" : `#${idx + 1}`));
+        const div = document.createElement("div");
+        div.className = "rank-row";
+        div.innerHTML = `
+          <div>
+            <div style="font-size:13px; font-weight:800; color:#f8fafc;">${medal} ${r.name}</div>
+            <div style="font-size:10.5px; color:#94a3b8;">${r.mode} ・ 圖鑑 ${r.unlockedCount || 1}/10 ・ ${r.date || ""}</div>
+          </div>
+          <div style="font-size:15px; font-weight:900; color:#fbbf24;">${r.score} 分</div>
+        `;
+        list.appendChild(div);
+      });
+    } catch (e) {
+      list.innerHTML = `<div class="l-desc" style="text-align:center;">讀取失敗，請檢查網路連線</div>`;
+    }
+  }
+
+  function generateShareCard() {
+    playSFX("win");
+    const c = document.createElement("canvas");
+    c.width = 540; c.height = 840;
+    const ctx = c.getContext("2d");
+
+    // 深藍質感卡片底色
+    const grad = ctx.createLinearGradient(0, 0, 0, 840);
+    grad.addColorStop(0, "#0f172a");
+    grad.addColorStop(1, "#020617");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 540, 840);
+
+    ctx.strokeStyle = "#fbbf24";
+    ctx.lineWidth = 6;
+    ctx.strokeRect(18, 18, 504, 804);
+
+    ctx.fillStyle = "#fbbf24";
+    ctx.font = "bold 20px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("CAMPUS SAFETY SIMULATOR", 270, 72);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "900 32px sans-serif";
+    ctx.fillText("今天也要平安下班", 270, 118);
+
+    // 結局徽章與標題
+    const badge = document.getElementById("end-badge").textContent;
+    const title = document.getElementById("end-title").textContent;
+    ctx.fillStyle = "#38bdf8";
+    ctx.font = "bold 20px sans-serif";
+    ctx.fillText(badge, 270, 175);
+
+    ctx.fillStyle = "#fde68a";
+    ctx.font = "900 24px sans-serif";
+    ctx.fillText(title.slice(0, 18), 270, 218);
+
+    // 四項生存指標長條圖
+    const meters = [
+      { name: "🛡️ 校園安全", val: stats.safety },
+      { name: "📋 長官信任", val: stats.admin },
+      { name: "💢 家長情緒", val: stats.parent },
+      { name: "🧠 個人理智", val: stats.sanity }
+    ];
+    ctx.textAlign = "left";
+    meters.forEach((m, i) => {
+      const y = 290 + i * 75;
+      ctx.fillStyle = "#e2e8f0";
+      ctx.font = "bold 20px sans-serif";
+      ctx.fillText(`${m.name}：${m.val}%`, 65, y);
+
+      ctx.fillStyle = "#1e293b";
+      ctx.fillRect(65, y + 12, 410, 18);
+
+      ctx.fillStyle = (m.val <= 20 || m.val >= 85) ? "#ef4444" : "#38bdf8";
+      ctx.fillRect(65, y + 12, Math.round(410 * (m.val / 100)), 18);
+    });
+
+    // 底部總分與圖鑑收集度
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#fbbf24";
+    ctx.font = "900 28px sans-serif";
+    ctx.fillText(`綜合平衡戰績：${lastRunScore} 分`, 270, 650);
+
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "bold 18px sans-serif";
+    ctx.fillText(`職場結局圖鑑已解鎖：${unlocked.length} / 10 種`, 270, 695);
+    ctx.fillText("掃描或開啟網址・挑戰你的校安生存極限！", 270, 765);
+
+    lastShareImageUrl = c.toDataURL("image/png");
+    document.getElementById("share-card-img").src = lastShareImageUrl;
+    document.getElementById("share-modal").classList.remove("hidden");
+  }
+
+  function downloadShareCard() {
+    if (!lastShareImageUrl) return;
+    const a = document.createElement("a");
+    a.href = lastShareImageUrl;
+    a.download = "campus_safety_record.png";
+    a.click();
   }
 
   function openGallery() {
@@ -1674,21 +2039,21 @@
       const item = ENDINGS[key];
       const isUnlocked = unlocked.includes(key);
       const div = document.createElement("div");
-      div.className = "gallery-card" + (isUnlocked ? " unlocked" : "");
+      div.className = "list-card" + (isUnlocked ? " unlocked" : "");
       div.innerHTML = `
-        <div class="gallery-title">${isUnlocked ? item.badge + "｜" + item.title : "🔒 " + item.badge + "｜尚未達成"}</div>
-        <div class="gallery-desc">${isUnlocked ? item.desc : "提示：嘗試讓對應生存指標歸零或爆表即可解鎖此結局！"}</div>
+        <div class="l-title">${isUnlocked ? item.badge + "｜" + item.title : "🔒 " + item.badge + "｜尚未達成"}</div>
+        <div class="l-desc">${isUnlocked ? item.desc : "提示：嘗試讓對應指標歸零/爆表，或挑戰五日連續模式解鎖！"}</div>
       `;
       list.appendChild(div);
     });
     document.getElementById("gallery-modal").classList.remove("hidden");
   }
 
-  function closeGallery() {
-    playSFX("walkie");
-    document.getElementById("gallery-modal").classList.add("hidden");
-  }
+  function closeGallery() { document.getElementById("gallery-modal").classList.add("hidden"); }
 
+  // ==========================================
+  // 10. 手勢左右拖曳卡牌支援
+  // ==========================================
   const cardEl = document.getElementById("event-card");
   let startX = 0, currentX = 0, isDragging = false;
 
@@ -1707,23 +2072,15 @@
     const rotate = currentX * 0.05;
     cardEl.style.transform = `translateX(${currentX}px) rotate(${rotate}deg)`;
 
-    if (currentX < -35) {
-      cardEl.style.borderColor = "#38bdf8";
-      previewChoice("left");
-    } else if (currentX > 35) {
-      cardEl.style.borderColor = "#fbbf24";
-      previewChoice("right");
-    } else {
-      cardEl.style.borderColor = "rgba(255, 255, 255, 0.15)";
-      clearPreview();
-    }
+    if (currentX < -35) { cardEl.style.borderColor = "#38bdf8"; previewChoice("left"); }
+    else if (currentX > 35) { cardEl.style.borderColor = "#fbbf24"; previewChoice("right"); }
+    else { cardEl.style.borderColor = "rgba(255, 255, 255, 0.15)"; clearPreview(); }
   });
 
   cardEl.addEventListener("pointerup", () => {
     if (!isDragging) return;
     isDragging = false;
     cardEl.style.transition = "transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s ease";
-
     if (currentX < -85) commitChoice("left");
     else if (currentX > 85) commitChoice("right");
     else {
@@ -1734,14 +2091,11 @@
     currentX = 0;
   });
 
-  // 啟動時自動載入快取並立即連線你的 Firebase 資料庫
   bindImageFallbacks();
   updateUnlockUI();
   loadFromIndexedDB().then(() => {
-    if (firebaseBaseUrl) {
-      pullDataFromFirebase(false);
-      startCloudPolling();
-    }
+    pullDataFromFirebase(false);
+    startCloudPolling();
   });
 </script>
 </body>
