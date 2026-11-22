@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>今天也要平安下班｜終極完全體（雲端同步＋成就稱號＋限時QTE＋環境音＋隨堂考）</title>
+  <title>今天也要平安下班｜動態番劇演繹版（立繪呼吸運鏡＋情境特效＋動態轉場）</title>
   <style>
     :root {
       --bg-dark: #090d16;
@@ -167,7 +167,6 @@
     .meter-track { width: 100%; height: 5px; background: #1e293b; border-radius: 999px; overflow: hidden; }
     .meter-fill { height: 100%; width: 50%; background: #38bdf8; border-radius: 999px; transition: width 0.3s ease, background 0.3s ease; }
 
-    /* 天氣狀態＋執勤道具背包列 */
     .tactical-bar {
       display: flex;
       justify-content: space-between;
@@ -189,10 +188,7 @@
       text-overflow: ellipsis;
     }
 
-    .items-row {
-      display: flex;
-      gap: 4px;
-    }
+    .items-row { display: flex; gap: 4px; }
 
     .item-btn {
       background: rgba(30, 41, 59, 0.95);
@@ -208,11 +204,7 @@
     }
 
     .item-btn:active { transform: scale(0.92); }
-    .item-btn.used {
-      opacity: 0.32;
-      pointer-events: none;
-      text-decoration: line-through;
-    }
+    .item-btn.used { opacity: 0.32; pointer-events: none; text-decoration: line-through; }
 
     #card-arena {
       position: relative;
@@ -225,7 +217,6 @@
       z-index: 10;
     }
 
-    /* 限時緊急應變 QTE 倒數條 */
     #qte-timer-box {
       width: 100%;
       background: rgba(127, 29, 29, 0.9);
@@ -245,27 +236,9 @@
       to { box-shadow: 0 0 18px rgba(239, 68, 68, 0.85); }
     }
 
-    .qte-label {
-      font-size: 11px;
-      font-weight: 900;
-      color: #fecaca;
-      white-space: nowrap;
-    }
-
-    .qte-bar-bg {
-      flex: 1;
-      height: 7px;
-      background: #450a0a;
-      border-radius: 999px;
-      overflow: hidden;
-    }
-
-    #qte-bar-fill {
-      height: 100%;
-      width: 100%;
-      background: linear-gradient(90deg, #fbbf24, #ef4444);
-      transition: width 0.1s linear;
-    }
+    .qte-label { font-size: 11px; font-weight: 900; color: #fecaca; white-space: nowrap; }
+    .qte-bar-bg { flex: 1; height: 7px; background: #450a0a; border-radius: 999px; overflow: hidden; }
+    #qte-bar-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #fbbf24, #ef4444); transition: width 0.1s linear; }
 
     #swipe-preview-banner {
       width: 100%;
@@ -292,6 +265,9 @@
       box-shadow: 0 0 18px rgba(251, 191, 36, 0.25);
     }
 
+    /* ==========================================
+       番劇動畫演出特效（立繪呼吸運鏡＋危機震動＋登場彈入）
+       ========================================== */
     #event-card {
       position: relative;
       width: 100%;
@@ -312,18 +288,78 @@
 
     #event-card:active { cursor: grabbing; }
 
+    .card-enter-anim {
+      animation: cardPopIn 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes cardPopIn {
+      0% { opacity: 0; transform: scale(0.92) translateY(22px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .card-shake-anim {
+      animation: dramaShake 0.42s ease;
+    }
+
+    @keyframes dramaShake {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      15% { transform: translate(-7px, -4px) rotate(-1.5deg); }
+      30% { transform: translate(7px, 3px) rotate(1.5deg); }
+      45% { transform: translate(-6px, 4px) rotate(-1deg); }
+      60% { transform: translate(5px, -3px) rotate(1deg); }
+      75% { transform: translate(-3px, 2px) rotate(-0.5deg); }
+    }
+
+    /* 角色立繪慢速呼吸推拉運鏡（Ken Burns 動畫） */
     #card-art {
       position: absolute;
       inset: 0;
       background-size: cover;
       background-repeat: no-repeat;
       background-position: center 15%;
-      transform: scale(1.08);
+      animation: kenBurnsBreath 7s ease-in-out infinite alternate;
       transition: background-image 0.3s ease, filter 0.3s ease;
       z-index: 0;
     }
 
-    .art-danger { filter: contrast(1.18) saturate(1.3) sepia(0.2) hue-rotate(-25deg); }
+    @keyframes kenBurnsBreath {
+      0% { transform: scale(1.06) translate(0px, 0px); }
+      50% { transform: scale(1.13) translate(-6px, -5px); }
+      100% { transform: scale(1.09) translate(5px, -2px); }
+    }
+
+    /* 動態粒子特效層（雨滴、警戒紅光、速度線） */
+    #fx-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* 漫畫速度線框（危機／QTE 時出現） */
+    #speed-lines-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      opacity: 0;
+      background: radial-gradient(circle at center, transparent 48%, rgba(239, 68, 68, 0.38) 100%);
+      transition: opacity 0.25s ease;
+    }
+
+    #speed-lines-overlay.active {
+      opacity: 1;
+      animation: urgentPulseBg 0.7s infinite alternate;
+    }
+
+    @keyframes urgentPulseBg {
+      from { opacity: 0.45; }
+      to { opacity: 0.95; }
+    }
+
+    .art-danger { filter: contrast(1.2) saturate(1.35) sepia(0.22) hue-rotate(-25deg); }
     .art-night { filter: contrast(1.2) brightness(0.75) hue-rotate(190deg); }
     .art-morning { filter: brightness(1.08) saturate(1.1) sepia(0.08); }
 
@@ -337,7 +373,7 @@
         rgba(3, 7, 18, 0.85) 68%,
         rgba(3, 7, 18, 0.98) 100%
       );
-      z-index: 1;
+      z-index: 2;
     }
 
     .card-top-tag {
@@ -427,16 +463,8 @@
       transition: all 0.15s ease;
     }
 
-    .action-btn:active {
-      transform: scale(0.96);
-      background: rgba(56, 189, 248, 0.25);
-    }
-
-    .action-dir {
-      font-size: 10px;
-      color: var(--accent-gold);
-      letter-spacing: 0.5px;
-    }
+    .action-btn:active { transform: scale(0.96); background: rgba(56, 189, 248, 0.25); }
+    .action-dir { font-size: 10px; color: var(--accent-gold); letter-spacing: 0.5px; }
 
     .modal-screen {
       position: absolute;
@@ -477,289 +505,56 @@
       -webkit-text-fill-color: transparent;
     }
 
-    .sub-desc {
-      font-size: 13px;
-      color: var(--text-muted);
-      line-height: 1.55;
-      margin-bottom: 12px;
-    }
+    .sub-desc { font-size: 13px; color: var(--text-muted); line-height: 1.55; margin-bottom: 12px; }
 
     .cloud-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      font-weight: 800;
-      padding: 4px 11px;
-      border-radius: 999px;
-      margin-bottom: 12px;
-      background: rgba(34, 197, 94, 0.16);
-      border: 1px solid #22c55e;
-      color: #4ade80;
+      display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 800;
+      padding: 4px 11px; border-radius: 999px; margin-bottom: 12px;
+      background: rgba(34, 197, 94, 0.16); border: 1px solid #22c55e; color: #4ade80;
     }
 
-    .mode-selector {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
-      width: 100%;
-      max-width: 340px;
-      margin-bottom: 14px;
-    }
-
-    .mode-btn {
-      background: rgba(30, 41, 59, 0.85);
-      border: 1.5px solid rgba(56, 189, 248, 0.3);
-      border-radius: 12px;
-      padding: 8px 4px;
-      color: #cbd5e1;
-      cursor: pointer;
-    }
-
-    .mode-btn.active {
-      background: rgba(56, 189, 248, 0.2);
-      border-color: var(--accent-gold);
-      color: #fff;
-    }
-
+    .mode-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; max-width: 340px; margin-bottom: 14px; }
+    .mode-btn { background: rgba(30, 41, 59, 0.85); border: 1.5px solid rgba(56, 189, 248, 0.3); border-radius: 12px; padding: 8px 4px; color: #cbd5e1; cursor: pointer; }
+    .mode-btn.active { background: rgba(56, 189, 248, 0.2); border-color: var(--accent-gold); color: #fff; }
     .mode-title { font-size: 12px; font-weight: 800; color: var(--accent-gold); margin-bottom: 2px; }
     .mode-sub { font-size: 10px; color: var(--text-muted); }
 
-    .btn-stack {
-      width: 100%;
-      max-width: 330px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
+    .btn-stack { width: 100%; max-width: 330px; display: flex; flex-direction: column; gap: 8px; }
+    .btn-primary { background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; border: none; padding: 12px 16px; border-radius: 12px; font-size: 14px; font-weight: 800; cursor: pointer; box-shadow: 0 8px 22px rgba(37, 99, 235, 0.45); }
+    .btn-secondary { background: rgba(30, 41, 59, 0.9); color: #e2e8f0; border: 1px solid rgba(255, 255, 255, 0.2); padding: 10px 14px; border-radius: 12px; font-size: 12.5px; font-weight: 700; cursor: pointer; }
 
-    .btn-primary {
-      background: linear-gradient(135deg, #0284c7, #2563eb);
-      color: #fff;
-      border: none;
-      padding: 12px 16px;
-      border-radius: 12px;
-      font-size: 14px;
-      font-weight: 800;
-      cursor: pointer;
-      box-shadow: 0 8px 22px rgba(37, 99, 235, 0.45);
-    }
-
-    .btn-secondary {
-      background: rgba(30, 41, 59, 0.9);
-      color: #e2e8f0;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-size: 12.5px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    /* 管理員密碼解鎖彈窗 */
-    .lock-card {
-      width: 100%;
-      max-width: 320px;
-      background: rgba(15, 23, 42, 0.98);
-      border: 2px solid rgba(251, 191, 36, 0.55);
-      border-radius: 20px;
-      padding: 20px 16px;
-    }
-
-    .pin-input {
-      width: 100%;
-      background: #1e293b;
-      border: 2px solid rgba(56, 189, 248, 0.45);
-      color: #fff;
-      padding: 10px;
-      border-radius: 12px;
-      font-size: 18px;
-      font-weight: 800;
-      letter-spacing: 4px;
-      text-align: center;
-      margin: 10px 0 6px;
-      user-select: text;
-    }
-
+    .lock-card { width: 100%; max-width: 320px; background: rgba(15, 23, 42, 0.98); border: 2px solid rgba(251, 191, 36, 0.55); border-radius: 20px; padding: 20px 16px; }
+    .pin-input { width: 100%; background: #1e293b; border: 2px solid rgba(56, 189, 248, 0.45); color: #fff; padding: 10px; border-radius: 12px; font-size: 18px; font-weight: 800; letter-spacing: 4px; text-align: center; margin: 10px 0 6px; user-select: text; }
     .pin-error { color: #f87171; font-size: 12px; font-weight: 700; min-height: 18px; margin-bottom: 8px; }
 
-    /* 角色庫與後台進階編輯器 */
-    .cast-scroll {
-      width: 100%;
-      max-height: 66dvh;
-      overflow-y: auto;
-      text-align: left;
-      margin-bottom: 10px;
-      padding-right: 4px;
-    }
-
-    .cast-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 7px;
-      margin-bottom: 12px;
-    }
-
-    .cast-card {
-      background: rgba(30, 41, 59, 0.9);
-      border: 1.5px solid rgba(56, 189, 248, 0.3);
-      border-radius: 12px;
-      padding: 7px 5px;
-      text-align: center;
-      position: relative;
-    }
-
-    .cast-del-btn {
-      position: absolute;
-      top: 4px;
-      right: 4px;
-      background: rgba(239, 68, 68, 0.85);
-      color: #fff;
-      border: none;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      font-size: 10px;
-      font-weight: 900;
-      cursor: pointer;
-    }
-
-    .cast-avatar {
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      object-fit: cover;
-      object-position: center 15%;
-      border: 2px solid var(--accent-gold);
-      margin: 0 auto 4px;
-      display: block;
-      background: #0f172a;
-    }
-
+    .cast-scroll { width: 100%; max-height: 66dvh; overflow-y: auto; text-align: left; margin-bottom: 10px; padding-right: 4px; }
+    .cast-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-bottom: 12px; }
+    .cast-card { background: rgba(30, 41, 59, 0.9); border: 1.5px solid rgba(56, 189, 248, 0.3); border-radius: 12px; padding: 7px 5px; text-align: center; position: relative; }
+    .cast-del-btn { position: absolute; top: 4px; right: 4px; background: rgba(239, 68, 68, 0.85); color: #fff; border: none; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: 900; cursor: pointer; }
+    .cast-avatar { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; object-position: center 15%; border: 2px solid var(--accent-gold); margin: 0 auto 4px; display: block; background: #0f172a; }
     .cast-name { font-size: 11px; font-weight: 800; color: #f8fafc; }
     .cast-role { font-size: 9.5px; color: var(--accent-blue); margin-bottom: 4px; }
     .cast-actions { display: flex; justify-content: center; gap: 3px; }
-    .cast-mini-btn {
-      font-size: 9.5px;
-      background: rgba(56, 189, 248, 0.2);
-      border: 1px solid rgba(56, 189, 248, 0.45);
-      color: #e0f2fe;
-      padding: 2px 5px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
+    .cast-mini-btn { font-size: 9.5px; background: rgba(56, 189, 248, 0.2); border: 1px solid rgba(56, 189, 248, 0.45); color: #e0f2fe; padding: 2px 5px; border-radius: 5px; cursor: pointer; }
 
-    .panel-box {
-      background: rgba(15, 23, 42, 0.95);
-      border: 1.5px solid rgba(251, 191, 36, 0.45);
-      border-radius: 14px;
-      padding: 11px;
-      margin-bottom: 10px;
-    }
-
-    .panel-title {
-      font-size: 13px;
-      font-weight: 900;
-      color: var(--accent-gold);
-      margin-bottom: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .form-input {
-      width: 100%;
-      background: #1e293b;
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      color: #fff;
-      padding: 7px 9px;
-      border-radius: 8px;
-      font-size: 12px;
-      margin-bottom: 7px;
-      user-select: text;
-    }
-
+    .panel-box { background: rgba(15, 23, 42, 0.95); border: 1.5px solid rgba(251, 191, 36, 0.45); border-radius: 14px; padding: 11px; margin-bottom: 10px; }
+    .panel-title { font-size: 13px; font-weight: 900; color: var(--accent-gold); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+    .form-input { width: 100%; background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.25); color: #fff; padding: 7px 9px; border-radius: 8px; font-size: 12px; margin-bottom: 7px; user-select: text; }
     .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
     .form-row-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 7px; }
     .mini-num-label { font-size: 10px; color: #94a3b8; text-align: center; }
 
-    /* 成就、排行榜與圖鑑列表 */
-    .scroll-list {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 7px;
-      margin-bottom: 14px;
-      text-align: left;
-      max-height: 55dvh;
-      overflow-y: auto;
-    }
-
-    .list-card {
-      background: rgba(30, 41, 59, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 10px;
-      padding: 9px 12px;
-    }
-
+    .scroll-list { width: 100%; display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; text-align: left; max-height: 55dvh; overflow-y: auto; }
+    .list-card { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 10px; padding: 9px 12px; }
     .list-card.unlocked { border-color: rgba(56, 189, 248, 0.5); }
     .l-title { font-size: 12.5px; font-weight: 800; color: var(--accent-gold); margin-bottom: 2px; }
     .l-desc { font-size: 11.5px; color: var(--text-muted); }
+    .rank-row { display: flex; justify-content: space-between; align-items: center; background: rgba(30, 41, 59, 0.9); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 10px; padding: 8px 12px; }
 
-    .rank-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(30, 41, 59, 0.9);
-      border: 1px solid rgba(56, 189, 248, 0.25);
-      border-radius: 10px;
-      padding: 8px 12px;
-    }
+    .quiz-card { width: 100%; max-width: 340px; background: rgba(15, 23, 42, 0.98); border: 2px solid #38bdf8; border-radius: 20px; padding: 20px 16px; box-shadow: 0 18px 45px rgba(0, 0, 0, 0.85); }
+    .quiz-opt-btn { width: 100%; text-align: left; background: #1e293b; border: 1.5px solid rgba(56, 189, 248, 0.4); color: #f8fafc; padding: 10px 12px; border-radius: 10px; font-size: 12.5px; font-weight: 700; margin-bottom: 8px; cursor: pointer; }
 
-    /* 午休校安知識隨堂考彈窗 */
-    .quiz-card {
-      width: 100%;
-      max-width: 340px;
-      background: rgba(15, 23, 42, 0.98);
-      border: 2px solid #38bdf8;
-      border-radius: 20px;
-      padding: 20px 16px;
-      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.85);
-    }
-
-    .quiz-opt-btn {
-      width: 100%;
-      text-align: left;
-      background: #1e293b;
-      border: 1.5px solid rgba(56, 189, 248, 0.4);
-      color: #f8fafc;
-      padding: 10px 12px;
-      border-radius: 10px;
-      font-size: 12.5px;
-      font-weight: 700;
-      margin-bottom: 8px;
-      cursor: pointer;
-    }
-
-    .quiz-opt-btn:active { background: rgba(56, 189, 248, 0.28); }
-
-    #save-toast {
-      position: fixed;
-      top: 56px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 70;
-      background: rgba(34, 197, 94, 0.95);
-      color: #fff;
-      font-size: 12px;
-      font-weight: 800;
-      padding: 5px 14px;
-      border-radius: 999px;
-      opacity: 0;
-      transition: opacity 0.25s ease;
-      pointer-events: none;
-      white-space: nowrap;
-    }
+    #save-toast { position: fixed; top: 56px; left: 50%; transform: translateX(-50%); z-index: 70; background: rgba(34, 197, 94, 0.95); color: #fff; font-size: 12px; font-weight: 800; padding: 5px 14px; border-radius: 999px; opacity: 0; transition: opacity 0.25s ease; pointer-events: none; white-space: nowrap; }
   </style>
 </head>
 <body>
@@ -767,7 +562,6 @@
 <div id="save-toast">☁️ 已即時同步至 Firebase 雲端！</div>
 
 <div id="app-frame">
-  <!-- 頂部：時間軸 ＋ 四大生存指標 ＋ 天氣狀態與道具背包 -->
   <div id="top-hud">
     <div class="time-bar">
       <div class="clock-pill">📅 <span id="day-badge">D1</span> 🕒 <span id="clock-text">07:30</span></div>
@@ -808,14 +602,12 @@
       </div>
     </div>
 
-    <!-- 天氣 Buff ＋ 校安執勤道具背包 -->
     <div class="tactical-bar">
       <div class="weather-pill" id="weather-label">☀️ 晴朗微風</div>
       <div class="items-row" id="items-container"></div>
     </div>
   </div>
 
-  <!-- 中央：限時緊急應變 QTE 倒數條 ＋ 可左右滑動的事件卡牌 -->
   <div id="card-arena">
     <div id="qte-timer-box" class="hidden">
       <span class="qte-label">🚨 緊急應變倒數 <span id="qte-sec-text">8.0</span>s</span>
@@ -826,6 +618,8 @@
 
     <div id="event-card">
       <div id="card-art"></div>
+      <canvas id="fx-canvas"></canvas>
+      <div id="speed-lines-overlay"></div>
       <div id="card-gradient"></div>
 
       <div class="card-top-tag">
@@ -843,7 +637,6 @@
     </div>
   </div>
 
-  <!-- 底部：雙向決策按鈕 -->
   <div id="bottom-controls">
     <button class="action-btn" id="btn-left"
       onmouseenter="previewChoice('left')" onmouseleave="clearPreview()"
@@ -861,7 +654,7 @@
 
   <!-- 開場封面 -->
   <div id="start-modal" class="modal-screen">
-    <div class="tag-pill">COMPLETE EDITION ・ 成就稱號＋限時QTE＋環境音</div>
+    <div class="tag-pill">ANIMATED EDITION ・ 動態番劇運鏡＋粒子特效</div>
     <h1 class="main-title">今天也要平安下班<br>：校園群像生存模擬器</h1>
     <div class="cloud-badge" id="cover-cloud-status">🟢 已綁定 Firebase 雲端（全服同步＋排行榜）</div>
 
@@ -881,7 +674,7 @@
     </div>
 
     <div class="btn-stack">
-      <button class="btn-primary" onclick="startNewShift()">🔊 開啟語音與環境音・開始值勤</button>
+      <button class="btn-primary" onclick="startNewShift()">🎬 開啟動態番劇・開始值勤</button>
       <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px;">
         <button class="btn-secondary" style="border-color:#a855f7; color:#e9d5ff; padding:9px 4px;" onclick="openAchievements()">🎖️ 成就 (<span id="cover-ach">0</span>/4)</button>
         <button class="btn-secondary" style="border-color:#38bdf8; color:#bae6fd; padding:9px 4px;" onclick="openLeaderboard()">🏅 排行榜</button>
@@ -1059,7 +852,71 @@
 
 <script>
   // ==========================================
-  // 1. Firebase 雲端資料庫連線與同步核心
+  // 1. 動態番劇粒子特效系統（雨滴、陽光光斑、警戒火花）
+  // ==========================================
+  const fxCanvas = document.getElementById("fx-canvas");
+  const fxCtx = fxCanvas.getContext("2d");
+  let particles = [];
+  let fxMode = "sun"; // "sun" | "rain" | "alert"
+
+  function resizeFXCanvas() {
+    const rect = document.getElementById("event-card").getBoundingClientRect();
+    fxCanvas.width = rect.width || 400;
+    fxCanvas.height = rect.height || 440;
+    initParticles();
+  }
+
+  function initParticles() {
+    particles = [];
+    const count = fxMode === "rain" ? 48 : (fxMode === "alert" ? 26 : 18);
+    for (let i = 0; i < count; i++) {
+      particles.push({
+        x: Math.random() * fxCanvas.width,
+        y: Math.random() * fxCanvas.height,
+        vx: fxMode === "rain" ? -1.8 : (Math.random() - 0.5) * 0.7,
+        vy: fxMode === "rain" ? (6 + Math.random() * 5) : (fxMode === "alert" ? -(1.2 + Math.random() * 2) : -(0.2 + Math.random() * 0.5)),
+        r: fxMode === "rain" ? 1.5 : (2 + Math.random() * 3),
+        alpha: 0.25 + Math.random() * 0.45
+      });
+    }
+  }
+
+  function renderFXLoop() {
+    requestAnimationFrame(renderFXLoop);
+    fxCtx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+
+      if (p.y > fxCanvas.height) { p.y = -10; p.x = Math.random() * fxCanvas.width; }
+      if (p.y < -10) { p.y = fxCanvas.height + 10; p.x = Math.random() * fxCanvas.width; }
+      if (p.x < 0) p.x = fxCanvas.width;
+      if (p.x > fxCanvas.width) p.x = 0;
+
+      if (fxMode === "rain") {
+        fxCtx.strokeStyle = `rgba(186, 230, 253, ${p.alpha})`;
+        fxCtx.lineWidth = 1.5;
+        fxCtx.beginPath();
+        fxCtx.moveTo(p.x, p.y);
+        fxCtx.lineTo(p.x - 3, p.y + 12);
+        fxCtx.stroke();
+      } else if (fxMode === "alert") {
+        fxCtx.fillStyle = `rgba(251, 191, 36, ${p.alpha})`;
+        fxCtx.beginPath();
+        fxCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        fxCtx.fill();
+      } else {
+        fxCtx.fillStyle = `rgba(254, 240, 138, ${p.alpha * 0.65})`;
+        fxCtx.beginPath();
+        fxCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        fxCtx.fill();
+      }
+    });
+  }
+
+  // ==========================================
+  // 2. Firebase 雲端資料庫連線與同步核心
   // ==========================================
   const DEFAULT_FIREBASE_URL = "https://realtime-database-1c48d-default-rtdb.asia-southeast1.firebasedatabase.app";
   let firebaseBaseUrl = DEFAULT_FIREBASE_URL.replace(/\/$/, "");
@@ -1160,9 +1017,9 @@
   }
 
   // ==========================================
-  // 2. 本機 IndexedDB 離線快取
+  // 3. 本機 IndexedDB 離線快取
   // ==========================================
-  const DB_NAME = "CampusSafetyGameDB_V3";
+  const DB_NAME = "CampusSafetyGameDB_V4";
   const STORE_NAME = "customData";
 
   function openDB() {
@@ -1207,7 +1064,7 @@
   }
 
   // ==========================================
-  // 3. 角色庫與事件卡資料（標記 urgent: true 為限時 8 秒 QTE 危機！）
+  // 4. 角色庫與事件卡資料
   // ==========================================
   function makeCharacterPortrait(bg1, bg2, hairColor, outfitColor, accessory, emojiBadge) {
     const c = document.createElement("canvas");
@@ -1345,7 +1202,7 @@
   ];
 
   // ==========================================
-  // 4. 進階音效、背景環境音（雨聲白噪音／晴天節奏）與真人語音
+  // 5. 進階音效、背景環境音與真人語音
   // ==========================================
   let sfxOn = true, voiceOn = true, bgmOn = true, zhVoices = [];
   let bgmTimer = null, bgmStep = 0, rainNoiseNode = null;
@@ -1362,7 +1219,6 @@
     if (!bgmOn) return;
     ensureAudio();
 
-    // 若目前天氣是梅雨鋒面，額外產生柔和雨聲白噪音環境音
     if (currentWeather && currentWeather.id === "rain") {
       const bufferSize = audioCtx.sampleRate * 2;
       const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
@@ -1387,7 +1243,6 @@
       rainNoiseNode = whiteNoise;
     }
 
-    // 輕快值勤背景旋律
     const notes = [261.63, 329.63, 392.00, 329.63, 293.66, 349.23, 440.00, 349.23];
     bgmTimer = setInterval(() => {
       if (!bgmOn || !audioCtx || audioCtx.state !== "running") return;
@@ -1518,7 +1373,7 @@
   }
 
   // ==========================================
-  // 5. 成就勳章與專屬稱號系統
+  // 6. 成就勳章與專屬稱號系統
   // ==========================================
   const ACHIEVEMENTS = [
     { id: "iron_wall", title: "🛡️ 鐵壁校安", name: "零失誤鐵壁", desc: "單局通關時，「校園安全」全程從未低於 50%。" },
@@ -1565,7 +1420,7 @@
   }
 
   // ==========================================
-  // 6. 天氣 Buff ＋ 道具背包 ＋ 午休校安隨堂考彩蛋
+  // 7. 天氣 Buff ＋ 道具背包 ＋ 午休校安隨堂考彩蛋
   // ==========================================
   const WEATHERS = [
     { id: "sunny", label: "☀️ 晴朗微風（平穩日）", mod: {} },
@@ -1606,6 +1461,9 @@
     currentWeather = WEATHERS[Math.floor(Math.random() * WEATHERS.length)];
     document.getElementById("weather-label").textContent = currentWeather.label;
     if (currentWeather.mod.sanityBonus) stats.sanity = Math.min(85, stats.sanity + currentWeather.mod.sanityBonus);
+
+    fxMode = currentWeather.id === "rain" ? "rain" : "sun";
+    initParticles();
 
     const pool = [...TACTICAL_ITEMS].sort(() => Math.random() - 0.5);
     activeItems = pool.slice(0, 2).map(it => ({ ...it, used: false }));
@@ -1661,7 +1519,6 @@
         document.getElementById("quiz-modal").classList.add("hidden");
         if (idx === qObj.correct) {
           playSFX("win");
-          // 答對補充 1 個隨機道具！
           const extra = TACTICAL_ITEMS[Math.floor(Math.random() * TACTICAL_ITEMS.length)];
           activeItems.push({ ...extra, used: false });
           renderItemBar();
@@ -1680,7 +1537,7 @@
   }
 
   // ==========================================
-  // 7. 限時緊急應變 QTE 倒數計時器（8 秒危機！）
+  // 8. 限時緊急應變 QTE 倒數計時器（8 秒危機！）
   // ==========================================
   let qteTimer = null;
   let qteRemaining = 8.0;
@@ -1700,7 +1557,6 @@
       qteRemaining -= 0.1;
       if (qteRemaining <= 0) {
         stopQTE();
-        // 超時懲罰：錯失黃金處置時間！
         playSFX("alarm");
         stats.safety = Math.max(0, stats.safety - 25);
         stats.admin = Math.max(0, stats.admin - 20);
@@ -1725,7 +1581,7 @@
   }
 
   // ==========================================
-  // 8. 管理員密碼鎖、角色編輯/刪除與劇本 JSON 匯出匯入
+  // 9. 管理員密碼鎖、角色編輯/刪除與劇本 JSON 匯出匯入
   // ==========================================
   let pendingNewCharImg = null;
   let editingCharId = null;
@@ -1964,7 +1820,7 @@
   }
 
   // ==========================================
-  // 9. 十大結局定義
+  // 10. 十大結局定義
   // ==========================================
   const ENDINGS = {
     safety_zero: { badge: "💀 結局 1/10｜校園失守", title: "校園安全歸零：全校大亂鬥", desc: "因為多次退讓與疏於巡檢，校園陷入混亂，你連夜被召回寫檢討報告！" },
@@ -1980,7 +1836,7 @@
   };
 
   // ==========================================
-  // 10. 遊戲核心循環（整合 QTE 限時、隨堂考彩蛋、成就檢定與排行榜）
+  // 11. 遊戲核心循環
   // ==========================================
   let stats = { safety: 50, admin: 50, parent: 50, sanity: 50 };
   let activeDeck = [], turnIndex = 0, selectedMode = "normal", isGameOver = false;
@@ -2067,6 +1923,7 @@
 
   function startNewShift() {
     ensureAudio();
+    resizeFXCanvas();
     stats = { safety: 50, admin: 50, parent: 50, sanity: 50 };
     currentDay = 1;
     runSafetyNeverBelow50 = true;
@@ -2104,7 +1961,6 @@
       return;
     }
 
-    // 在關卡進行到一半（午休時段）隨機觸發一次「校安知識隨堂考」彩蛋
     if (!quizTriggeredThisShift && turnIndex === Math.floor(activeDeck.length / 2) && Math.random() < 0.7) {
       triggerNoonQuiz();
       return;
@@ -2128,13 +1984,27 @@
     document.getElementById("left-text").textContent = card.left.label;
     document.getElementById("right-text").textContent = card.right.label;
 
+    // 觸發番劇進場動畫與危機震動特效
     const cardEl = document.getElementById("event-card");
     cardEl.style.transform = "translateX(0) rotate(0deg)";
     cardEl.style.borderColor = card.urgent ? "#ef4444" : "rgba(255, 255, 255, 0.15)";
+    cardEl.classList.remove("card-enter-anim", "card-shake-anim");
+    void cardEl.offsetWidth;
+    cardEl.classList.add("card-enter-anim");
+
+    const speedOverlay = document.getElementById("speed-lines-overlay");
+    if (card.urgent || card.sfx === "slam") {
+      cardEl.classList.add("card-shake-anim");
+      speedOverlay.classList.add("active");
+      if (currentWeather.id !== "rain") { fxMode = "alert"; initParticles(); }
+    } else {
+      speedOverlay.classList.remove("active");
+      if (currentWeather.id !== "rain") { fxMode = "sun"; initParticles(); }
+    }
 
     if (card.sfx) playSFX(card.sfx);
     if (card.urgent) startQTE();
-    setTimeout(() => speakCurrentCard(), 260);
+    setTimeout(() => speakCurrentCard(), 280);
   }
 
   function commitChoice(dir) {
@@ -2145,6 +2015,7 @@
     clearPreview();
 
     const cardEl = document.getElementById("event-card");
+    cardEl.classList.remove("card-enter-anim", "card-shake-anim");
     cardEl.style.transform = dir === "left"
       ? "translateX(-120%) rotate(-14deg)"
       : "translateX(120%) rotate(14deg)";
@@ -2198,7 +2069,6 @@
     playSFX(isWin ? "win" : "fail");
     setTimeout(() => speakText(data.title + "。" + data.desc, "officer"), 350);
 
-    // 檢定成就稱號解鎖條件
     if (isWin) {
       if (runSafetyNeverBelow50) unlockAchievement("iron_wall");
       if (runSanityAlwaysBalanced) unlockAchievement("zen_master");
@@ -2213,7 +2083,6 @@
       document.getElementById("submit-score-btn").disabled = false;
       document.getElementById("submit-score-btn").textContent = "登錄上榜";
 
-      // 填充已解鎖稱號下拉選單
       const titleSel = document.getElementById("title-select-box");
       titleSel.innerHTML = `<option value="">稱號：無掛載稱號</option>`;
       unlockedAchs.forEach(aid => {
@@ -2236,7 +2105,7 @@
   }
 
   // ==========================================
-  // 11. 全服 Firebase 排行榜 ＋ 戰績分享圖生成
+  // 12. 全服 Firebase 排行榜 ＋ 戰績分享圖生成
   // ==========================================
   async function submitScoreToLeaderboard() {
     const titlePrefix = document.getElementById("title-select-box").value || "";
@@ -2360,7 +2229,6 @@
     ctx.font = "900 27px sans-serif";
     ctx.fillText(`綜合平衡戰績：${lastRunScore} 分`, 270, 615);
 
-    // 繪製已解鎖成就徽章列
     const badgeStr = unlockedAchs.length > 0
       ? unlockedAchs.map(id => ACHIEVEMENTS.find(a => a.id === id)?.title || "").join(" ")
       : "尚未解鎖特殊成就勳章";
@@ -2407,7 +2275,7 @@
   function closeGallery() { document.getElementById("gallery-modal").classList.add("hidden"); }
 
   // ==========================================
-  // 12. 手勢左右拖曳卡牌支援
+  // 13. 手勢左右拖曳卡牌支援
   // ==========================================
   const cardEl = document.getElementById("event-card");
   let startX = 0, currentX = 0, isDragging = false;
@@ -2446,6 +2314,10 @@
     currentX = 0;
   });
 
+  window.addEventListener("resize", resizeFXCanvas);
+  resizeFXCanvas();
+  renderFXLoop();
+
   bindImageFallbacks();
   checkCreatorAchievement();
   updateUnlockUI();
@@ -2455,6 +2327,4 @@
   });
 </script>
 </body>
-</html>'''
-
-print("Generated complete ultimate edition index.html successfully.")
+</html>
