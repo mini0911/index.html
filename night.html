@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>今天也要平安下班｜Firebase 跨裝置即時雲端同步版</title>
+  <title>今天也要平安下班｜Firebase 跨裝置同步＋管理員密碼保護版</title>
   <style>
     :root {
       --bg-dark: #090d16;
@@ -472,6 +472,56 @@
       cursor: pointer;
     }
 
+    /* 管理員密碼解鎖彈窗樣式 */
+    .lock-card {
+      width: 100%;
+      max-width: 320px;
+      background: rgba(15, 23, 42, 0.98);
+      border: 2px solid rgba(251, 191, 36, 0.55);
+      border-radius: 20px;
+      padding: 22px 18px;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.85);
+    }
+
+    .lock-icon {
+      font-size: 38px;
+      margin-bottom: 8px;
+    }
+
+    .pin-input {
+      width: 100%;
+      background: #1e293b;
+      border: 2px solid rgba(56, 189, 248, 0.45);
+      color: #fff;
+      padding: 11px 12px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 4px;
+      text-align: center;
+      margin: 12px 0 6px;
+      user-select: text;
+    }
+
+    .pin-error {
+      color: #f87171;
+      font-size: 12px;
+      font-weight: 700;
+      min-height: 18px;
+      margin-bottom: 10px;
+    }
+
+    .shake-anim {
+      animation: shakeBox 0.35s ease;
+    }
+
+    @keyframes shakeBox {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-8px); }
+      50% { transform: translateX(8px); }
+      75% { transform: translateX(-5px); }
+    }
+
     .cast-scroll {
       width: 100%;
       max-height: 62dvh;
@@ -545,6 +595,7 @@
       border: 1.5px solid rgba(251, 191, 36, 0.45);
       border-radius: 14px;
       padding: 12px;
+      margin-bottom: 12px;
     }
 
     .add-char-title {
@@ -625,7 +676,7 @@
         <div id="shift-progress-fill"></div>
       </div>
       <div style="display:flex; gap:4px;">
-        <button class="icon-btn cast-btn" onclick="openCastModal()">👥 角色(<span id="cast-count">8</span>)</button>
+        <button class="icon-btn cast-btn" onclick="openCastModal()">🔒 角色(<span id="cast-count">8</span>)</button>
         <button class="icon-btn" onclick="openGallery()">🏆 <span id="hud-unlock">0</span>/9</button>
         <button id="voice-btn" class="icon-btn active-audio" onclick="toggleVoice()">🗣️</button>
         <button id="sfx-btn" class="icon-btn active-audio" onclick="toggleSFX()">🔊</button>
@@ -695,7 +746,7 @@
 
   <!-- 開場封面 -->
   <div id="start-modal" class="modal-screen">
-    <div class="tag-pill">FIREBASE CLOUD SYNC EDITION</div>
+    <div class="tag-pill">FIREBASE CLOUD SYNC & ADMIN LOCK</div>
     <h1 class="main-title">今天也要平安下班<br>：校園群像生存模擬器</h1>
     <div class="cloud-badge connected" id="cover-cloud-status">🟢 已自動綁定 Firebase 雲端（跨裝置即時同步中）</div>
 
@@ -712,15 +763,34 @@
 
     <div class="btn-stack">
       <button class="btn-primary" onclick="startNewShift()">🔊 開啟語音與音效・開始值勤</button>
-      <button class="btn-secondary" style="border-color:#fbbf24; color:#fde68a;" onclick="openCastModal()">👥 管理登場人物 / 換圖與新增角色</button>
+      <button class="btn-secondary" style="border-color:#fbbf24; color:#fde68a;" onclick="openCastModal()">🔒 管理員後台 / 換圖與新增角色</button>
       <button class="btn-secondary" onclick="openGallery()">🏆 查看職場結局圖鑑 (<span id="cover-unlock">0</span>/9)</button>
     </div>
   </div>
 
-  <!-- 登場角色庫＆Firebase 雲端連線彈窗 -->
+  <!-- 管理員密碼驗證彈窗 -->
+  <div id="admin-lock-modal" class="modal-screen hidden" style="z-index: 50;">
+    <div class="lock-card" id="lock-card-box">
+      <div class="lock-icon">🔐</div>
+      <div class="tag-pill" style="margin-bottom:6px;">ADMIN ACCESS ONLY</div>
+      <h3 style="font-size:18px; font-weight:900; color:#f8fafc; margin-bottom:4px;">管理員權限驗證</h3>
+      <p style="font-size:12px; color:#94a3b8; line-height:1.45;">
+        為防止玩家隨意更動雲端角色圖片，請輸入管理員密碼解鎖後台（預設密碼：<strong style="color:#fbbf24;">8888</strong>）
+      </p>
+      <input type="password" class="pin-input" id="admin-pin-input" placeholder="請輸入密碼" maxlength="16"
+        onkeydown="if(event.key==='Enter') verifyAdminPin()" />
+      <div class="pin-error" id="admin-pin-error"></div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+        <button class="btn-secondary" onclick="closeAdminLock()">取消</button>
+        <button class="btn-primary" style="padding:10px;" onclick="verifyAdminPin()">🔓 確認解鎖</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 登場角色庫＆Firebase 雲端連線彈窗（需密碼解鎖才能進入） -->
   <div id="cast-modal" class="modal-screen hidden">
-    <div class="tag-pill">CLOUD SYNC & CHARACTER ROSTER</div>
-    <h2 class="main-title" style="font-size: 20px;">Firebase 跨裝置雲端同步＆角色庫</h2>
+    <div class="tag-pill">🔓 ADMIN PANEL ・ CLOUD SYNC</div>
+    <h2 class="main-title" style="font-size: 20px;">管理員角色庫＆雲端同步設定</h2>
 
     <div class="cast-scroll">
       <div class="firebase-box">
@@ -736,6 +806,7 @@
 
       <div class="cast-grid" id="cast-grid-list"></div>
 
+      <!-- 新增全新角色表單 -->
       <div class="add-char-box">
         <div class="add-char-title">➕ 新增全新角色（自動同步至所有裝置！）</div>
         <div class="form-row-2">
@@ -761,10 +832,22 @@
         </div>
         <button class="btn-primary" style="width:100%; padding:10px; font-size:13.5px;" onclick="createNewCharacter()">✨ 確認新增並雲端同步</button>
       </div>
+
+      <!-- 修改管理員密碼區塊（同步至雲端，所有裝置通用） -->
+      <div class="firebase-box" style="border-color: rgba(251, 191, 36, 0.45); margin-bottom: 0;">
+        <div class="firebase-title" style="color: var(--accent-gold);">
+          <span>🔑 變更管理員密碼（雲端同步生效）</span>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <input type="text" class="form-input" id="new-admin-pin-input" style="margin-bottom:0;" placeholder="輸入新密碼（至少 4 碼）" maxlength="16" />
+          <button class="btn-primary" style="background:linear-gradient(135deg,#d97706,#b45309); padding:8px 12px; font-size:12px; white-space:nowrap;" onclick="changeAdminPassword()">更新密碼</button>
+        </div>
+      </div>
     </div>
 
-    <div class="btn-stack" style="max-width:100%;">
-      <button class="btn-secondary" onclick="closeCastModal()">完成並返回</button>
+    <div class="btn-stack" style="max-width:100%; flex-direction: row;">
+      <button class="btn-secondary" style="flex:1; border-color:#ef4444; color:#fca5a5;" onclick="lockAndCloseAdmin()">🔒 鎖定並離開</button>
+      <button class="btn-secondary" style="flex:1;" onclick="closeCastModal()">返回遊戲</button>
     </div>
   </div>
 
@@ -790,13 +873,17 @@
 
 <script>
   // ==========================================
-  // 1. 已直接綁定你的 Firebase Realtime Database 網址
+  // 1. Firebase Realtime Database 跨裝置雲端同步核心
   // ==========================================
   const DEFAULT_FIREBASE_URL = "https://realtime-database-1c48d-default-rtdb.asia-southeast1.firebasedatabase.app";
 
   let firebaseBaseUrl = (localStorage.getItem("campus_game_fb_url") || DEFAULT_FIREBASE_URL).replace(/\/$/, "");
   let cloudPollTimer = null;
   let lastCloudTimestamp = 0;
+
+  // 管理員密碼設定（預設 8888，修改後會自動同步至 Firebase 雲端）
+  let currentAdminPin = localStorage.getItem("campus_game_admin_pin") || "8888";
+  let isAdminUnlocked = false;
 
   function showSaveToast(msg = "☁️ 已即時同步至 Firebase 雲端！") {
     const el = document.getElementById("save-toast");
@@ -811,7 +898,7 @@
     const modalTag = document.getElementById("modal-cloud-tag");
     if (connected) {
       coverBadge.classList.add("connected");
-      coverBadge.textContent = labelText || "🟢 已連線 Firebase 雲端（跨裝置即時同步中）";
+      coverBadge.textContent = labelText || "🟢 已自動綁定 Firebase 雲端（跨裝置即時同步中）";
       modalTag.style.color = "#4ade80";
       modalTag.textContent = "🟢 雲端已連線";
     } else {
@@ -846,11 +933,12 @@
     if (!firebaseBaseUrl) return;
 
     try {
-      showSaveToast("⏳ 正在上傳圖片至 Firebase 雲端...");
+      showSaveToast("⏳ 正在上傳資料至 Firebase 雲端...");
       const nowTs = Date.now();
       const customEvents = ALL_EVENTS.filter(e => e.isCustom);
       const payload = {
         updatedAt: nowTs,
+        adminPin: currentAdminPin,
         roster: CHARACTER_ROSTER.map(c => ({
           id: c.id, name: c.name, role: c.role, voice: c.voice, img: c.img
         })),
@@ -896,6 +984,12 @@
 
       if (data.updatedAt && data.updatedAt !== lastCloudTimestamp) {
         lastCloudTimestamp = data.updatedAt;
+
+        // 同步雲端最新管理員密碼
+        if (data.adminPin && typeof data.adminPin === "string") {
+          currentAdminPin = data.adminPin;
+          localStorage.setItem("campus_game_admin_pin", currentAdminPin);
+        }
 
         if (Array.isArray(data.roster) && data.roster.length > 0) {
           CHARACTER_ROSTER.length = 0;
@@ -1224,20 +1318,79 @@
   }
 
   // ==========================================
-  // 5. 角色庫管理與雲端同步
+  // 5. 管理員密碼驗證與角色庫管理
   // ==========================================
   let pendingNewCharImg = null;
 
   function openCastModal() {
     playSFX("walkie");
+    if (isAdminUnlocked) {
+      showAdminCastPanel();
+    } else {
+      document.getElementById("admin-pin-input").value = "";
+      document.getElementById("admin-pin-error").textContent = "";
+      document.getElementById("admin-lock-modal").classList.remove("hidden");
+      setTimeout(() => document.getElementById("admin-pin-input").focus(), 100);
+    }
+  }
+
+  function closeAdminLock() {
+    playSFX("walkie");
+    document.getElementById("admin-lock-modal").classList.add("hidden");
+  }
+
+  function verifyAdminPin() {
+    const inputEl = document.getElementById("admin-pin-input");
+    const errEl = document.getElementById("admin-pin-error");
+    const entered = inputEl.value.trim();
+
+    if (entered === currentAdminPin) {
+      isAdminUnlocked = true;
+      playSFX("win");
+      document.getElementById("admin-lock-modal").classList.add("hidden");
+      showAdminCastPanel();
+      showSaveToast("🔓 管理員權限已解鎖！");
+    } else {
+      playSFX("fail");
+      errEl.textContent = "❌ 密碼錯誤，無法進入管理員後台";
+      inputEl.value = "";
+      const box = document.getElementById("lock-card-box");
+      box.classList.remove("shake-anim");
+      void box.offsetWidth;
+      box.classList.add("shake-anim");
+    }
+  }
+
+  function showAdminCastPanel() {
     document.getElementById("firebase-url-input").value = firebaseBaseUrl;
     renderCastGrid();
     document.getElementById("cast-modal").classList.remove("hidden");
   }
 
+  function lockAndCloseAdmin() {
+    isAdminUnlocked = false;
+    playSFX("walkie");
+    document.getElementById("cast-modal").classList.add("hidden");
+    showSaveToast("🔒 管理員後台已上鎖");
+  }
+
   function closeCastModal() {
     playSFX("walkie");
     document.getElementById("cast-modal").classList.add("hidden");
+  }
+
+  async function changeAdminPassword() {
+    const newPin = document.getElementById("new-admin-pin-input").value.trim();
+    if (newPin.length < 4) {
+      showSaveToast("⚠️ 新密碼至少需要 4 個字元");
+      return;
+    }
+    currentAdminPin = newPin;
+    localStorage.setItem("campus_game_admin_pin", currentAdminPin);
+    document.getElementById("new-admin-pin-input").value = "";
+    playSFX("win");
+    await pushDataToFirebase();
+    showSaveToast("🔑 管理員密碼已更新並同步至雲端！");
   }
 
   function renderCastGrid() {
@@ -1261,6 +1414,7 @@
   }
 
   function replaceCharImage(event, idx) {
+    if (!isAdminUnlocked) return;
     const file = event.target.files[0];
     if (!file) return;
     compressImageToDataURL(file, async (compressedDataUrl) => {
@@ -1281,6 +1435,7 @@
   }
 
   async function createNewCharacter() {
+    if (!isAdminUnlocked) return;
     const name = document.getElementById("new-char-name").value.trim() || "新登場人物";
     const voice = document.getElementById("new-char-voice").value;
     const eventText = document.getElementById("new-char-event").value.trim() || `${name}突然出現在學安室門口，要求你立刻協助處理一項突發校園狀況！`;
