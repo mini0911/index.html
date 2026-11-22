@@ -697,7 +697,7 @@
   <div id="start-modal" class="modal-screen">
     <div class="tag-pill">FIREBASE CLOUD SYNC EDITION</div>
     <h1 class="main-title">今天也要平安下班<br>：校園群像生存模擬器</h1>
-    <div class="cloud-badge" id="cover-cloud-status">⚪ 尚未綁定 Firebase 雲端網址（僅本機存檔）</div>
+    <div class="cloud-badge connected" id="cover-cloud-status">🟢 已自動綁定 Firebase 雲端（跨裝置即時同步中）</div>
 
     <div class="mode-selector">
       <div class="mode-btn active" id="mode-normal" onclick="selectMode('normal')">
@@ -712,7 +712,7 @@
 
     <div class="btn-stack">
       <button class="btn-primary" onclick="startNewShift()">🔊 開啟語音與音效・開始值勤</button>
-      <button class="btn-secondary" style="border-color:#fbbf24; color:#fde68a;" onclick="openCastModal()">☁️ 雲端連線設定 / 管理與新增角色</button>
+      <button class="btn-secondary" style="border-color:#fbbf24; color:#fde68a;" onclick="openCastModal()">👥 管理登場人物 / 換圖與新增角色</button>
       <button class="btn-secondary" onclick="openGallery()">🏆 查看職場結局圖鑑 (<span id="cover-unlock">0</span>/9)</button>
     </div>
   </div>
@@ -723,25 +723,19 @@
     <h2 class="main-title" style="font-size: 20px;">Firebase 跨裝置雲端同步＆角色庫</h2>
 
     <div class="cast-scroll">
-      <!-- Firebase 雲端連線設定區塊 -->
       <div class="firebase-box">
         <div class="firebase-title">
-          <span>☁️ Firebase Realtime Database 跨裝置連線</span>
-          <span id="modal-cloud-tag" style="font-size:11px; color:#94a3b8;">未連線</span>
-        </div>
-        <div style="font-size:11px; color:#cbd5e1; margin-bottom:6px; line-height:1.45;">
-          貼上你的 Firebase 資料庫網址（例如 <code style="color:#fbbf24;">https://xxx-default-rtdb.firebaseio.com</code>），手機與電腦輸入相同網址即可即時同步所有角色與照片！
+          <span>☁️ 已綁定專屬 Firebase 雲端資料庫</span>
+          <span id="modal-cloud-tag" style="font-size:11px; color:#4ade80;">🟢 雲端已連線</span>
         </div>
         <div style="display:flex; gap:6px;">
-          <input type="text" class="form-input" id="firebase-url-input" style="margin-bottom:0;" placeholder="https://你的專案-default-rtdb.firebaseio.com" />
-          <button class="btn-primary" style="padding:8px 12px; font-size:12px; white-space:nowrap;" onclick="connectFirebaseURL()">連線同步</button>
+          <input type="text" class="form-input" id="firebase-url-input" style="margin-bottom:0;" value="https://realtime-database-1c48d-default-rtdb.asia-southeast1.firebasedatabase.app" />
+          <button class="btn-primary" style="padding:8px 12px; font-size:12px; white-space:nowrap;" onclick="pullDataFromFirebase(false)">立即同步</button>
         </div>
       </div>
 
-      <!-- 現有角色列表 -->
       <div class="cast-grid" id="cast-grid-list"></div>
 
-      <!-- 新增全新角色表單 -->
       <div class="add-char-box">
         <div class="add-char-title">➕ 新增全新角色（自動同步至所有裝置！）</div>
         <div class="form-row-2">
@@ -770,7 +764,6 @@
     </div>
 
     <div class="btn-stack" style="max-width:100%;">
-      <button class="btn-primary" style="background:linear-gradient(135deg,#059669,#10b981); padding:10px; font-size:12.5px;" onclick="exportStandaloneHTML()">💾 匯出已綁定雲端網址的獨立 HTML 檔</button>
       <button class="btn-secondary" onclick="closeCastModal()">完成並返回</button>
     </div>
   </div>
@@ -797,12 +790,9 @@
 
 <script>
   // ==========================================
-  // 1. Firebase Realtime Database 跨裝置雲端同步核心
-  //    （若你有固定專案網址，也可直接填進下方 DEFAULT_FIREBASE_URL 引號內！）
+  // 1. 已直接綁定你的 Firebase Realtime Database 網址
   // ==========================================
-  /* FIREBASE_URL_START */
-  const DEFAULT_FIREBASE_URL = "";
-  /* FIREBASE_URL_END */
+  const DEFAULT_FIREBASE_URL = "https://realtime-database-1c48d-default-rtdb.asia-southeast1.firebasedatabase.app";
 
   let firebaseBaseUrl = (localStorage.getItem("campus_game_fb_url") || DEFAULT_FIREBASE_URL).replace(/\/$/, "");
   let cloudPollTimer = null;
@@ -826,13 +816,12 @@
       modalTag.textContent = "🟢 雲端已連線";
     } else {
       coverBadge.classList.remove("connected");
-      coverBadge.textContent = labelText || "⚪ 尚未綁定 Firebase 雲端網址（點下方設定）";
-      modalTag.style.color = "#94a3b8";
-      modalTag.textContent = "未連線";
+      coverBadge.textContent = labelText || "🔴 雲端連線異常（請檢查 Firebase Rules 權限）";
+      modalTag.style.color = "#f87171";
+      modalTag.textContent = "🔴 連線異常";
     }
   }
 
-  // 將角色與圖片壓縮至適合 Firebase 即時同步的尺寸
   function compressImageToDataURL(file, callback) {
     const reader = new FileReader();
     reader.onload = e => {
@@ -852,13 +841,9 @@
     reader.readAsDataURL(file);
   }
 
-  // 推送最新角色庫與自訂事件到 Firebase Realtime Database
   async function pushDataToFirebase() {
-    await saveToIndexedDB(); // 同時備份一份在瀏覽器本機
-    if (!firebaseBaseUrl) {
-      showSaveToast("✅ 已存檔於本機（綁定 Firebase 可跨裝置同步）");
-      return;
-    }
+    await saveToIndexedDB();
+    if (!firebaseBaseUrl) return;
 
     try {
       showSaveToast("⏳ 正在上傳圖片至 Firebase 雲端...");
@@ -881,17 +866,22 @@
       if (!resp.ok) throw new Error("HTTP " + resp.status);
       lastCloudTimestamp = nowTs;
       updateCloudStatusUI(true);
-      showSaveToast("☁️ 雲端同步完成！其他裝置重整或開啟即可看到");
+      showSaveToast("☁️ 雲端同步完成！換任何手機或電腦打開都會有");
     } catch (err) {
       console.error(err);
-      updateCloudStatusUI(false, "🔴 Firebase 寫入失敗（請確認 Rules 為 true）");
-      showSaveToast("⚠️ 雲端寫入失敗，請檢查 Firebase 網址或讀寫權限");
+      updateCloudStatusUI(false, "🔴 Firebase 寫入被拒（請在後台 Rules 設為 true）");
+      showSaveToast("⚠️ 寫入失敗，請確認 Firebase Rules 已設為 true");
     }
   }
 
-  // 從 Firebase Realtime Database 拉取最新角色庫與自訂事件
   async function pullDataFromFirebase(silent = false) {
+    const inputUrl = document.getElementById("firebase-url-input");
+    if (inputUrl && inputUrl.value.trim().startsWith("https://")) {
+      firebaseBaseUrl = inputUrl.value.trim().replace(/\/$/, "");
+      localStorage.setItem("campus_game_fb_url", firebaseBaseUrl);
+    }
     if (!firebaseBaseUrl) return;
+
     try {
       const resp = await fetch(`${firebaseBaseUrl}/campus_game_sync.json?t=${Date.now()}`);
       if (!resp.ok) throw new Error("HTTP " + resp.status);
@@ -900,7 +890,6 @@
       updateCloudStatusUI(true);
 
       if (!data) {
-        // 若雲端還是空的，把目前初始資料初始化上去
         if (!silent) await pushDataToFirebase();
         return;
       }
@@ -914,7 +903,6 @@
         }
 
         if (Array.isArray(data.customEvents)) {
-          // 先移除舊的自訂事件，再填入雲端最新的
           for (let i = ALL_EVENTS.length - 1; i >= 0; i--) {
             if (ALL_EVENTS[i].isCustom) ALL_EVENTS.splice(i, 1);
           }
@@ -926,30 +914,17 @@
         await saveToIndexedDB();
         updateUnlockUI();
         renderCastGrid();
-        if (!silent) showSaveToast("☁️ 已從 Firebase 同步最新角色與圖片！");
+        if (!silent) showSaveToast("☁️ 已同步雲端最新人物與豆包圖片！");
       }
     } catch (err) {
       console.warn("Firebase pull failed:", err);
-      updateCloudStatusUI(false, "🔴 Firebase 連線失敗，請檢查網址");
+      updateCloudStatusUI(false, "🔴 讀取失敗（請確認 Firebase Rules 設為 true）");
     }
-  }
-
-  async function connectFirebaseURL() {
-    const raw = document.getElementById("firebase-url-input").value.trim().replace(/\/$/, "");
-    if (!raw.startsWith("https://")) {
-      showSaveToast("⚠️ 請輸入正確的 https:// 開頭 Firebase 網址");
-      return;
-    }
-    firebaseBaseUrl = raw;
-    localStorage.setItem("campus_game_fb_url", firebaseBaseUrl);
-    startCloudPolling();
-    await pullDataFromFirebase(false);
   }
 
   function startCloudPolling() {
     if (cloudPollTimer) clearInterval(cloudPollTimer);
     if (!firebaseBaseUrl) return;
-    // 每 6 秒自動檢查雲端是否有其他裝置更新人物，實現跨裝置即時同步
     cloudPollTimer = setInterval(() => pullDataFromFirebase(true), 6000);
   }
 
@@ -1249,7 +1224,7 @@
   }
 
   // ==========================================
-  // 5. 角色庫管理、雲端同步與匯出獨立檔案
+  // 5. 角色庫管理與雲端同步
   // ==========================================
   let pendingNewCharImg = null;
 
@@ -1346,23 +1321,6 @@
     playSFX("win");
     speakText(`新角色${name}已加入並同步至雲端！`, voice);
     await pushDataToFirebase();
-  }
-
-  // 一鍵匯出（連同 Firebase 網址一起寫進 HTML，之後放 GitHub 任何裝置打開直接自動連線！）
-  function exportStandaloneHTML() {
-    let htmlContent = "<!DOCTYPE html>
-" + document.documentElement.outerHTML;
-    const urlCode = `/* FIREBASE_URL_START */
-  const DEFAULT_FIREBASE_URL = ${JSON.stringify(firebaseBaseUrl)};
-  /* FIREBASE_URL_END */`;
-    htmlContent = htmlContent.replace(/\/\* FIREBASE_URL_START \*\/[\s\S]*?\/\* FIREBASE_URL_END \*\//, urlCode);
-
-    const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "index.html";
-    a.click();
-    showSaveToast("💾 已匯出綁定 Firebase 的 index.html！");
   }
 
   // ==========================================
@@ -1621,7 +1579,7 @@
     currentX = 0;
   });
 
-  // 初始化：先載入本機快取，若有綁定 Firebase 則自動從雲端拉取並開啟每 6 秒即時同步
+  // 啟動時自動載入快取並立即連線你的 Firebase 資料庫
   bindImageFallbacks();
   updateUnlockUI();
   loadFromIndexedDB().then(() => {
