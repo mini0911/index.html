@@ -2450,4 +2450,11 @@
   checkCreatorAchievement();
   updateUnlockUI();
   loadFromIndexedDB().then(() => {
-    pullDataFrom
+    pullDataFromFirebase(false);
+    startCloudPolling();
+  });
+</script>
+</body>
+</html>'''
+
+print("Generated complete ultimate edition index.html successfully.")
