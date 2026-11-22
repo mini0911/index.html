@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>今天也要平安下班｜永久自動存檔＋自訂角色完整版</title>
+  <title>今天也要平安下班｜Firebase 跨裝置即時雲端同步版</title>
   <style>
     :root {
       --bg-dark: #090d16;
@@ -391,7 +391,27 @@
       font-size: 13px;
       color: var(--text-muted);
       line-height: 1.55;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
+    }
+
+    .cloud-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      font-weight: 800;
+      padding: 5px 12px;
+      border-radius: 999px;
+      margin-bottom: 14px;
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      color: #cbd5e1;
+    }
+
+    .cloud-badge.connected {
+      background: rgba(34, 197, 94, 0.16);
+      border-color: #22c55e;
+      color: #4ade80;
     }
 
     .mode-selector {
@@ -454,18 +474,36 @@
 
     .cast-scroll {
       width: 100%;
-      max-height: 60dvh;
+      max-height: 62dvh;
       overflow-y: auto;
       text-align: left;
       margin-bottom: 12px;
       padding-right: 4px;
     }
 
+    .firebase-box {
+      background: rgba(15, 23, 42, 0.95);
+      border: 1.5px solid rgba(56, 189, 248, 0.5);
+      border-radius: 14px;
+      padding: 11px 12px;
+      margin-bottom: 12px;
+    }
+
+    .firebase-title {
+      font-size: 13px;
+      font-weight: 900;
+      color: var(--accent-blue);
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
     .cast-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
 
     .cast-card {
@@ -577,7 +615,7 @@
 </head>
 <body>
 
-<div id="save-toast">✅ 已自動永久存檔！重整網頁不會消失</div>
+<div id="save-toast">☁️ 已即時同步至 Firebase 雲端！</div>
 
 <div id="app-frame">
   <div id="top-hud">
@@ -657,12 +695,9 @@
 
   <!-- 開場封面 -->
   <div id="start-modal" class="modal-screen">
-    <div class="tag-pill">AUTO-SAVE & EXPORT EDITION</div>
+    <div class="tag-pill">FIREBASE CLOUD SYNC EDITION</div>
     <h1 class="main-title">今天也要平安下班<br>：校園群像生存模擬器</h1>
-    <p class="sub-desc">
-      支援<strong>「自動永久存檔（重整不消失）」</strong>與<strong>「一鍵匯出含照片的獨立 HTML 檔」</strong>！<br>
-      隨時換上你的豆包圖片或新增角色，重整網頁通通都在！
-    </p>
+    <div class="cloud-badge" id="cover-cloud-status">⚪ 尚未綁定 Firebase 雲端網址（僅本機存檔）</div>
 
     <div class="mode-selector">
       <div class="mode-btn active" id="mode-normal" onclick="selectMode('normal')">
@@ -677,21 +712,38 @@
 
     <div class="btn-stack">
       <button class="btn-primary" onclick="startNewShift()">🔊 開啟語音與音效・開始值勤</button>
-      <button class="btn-secondary" style="border-color:#fbbf24; color:#fde68a;" onclick="openCastModal()">👥 管理登場人物 / 新增自訂角色</button>
+      <button class="btn-secondary" style="border-color:#fbbf24; color:#fde68a;" onclick="openCastModal()">☁️ 雲端連線設定 / 管理與新增角色</button>
       <button class="btn-secondary" onclick="openGallery()">🏆 查看職場結局圖鑑 (<span id="cover-unlock">0</span>/9)</button>
     </div>
   </div>
 
-  <!-- 登場角色庫＆自由新增角色彈窗 -->
+  <!-- 登場角色庫＆Firebase 雲端連線彈窗 -->
   <div id="cast-modal" class="modal-screen hidden">
-    <div class="tag-pill">PERMANENT ROSTER & EXPORT</div>
-    <h2 class="main-title" style="font-size: 20px;">校園登場人物庫（自動永久存檔）</h2>
+    <div class="tag-pill">CLOUD SYNC & CHARACTER ROSTER</div>
+    <h2 class="main-title" style="font-size: 20px;">Firebase 跨裝置雲端同步＆角色庫</h2>
 
     <div class="cast-scroll">
+      <!-- Firebase 雲端連線設定區塊 -->
+      <div class="firebase-box">
+        <div class="firebase-title">
+          <span>☁️ Firebase Realtime Database 跨裝置連線</span>
+          <span id="modal-cloud-tag" style="font-size:11px; color:#94a3b8;">未連線</span>
+        </div>
+        <div style="font-size:11px; color:#cbd5e1; margin-bottom:6px; line-height:1.45;">
+          貼上你的 Firebase 資料庫網址（例如 <code style="color:#fbbf24;">https://xxx-default-rtdb.firebaseio.com</code>），手機與電腦輸入相同網址即可即時同步所有角色與照片！
+        </div>
+        <div style="display:flex; gap:6px;">
+          <input type="text" class="form-input" id="firebase-url-input" style="margin-bottom:0;" placeholder="https://你的專案-default-rtdb.firebaseio.com" />
+          <button class="btn-primary" style="padding:8px 12px; font-size:12px; white-space:nowrap;" onclick="connectFirebaseURL()">連線同步</button>
+        </div>
+      </div>
+
+      <!-- 現有角色列表 -->
       <div class="cast-grid" id="cast-grid-list"></div>
 
+      <!-- 新增全新角色表單 -->
       <div class="add-char-box">
-        <div class="add-char-title">➕ 新增全新角色（自動存檔並加入關卡！）</div>
+        <div class="add-char-title">➕ 新增全新角色（自動同步至所有裝置！）</div>
         <div class="form-row-2">
           <input type="text" class="form-input" id="new-char-name" placeholder="角色稱呼（例：教官李組長）" maxlength="12" />
           <select class="form-input" id="new-char-voice">
@@ -707,18 +759,18 @@
           <input type="text" class="form-input" id="new-char-right" placeholder="右滑選項（例：開單登記）" maxlength="22" />
         </div>
         <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;">
-          <span style="font-size:11.5px; color:#cbd5e1;" id="new-char-file-label">上傳角色立繪（自動壓縮存檔）：</span>
+          <span style="font-size:11.5px; color:#cbd5e1;" id="new-char-file-label">上傳角色立繪（自動壓縮雲端同步）：</span>
           <label class="cast-upload-mini" style="padding:5px 10px; font-size:11px;">
             📁 選擇豆包圖片
             <input type="file" id="new-char-file" accept="image/*" class="hidden" onchange="previewNewCharImg(event)" />
           </label>
         </div>
-        <button class="btn-primary" style="width:100%; padding:10px; font-size:13.5px;" onclick="createNewCharacter()">✨ 確認新增角色並永久保存</button>
+        <button class="btn-primary" style="width:100%; padding:10px; font-size:13.5px;" onclick="createNewCharacter()">✨ 確認新增並雲端同步</button>
       </div>
     </div>
 
     <div class="btn-stack" style="max-width:100%;">
-      <button class="btn-primary" style="background:linear-gradient(135deg,#059669,#10b981); padding:10px; font-size:13px;" onclick="exportStandaloneHTML()">💾 匯出永久版遊戲檔（打包所有新圖片給手機/GitHub用）</button>
+      <button class="btn-primary" style="background:linear-gradient(135deg,#059669,#10b981); padding:10px; font-size:12.5px;" onclick="exportStandaloneHTML()">💾 匯出已綁定雲端網址的獨立 HTML 檔</button>
       <button class="btn-secondary" onclick="closeCastModal()">完成並返回</button>
     </div>
   </div>
@@ -743,39 +795,166 @@
   </div>
 </div>
 
-<script id="game-engine-script">
+<script>
   // ==========================================
-  // 1. 圖片自動壓縮轉 Base64 永存器（確保重整或匯出不卡頓）
+  // 1. Firebase Realtime Database 跨裝置雲端同步核心
+  //    （若你有固定專案網址，也可直接填進下方 DEFAULT_FIREBASE_URL 引號內！）
   // ==========================================
+  /* FIREBASE_URL_START */
+  const DEFAULT_FIREBASE_URL = "";
+  /* FIREBASE_URL_END */
+
+  let firebaseBaseUrl = (localStorage.getItem("campus_game_fb_url") || DEFAULT_FIREBASE_URL).replace(/\/$/, "");
+  let cloudPollTimer = null;
+  let lastCloudTimestamp = 0;
+
+  function showSaveToast(msg = "☁️ 已即時同步至 Firebase 雲端！") {
+    const el = document.getElementById("save-toast");
+    el.textContent = msg;
+    el.style.opacity = "1";
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.style.opacity = "0"; }, 2600);
+  }
+
+  function updateCloudStatusUI(connected, labelText) {
+    const coverBadge = document.getElementById("cover-cloud-status");
+    const modalTag = document.getElementById("modal-cloud-tag");
+    if (connected) {
+      coverBadge.classList.add("connected");
+      coverBadge.textContent = labelText || "🟢 已連線 Firebase 雲端（跨裝置即時同步中）";
+      modalTag.style.color = "#4ade80";
+      modalTag.textContent = "🟢 雲端已連線";
+    } else {
+      coverBadge.classList.remove("connected");
+      coverBadge.textContent = labelText || "⚪ 尚未綁定 Firebase 雲端網址（點下方設定）";
+      modalTag.style.color = "#94a3b8";
+      modalTag.textContent = "未連線";
+    }
+  }
+
+  // 將角色與圖片壓縮至適合 Firebase 即時同步的尺寸
   function compressImageToDataURL(file, callback) {
     const reader = new FileReader();
     reader.onload = e => {
       const img = new Image();
       img.onload = () => {
-        const maxH = 960;
+        const maxH = 760;
         const scale = Math.min(1, maxH / img.height);
         const canvas = document.createElement("canvas");
         canvas.width = Math.round(img.width * scale);
         canvas.height = Math.round(img.height * scale);
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        callback(canvas.toDataURL("image/jpeg", 0.85));
+        callback(canvas.toDataURL("image/jpeg", 0.8));
       };
       img.src = e.target.result;
     };
     reader.readAsDataURL(file);
   }
 
-  function showSaveToast(msg = "✅ 已自動永久存檔！重整網頁不會消失") {
-    const el = document.getElementById("save-toast");
-    el.textContent = msg;
-    el.style.opacity = "1";
-    clearTimeout(el._t);
-    el._t = setTimeout(() => { el.style.opacity = "0"; }, 2400);
+  // 推送最新角色庫與自訂事件到 Firebase Realtime Database
+  async function pushDataToFirebase() {
+    await saveToIndexedDB(); // 同時備份一份在瀏覽器本機
+    if (!firebaseBaseUrl) {
+      showSaveToast("✅ 已存檔於本機（綁定 Firebase 可跨裝置同步）");
+      return;
+    }
+
+    try {
+      showSaveToast("⏳ 正在上傳圖片至 Firebase 雲端...");
+      const nowTs = Date.now();
+      const customEvents = ALL_EVENTS.filter(e => e.isCustom);
+      const payload = {
+        updatedAt: nowTs,
+        roster: CHARACTER_ROSTER.map(c => ({
+          id: c.id, name: c.name, role: c.role, voice: c.voice, img: c.img
+        })),
+        customEvents: customEvents
+      };
+
+      const resp = await fetch(`${firebaseBaseUrl}/campus_game_sync.json`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!resp.ok) throw new Error("HTTP " + resp.status);
+      lastCloudTimestamp = nowTs;
+      updateCloudStatusUI(true);
+      showSaveToast("☁️ 雲端同步完成！其他裝置重整或開啟即可看到");
+    } catch (err) {
+      console.error(err);
+      updateCloudStatusUI(false, "🔴 Firebase 寫入失敗（請確認 Rules 為 true）");
+      showSaveToast("⚠️ 雲端寫入失敗，請檢查 Firebase 網址或讀寫權限");
+    }
+  }
+
+  // 從 Firebase Realtime Database 拉取最新角色庫與自訂事件
+  async function pullDataFromFirebase(silent = false) {
+    if (!firebaseBaseUrl) return;
+    try {
+      const resp = await fetch(`${firebaseBaseUrl}/campus_game_sync.json?t=${Date.now()}`);
+      if (!resp.ok) throw new Error("HTTP " + resp.status);
+      const data = await resp.json();
+
+      updateCloudStatusUI(true);
+
+      if (!data) {
+        // 若雲端還是空的，把目前初始資料初始化上去
+        if (!silent) await pushDataToFirebase();
+        return;
+      }
+
+      if (data.updatedAt && data.updatedAt !== lastCloudTimestamp) {
+        lastCloudTimestamp = data.updatedAt;
+
+        if (Array.isArray(data.roster) && data.roster.length > 0) {
+          CHARACTER_ROSTER.length = 0;
+          data.roster.forEach(item => CHARACTER_ROSTER.push(item));
+        }
+
+        if (Array.isArray(data.customEvents)) {
+          // 先移除舊的自訂事件，再填入雲端最新的
+          for (let i = ALL_EVENTS.length - 1; i >= 0; i--) {
+            if (ALL_EVENTS[i].isCustom) ALL_EVENTS.splice(i, 1);
+          }
+          data.customEvents.forEach(ev => {
+            ALL_EVENTS.splice(ALL_EVENTS.length - 1, 0, ev);
+          });
+        }
+
+        await saveToIndexedDB();
+        updateUnlockUI();
+        renderCastGrid();
+        if (!silent) showSaveToast("☁️ 已從 Firebase 同步最新角色與圖片！");
+      }
+    } catch (err) {
+      console.warn("Firebase pull failed:", err);
+      updateCloudStatusUI(false, "🔴 Firebase 連線失敗，請檢查網址");
+    }
+  }
+
+  async function connectFirebaseURL() {
+    const raw = document.getElementById("firebase-url-input").value.trim().replace(/\/$/, "");
+    if (!raw.startsWith("https://")) {
+      showSaveToast("⚠️ 請輸入正確的 https:// 開頭 Firebase 網址");
+      return;
+    }
+    firebaseBaseUrl = raw;
+    localStorage.setItem("campus_game_fb_url", firebaseBaseUrl);
+    startCloudPolling();
+    await pullDataFromFirebase(false);
+  }
+
+  function startCloudPolling() {
+    if (cloudPollTimer) clearInterval(cloudPollTimer);
+    if (!firebaseBaseUrl) return;
+    // 每 6 秒自動檢查雲端是否有其他裝置更新人物，實現跨裝置即時同步
+    cloudPollTimer = setInterval(() => pullDataFromFirebase(true), 6000);
   }
 
   // ==========================================
-  // 2. 瀏覽器 IndexedDB 大容量永久資料庫
+  // 2. 本機 IndexedDB 離線快取備援
   // ==========================================
   const DB_NAME = "CampusSafetyGameDB";
   const STORE_NAME = "customData";
@@ -794,14 +973,9 @@
       const db = await openDB();
       const tx = db.transaction(STORE_NAME, "readwrite");
       const store = tx.objectStore(STORE_NAME);
-      // 儲存角色庫（含換過的圖片與新增角色）與自訂事件
-      const customEvents = ALL_EVENTS.filter(e => e.isCustom);
       store.put(CHARACTER_ROSTER, "roster");
-      store.put(customEvents, "customEvents");
-      showSaveToast();
-    } catch (err) {
-      console.warn("IndexedDB save failed:", err);
-    }
+      store.put(ALL_EVENTS.filter(e => e.isCustom), "customEvents");
+    } catch (e) {}
   }
 
   async function loadFromIndexedDB() {
@@ -809,41 +983,25 @@
       const db = await openDB();
       const tx = db.transaction(STORE_NAME, "readonly");
       const store = tx.objectStore(STORE_NAME);
-
-      const savedRoster = await new Promise(res => {
-        const r = store.get("roster");
-        r.onsuccess = () => res(r.result);
-        r.onerror = () => res(null);
-      });
-
-      const savedEvents = await new Promise(res => {
-        const r = store.get("customEvents");
-        r.onsuccess = () => res(r.result);
-        r.onerror = () => res(null);
-      });
+      const savedRoster = await new Promise(res => { const r = store.get("roster"); r.onsuccess = () => res(r.result); r.onerror = () => res(null); });
+      const savedEvents = await new Promise(res => { const r = store.get("customEvents"); r.onsuccess = () => res(r.result); r.onerror = () => res(null); });
 
       if (savedRoster && Array.isArray(savedRoster) && savedRoster.length > 0) {
         CHARACTER_ROSTER.length = 0;
         savedRoster.forEach(item => CHARACTER_ROSTER.push(item));
       }
-
-      if (savedEvents && Array.isArray(savedEvents) && savedEvents.length > 0) {
+      if (savedEvents && Array.isArray(savedEvents)) {
         savedEvents.forEach(ev => {
-          if (!ALL_EVENTS.some(existing => existing.charId === ev.charId)) {
-            ALL_EVENTS.splice(ALL_EVENTS.length - 1, 0, ev);
-          }
+          if (!ALL_EVENTS.some(x => x.charId === ev.charId)) ALL_EVENTS.splice(ALL_EVENTS.length - 1, 0, ev);
         });
       }
-
       updateUnlockUI();
       renderCastGrid();
-    } catch (err) {
-      console.warn("IndexedDB load skipped:", err);
-    }
+    } catch (e) {}
   }
 
   // ==========================================
-  // 3. 內建 8 大角色立繪生成器與資料（支援資料夾檔名自動載入）
+  // 3. 內建 8 大角色與 14 個基礎事件庫
   // ==========================================
   function makeCharacterPortrait(bg1, bg2, hairColor, outfitColor, accessory, emojiBadge) {
     const c = document.createElement("canvas");
@@ -881,7 +1039,6 @@
     return c.toDataURL("image/png");
   }
 
-  /* EMBEDDED_ROSTER_START */
   const CHARACTER_ROSTER = [
     { id: "officer", name: "陳宇（校安人員）", role: "主角・第一線校安", voice: "officer", img: "./officer.jpg", fallback: makeCharacterPortrait("#1e3a8a", "#0f172a", "#1e293b", "#1d4ed8", "vest", "👮‍♂️") },
     { id: "parent", name: "王先生（恐龍家長）", role: "反派・財大氣粗家長", voice: "parent_angry", img: "./parent.jpg", fallback: makeCharacterPortrait("#7f1d1d", "#0f172a", "#1e293b", "#334155", "tie", "🕴️") },
@@ -892,7 +1049,6 @@
     { id: "intruder", name: "鴨舌帽黑衣人", role: "懸疑・校外可疑人士", voice: "parent_angry", img: "./intruder.jpg", fallback: makeCharacterPortrait("#18181b", "#000000", "#09090b", "#18181b", "hoodie", "🕵️") },
     { id: "dog", name: "校狗阿福（米克斯）", role: "萌寵・校園巡邏吉祥物", voice: "student", img: "./dog.jpg", fallback: makeCharacterPortrait("#92400e", "#1c1917", "#b45309", "#d97706", "dog", "🐕") }
   ];
-  /* EMBEDDED_ROSTER_END */
 
   function bindImageFallbacks() {
     CHARACTER_ROSTER.forEach(ch => {
@@ -904,7 +1060,6 @@
     });
   }
 
-  /* EMBEDDED_EVENTS_START */
   const ALL_EVENTS = [
     {
       time: "07:30", tag: "早自習校門導護", charId: "parent", filter: "art-danger", sfx: "alarm",
@@ -991,7 +1146,6 @@
       right: { label: "摸摸阿福的頭說交給夜班保全，準時五點半打卡！", effect: { safety: 0, admin: -5, parent: 0, sanity: +20 } }
     }
   ];
-  /* EMBEDDED_EVENTS_END */
 
   // ==========================================
   // 4. 音效與台灣中文真人語音系統
@@ -1095,12 +1249,13 @@
   }
 
   // ==========================================
-  // 5. 角色庫管理、自動永久存檔與匯出獨立 HTML 檔
+  // 5. 角色庫管理、雲端同步與匯出獨立檔案
   // ==========================================
   let pendingNewCharImg = null;
 
   function openCastModal() {
     playSFX("walkie");
+    document.getElementById("firebase-url-input").value = firebaseBaseUrl;
     renderCastGrid();
     document.getElementById("cast-modal").classList.remove("hidden");
   }
@@ -1122,7 +1277,7 @@
         <div class="cast-name">${ch.name}</div>
         <div class="cast-role">${ch.role}</div>
         <label class="cast-upload-mini">
-          🖼️ 換圖
+          🖼️ 換圖同步
           <input type="file" accept="image/*" class="hidden" onchange="replaceCharImage(event, ${idx})" />
         </label>
       `;
@@ -1137,7 +1292,7 @@
       CHARACTER_ROSTER[idx].img = compressedDataUrl;
       renderCastGrid();
       playSFX("win");
-      await saveToIndexedDB();
+      await pushDataToFirebase();
     });
   }
 
@@ -1146,7 +1301,7 @@
     if (!file) return;
     compressImageToDataURL(file, (compressedDataUrl) => {
       pendingNewCharImg = compressedDataUrl;
-      document.getElementById("new-char-file-label").textContent = "✅ 已選取圖片（準備好永久存檔）";
+      document.getElementById("new-char-file-label").textContent = "✅ 已選取圖片（準備好雲端同步）";
     });
   }
 
@@ -1184,33 +1339,30 @@
     document.getElementById("new-char-event").value = "";
     document.getElementById("new-char-left").value = "";
     document.getElementById("new-char-right").value = "";
-    document.getElementById("new-char-file-label").textContent = "上傳角色立繪（自動壓縮存檔）：";
+    document.getElementById("new-char-file-label").textContent = "上傳角色立繪（自動壓縮雲端同步）：";
     pendingNewCharImg = null;
 
     renderCastGrid();
     playSFX("win");
-    speakText(`新角色${name}已加入並永久存檔！`, voice);
-    await saveToIndexedDB();
+    speakText(`新角色${name}已加入並同步至雲端！`, voice);
+    await pushDataToFirebase();
   }
 
-  // 一鍵匯出包含所有最新圖片與自訂角色的獨立 index.html 檔案
+  // 一鍵匯出（連同 Firebase 網址一起寫進 HTML，之後放 GitHub 任何裝置打開直接自動連線！）
   function exportStandaloneHTML() {
-    let htmlContent = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
-    const cleanRoster = CHARACTER_ROSTER.map(c => ({
-      id: c.id, name: c.name, role: c.role, voice: c.voice, img: c.img
-    }));
-    const rosterCode = `/* EMBEDDED_ROSTER_START */\n  const CHARACTER_ROSTER = ${JSON.stringify(cleanRoster)};\n  /* EMBEDDED_ROSTER_END */`;
-    const eventsCode = `/* EMBEDDED_EVENTS_START */\n  const ALL_EVENTS = ${JSON.stringify(ALL_EVENTS)};\n  /* EMBEDDED_EVENTS_END */`;
-
-    htmlContent = htmlContent.replace(/\/\* EMBEDDED_ROSTER_START \*\/[\s\S]*?\/\* EMBEDDED_ROSTER_END \*\//, rosterCode);
-    htmlContent = htmlContent.replace(/\/\* EMBEDDED_EVENTS_START \*\/[\s\S]*?\/\* EMBEDDED_EVENTS_END \*\//, eventsCode);
+    let htmlContent = "<!DOCTYPE html>
+" + document.documentElement.outerHTML;
+    const urlCode = `/* FIREBASE_URL_START */
+  const DEFAULT_FIREBASE_URL = ${JSON.stringify(firebaseBaseUrl)};
+  /* FIREBASE_URL_END */`;
+    htmlContent = htmlContent.replace(/\/\* FIREBASE_URL_START \*\/[\s\S]*?\/\* FIREBASE_URL_END \*\//, urlCode);
 
     const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "index.html";
     a.click();
-    showSaveToast("💾 已匯出永久版 index.html！傳到手機或 GitHub 都能直接玩");
+    showSaveToast("💾 已匯出綁定 Firebase 的 index.html！");
   }
 
   // ==========================================
@@ -1469,10 +1621,15 @@
     currentX = 0;
   });
 
-  // 網頁啟動時自動從 IndexedDB 載入永久存檔的角色與圖片
+  // 初始化：先載入本機快取，若有綁定 Firebase 則自動從雲端拉取並開啟每 6 秒即時同步
   bindImageFallbacks();
   updateUnlockUI();
-  loadFromIndexedDB();
+  loadFromIndexedDB().then(() => {
+    if (firebaseBaseUrl) {
+      pullDataFromFirebase(false);
+      startCloudPolling();
+    }
+  });
 </script>
 </body>
 </html>
