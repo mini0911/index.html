@@ -669,6 +669,7 @@
     <div id="event-card">
       <div id="card-art"></div>
       <video id="card-video" autoplay loop muted playsinline></video>
+      <canvas id="sprite-canvas" style="position:absolute; inset:0; width:100%; height:100%; z-index:0; display:none; object-fit:cover;"></canvas>
       <canvas id="fx-canvas"></canvas>
       <div id="speed-lines-overlay"></div>
       <div id="card-gradient"></div>
@@ -1065,7 +1066,19 @@
     <div class="tag-pill">GLOBAL CAMPUS SAFETY RANKING</div>
     <h2 class="main-title" style="font-size: 21px;">🏅 全服金牌校安生存排行榜</h2>
     <div class="scroll-list" id="leaderboard-list"></div>
-    <button class="btn-primary" style="width:100%; max-width:300px;" onclick="document.getElementById('leaderboard-modal').classList.add('hidden')">返回</button>
+    <div style="display:flex; gap:8px; width:100%; max-width:320px;">
+      <button class="btn-secondary" style="flex:1; border-color:#f97316; color:#fed7aa;" onclick="openWipeoutRanking()">💥 最易翻車關卡</button>
+      <button class="btn-primary" style="flex:1;" onclick="document.getElementById('leaderboard-modal').classList.add('hidden')">返回</button>
+    </div>
+  </div>
+
+  <!-- 💥 全服最容易翻車關卡排行榜視窗 -->
+  <div id="wipeout-modal" class="modal-screen hidden" style="z-index: 53;">
+    <div class="tag-pill" style="border-color:#f97316; color:#fdba74;">GLOBAL WIPEOUT HEATMAP</div>
+    <h2 class="main-title" style="font-size: 20px;">💥 全服最容易翻車關卡 TOP</h2>
+    <p class="sub-desc" style="margin-bottom:10px;">統計玩家在各關導致數值歸零或爆表而提前下班的次數：</p>
+    <div class="scroll-list" id="wipeout-list"></div>
+    <button class="btn-primary" style="width:100%; max-width:300px;" onclick="document.getElementById('wipeout-modal').classList.add('hidden')">返回排行榜</button>
   </div>
 
   <!-- 結局圖鑑視窗 -->
@@ -1411,8 +1424,46 @@
     stopQTE();
     playSFX("win");
 
+    // 隱藏彩蛋關卡檢查：若走到倒數第 2 關且四維皆落在 42~58 之間，機率觸發隱藏彩蛋卡
+    if (!coopRoomCode && !window._hiddenEggShown && turnIndex === Math.max(1, activeDeck.length - 2)) {
+      const allMid = ["safety", "admin", "parent", "sanity"].every(k => stats[k] >= 42 && stats[k] <= 58);
+      if (allMid && Math.random() < 0.75) {
+        window._hiddenEggShown = true;
+        activeDeck.splice(turnIndex, 0, {
+          time: "17:20",
+          tag: "✨ 隱藏彩蛋・平衡結界",
+          charId: "dog",
+          filter: "art-morning",
+          sfx: "win",
+          isChain: true,
+          text: "【隱藏關卡】你的四項數值竟然奇蹟般維持在完美平衡！校狗阿福叼來一張『準時下班通行證』對你搖尾巴！",
+          left: { label: "收下通行證並穩健巡檢最後動線", effect: { safety: +10, admin: +10, parent: -10, sanity: +10 }, bondDelta: +20 },
+          right: { label: "帶著阿福去合作社買份點心慶祝", effect: { safety: +5, admin: +5, parent: -5, sanity: +15 }, bondDelta: +15 }
+        });
+      }
+    }
+
+    // 條件門檻事件檢查：若目前卡片有 minParent 或 minBond 條件且未達標，自動跳過
+    while (turnIndex < activeDeck.length) {
+      const candidate = activeDeck[turnIndex];
+      if (typeof candidate.minParent === "number" && stats.parent < candidate.minParent) {
+        turnIndex++;
+        continue;
+      }
+      if (typeof candidate.minBond === "number" && getCharAffinity(candidate.charId) < candidate.minBond) {
+        turnIndex++;
+        continue;
+      }
+      break;
+    }
+    if (turnIndex >= activeDeck.length) {
+      loadCard();
+      return;
+    }
+
     const card = activeDeck[turnIndex];
     const ch = CHARACTER_ROSTER.find(c => c.id === card.charId) || CHARACTER_ROSTER[0];
+    const activeMediaSrc = card.overrideImg || ch.img;
     const deltas = { safety: 0, admin: 0, parent: 0, sanity: 0 };
 
     if (selectedRole === "officer") {
@@ -2565,6 +2616,7 @@
     queuedChainEvent = null;
     shiftLogs = [];
     currentDay = 1;
+    window._hiddenEggShown = false;
     runSafetyNeverBelow50 = true;
     runSanityAlwaysBalanced = true;
     runUsedAnyItem = false;
@@ -2635,9 +2687,20 @@
 
     const artEl = document.getElementById("card-art");
     const videoEl = document.getElementById("card-video");
-    const isVideo = ch.img && (ch.img.toLowerCase().endsWith(".mp4") || ch.img.startsWith("data:video/"));
+    const spriteCanvas = document.getElementById("sprite-canvas");
+    stopSpriteSheetAnim();
 
-    if (isVideo) {
+    const gridSpec = card.spriteGrid || ch.spriteGrid;
+    const isVideo = activeMediaSrc && (activeMediaSrc.toLowerCase().endsWith(".mp4") || activeMediaSrc.startsWith("data:video/"));
+
+    if (gridSpec === "3x3" && activeMediaSrc) {
+      artEl.style.display = "none";
+      videoEl.style.display = "none";
+      spriteCanvas.style.display = "block";
+      spriteCanvas.className = card.filter || "";
+      startSpriteSheetAnim(spriteCanvas, activeMediaSrc, 3, 3, 140);
+    } else if (isVideo) {
+      spriteCanvas.style.display = "none";
       artEl.style.display = "none";
       videoEl.style.display = "block";
       videoEl.className = card.filter || "";
@@ -2650,14 +2713,15 @@
         artEl.style.backgroundPosition = ch.id === "officer" ? "center 18%" : "center 12%";
         artEl.className = card.filter || "";
       };
-      videoEl.src = ch.img;
+      videoEl.src = activeMediaSrc;
       videoEl.load();
       videoEl.play().catch(() => {});
     } else {
+      spriteCanvas.style.display = "none";
       videoEl.onerror = null;
       videoEl.style.display = "none";
       artEl.style.display = "block";
-      artEl.style.backgroundImage = `url('${ch.img}')`;
+      artEl.style.backgroundImage = `url('${activeMediaSrc}')`;
       artEl.style.backgroundPosition = ch.id === "officer" ? "center 18%" : "center 12%";
       artEl.className = card.filter || "";
     }
@@ -2856,6 +2920,10 @@
 
   function triggerEnding(endKey) {
     stopQTE();
+    stopSpriteSheetAnim();
+    if (!endKey.startsWith("win_") && activeDeck[turnIndex]) {
+      recordWipeoutEvent(activeDeck[turnIndex].tag);
+    }
     isGameOver = true;
     saveEnding(endKey);
     const data = ENDINGS[endKey];
@@ -3308,6 +3376,101 @@
       box.appendChild(btn);
     });
     document.getElementById("line-modal").classList.remove("hidden");
+  }
+
+
+  // ==========================================
+  // 19. 逐格 Sprite Sheet 九宮格動畫器 ＆ 最易翻車關卡統計
+  // ==========================================
+  let spriteTimer = null;
+
+  function stopSpriteSheetAnim() {
+    if (spriteTimer) {
+      clearInterval(spriteTimer);
+      spriteTimer = null;
+    }
+  }
+
+  function startSpriteSheetAnim(canvasEl, imgSrc, cols = 3, rows = 3, intervalMs = 140) {
+    stopSpriteSheetAnim();
+    const img = new Image();
+    img.onload = () => {
+      const rect = canvasEl.getBoundingClientRect();
+      canvasEl.width = rect.width || 400;
+      canvasEl.height = rect.height || 430;
+      const ctx = canvasEl.getContext("2d");
+      const frameW = img.width / cols;
+      const frameH = img.height / rows;
+      const totalFrames = cols * rows;
+      let frameIdx = 0;
+
+      const drawFrame = () => {
+        const col = frameIdx % cols;
+        const row = Math.floor(frameIdx / cols);
+        ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+        ctx.drawImage(
+          img,
+          col * frameW, row * frameH, frameW, frameH,
+          0, 0, canvasEl.width, canvasEl.height
+        );
+        frameIdx = (frameIdx + 1) % totalFrames;
+      };
+
+      drawFrame();
+      spriteTimer = setInterval(drawFrame, intervalMs);
+    };
+    img.src = imgSrc;
+  }
+
+  function recordWipeoutEvent(tag) {
+    if (!tag) return;
+    const safeKey = encodeURIComponent(tag).replace(/\./g, "_");
+    fetch(`${firebaseBaseUrl}/campus_wipeout_stats/${safeKey}/count.json?t=${Date.now()}`)
+      .then(r => r.json())
+      .then(cur => {
+        const nextVal = (typeof cur === "number" ? cur : 0) + 1;
+        return fetch(`${firebaseBaseUrl}/campus_wipeout_stats/${safeKey}.json`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tag: tag, count: nextVal })
+        });
+      })
+      .catch(() => {});
+  }
+
+  async function openWipeoutRanking() {
+    playSFX("walkie");
+    const list = document.getElementById("wipeout-list");
+    list.innerHTML = `<div class="l-desc" style="text-align:center;">正在讀取全服翻車統計...</div>`;
+    document.getElementById("wipeout-modal").classList.remove("hidden");
+
+    try {
+      const resp = await fetch(`${firebaseBaseUrl}/campus_wipeout_stats.json?t=${Date.now()}`);
+      const data = await resp.json();
+      if (!data) {
+        list.innerHTML = `<div class="l-desc" style="text-align:center;">目前尚無翻車紀錄，大家都穩健下班！</div>`;
+        return;
+      }
+      const rows = Object.values(data)
+        .filter(x => x && x.tag && typeof x.count === "number")
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10);
+      list.innerHTML = "";
+      rows.forEach((r, idx) => {
+        const div = document.createElement("div");
+        div.className = "rank-row";
+        div.innerHTML = `
+          <div>
+            <div style="font-size:13px; font-weight:800; color:#fdba74;">#${idx + 1} ${r.tag}</div>
+            <div style="font-size:10.5px; color:#94a3b8;">導致提前結束值勤的兇險關卡</div>
+          </div>
+          <div style="font-size:14px; font-weight:900; color:#ef4444;">${r.count} 次翻車</div>
+        `;
+        list.appendChild(div);
+      });
+    } catch (e) {
+      list.innerHTML = `<div class="l-desc" style="text-align:center;">讀取失敗，請檢查網路連線</div>`;
+    }
   }
 
   window.addEventListener("resize", resizeFXCanvas);
