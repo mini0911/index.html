@@ -2698,6 +2698,31 @@
     const videoEl = document.getElementById("card-video");
     const isVideo = ch.img && (ch.img.toLowerCase().endsWith(".mp4") || ch.img.startsWith("data:video/"));
 
+    function applyBackgroundWithFallback(primaryUrl) {
+      artEl.style.backgroundPosition = ch.id === "officer" ? "center 18%" : "center 12%";
+      artEl.className = card.filter || "";
+      const safeFallback = ch.fallback || "";
+      const tryImg = new Image();
+      tryImg.onload = () => {
+        artEl.style.backgroundImage = `url("${primaryUrl}")`;
+      };
+      tryImg.onerror = () => {
+        if (ch.fallbackImg && ch.fallbackImg !== primaryUrl) {
+          const trySecond = new Image();
+          trySecond.onload = () => {
+            artEl.style.backgroundImage = `url("${ch.fallbackImg}")`;
+          };
+          trySecond.onerror = () => {
+            if (safeFallback) artEl.style.backgroundImage = `url("${safeFallback}")`;
+          };
+          trySecond.src = ch.fallbackImg;
+        } else if (safeFallback) {
+          artEl.style.backgroundImage = `url("${safeFallback}")`;
+        }
+      };
+      tryImg.src = primaryUrl || safeFallback;
+    }
+
     if (isVideo) {
       artEl.style.display = "none";
       videoEl.style.display = "block";
@@ -2706,10 +2731,7 @@
         videoEl.onerror = null;
         videoEl.style.display = "none";
         artEl.style.display = "block";
-        const fallbackSrc = ch.fallbackImg || ch.fallback || "";
-        artEl.style.backgroundImage = `url('${fallbackSrc}')`;
-        artEl.style.backgroundPosition = ch.id === "officer" ? "center 18%" : "center 12%";
-        artEl.className = card.filter || "";
+        applyBackgroundWithFallback(ch.fallbackImg || ch.fallback || "");
       };
       videoEl.src = ch.img;
       videoEl.load();
@@ -2718,9 +2740,7 @@
       videoEl.onerror = null;
       videoEl.style.display = "none";
       artEl.style.display = "block";
-      artEl.style.backgroundImage = `url('${ch.img}')`;
-      artEl.style.backgroundPosition = ch.id === "officer" ? "center 18%" : "center 12%";
-      artEl.className = card.filter || "";
+      applyBackgroundWithFallback(ch.img || ch.fallbackImg || ch.fallback || "");
     }
 
     document.getElementById("card-tag").textContent = card.tag;
