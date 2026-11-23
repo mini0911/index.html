@@ -3,10 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>今天也要平安下班｜終極旗艦完全體（雙人連線＋每日挑戰＋PWA＋投稿審核＋LINE群組互動）</title>
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="theme-color" content="#090d16" />
+  <title>今天也要平安下班｜終極全集大滿貫（40關全劇本＋三主角職業＋全服選擇比例＋Reels腳本）</title>
   <style>
     :root {
       --bg-dark: #090d16;
@@ -546,78 +543,6 @@
     }
 
     #save-toast { position: fixed; top: 56px; left: 50%; transform: translateX(-50%); z-index: 70; background: rgba(34, 197, 94, 0.95); color: #fff; font-size: 12px; font-weight: 800; padding: 5px 14px; border-radius: 999px; opacity: 0; transition: opacity 0.25s ease; pointer-events: none; white-space: nowrap; }
-  
-    /* 雙人連線房間狀態列 */
-    #coop-banner {
-      width: 100%;
-      background: linear-gradient(90deg, rgba(14, 165, 233, 0.25), rgba(168, 85, 247, 0.25));
-      border: 1px solid #38bdf8;
-      border-radius: 8px;
-      padding: 3px 8px;
-      margin-bottom: 5px;
-      font-size: 10.5px;
-      font-weight: 800;
-      color: #e0f2fe;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    /* 模擬 LINE 學務處群組訊息彈窗 */
-    .line-chat-card {
-      width: 100%;
-      max-width: 340px;
-      background: #1e293b;
-      border: 2px solid #22c55e;
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
-      text-align: left;
-    }
-
-    .line-header {
-      background: #06c755;
-      color: #fff;
-      padding: 10px 14px;
-      font-size: 13.5px;
-      font-weight: 900;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .line-body {
-      padding: 14px 12px;
-      background: #0f172a;
-    }
-
-    .line-bubble {
-      background: #334155;
-      color: #f8fafc;
-      padding: 10px 12px;
-      border-radius: 14px;
-      border-top-left-radius: 2px;
-      font-size: 13px;
-      line-height: 1.5;
-      margin-bottom: 12px;
-    }
-
-    .line-reply-btn {
-      width: 100%;
-      text-align: left;
-      background: rgba(6, 199, 85, 0.16);
-      border: 1.5px solid rgba(6, 199, 85, 0.55);
-      color: #dcfce7;
-      padding: 9px 11px;
-      border-radius: 11px;
-      font-size: 12px;
-      font-weight: 700;
-      margin-bottom: 7px;
-      cursor: pointer;
-    }
-
-    .line-reply-btn:active { background: rgba(6, 199, 85, 0.35); }
-
   </style>
 </head>
 <body>
@@ -674,10 +599,6 @@
   </div>
 
   <div id="card-arena">
-    <div id="coop-banner" class="hidden">
-      <span id="coop-room-info">👥 雙人連線房號：----</span>
-      <span id="coop-turn-status" style="color:#fbbf24;">輪到你決策</span>
-    </div>
     <div id="qte-timer-box" class="hidden">
       <span class="qte-label">🚨 緊急應變倒數 <span id="qte-sec-text">8.0</span>s</span>
       <div class="qte-bar-bg"><div id="qte-bar-fill"></div></div>
@@ -753,30 +674,22 @@
     </div>
 
     <div class="section-mini-header">2️⃣ 選擇值勤劇本與關卡池（共收錄 40 關全事件）：</div>
-    <div class="mode-selector" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="mode-selector">
       <div class="mode-btn active" id="mode-normal" onclick="selectMode('normal')">
         <div class="mode-title">☀️ 一般值勤</div>
-        <div class="mode-sub">隨機 12 關</div>
-      </div>
-      <div class="mode-btn" id="mode-daily" onclick="selectMode('daily')">
-        <div class="mode-title">📅 今日挑戰</div>
-        <div class="mode-sub">全服同題種子</div>
+        <div class="mode-sub">隨機 12 關（含自訂）</div>
       </div>
       <div class="mode-btn" id="mode-week" onclick="selectMode('week')">
         <div class="mode-title">📆 週一至五</div>
-        <div class="mode-sub">5 天連續生存</div>
+        <div class="mode-sub">5 天連續生存挑戰</div>
       </div>
       <div class="mode-btn" id="mode-special" onclick="selectMode('special')">
-        <div class="mode-title">🎪 特殊活動</div>
-        <div class="mode-sub">校慶/颱風/畢典</div>
+        <div class="mode-title">🎪 特殊活動篇</div>
+        <div class="mode-sub">校慶/颱風/畢典/夜巡</div>
       </div>
       <div class="mode-btn" id="mode-full" onclick="selectMode('full')">
-        <div class="mode-title">🔥 40關全集</div>
-        <div class="mode-sub">全劇本魔鬼班</div>
-      </div>
-      <div class="mode-btn" id="mode-coop" onclick="openCoopModal()">
-        <div class="mode-title" style="color:#38bdf8;">👥 雙人連線</div>
-        <div class="mode-sub">房號協作值勤</div>
+        <div class="mode-title">🔥 40關全集魔鬼班</div>
+        <div class="mode-sub">全套劇本完整大挑戰</div>
       </div>
     </div>
 
@@ -788,11 +701,7 @@
         <button class="btn-secondary" style="border-color:#38bdf8; color:#bae6fd; padding:8px 3px;" onclick="openLeaderboard()">🏅 排行</button>
         <button class="btn-secondary" style="padding:8px 3px;" onclick="openGallery()">🏆 (<span id="cover-unlock">0</span>/11)</button>
       </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
-        <button class="btn-secondary" style="border-color:#22c55e; color:#bbf7d0;" onclick="openSubmitEventModal()">✍️ 投稿校園事件</button>
-        <button class="btn-secondary" style="border-color:#38bdf8; color:#e0f2fe;" onclick="installPWAApp()">📲 安裝成手機App</button>
-      </div>
-      <button class="btn-secondary" style="border-color:#fbbf24; color:#fde68a;" onclick="openCastModal()">🔒 管理員後台（審核投稿／自訂結局／動圖）</button>
+      <button class="btn-secondary" style="border-color:#fbbf24; color:#fde68a;" onclick="openCastModal()">🔒 管理員後台（角色／.mp4動圖／全40關開關試玩）</button>
     </div>
   </div>
 
@@ -814,77 +723,13 @@
     </div>
   </div>
 
-  <!-- 👥 雙人連線同場值勤合作彈窗 -->
-  <div id="coop-modal" class="modal-screen hidden" style="z-index: 48;">
-    <div class="lock-card" style="border-color:#38bdf8; max-width:340px;">
-      <div style="font-size:34px; margin-bottom:4px;">👥</div>
-      <div class="tag-pill" style="border-color:#38bdf8; color:#38bdf8;">FIREBASE REALTIME CO-OP</div>
-      <h3 style="font-size:18px; font-weight:900; color:#f8fafc; margin-bottom:6px;">雙人同場值勤合作模式</h3>
-      <p style="font-size:12px; color:#94a3b8; line-height:1.45; margin-bottom:10px;">
-        一位擔任<strong>「P1 第一線校安」</strong>，另一位輸入相同 4 碼房號加入擔任<strong>「P2 學務主任」</strong>，雙方輪流決策、共用四維生存指標！
-      </p>
-      <button class="btn-primary" style="width:100%; margin-bottom:10px;" onclick="createCoopRoom()">➕ 建立新房間（擔任 P1 校安）</button>
-      <div style="display:flex; gap:6px; margin-bottom:10px;">
-        <input type="text" class="pin-input" id="coop-room-input" style="margin:0; font-size:16px;" placeholder="輸入4碼房號" maxlength="4" />
-        <button class="btn-primary" style="background:linear-gradient(135deg,#059669,#10b981); padding:8px 12px; white-space:nowrap;" onclick="joinCoopRoom()">加入 P2</button>
-      </div>
-      <div id="coop-wait-status" style="font-size:12px; color:#fbbf24; min-height:18px; margin-bottom:8px;"></div>
-      <button class="btn-secondary" style="width:100%;" onclick="closeCoopModal()">返回封面</button>
-    </div>
-  </div>
-
-  <!-- ✍️ 玩家投稿校園奇葩事件彈窗 -->
-  <div id="submit-ev-modal" class="modal-screen hidden" style="z-index: 48;">
-    <div class="lock-card" style="border-color:#22c55e; max-width:340px; text-align:left;">
-      <div style="text-align:center;">
-        <div class="tag-pill" style="border-color:#22c55e; color:#4ade80;">COMMUNITY EVENT SUBMISSION</div>
-        <h3 style="font-size:17px; font-weight:900; color:#f8fafc; margin-bottom:6px;">✍️ 投稿你的校園突發事件</h3>
-        <p style="font-size:11.5px; color:#94a3b8; margin-bottom:10px;">送出後會傳送至管理員審核區，核准後全服玩家都能抽到你的關卡！</p>
-      </div>
-      <input type="text" class="form-input" id="sub-author" placeholder="你的暱稱（例：三年二班小王）" maxlength="12" />
-      <input type="text" class="form-input" id="sub-tag" placeholder="事件標題（例：午餐便當盒大戰）" maxlength="14" />
-      <select class="form-input" id="sub-char">
-        <option value="student">登場角色：阿豪（叛逆學生）</option>
-        <option value="parent">登場角色：王先生（恐龍家長）</option>
-        <option value="director">登場角色：林主任（學務主任）</option>
-        <option value="counselor">登場角色：張老師（輔導老師）</option>
-        <option value="dog">登場角色：校狗阿福</option>
-      </select>
-      <input type="text" class="form-input" id="sub-text" placeholder="事件經過描述（限 65 字內）" maxlength="65" />
-      <div class="form-row-2">
-        <input type="text" class="form-input" id="sub-left" placeholder="◀ 左滑選項" maxlength="20" />
-        <input type="text" class="form-input" id="sub-right" placeholder="▶ 右滑選項" maxlength="20" />
-      </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px;">
-        <button class="btn-secondary" onclick="document.getElementById('submit-ev-modal').classList.add('hidden')">取消</button>
-        <button class="btn-primary" style="background:linear-gradient(135deg,#059669,#10b981); padding:9px;" onclick="submitCommunityEvent()">🚀 送出投稿</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 💬 學務處 LINE 群組緊急訊息模擬彈窗 -->
-  <div id="line-modal" class="modal-screen hidden" style="z-index: 46;">
-    <div class="line-chat-card">
-      <div class="line-header">
-        <span>💬 學務處與校安緊急通報群 (12)</span>
-        <span style="font-size:11px; opacity:0.9;">剛剛</span>
-      </div>
-      <div class="line-body">
-        <div style="font-size:11px; color:#94a3b8; margin-bottom:4px;" id="line-sender-name">林主任（學務主任）</div>
-        <div class="line-bubble" id="line-msg-text">訊息載入中...</div>
-        <div style="font-size:11px; color:#4ade80; font-weight:800; margin-bottom:6px;">👇 點選快速回覆（影響理智、好感或獲得道具）：</div>
-        <div id="line-replies-box"></div>
-      </div>
-    </div>
-  </div>
-
   <!-- 管理員密碼驗證彈窗 -->
   <div id="admin-lock-modal" class="modal-screen hidden" style="z-index: 50;">
     <div class="lock-card" id="lock-card-box">
       <div style="font-size:36px; margin-bottom:6px;">🔐</div>
       <div class="tag-pill" style="margin-bottom:6px;">ADMIN ACCESS ONLY</div>
       <h3 style="font-size:18px; font-weight:900; color:#f8fafc; margin-bottom:4px;">管理員權限驗證</h3>
-      <p style="font-size:12px; color:#94a3b8;">請輸入管理員密碼解鎖後台</p>
+      <p style="font-size:12px; color:#94a3b8;">請輸入管理員密碼解鎖後台（預設密碼：<strong style="color:#fbbf24;">8888</strong>）</p>
       <input type="password" class="pin-input" id="admin-pin-input" placeholder="請輸入密碼" maxlength="16"
         onkeydown="if(event.key==='Enter') verifyAdminPin()" />
       <div class="pin-error" id="admin-pin-error"></div>
@@ -952,33 +797,6 @@
       <div class="panel-box" style="border-color: rgba(168, 85, 247, 0.45);">
         <div class="panel-title" style="color: #e9d5ff;"><span>🎛️ 全劇本事件卡開關 ＆ 單卡試玩（共 <span id="total-ev-count">37</span> 張）</span></div>
         <div id="event-manage-list" style="max-height: 190px; overflow-y: auto;"></div>
-      </div>
-
-      <!-- 玩家投稿事件審核區 -->
-      <div class="panel-box" style="border-color: rgba(34, 197, 94, 0.5);">
-        <div class="panel-title" style="color: #4ade80;">
-          <span>📬 玩家投稿事件審核區（<span id="sub-pending-count">0</span> 筆待審）</span>
-          <button class="cast-mini-btn" onclick="loadPendingSubmissions()">🔄 重新整理</button>
-        </div>
-        <div id="pending-sub-list" style="max-height: 150px; overflow-y: auto;">
-          <div style="font-size:11px; color:#94a3b8;">點擊重新整理載入玩家投稿...</div>
-        </div>
-      </div>
-
-      <!-- 自訂結局文案編輯器 -->
-      <div class="panel-box" style="border-color: rgba(244, 114, 182, 0.5);">
-        <div class="panel-title" style="color: #fbcfe8;"><span>🏆 自訂結局標題與文案（雲端同步）</span></div>
-        <select class="form-input" id="edit-ending-key" onchange="loadEndingToEditor()">
-          <option value="win_normal">單日完美通關（win_normal）</option>
-          <option value="win_bond">校園最佳拍檔（win_bond）</option>
-          <option value="win_weekend">五日全勤傳說（win_weekend）</option>
-          <option value="safety_zero">校園安全歸零（safety_zero）</option>
-          <option value="parent_max">家長怒氣爆表（parent_max）</option>
-          <option value="sanity_zero">個人理智歸零（sanity_zero）</option>
-        </select>
-        <input type="text" class="form-input" id="edit-ending-title" placeholder="結局標題" maxlength="30" />
-        <input type="text" class="form-input" id="edit-ending-desc" placeholder="結局結算評語文案" maxlength="80" />
-        <button class="btn-primary" style="width:100%; padding:8px; font-size:12px; background:linear-gradient(135deg,#db2777,#9d174d);" onclick="saveCustomEndingText()">💾 儲存結局文案並同步雲端</button>
       </div>
 
       <div class="panel-box" style="border-color: rgba(56, 189, 248, 0.45); margin-bottom: 0;">
@@ -2026,7 +1844,6 @@
   let currentWeather = WEATHERS[0];
   let activeItems = [];
   let quizTriggeredThisShift = false;
-    lineTriggeredThisShift = false;
 
   function rollDailyWeatherAndItems() {
     currentWeather = WEATHERS[Math.floor(Math.random() * WEATHERS.length)];
@@ -2187,8 +2004,6 @@
     resetCharEditor();
     renderCastGrid();
     renderEventManageList();
-    loadPendingSubmissions();
-    loadEndingToEditor();
     document.getElementById("cast-modal").classList.remove("hidden");
   }
 
@@ -2502,9 +2317,8 @@
       if (ev.charId.startsWith("custom_")) customIndices.push(idx);
       else if (ev.category !== "special") normalIndices.push(idx);
     });
-    const rng = selectedMode === "daily" ? getDailySeededRandom() : Math.random;
     for (let i = normalIndices.length - 1; i > 0; i--) {
-      const j = Math.floor(rng() * (i + 1));
+      const j = Math.floor(Math.random() * (i + 1));
       [normalIndices[i], normalIndices[j]] = [normalIndices[j], normalIndices[i]];
     }
     const needNormal = Math.max(2, countPerDay - customIndices.length);
@@ -2627,12 +2441,8 @@
       return;
     }
 
-    if (!coopRoomCode && !quizTriggeredThisShift && turnIndex === Math.floor(activeDeck.length / 2) && Math.random() < 0.65) {
+    if (!quizTriggeredThisShift && turnIndex === Math.floor(activeDeck.length / 2) && Math.random() < 0.7) {
       triggerNoonQuiz();
-      return;
-    }
-    if (!coopRoomCode && !lineTriggeredThisShift && turnIndex === Math.max(2, Math.floor(activeDeck.length * 0.75)) && Math.random() < 0.65) {
-      triggerLineChatInterlude();
       return;
     }
 
@@ -2783,7 +2593,6 @@
       if (stats.sanity >= 100) return triggerEnding("sanity_max");
 
       turnIndex++;
-      if (coopRoomCode) syncCoopMoveToCloud();
       loadCard();
     }, 240);
   }
@@ -3109,406 +2918,6 @@
     }
     currentX = 0;
   });
-
-
-  // ==========================================
-  // 14. PWA 離線安裝 App 化支援
-  // ==========================================
-  let deferredInstallPrompt = null;
-  window.addEventListener("beforeinstallprompt", (e) => {
-    e.preventDefault();
-    deferredInstallPrompt = e;
-  });
-
-  function installPWAApp() {
-    if (deferredInstallPrompt) {
-      deferredInstallPrompt.prompt();
-      deferredInstallPrompt.userChoice.then(() => { deferredInstallPrompt = null; });
-    } else {
-      showSaveToast("📲 請點瀏覽器選單「加到主畫面」即可全螢幕安裝！");
-    }
-  }
-
-  (function registerInlinePWA() {
-    try {
-      const manifestObj = {
-        name: "今天也要平安下班：校園群像生存模擬器",
-        short_name: "今天也要平安下班",
-        start_url: ".",
-        display: "standalone",
-        background_color: "#090d16",
-        theme_color: "#090d16"
-      };
-      const mBlob = new Blob([JSON.stringify(manifestObj)], { type: "application/json" });
-      const link = document.createElement("link");
-      link.rel = "manifest";
-      link.href = URL.createObjectURL(mBlob);
-      document.head.appendChild(link);
-    } catch (e) {}
-  })();
-
-  // ==========================================
-  // 15. 每日挑戰種子碼（Daily Seed PRNG）
-  // ==========================================
-  function getDailySeededRandom() {
-    const d = new Date();
-    let seed = d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
-    return function() {
-      seed = (seed * 9301 + 49297) % 233280;
-      return seed / 233280;
-    };
-  }
-
-  // ==========================================
-  // 16. 雙人連線同場值勤合作模式（Firebase Room）
-  // ==========================================
-  let coopRoomCode = null;
-  let coopRole = null; // "P1" | "P2"
-  let coopPollTimer = null;
-  let coopLastTurnSynced = -1;
-
-  function openCoopModal() {
-    playSFX("walkie");
-    document.getElementById("coop-wait-status").textContent = "";
-    document.getElementById("coop-modal").classList.remove("hidden");
-  }
-
-  function closeCoopModal() {
-    if (coopPollTimer) { clearInterval(coopPollTimer); coopPollTimer = null; }
-    coopRoomCode = null;
-    coopRole = null;
-    document.getElementById("coop-banner").classList.add("hidden");
-    document.getElementById("coop-modal").classList.add("hidden");
-  }
-
-  async function createCoopRoom() {
-    const code = String(Math.floor(1000 + Math.random() * 9000));
-    coopRoomCode = code;
-    coopRole = "P1";
-    document.getElementById("coop-wait-status").textContent = `⏳ 房號【${code}】已建立，等待 P2 加入（也可直接按開始先單人進房）...`;
-
-    const initDeck = buildDeckForShift().slice(0, 10);
-    const roomState = {
-      status: "playing",
-      turnIndex: 0,
-      stats: { safety: 50, admin: 50, parent: 50, sanity: 50 },
-      deck: initDeck,
-      p2Joined: false,
-      updatedAt: Date.now()
-    };
-    await fetch(`${firebaseBaseUrl}/campus_coop_rooms/${code}.json`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(roomState)
-    });
-
-    startCoopSession(roomState);
-  }
-
-  async function joinCoopRoom() {
-    const code = document.getElementById("coop-room-input").value.trim();
-    if (code.length !== 4) {
-      document.getElementById("coop-wait-status").textContent = "⚠️ 請輸入 4 碼數字房號";
-      return;
-    }
-    const resp = await fetch(`${firebaseBaseUrl}/campus_coop_rooms/${code}.json?t=${Date.now()}`);
-    const roomState = await resp.json();
-    if (!roomState || !Array.isArray(roomState.deck)) {
-      document.getElementById("coop-wait-status").textContent = "❌ 找不到此房間，請確認房號";
-      return;
-    }
-    coopRoomCode = code;
-    coopRole = "P2";
-    await fetch(`${firebaseBaseUrl}/campus_coop_rooms/${code}/p2Joined.json`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(true)
-    });
-    startCoopSession(roomState);
-  }
-
-  function startCoopSession(roomState) {
-    ensureAudio();
-    resizeFXCanvas();
-    document.getElementById("coop-modal").classList.add("hidden");
-    document.getElementById("start-modal").classList.add("hidden");
-    document.getElementById("end-modal").classList.add("hidden");
-
-    selectedMode = "coop";
-    stats = roomState.stats || { safety: 50, admin: 50, parent: 50, sanity: 50 };
-    activeDeck = roomState.deck;
-    turnIndex = roomState.turnIndex || 0;
-    coopLastTurnSynced = turnIndex;
-    isGameOver = false;
-    shiftLogs = [];
-
-    document.getElementById("coop-banner").classList.remove("hidden");
-    document.getElementById("coop-room-info").textContent = `👥 房號 ${coopRoomCode}（你是 ${coopRole === "P1" ? "P1 校安" : "P2 主任"}）`;
-    renderMeters();
-    loadCard();
-    updateCoopTurnLock();
-
-    if (coopPollTimer) clearInterval(coopPollTimer);
-    coopPollTimer = setInterval(pollCoopRoomState, 2500);
-  }
-
-  function updateCoopTurnLock() {
-    if (!coopRoomCode) return;
-    const isMyTurn = (turnIndex % 2 === 0 && coopRole === "P1") || (turnIndex % 2 === 1 && coopRole === "P2");
-    const statusEl = document.getElementById("coop-turn-status");
-    const btnL = document.getElementById("btn-left");
-    const btnR = document.getElementById("btn-right");
-
-    if (isMyTurn) {
-      statusEl.textContent = "🟢 輪到你決策！";
-      statusEl.style.color = "#4ade80";
-      btnL.disabled = false;
-      btnR.disabled = false;
-      btnL.style.opacity = "1";
-      btnR.style.opacity = "1";
-    } else {
-      statusEl.textContent = `⏳ 等待隊友 (${coopRole === "P1" ? "P2" : "P1"}) 決策中...`;
-      statusEl.style.color = "#fbbf24";
-      btnL.disabled = true;
-      btnR.disabled = true;
-      btnL.style.opacity = "0.45";
-      btnR.style.opacity = "0.45";
-    }
-  }
-
-  async function syncCoopMoveToCloud() {
-    if (!coopRoomCode) return;
-    coopLastTurnSynced = turnIndex;
-    await fetch(`${firebaseBaseUrl}/campus_coop_rooms/${coopRoomCode}.json`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        turnIndex: turnIndex,
-        stats: stats,
-        updatedAt: Date.now()
-      })
-    });
-    updateCoopTurnLock();
-  }
-
-  async function pollCoopRoomState() {
-    if (!coopRoomCode || isGameOver) return;
-    try {
-      const resp = await fetch(`${firebaseBaseUrl}/campus_coop_rooms/${coopRoomCode}.json?t=${Date.now()}`);
-      const data = await resp.json();
-      if (!data) return;
-      if (typeof data.turnIndex === "number" && data.turnIndex > coopLastTurnSynced) {
-        coopLastTurnSynced = data.turnIndex;
-        stats = data.stats || stats;
-        turnIndex = data.turnIndex;
-        renderMeters();
-        showSaveToast("👥 隊友已完成決策，進入下一關！");
-
-        if (stats.safety <= 0) return triggerEnding("safety_zero");
-        if (stats.safety >= 100) return triggerEnding("safety_max");
-        if (stats.admin <= 0) return triggerEnding("admin_zero");
-        if (stats.admin >= 100) return triggerEnding("admin_max");
-        if (stats.parent <= 0) return triggerEnding("parent_zero");
-        if (stats.parent >= 100) return triggerEnding("parent_max");
-        if (stats.sanity <= 0) return triggerEnding("sanity_zero");
-        if (stats.sanity >= 100) return triggerEnding("sanity_max");
-
-        loadCard();
-        updateCoopTurnLock();
-      }
-    } catch (e) {}
-  }
-
-  // ==========================================
-  // 17. 玩家投稿事件 ＆ 後台審核上架 ＋ 自訂結局文案
-  // ==========================================
-  function openSubmitEventModal() {
-    playSFX("walkie");
-    document.getElementById("submit-ev-modal").classList.remove("hidden");
-  }
-
-  async function submitCommunityEvent() {
-    const author = document.getElementById("sub-author").value.trim() || "熱心校園玩家";
-    const tag = document.getElementById("sub-tag").value.trim() || "玩家投稿事件";
-    const charId = document.getElementById("sub-char").value;
-    const text = document.getElementById("sub-text").value.trim();
-    const leftLabel = document.getElementById("sub-left").value.trim() || "依規定勸導處理";
-    const rightLabel = document.getElementById("sub-right").value.trim() || "通報主管協助";
-
-    if (!text) { showSaveToast("⚠️ 請填寫事件經過描述"); return; }
-
-    const item = {
-      author, tag, charId, text, leftLabel, rightLabel,
-      createdAt: new Date().toLocaleDateString("zh-TW")
-    };
-
-    try {
-      await fetch(`${firebaseBaseUrl}/campus_submissions.json`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(item)
-      });
-      document.getElementById("sub-tag").value = "";
-      document.getElementById("sub-text").value = "";
-      document.getElementById("sub-left").value = "";
-      document.getElementById("sub-right").value = "";
-      document.getElementById("submit-ev-modal").classList.add("hidden");
-      playSFX("win");
-      showSaveToast("✅ 投稿已送出！等待管理員審核上架");
-    } catch (e) {
-      showSaveToast("⚠️ 送出失敗，請檢查網路連線");
-    }
-  }
-
-  let pendingSubmissionsMap = {};
-
-  async function loadPendingSubmissions() {
-    const list = document.getElementById("pending-sub-list");
-    if (!list) return;
-    list.innerHTML = `<div style="font-size:11px; color:#94a3b8;">讀取中...</div>`;
-    try {
-      const resp = await fetch(`${firebaseBaseUrl}/campus_submissions.json?t=${Date.now()}`);
-      const data = await resp.json();
-      pendingSubmissionsMap = data || {};
-      const keys = Object.keys(pendingSubmissionsMap);
-      document.getElementById("sub-pending-count").textContent = keys.length;
-
-      if (keys.length === 0) {
-        list.innerHTML = `<div style="font-size:11px; color:#94a3b8;">目前沒有待審核的玩家投稿</div>`;
-        return;
-      }
-
-      list.innerHTML = "";
-      keys.forEach(k => {
-        const sub = pendingSubmissionsMap[k];
-        const row = document.createElement("div");
-        row.className = "ev-manage-row";
-        row.innerHTML = `
-          <div style="flex:1; min-width:0;">
-            <div style="font-size:11px; font-weight:800; color:#fde68a;">【${sub.tag}】by ${sub.author}</div>
-            <div style="font-size:10.5px; color:#e2e8f0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${sub.text}</div>
-          </div>
-          <div style="display:flex; gap:4px;">
-            <button class="cast-mini-btn" style="background:rgba(34,197,94,0.25); border-color:#22c55e;" onclick="approveSubmission('${k}')">✅ 核准</button>
-            <button class="cast-mini-btn" style="background:rgba(239,68,68,0.25); border-color:#ef4444;" onclick="rejectSubmission('${k}')">✕</button>
-          </div>
-        `;
-        list.appendChild(row);
-      });
-    } catch (e) {
-      list.innerHTML = `<div style="font-size:11px; color:#f87171;">讀取失敗</div>`;
-    }
-  }
-
-  async function approveSubmission(key) {
-    const sub = pendingSubmissionsMap[key];
-    if (!sub) return;
-    ALL_EVENTS.splice(ALL_EVENTS.length - 1, 0, {
-      time: "13:10",
-      tag: sub.tag,
-      charId: sub.charId || "student",
-      filter: "",
-      sfx: "walkie",
-      isCustom: true,
-      category: "daily",
-      text: `${sub.text}（投稿：${sub.author}）`,
-      left: { label: sub.leftLabel, effect: { safety: +15, admin: +10, parent: -10, sanity: -5 }, bondDelta: +10 },
-      right: { label: sub.rightLabel, effect: { safety: -10, admin: -10, parent: +15, sanity: +10 }, bondDelta: -5 }
-    });
-    await fetch(`${firebaseBaseUrl}/campus_submissions/${key}.json`, { method: "DELETE" });
-    renderEventManageList();
-    await loadPendingSubmissions();
-    await pushDataToFirebase();
-    showSaveToast("✅ 已核准上架並同步至全服卡池！");
-  }
-
-  async function rejectSubmission(key) {
-    await fetch(`${firebaseBaseUrl}/campus_submissions/${key}.json`, { method: "DELETE" });
-    await loadPendingSubmissions();
-    showSaveToast("🗑️ 已移除該筆投稿");
-  }
-
-  function loadEndingToEditor() {
-    const key = document.getElementById("edit-ending-key").value;
-    const item = ENDINGS[key];
-    if (!item) return;
-    document.getElementById("edit-ending-title").value = item.title;
-    document.getElementById("edit-ending-desc").value = item.desc;
-  }
-
-  async function saveCustomEndingText() {
-    const key = document.getElementById("edit-ending-key").value;
-    const t = document.getElementById("edit-ending-title").value.trim();
-    const d = document.getElementById("edit-ending-desc").value.trim();
-    if (!ENDINGS[key] || !t || !d) return;
-    ENDINGS[key].title = t;
-    ENDINGS[key].desc = d;
-    await fetch(`${firebaseBaseUrl}/campus_custom_endings.json`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(ENDINGS)
-    });
-    playSFX("win");
-    showSaveToast("🏆 結局文案已更新並同步至雲端！");
-  }
-
-  // ==========================================
-  // 18. 模擬 LINE 學務處群組緊急訊息支線
-  // ==========================================
-  const LINE_SCENARIOS = [
-    {
-      sender: "林主任（學務主任）",
-      msg: "各位同仁注意！家長會長等一下十點要帶飲料來慰勞大家，請問大門警衛室跟穿堂動線都整理好了嗎？",
-      replies: [
-        { text: "1. 報告主任！已確認穿堂暢通並通知警衛室引導貴賓。", effect: { admin: +10, sanity: +5 }, toast: "👍 主任按讚！長官信任 +10、理智 +5" },
-        { text: "2. 收到，我馬上過去巡一圈確認。", effect: { safety: +10, sanity: -5 }, toast: "🏃 立刻巡檢！校園安全 +10" },
-        { text: "3. 貼圖：『收到！辛苦了！』", effect: { sanity: +10 }, toast: "☕ 輕鬆回覆！個人理智 +10" }
-      ]
-    },
-    {
-      sender: "張老師（輔導老師）",
-      msg: "學安大哥救命～剛才那位高一新生現在在合作社外面發呆，方便幫我拿一瓶運動飲料給他順便聊兩句嗎？",
-      replies: [
-        { text: "1. 沒問題，我現在過去陪他聊聊！", effect: { safety: +10, parent: -10 }, bondChar: "counselor", toast: "💖 張老師好感大幅提升！家長情緒 -10" },
-        { text: "2. 我先在遠處幫妳看著他，妳慢慢走過來。", effect: { safety: +10, sanity: +5 }, toast: "🛡️ 穩健守護！校園安全 +10" },
-        { text: "3. 我現在校門口導護走不開，請生教組長支援！", effect: { admin: +5 }, toast: "📻 妥善轉介！長官信任 +5" }
-      ]
-    }
-  ];
-
-  let lineTriggeredThisShift = false;
-
-  function triggerLineChatInterlude() {
-    stopQTE();
-    lineTriggeredThisShift = true;
-    playSFX("phone");
-    const sc = LINE_SCENARIOS[Math.floor(Math.random() * LINE_SCENARIOS.length)];
-    document.getElementById("line-sender-name").textContent = sc.sender;
-    document.getElementById("line-msg-text").textContent = sc.msg;
-
-    const box = document.getElementById("line-replies-box");
-    box.innerHTML = "";
-    sc.replies.forEach(rep => {
-      const btn = document.createElement("button");
-      btn.className = "line-reply-btn";
-      btn.textContent = rep.text;
-      btn.onclick = () => {
-        document.getElementById("line-modal").classList.add("hidden");
-        playSFX("item");
-        Object.keys(rep.effect).forEach(k => {
-          stats[k] = Math.max(5, Math.min(95, stats[k] + rep.effect[k]));
-        });
-        if (rep.bondChar) {
-          affinityMap[rep.bondChar] = Math.min(100, getCharAffinity(rep.bondChar) + 15);
-        }
-        renderMeters();
-        showSaveToast(rep.toast);
-        loadCard();
-      };
-      box.appendChild(btn);
-    });
-    document.getElementById("line-modal").classList.remove("hidden");
-  }
 
   window.addEventListener("resize", resizeFXCanvas);
   resizeFXCanvas();
