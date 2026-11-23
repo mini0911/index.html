@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>百萬大歌星｜2026終極金曲挑戰賽（60首全曲庫＋KTV伴唱歌聲＋音檔上傳＋玩家填詞）</title>
+  <title>百萬大歌星｜2026終極金曲挑戰賽（100首全曲庫＋KTV伴唱歌聲＋音檔上傳＋玩家填詞）</title>
   <style>
     :root {
       --bg-dark: #060913;
@@ -967,7 +967,7 @@
 </head>
 <body>
 
-<div id="save-toast">🎤 歡迎來到百萬大歌星舞台！</div>
+<div id="save-toast">🎤 歡迎來到百萬大歌星 100 首全曲庫舞台！</div>
 
 <div id="app-frame">
   <canvas id="stage-fx-canvas"></canvas>
@@ -978,7 +978,7 @@
       <div class="prize-pill">💰 <span id="hud-prize">$0</span> <span style="color:#94a3b8; font-size:9.5px;">(保底 <span id="hud-safe">$0</span>)</span></div>
       <div class="lives-pill" id="hud-lives">❤️❤️❤️</div>
       <div style="display:flex; gap:3px;">
-        <button class="icon-btn admin-btn" onclick="openAdminModal()">🔒 題庫(<span id="hud-song-count">60</span>)</button>
+        <button class="icon-btn admin-btn" onclick="openAdminModal()">🔒 題庫(<span id="hud-song-count">100</span>)</button>
         <button class="icon-btn" onclick="openLeaderboard()">🏅</button>
         <button class="icon-btn" onclick="openGallery()">🏆 <span id="hud-unlock">0</span>/8</button>
         <button id="bgm-btn" class="icon-btn active-audio" onclick="toggleBGM()">🎵</button>
@@ -1071,12 +1071,12 @@
     <div class="hero-card">
       <div class="hero-top-meta">
         <span class="tag-pill">MILLION DOLLAR SINGER 2026</span>
-        <div class="cloud-badge" id="cover-cloud-status">🟢 KTV歌聲＋2026全曲庫</div>
+        <div class="cloud-badge" id="cover-cloud-status">🟢 100首2026全曲庫</div>
       </div>
       <h1 class="main-title">百萬大歌星</h1>
-      <div class="hero-subtitle">KTV逐字伴唱歌聲・支援上傳 .mp3 翻唱音檔・玩家自由填詞出題！</div>
+      <div class="hero-subtitle">收錄100首2026最新金曲・KTV伴唱歌聲・支援上傳 .mp3 翻唱音檔與玩家填詞！</div>
       <div class="hero-stats-strip">
-        <div class="hero-mini-chip">🎤 伴唱歌聲旋律</div>
+        <div class="hero-mini-chip">🎵 100首金曲題庫</div>
         <div class="hero-mini-chip">✍️ 填詞＋音檔上傳</div>
         <div class="hero-mini-chip">💰 $300,000大獎</div>
       </div>
@@ -1098,15 +1098,15 @@
       </div>
     </div>
 
-    <div class="section-mini-header">2️⃣ 選擇比賽歌單專場（共收錄 60 首精選金曲）：</div>
+    <div class="section-mini-header">2️⃣ 選擇比賽歌單專場（共收錄 100 首精選金曲）：</div>
     <div class="mode-selector">
       <div class="mode-btn active" id="mode-all" onclick="selectMode('all')">
         <div class="mode-title">🌟 綜合大亂鬥</div>
-        <div class="mode-sub">60首全曲庫隨機</div>
+        <div class="mode-sub">100首全曲庫隨機</div>
       </div>
       <div class="mode-btn" id="mode-2026" onclick="selectMode('2026')">
         <div class="mode-title" style="color:#4ade80;">🔥 2025-2026新歌</div>
-        <div class="mode-sub">周杰倫/林俊傑/Jolin</div>
+        <div class="mode-sub">65首最新榜單金曲</div>
       </div>
       <div class="mode-btn" id="mode-daily" onclick="selectMode('daily')">
         <div class="mode-title">📅 今日挑戰賽</div>
@@ -1135,7 +1135,7 @@
       </div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
         <button class="btn-secondary" onclick="openGallery()">🏆 歌王稱號圖鑑 (<span id="cover-unlock">0</span>/8)</button>
-        <button class="btn-secondary" style="border-color:#f59e0b; color:#fde68a;" onclick="openAdminModal()">🔒 題庫後台 (音檔/審核)</button>
+        <button class="btn-secondary" style="border-color:#f59e0b; color:#fde68a;" onclick="openAdminModal()">🔒 題庫後台 (<span id="cover-song-count">100</span>首)</button>
       </div>
     </div>
   </div>
@@ -1166,8 +1166,8 @@
       </div>
 
       <div class="form-row-2">
-        <input type="text" class="form-input" id="ps-title" placeholder="歌名（例：那天下雨了）" maxlength="18" />
-        <input type="text" class="form-input" id="ps-artist" placeholder="歌手（例：周杰倫）" maxlength="14" />
+        <input type="text" class="form-input" id="ps-title" placeholder="歌名（例：愛錯）" maxlength="18" />
+        <input type="text" class="form-input" id="ps-artist" placeholder="歌手（例：王力宏）" maxlength="14" />
       </div>
 
       <div class="form-row-2">
@@ -1180,7 +1180,7 @@
         <input type="text" class="form-input" id="ps-author" placeholder="出題者暱稱（選填）" maxlength="12" />
       </div>
 
-      <input type="text" class="form-input" id="ps-lead" placeholder="🎵 前導原唱歌詞（例：雨滴落在屋簷下的節奏）" maxlength="34" />
+      <input type="text" class="form-input" id="ps-lead" placeholder="🎵 前導原唱歌詞（例：北風毫不留情 把葉子吹落）" maxlength="34" />
       <input type="text" class="form-input" style="border-color:#4ade80;" id="ps-answer" placeholder="✅ 正確接唱歌詞（不要加標點符號）" maxlength="22" />
 
       <div style="background:rgba(56,189,248,0.1); border:1px dashed rgba(56,189,248,0.45); border-radius:9px; padding:7px 8px; margin-bottom:7px;">
@@ -1251,9 +1251,9 @@
     </div>
   </div>
 
-  <!-- 🎛️ 管理員題庫編輯工坊（支援為任何歌曲掛載 .mp3 原唱伴唱音檔＋審核玩家投稿＋單曲試玩） -->
+  <!-- 🎛️ 管理員題庫編輯工坊 -->
   <div id="admin-modal" class="modal-screen hidden" style="z-index: 51;">
-    <div class="tag-pill">🔓 ADMIN STUDIO ・ 2026 SONG & AUDIO LIBRARY</div>
+    <div class="tag-pill">🔓 ADMIN STUDIO ・ 100 SONGS & AUDIO LIBRARY</div>
     <h2 class="main-title" style="font-size: 19px;">音樂總監歌庫、伴唱音檔與審核工坊</h2>
 
     <div style="width:100%; max-height:70dvh; overflow-y:auto; margin-bottom:10px; padding-right:3px;">
@@ -1308,7 +1308,7 @@
 
       <!-- 全歌單開關、音檔掛載與單曲試玩 -->
       <div class="panel-box" style="border-color: rgba(56, 189, 248, 0.45);">
-        <div class="panel-title" style="color:#7dd3fc;"><span>🎵 全歌庫列表開關、掛載伴唱音檔 ＆ 試唱（共 <span id="admin-total-songs">60</span> 首）</span></div>
+        <div class="panel-title" style="color:#7dd3fc;"><span>🎵 全歌庫列表開關、掛載伴唱音檔 ＆ 試唱（共 <span id="admin-total-songs">100</span> 首）</span></div>
         <div id="song-manage-list" style="max-height:210px; overflow-y:auto;"></div>
       </div>
 
@@ -1487,17 +1487,17 @@
       SONG_LIBRARY.forEach(s => {
         if (!s.isCustom && s.audioUrl) audioOverrides[s.id] = s.audioUrl;
       });
-      localStorage.setItem("million_singer_custom_songs_v3", JSON.stringify(customSongs));
-      localStorage.setItem("million_singer_disabled_ids_v3", JSON.stringify(disabledIds));
-      localStorage.setItem("million_singer_audio_overrides_v3", JSON.stringify(audioOverrides));
+      localStorage.setItem("million_singer_custom_songs_v4", JSON.stringify(customSongs));
+      localStorage.setItem("million_singer_disabled_ids_v4", JSON.stringify(disabledIds));
+      localStorage.setItem("million_singer_audio_overrides_v4", JSON.stringify(audioOverrides));
     } catch (e) {}
   }
 
   function loadLocalSongs() {
     try {
-      const customSongs = JSON.parse(localStorage.getItem("million_singer_custom_songs_v3") || "[]");
-      const disabledIds = JSON.parse(localStorage.getItem("million_singer_disabled_ids_v3") || "[]");
-      const audioOverrides = JSON.parse(localStorage.getItem("million_singer_audio_overrides_v3") || "{}");
+      const customSongs = JSON.parse(localStorage.getItem("million_singer_custom_songs_v4") || "[]");
+      const disabledIds = JSON.parse(localStorage.getItem("million_singer_disabled_ids_v4") || "[]");
+      const audioOverrides = JSON.parse(localStorage.getItem("million_singer_audio_overrides_v4") || "{}");
       customSongs.forEach(cs => {
         if (!SONG_LIBRARY.some(x => x.id === cs.id)) SONG_LIBRARY.unshift(cs);
       });
@@ -1594,10 +1594,10 @@
   }
 
   // ==========================================
-  // 3. 60 首完整金曲題庫（含 2025-2026 發燒新歌 ＋ 經典華語 ＋ 抖音神曲 ＋ 台語 KTV）
+  // 3. 100 首完整金曲題庫（含 65 首 2025-2026 發燒新歌 ＋ 15 首經典華語 ＋ 10 首抖音神曲 ＋ 10 首台語 KTV）
   // ==========================================
   const SONG_LIBRARY = [
-    // --- 🔥 2025-2026 發燒新歌（25首） ---
+    // --- 🔥 2025-2026 發燒新歌與熱門華語金曲（65首） ---
     { id: "n26_01", genre: "2026新歌", title: "那天下雨了", artist: "周杰倫", lead: "雨滴落在舊鋼琴的琴鍵上", answer: "你的背影卻消失在巷口那端", wrongs: ["我的思念卻停留在昨天晚上", "你的笑容還掛在雨後的藍天", "我們的愛卻隨風飄向遠方"], notes: [392, 440, 523.25, 493.88, 392] },
     { id: "n26_02", genre: "2026新歌", title: "西西里", artist: "周杰倫", lead: "地中海的陽光灑滿石板街", answer: "檸檬香氣吹過古老的鐘樓", wrongs: ["海風輕輕吹過沉默的港口", "晚霞慢慢染紅遠方的山頭", "咖啡香氣飄散在午后街頭"], notes: [329.63, 392, 493.88, 523.25, 587.33] },
     { id: "n26_03", genre: "2026新歌", title: "太陽之子", artist: "周杰倫", lead: "穿越沙漠盡頭的金黃地平線", answer: "追尋傳說中永不熄滅的光", wrongs: ["尋找記憶裡最溫柔的目光", "守護黑暗中最堅定的夢想", "迎接黎明前最燦爛的希望"], notes: [293.66, 349.23, 440, 523.25, 587.33] },
@@ -1623,6 +1623,48 @@
     { id: "n26_23", genre: "2026新歌", title: "不是因為天氣晴朗才愛你", artist: "理想混蛋", lead: "不是因為天氣晴朗才愛你", answer: "不是因為看見星星才想你", wrongs: ["不是因為害怕孤單才找你", "不是因為夜色太美才念你", "不是因為微風溫柔才抱你"], notes: [261.63, 329.63, 392, 440, 392] },
     { id: "n26_24", genre: "2026新歌", title: "閣愛妳一擺", artist: "茄子蛋", lead: "想欲閣愛妳一擺", answer: "予我閣愛妳一擺", wrongs: ["予我閣看妳一擺", "予我閣等妳一擺", "予我閣牽妳一擺"], notes: [392, 440, 523.25, 493.88, 392] },
     { id: "n26_25", genre: "2026新歌", title: "烏梅子醬", artist: "李榮浩", lead: "你淺淺的微笑就像", answer: "烏梅子醬", wrongs: ["草莓果醬", "焦糖瑪奇朵", "蜂蜜檸檬水"], notes: [329.63, 392, 440, 523.25, 392] },
+
+    // --- 🆕 新增擴充 40 首 2025-2026 華語榜單新歌與熱門金曲（n26_26 ~ n26_65） ---
+    { id: "n26_26", genre: "2026新歌", title: "棠棣賦", artist: "五月天阿信", lead: "風起長安城頭月色蒼茫", answer: "並肩守望寫下千古篇章", wrongs: ["策馬奔騰踏破萬里風霜", "燈火闌珊照亮歸鄉路旁", "劍光如雪映出少年模樣"], notes: [293.66, 349.23, 440, 523.25, 587.33] },
+    { id: "n26_27", genre: "2026新歌", title: "欲落未落", artist: "DIOR大穎", lead: "烏雲密布的天空懸在半空", answer: "像我欲落未落的眼淚好痛", wrongs: ["像你忽冷忽熱的溫柔難懂", "像風吹過樹梢的寂寞洶湧", "像夢醒來之後的失落空洞"], notes: [329.63, 392, 440, 493.88, 523.25] },
+    { id: "n26_28", genre: "2026新歌", title: "一萬零一次沉溺", artist: "李佳薇", lead: "明明說好這次要徹底清醒", answer: "卻又為你一萬零一次沉溺", wrongs: ["卻在轉身之後忍不住哭泣", "卻在深夜裡又翻出舊訊息", "卻還是無法忘記你的背影"], notes: [349.23, 440, 523.25, 587.33, 659.25] },
+    { id: "n26_29", genre: "2026新歌", title: "我的貓會後空翻", artist: "陳華", lead: "今晚別急著回家聽我說完", answer: "我家那隻小貓真的會後空翻", wrongs: ["陽台上的星星今晚特別璀璨", "巷口那家甜點店還沒打烊", "剛買的電影票剛好還剩兩張"], notes: [392, 440, 523.25, 587.33, 523.25] },
+    { id: "n26_30", genre: "2026新歌", title: "沒有人像我一樣", artist: "宇宙人", lead: "在熙熙攘攘的城市裡流浪", answer: "沒有人像我一樣懂你的倔強", wrongs: ["沒有人像我一樣陪在你身旁", "沒有人像我一樣為你而瘋狂", "沒有人像我一樣記得你模樣"], notes: [261.63, 329.63, 392, 523.25, 587.33] },
+    { id: "n26_31", genre: "2026新歌", title: "I Do", artist: "周杰倫", lead: "鐘聲敲響教堂潔白的屋頂", answer: "你笑著點頭對我說出I Do", wrongs: ["微風吹過我們幸福的旅途", "星空見證我們永恆的愛慕", "陽光灑落我們牽手的腳步"], notes: [329.63, 392, 440, 523.25, 659.25] },
+    { id: "n26_32", genre: "2026新歌", title: "愛琴海", artist: "周杰倫", lead: "藍白色的屋頂連成一片海岸", answer: "愛琴海的微風吹散所有遺憾", wrongs: ["聖托里尼的夕陽染紅了沙灘", "海鷗飛過港口帶來遠方期盼", "浪花輕輕拍打我們許願的船"], notes: [392, 440, 493.88, 523.25, 587.33] },
+    { id: "n26_33", genre: "2026新歌", title: "誰稀罕", artist: "周杰倫", lead: "轉身離開就別再回頭張望", answer: "誰稀罕你施捨的一點原諒", wrongs: ["誰在乎你留下的那些過往", "誰相信你說過的動人謊話", "誰等待你回頭的溫柔目光"], notes: [293.66, 349.23, 392, 440, 392] },
+    { id: "n26_34", genre: "2026新歌", title: "七月的極光", artist: "周杰倫", lead: "盛夏夜空劃過奇蹟的光芒", answer: "七月的極光為你點亮方向", wrongs: ["八月的流星陪你實現願望", "九月的微風吹散所有迷惘", "十月的星空見證我們成長"], notes: [329.63, 392, 523.25, 587.33, 659.25] },
+    { id: "n26_35", genre: "2026新歌", title: "女兒殿下", artist: "周杰倫", lead: "小小的手心握著童話魔法", answer: "你是爸爸永遠最寵愛的女兒殿下", wrongs: ["你是世界最閃耀的小小夢想家", "你是生命裡最溫暖的一幅畫", "你是星空下最可愛的小小仙女"], notes: [261.63, 329.63, 392, 440, 523.25] },
+    { id: "n26_36", genre: "2026新歌", title: "淘金小鎮", artist: "周杰倫", lead: "牛仔靴踩過黃沙滾滾的街道", answer: "淘金小鎮的酒館正熱鬧喧囂", wrongs: ["西部荒野的夕陽正慢慢燃燒", "老舊的木門傳來口琴的歌謠", "遠方的列車汽笛正大聲呼叫"], notes: [293.66, 349.23, 440, 523.25, 440] },
+    { id: "n26_37", genre: "2026新歌", title: "湘女多情", artist: "周杰倫", lead: "煙雨朦朧飄過古老的石橋", answer: "湘女多情唱著婉轉的歌謠", wrongs: ["江南水鄉映著溫柔的微笑", "青石板路留下思念的記號", "細雨紛紛打濕油紙傘一角"], notes: [329.63, 392, 440, 493.88, 392] },
+    { id: "n26_38", genre: "2026新歌", title: "鄉間的路", artist: "周杰倫", lead: "稻田邊的風車慢慢轉動", answer: "沿著鄉間的路走回童年夢中", wrongs: ["聽著夏夜的蟲鳴伴隨晚風", "看著遠方的雲朵自由飄動", "唱著熟悉的歌謠心情輕鬆"], notes: [261.63, 329.63, 392, 440, 392] },
+    { id: "n26_39", genre: "2026新歌", title: "自由的你", artist: "G.E.M. 鄧紫棋", lead: "張開雙手擁抱遼闊的天際", answer: "去成為最勇敢最自由的你", wrongs: ["去追尋最燦爛最耀眼的星", "去跨越最遙遠最艱難的路", "去感受最真實最溫暖的心"], notes: [349.23, 440, 523.25, 587.33, 659.25] },
+    { id: "n26_40", genre: "2026新歌", title: "任天堂", artist: "G.E.M. 鄧紫棋", lead: "按下開始鍵重啟青春冒險", answer: "像玩任天堂一樣闖過每個關卡", wrongs: ["像坐雲霄飛車一樣飛上藍天", "像看老電影一樣重溫那一年", "像聽隨身聽一樣回到夏天"], notes: [392, 440, 523.25, 587.33, 523.25] },
+    { id: "n26_41", genre: "2026新歌", title: "反鎖", artist: "韋禮安", lead: "把所有回憶都收進抽屜角落", answer: "將寂寞反鎖在沒有你的房間", wrongs: ["把思念留給時間慢慢去沉澱", "讓眼淚隨著黑夜悄悄地蔓延", "把過去封存在泛黃的舊相片"], notes: [329.63, 392, 440, 493.88, 523.25] },
+    { id: "n26_42", genre: "2026新歌", title: "重啟", artist: "韋禮安", lead: "當世界陷入一片混亂迷霧", answer: "按下重啟鍵改寫命運的密碼", wrongs: ["穿過黑夜尋找黎明的日出", "握緊雙手踏上未知的旅途", "點亮心燈照亮前方的道路"], notes: [293.66, 349.23, 440, 523.25, 587.33] },
+    { id: "n26_43", genre: "2026新歌", title: "毫無代價唱我自己的歌", artist: "韋禮安", lead: "就算台下只剩最後一盞燈火", answer: "也要毫無代價唱我自己的歌", wrongs: ["也要用盡全力為夢想而執著", "也要微笑面對所有的起起落落", "也要大聲唱出心底的快樂"], notes: [261.63, 329.63, 392, 523.25, 587.33] },
+    { id: "n26_44", genre: "2026新歌", title: "愛人啊", artist: "言承旭＆五月天阿信", lead: "歲月在眼角刻下溫柔痕跡", answer: "愛人啊謝謝你一直陪在這裡", wrongs: ["朋友啊我們還要一起走下去", "青春啊永遠停留在最美記憶", "夢想啊依然在心中閃閃發光"], notes: [329.63, 392, 440, 523.25, 493.88] },
+    { id: "n26_45", genre: "2026新歌", title: "你沒等我去的舊金山", artist: "派偉俊＆陳華", lead: "金門大橋的霧氣散了又來", answer: "你沒等我去的舊金山依然蔚藍", wrongs: ["我們約好一起看的海還沒看", "太平洋的風吹不散我的遺憾", "那張泛黃的機票還留在口袋"], notes: [392, 440, 523.25, 587.33, 523.25] },
+    { id: "n26_46", genre: "2026新歌", title: "單程票", artist: "派偉俊", lead: "背起吉他踏上前往遠方的列車", answer: "買一張不回頭的青春單程票", wrongs: ["寫一首屬於我們自己的歌謠", "追一個沒有終點的燦爛夢想", "看一場沿途最美麗的風景線"], notes: [261.63, 329.63, 392, 440, 523.25] },
+    { id: "n26_47", genre: "2026新歌", title: "繞路", artist: "A-Lin", lead: "以為捷徑能最快抵達幸福", answer: "原來繞路才看見最美的風景", wrongs: ["原來放手才懂得愛有多深刻", "原來等待才明白心有多堅定", "原來微笑才治癒所有的傷痕"], notes: [349.23, 392, 440, 523.25, 587.33] },
+    { id: "n26_48", genre: "2026新歌", title: "All For You", artist: "周興哲", lead: "當黑夜降臨城市變得安靜", answer: "我願意付出一切All For You", wrongs: ["我會一直在原地守護著你", "讓星光照亮你前行的軌跡", "把所有溫柔都寫進旋律裡"], notes: [329.63, 392, 440, 523.25, 659.25] },
+    { id: "n26_49", genre: "2026新歌", title: "最痛的遺憾", artist: "丁噹", lead: "我們在最好的年紀學會去愛", answer: "卻成為彼此生命裡最痛的遺憾", wrongs: ["卻在轉身之後再也沒有回來", "卻把最深的思念藏在人海", "卻讓時間沖淡所有的期待"], notes: [349.23, 440, 523.25, 493.88, 440] },
+    { id: "n26_50", genre: "2026新歌", title: "你就是我無可替代", artist: "八三夭", lead: "就算全世界的聲音都在反對", answer: "你就是我生命中無可替代", wrongs: ["我也要牽著你的手走向未來", "你依然是我心中唯一的熱愛", "我們一起寫下最熱血的時代"], notes: [293.66, 349.23, 440, 523.25, 587.33] },
+    { id: "n26_51", genre: "2026新歌", title: "蓋亞", artist: "FEniX", lead: "大地脈搏在腳下劇烈跳動", answer: "喚醒沉睡已久的蓋亞能量", wrongs: ["點燃黑夜中最耀眼的光芒", "衝破天際迎向全新的時代", "釋放心中最炙熱的渴望"], notes: [329.63, 392, 523.25, 587.33, 659.25] },
+    { id: "n26_52", genre: "2026新歌", title: "都會客運", artist: "FEniX", lead: "深夜末班車載著疲憊與夢想", answer: "都會客運開往下一站曙光", wrongs: ["城市街燈照亮回家的方向", "耳機裡的旋律陪我到天亮", "窗外的雨滴敲打著玻璃窗"], notes: [261.63, 329.63, 392, 440, 392] },
+    { id: "n26_53", genre: "2026新歌", title: "再一次愛你", artist: "Ray 黃霆睿", lead: "如果時光能倒流回相遇那天", answer: "我還是會毫不猶豫再一次愛你", wrongs: ["我一定會緊緊抱住不讓你離去", "我會把所有真心話都說給你聽", "我們一定會寫下不同的結局"], notes: [349.23, 392, 440, 523.25, 493.88] },
+    { id: "n26_54", genre: "2026新歌", title: "再見的時候", artist: "洪佩瑜", lead: "陽光穿過合唱團歌聲的午後", answer: "說再見的時候請記得微笑揮手", wrongs: ["轉身離開的時候別讓眼淚滑落", "回首往事的時候感謝一路有你", "分別的那一刻把祝福留在心頭"], notes: [392, 440, 493.88, 523.25, 587.33] },
+    { id: "n26_55", genre: "2026新歌", title: "折月亮", artist: "劉宇寧", lead: "仰望夜空把思念寄託給星河", answer: "願為你摘下星辰折一輪月亮", wrongs: ["願化作清風吹散你所有憂傷", "願守在長夜盡頭等你回身旁", "願用這一生換你歲月都安康"], notes: [293.66, 349.23, 440, 523.25, 440] },
+    { id: "n26_56", genre: "2026新歌", title: "大桌子", artist: "頑童MJ116", lead: "兄弟們齊聚一堂舉起酒杯", answer: "這張大桌子永遠為你們留位", wrongs: ["今晚不醉不歸把煩惱全拋飛", "從木柵唱到世界舞台最高位", "所有的努力都在此刻加倍"], notes: [261.63, 329.63, 392, 523.25, 392] },
+    { id: "n26_57", genre: "2026新歌", title: "等無", artist: "美秀集團", lead: "霓虹燈閃爍在孤單的十字路口", answer: "等無你回頭的身影心好酸", wrongs: ["等無天亮的微風吹散寂寞", "等無一句溫柔的晚安問候", "等無我們說好的那場煙火"], notes: [329.63, 392, 440, 392, 329.63] },
+    { id: "n26_58", genre: "2026新歌", title: "寶貝Goodnight", artist: "琳誼Ring", lead: "忙碌了一整天終於關上燈火", answer: "輕聲對你說聲寶貝Goodnight", wrongs: ["願你今晚有個甜甜的好夢來", "把所有煩惱都留在門外", "明天醒來又是美好的一天"], notes: [392, 440, 523.25, 587.33, 523.25] },
+    { id: "n26_59", genre: "2026新歌", title: "我以為我們會結婚", artist: "郭家瑋＆DIOR大穎", lead: "從校服走到西裝與白紗的幻想", answer: "我以為我們會結婚走到最後", wrongs: ["我以為你會一直牽著我的手", "我以為愛情能抵擋所有藉口", "我以為我們的未來沒有盡頭"], notes: [349.23, 392, 440, 523.25, 493.88] },
+    { id: "n26_60", genre: "2026新歌", title: "微醺的愛", artist: "王若琳", lead: "八零年代的爵士樂在空氣流動", answer: "微醺的愛在夜色裡輕輕搖擺", wrongs: ["浪漫的夢在酒杯裡慢慢暈開", "復古的燈光映照著你的神采", "溫柔的晚風吹進了老舊吧台"], notes: [261.63, 329.63, 392, 493.88, 523.25] },
+    { id: "n26_61", genre: "2026新歌", title: "玫瑰玫瑰", artist: "動力火車＆葛西瓦", lead: "山風吹過部落燃起熱情營火", answer: "玫瑰玫瑰我愛你唱響整座山谷", wrongs: ["大聲歌唱把所有的煩惱全消除", "舉起酒杯敬我們最美的旅途", "節奏響起大家一起快樂跳舞"], notes: [392, 440, 523.25, 587.33, 659.25] },
+    { id: "n26_62", genre: "2026新歌", title: "若無你我欲去佗位", artist: "黃奇斌", lead: "海風吹過孤單的港口夜色", answer: "若無你我欲去佗位尋找依偎", wrongs: ["若無你我的人生要如何面對", "若無你這場美夢要何時才醒", "若無你我的心事要向誰傾訴"], notes: [293.66, 349.23, 392, 440, 392] },
+    { id: "n26_63", genre: "2026新歌", title: "不在乎", artist: "icyball冰球樂團", lead: "復古合成器響起迷幻的節拍", answer: "嘴上說不在乎心裡卻好在意", wrongs: ["裝作很瀟灑其實早就動了心", "夜色太迷人讓人忘了說再見", "跟著節奏搖擺直到黎明來臨"], notes: [329.63, 392, 440, 523.25, 493.88] },
+    { id: "n26_64", genre: "2026新歌", title: "像煙火愛過", artist: "單依純", lead: "哪怕只在夜空綻放短短幾秒", answer: "我們也像煙火一樣燦爛愛過", wrongs: ["我們也曾經擁有最美的承諾", "你的光芒已永遠留在我心窩", "所有的回憶都化作滿天星斗"], notes: [349.23, 440, 523.25, 587.33, 659.25] },
+    { id: "n26_65", genre: "2026新歌", title: "可是I miss you", artist: "陳華", lead: "深夜滑著手機卻不敢按下撥出", answer: "理智說別回頭可是I miss you", wrongs: ["明明已經習慣一個人的孤獨", "眼淚卻在想你的瞬間忍不住", "窗外的雨下得讓人好想哭"], notes: [392, 440, 523.25, 493.88, 440] },
 
     // --- 💿 經典華語 KTV 金曲（15首） ---
     { id: "c01", genre: "經典華語", title: "晴天", artist: "周杰倫", lead: "刮風這天我試過握著你手", answer: "但偏偏雨漸漸大到我看你不見", wrongs: ["但偏偏風慢慢吹散我們的誓言", "但偏偏雲悄悄遮住天邊的光線", "但偏偏淚水模糊了我雙眼"], notes: [392, 440, 493.88, 523.25, 493.88, 440, 392] },
@@ -1697,16 +1739,13 @@
     const leadEl = document.getElementById("lead-lyrics-text");
     const sourceTag = document.getElementById("audio-source-tag");
 
-    // 1. 優先檢查是否掛載了真實原唱 / AI 翻唱 MP3 音檔
     if (song.audioUrl && singVoiceOn) {
       sourceTag.textContent = "🎧 真實人聲 / AI翻唱原音伴唱中";
       activeRealAudio = new Audio(song.audioUrl);
       activeRealAudio.volume = 0.9;
       activeRealAudio.play().catch(() => {
-        // 若外部連結被瀏覽器阻擋，自動降級為合成器歌聲
         playSynthKTVVoice(song, chars, leadEl, sourceTag);
       });
-      // 同步逐字發光提詞
       const stepMs = 340;
       leadEl.innerHTML = chars.map((c, i) => `<span id="karaoke-ch-${i}" style="transition:color 0.15s;">${c}</span>`).join("");
       chars.forEach((_, i) => {
@@ -1719,7 +1758,6 @@
       return;
     }
 
-    // 2. 無上傳音檔時，啟動 Web Audio 人聲共振峰＋歌手抖音合成器
     playSynthKTVVoice(song, chars, leadEl, sourceTag);
   }
 
@@ -1727,7 +1765,6 @@
     sourceTag.textContent = "🎤 KTV伴唱歌聲（逐字發光提詞）";
     const beatSec = 0.36;
 
-    // 逐字發光卡拉OK字幕
     leadEl.innerHTML = chars.map((c, i) => `<span id="karaoke-ch-${i}" style="transition:color 0.15s;">${c}</span>`).join("");
     chars.forEach((_, i) => {
       const tid = setTimeout(() => {
@@ -1751,12 +1788,10 @@
       const startTime = now + idx * beatSec;
       const freq = baseNotes[idx % baseNotes.length];
 
-      // 聲帶主振盪器（鋸齒波模擬人聲泛音）
       const voiceOsc = audioCtx.createOscillator();
       voiceOsc.type = "sawtooth";
       voiceOsc.frequency.setValueAtTime(freq, startTime);
 
-      // 歌手抖音效果（Vibrato LFO）
       const vibrato = audioCtx.createOscillator();
       const vibratoGain = audioCtx.createGain();
       vibrato.frequency.setValueAtTime(5.6, startTime);
@@ -1764,13 +1799,11 @@
       vibrato.connect(vibratoGain);
       vibratoGain.connect(voiceOsc.frequency);
 
-      // 人聲母音共振峰濾波器
       const formantFilter = audioCtx.createBiquadFilter();
       formantFilter.type = "bandpass";
       formantFilter.frequency.setValueAtTime(vowelFormants[ch.charCodeAt(0) % vowelFormants.length] * 1.55, startTime);
       formantFilter.Q.setValueAtTime(3.0, startTime);
 
-      // 換氣包絡線
       const envGain = audioCtx.createGain();
       envGain.gain.setValueAtTime(0.001, startTime);
       envGain.gain.linearRampToValueAtTime(0.28, startTime + 0.05);
@@ -1915,12 +1948,12 @@
   let revealedHintIndices = [];
   let roundLogs = [];
   let lastShareImageUrl = "";
-  let unlockedTitles = JSON.parse(localStorage.getItem("million_singer_titles_v3") || "[]");
+  let unlockedTitles = JSON.parse(localStorage.getItem("million_singer_titles_v4") || "[]");
 
   function unlockTitle(id) {
     if (!unlockedTitles.includes(id)) {
       unlockedTitles.push(id);
-      localStorage.setItem("million_singer_titles_v3", JSON.stringify(unlockedTitles));
+      localStorage.setItem("million_singer_titles_v4", JSON.stringify(unlockedTitles));
       updateAllCounters();
       const meta = GALLERY_TITLES.find(t => t.id === id);
       if (meta) showToast(`🏆 解鎖新歌王稱號：【${meta.title}】！`);
@@ -1931,6 +1964,8 @@
     document.getElementById("hud-song-count").textContent = SONG_LIBRARY.length;
     document.getElementById("hud-unlock").textContent = unlockedTitles.length;
     document.getElementById("cover-unlock").textContent = unlockedTitles.length;
+    const coverSongCount = document.getElementById("cover-song-count");
+    if (coverSongCount) coverSongCount.textContent = SONG_LIBRARY.length;
     const adminTotal = document.getElementById("admin-total-songs");
     if (adminTotal) adminTotal.textContent = SONG_LIBRARY.length;
   }
@@ -2715,7 +2750,7 @@
     const blob = new Blob([JSON.stringify(SONG_LIBRARY, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "million_singer_2026_songs.json";
+    a.download = "million_singer_2026_100_songs.json";
     a.click();
   }
 
@@ -2988,8 +3023,8 @@
       `【30秒 IG Reels / Shorts 百萬大歌星實況腳本】\n` +
       `挑戰獎金：$${currentPrize.toLocaleString()}\n\n` +
       `【分鏡 1｜開場 Hook（0-3秒）】\n` +
-      `畫面：站上《百萬大歌星》霓虹舞台，挑戰 2026 最新金曲接歌！\n` +
-      `旁白：「挑戰經典綜藝《百萬大歌星》，2026最新金曲你能一字不差接唱幾首？」\n\n` +
+      `畫面：站上《百萬大歌星》霓虹舞台，挑戰 100 首 2026 最新金曲接歌！\n` +
+      `旁白：「挑戰經典綜藝《百萬大歌星》，100首2026最新金曲你能一字不差接唱幾首？」\n\n` +
       `${highlights}\n\n` +
       `【分鏡 5｜結算反轉（22-30秒）】\n` +
       `畫面：跳出結算畫面【${endTitle}】。\n` +
@@ -3067,7 +3102,7 @@
     if (!lastShareImageUrl) return;
     const a = document.createElement("a");
     a.href = lastShareImageUrl;
-    a.download = "million_singer_2026_record.png";
+    a.download = "million_singer_2026_100songs_record.png";
     a.click();
   }
 
