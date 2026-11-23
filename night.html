@@ -281,7 +281,6 @@
       position: relative;
       width: 100%;
       flex: 1;
-      min-height: 260px;
       max-height: 430px;
       background: #1e293b;
       border-radius: 22px;
@@ -1066,19 +1065,7 @@
     <div class="tag-pill">GLOBAL CAMPUS SAFETY RANKING</div>
     <h2 class="main-title" style="font-size: 21px;">🏅 全服金牌校安生存排行榜</h2>
     <div class="scroll-list" id="leaderboard-list"></div>
-    <div style="display:flex; gap:8px; width:100%; max-width:320px;">
-      <button class="btn-secondary" style="flex:1; border-color:#f97316; color:#fed7aa;" onclick="openWipeoutRanking()">💥 最易翻車關卡</button>
-      <button class="btn-primary" style="flex:1;" onclick="document.getElementById('leaderboard-modal').classList.add('hidden')">返回</button>
-    </div>
-  </div>
-
-  <!-- 💥 全服最容易翻車關卡排行榜視窗 -->
-  <div id="wipeout-modal" class="modal-screen hidden" style="z-index: 53;">
-    <div class="tag-pill" style="border-color:#f97316; color:#fdba74;">GLOBAL WIPEOUT HEATMAP</div>
-    <h2 class="main-title" style="font-size: 20px;">💥 全服最容易翻車關卡 TOP</h2>
-    <p class="sub-desc" style="margin-bottom:10px;">統計玩家在各關導致數值歸零或爆表而提前下班的次數：</p>
-    <div class="scroll-list" id="wipeout-list"></div>
-    <button class="btn-primary" style="width:100%; max-width:300px;" onclick="document.getElementById('wipeout-modal').classList.add('hidden')">返回排行榜</button>
+    <button class="btn-primary" style="width:100%; max-width:300px;" onclick="document.getElementById('leaderboard-modal').classList.add('hidden')">返回</button>
   </div>
 
   <!-- 結局圖鑑視窗 -->
@@ -1423,43 +1410,6 @@
     roleSkillUsed = true;
     stopQTE();
     playSFX("win");
-
-    // 隱藏彩蛋關卡檢查：若走到倒數第 2 關且四維皆落在 42~58 之間，機率觸發隱藏彩蛋卡
-    if (!coopRoomCode && !window._hiddenEggShown && turnIndex === Math.max(1, activeDeck.length - 2)) {
-      const allMid = ["safety", "admin", "parent", "sanity"].every(k => stats[k] >= 42 && stats[k] <= 58);
-      if (allMid && Math.random() < 0.75) {
-        window._hiddenEggShown = true;
-        activeDeck.splice(turnIndex, 0, {
-          time: "17:20",
-          tag: "✨ 隱藏彩蛋・平衡結界",
-          charId: "dog",
-          filter: "art-morning",
-          sfx: "win",
-          isChain: true,
-          text: "【隱藏關卡】你的四項數值竟然奇蹟般維持在完美平衡！校狗阿福叼來一張『準時下班通行證』對你搖尾巴！",
-          left: { label: "收下通行證並穩健巡檢最後動線", effect: { safety: +10, admin: +10, parent: -10, sanity: +10 }, bondDelta: +20 },
-          right: { label: "帶著阿福去合作社買份點心慶祝", effect: { safety: +5, admin: +5, parent: -5, sanity: +15 }, bondDelta: +15 }
-        });
-      }
-    }
-
-    // 條件門檻事件檢查：若目前卡片有 minParent 或 minBond 條件且未達標，自動跳過
-    while (turnIndex < activeDeck.length) {
-      const candidate = activeDeck[turnIndex];
-      if (typeof candidate.minParent === "number" && stats.parent < candidate.minParent) {
-        turnIndex++;
-        continue;
-      }
-      if (typeof candidate.minBond === "number" && getCharAffinity(candidate.charId) < candidate.minBond) {
-        turnIndex++;
-        continue;
-      }
-      break;
-    }
-    if (turnIndex >= activeDeck.length) {
-      loadCard();
-      return;
-    }
 
     const card = activeDeck[turnIndex];
     const ch = CHARACTER_ROSTER.find(c => c.id === card.charId) || CHARACTER_ROSTER[0];
@@ -2036,9 +1986,7 @@
   const TACTICAL_ITEMS = [
     { id: "bodycam", name: "📹 密錄器", desc: "開啟密錄器！家長情緒大幅降溫 -25%" },
     { id: "radio", name: "📻 叫支援", desc: "無線電呼叫支援！校園安全與長官信任 +20%" },
-    { id: "coffee", name: "☕ 冰美式", desc: "喝下冰美式續命！個人理智回復 +25%" },
-    { id: "vest", name: "🦺 反光背心", desc: "穿上反光背心！校園安全 +15%、理智 +5%" },
-    { id: "candy", name: "🍬 安撫糖果", desc: "發放安撫糖果！家長情緒 -15%、理智 +15%" }
+    { id: "coffee", name: "☕ 冰美式", desc: "喝下冰美式續命！個人理智回復 +25%" }
   ];
 
   const QUIZ_BANK = [
@@ -2102,13 +2050,6 @@
       stats.safety = Math.min(90, stats.safety + 20);
       stats.admin = Math.min(90, stats.admin + 20);
     } else if (it.id === "coffee") stats.sanity = Math.min(90, stats.sanity + 25);
-    else if (it.id === "vest") {
-      stats.safety = Math.min(90, stats.safety + 15);
-      stats.sanity = Math.min(90, stats.sanity + 5);
-    } else if (it.id === "candy") {
-      stats.parent = Math.max(10, stats.parent - 15);
-      stats.sanity = Math.min(90, stats.sanity + 15);
-    }
 
     renderMeters();
     renderItemBar();
@@ -2518,7 +2459,6 @@
   let lastRunScore = 0;
   let lastShareImageUrl = "";
   let shiftLogs = [];
-  let comboStreak = 0;
   let unlocked = JSON.parse(localStorage.getItem("viral_campus_endings_v4") || "[]");
 
   function selectMode(mode) {
@@ -2624,9 +2564,7 @@
     affinityMap = { officer: 50, parent: 50, director: 50, counselor: 50, student: 50, inspector: 50, intruder: 50, dog: 50 };
     queuedChainEvent = null;
     shiftLogs = [];
-    comboStreak = 0;
     currentDay = 1;
-    window._hiddenEggShown = false;
     runSafetyNeverBelow50 = true;
     runSanityAlwaysBalanced = true;
     runUsedAnyItem = false;
@@ -2699,30 +2637,6 @@
     const videoEl = document.getElementById("card-video");
     const isVideo = ch.img && (ch.img.toLowerCase().endsWith(".mp4") || ch.img.startsWith("data:video/"));
 
-    function applyBackgroundWithFallback(primaryUrl) {
-      artEl.style.backgroundPosition = ch.id === "officer" ? "center 18%" : "center 12%";
-      artEl.className = card.filter || "";
-      const safeFallback = ch.fallback || "";
-      if (safeFallback) {
-        artEl.style.backgroundImage = `url("${safeFallback}")`;
-      }
-      if (!primaryUrl || primaryUrl === safeFallback) return;
-      const tryImg = new Image();
-      tryImg.onload = () => {
-        artEl.style.backgroundImage = `url("${primaryUrl}")`;
-      };
-      tryImg.onerror = () => {
-        if (ch.fallbackImg && ch.fallbackImg !== primaryUrl) {
-          const trySecond = new Image();
-          trySecond.onload = () => {
-            artEl.style.backgroundImage = `url("${ch.fallbackImg}")`;
-          };
-          trySecond.src = ch.fallbackImg;
-        }
-      };
-      tryImg.src = primaryUrl;
-    }
-
     if (isVideo) {
       artEl.style.display = "none";
       videoEl.style.display = "block";
@@ -2731,7 +2645,10 @@
         videoEl.onerror = null;
         videoEl.style.display = "none";
         artEl.style.display = "block";
-        applyBackgroundWithFallback(ch.fallbackImg || ch.fallback || "");
+        const fallbackSrc = ch.fallbackImg || ch.fallback || "";
+        artEl.style.backgroundImage = `url('${fallbackSrc}')`;
+        artEl.style.backgroundPosition = ch.id === "officer" ? "center 18%" : "center 12%";
+        artEl.className = card.filter || "";
       };
       videoEl.src = ch.img;
       videoEl.load();
@@ -2740,7 +2657,9 @@
       videoEl.onerror = null;
       videoEl.style.display = "none";
       artEl.style.display = "block";
-      applyBackgroundWithFallback(ch.img || ch.fallbackImg || ch.fallback || "");
+      artEl.style.backgroundImage = `url('${ch.img}')`;
+      artEl.style.backgroundPosition = ch.id === "officer" ? "center 18%" : "center 12%";
+      artEl.className = card.filter || "";
     }
 
     document.getElementById("card-tag").textContent = card.tag;
@@ -2849,13 +2768,6 @@
     if (stats.safety < 50) runSafetyNeverBelow50 = false;
     if (stats.sanity < 40 || stats.sanity > 60) runSanityAlwaysBalanced = false;
 
-    const inSafeZone = ["safety", "admin", "parent", "sanity"].every(k => stats[k] >= 25 && stats[k] <= 75);
-    if (inSafeZone) {
-      comboStreak++;
-      if (comboStreak >= 3) showSaveToast(`🔥 穩健 ${comboStreak} 連擊（Combo 加分中）！`);
-    } else {
-      comboStreak = 0;
-    }
     renderMeters();
     updateAffinityPill();
 
@@ -2938,17 +2850,12 @@
 
   function calculateBalanceScore() {
     const diff = Math.abs(stats.safety - 50) + Math.abs(stats.admin - 50) + Math.abs(stats.parent - 50) + Math.abs(stats.sanity - 50);
-    const modeBonus = selectedMode === "week" ? 500 : (selectedMode === "full" ? 600 : (selectedMode === "daily" ? 400 : (selectedMode === "special" ? 300 : 100)));
-    const comboBonus = comboStreak * 45;
-    return Math.max(50, (200 - diff) * 5 + modeBonus + comboBonus);
+    const modeBonus = selectedMode === "week" ? 500 : (selectedMode === "full" ? 600 : (selectedMode === "special" ? 300 : 100));
+    return Math.max(50, (200 - diff) * 5 + modeBonus);
   }
 
   function triggerEnding(endKey) {
     stopQTE();
-    stopSpriteSheetAnim();
-    if (!endKey.startsWith("win_") && activeDeck[turnIndex]) {
-      recordWipeoutEvent(activeDeck[turnIndex].tag);
-    }
     isGameOver = true;
     saveEnding(endKey);
     const data = ENDINGS[endKey];
@@ -3002,7 +2909,7 @@
     btn.textContent = "上傳中...";
 
     try {
-      const modeMap = { week: "五日連續戰", full: "40關全集魔鬼班", daily: "今日種子挑戰", special: "特殊活動篇", normal: "一般值勤班" };
+      const modeMap = { week: "五日連續戰", full: "40關全集魔鬼班", special: "特殊活動篇", normal: "一般值勤班" };
       const modeLabel = modeMap[selectedMode] || "一般值勤班";
       const entry = {
         name: nick,
@@ -3401,61 +3308,6 @@
       box.appendChild(btn);
     });
     document.getElementById("line-modal").classList.remove("hidden");
-  }
-
-
-  // ==========================================
-  // 19. 最易翻車關卡統計
-  // ==========================================
-  function recordWipeoutEvent(tag) {
-    if (!tag) return;
-    const safeKey = encodeURIComponent(tag).replace(/\./g, "_");
-    fetch(`${firebaseBaseUrl}/campus_wipeout_stats/${safeKey}/count.json?t=${Date.now()}`)
-      .then(r => r.json())
-      .then(cur => {
-        const nextVal = (typeof cur === "number" ? cur : 0) + 1;
-        return fetch(`${firebaseBaseUrl}/campus_wipeout_stats/${safeKey}.json`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ tag: tag, count: nextVal })
-        });
-      })
-      .catch(() => {});
-  }
-
-  async function openWipeoutRanking() {
-    playSFX("walkie");
-    const list = document.getElementById("wipeout-list");
-    list.innerHTML = `<div class="l-desc" style="text-align:center;">正在讀取全服翻車統計...</div>`;
-    document.getElementById("wipeout-modal").classList.remove("hidden");
-
-    try {
-      const resp = await fetch(`${firebaseBaseUrl}/campus_wipeout_stats.json?t=${Date.now()}`);
-      const data = await resp.json();
-      if (!data) {
-        list.innerHTML = `<div class="l-desc" style="text-align:center;">目前尚無翻車紀錄，大家都穩健下班！</div>`;
-        return;
-      }
-      const rows = Object.values(data)
-        .filter(x => x && x.tag && typeof x.count === "number")
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 10);
-      list.innerHTML = "";
-      rows.forEach((r, idx) => {
-        const div = document.createElement("div");
-        div.className = "rank-row";
-        div.innerHTML = `
-          <div>
-            <div style="font-size:13px; font-weight:800; color:#fdba74;">#${idx + 1} ${r.tag}</div>
-            <div style="font-size:10.5px; color:#94a3b8;">導致提前結束值勤的兇險關卡</div>
-          </div>
-          <div style="font-size:14px; font-weight:900; color:#ef4444;">${r.count} 次翻車</div>
-        `;
-        list.appendChild(div);
-      });
-    } catch (e) {
-      list.innerHTML = `<div class="l-desc" style="text-align:center;">讀取失敗，請檢查網路連線</div>`;
-    }
   }
 
   window.addEventListener("resize", resizeFXCanvas);
