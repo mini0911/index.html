@@ -462,13 +462,13 @@
 
     .hidden { display: none !important; }
 
-    /* 精緻化首頁：動態極光底色、玻璃主視覺卡、角色預覽徽章與層次按鈕 */
+    /* 日系動漫黃昏暖色系首頁：暮色霞光漸層、櫻珊瑚點綴、暖金字體與柔和玻璃卡片 */
     #start-modal {
       background:
-        radial-gradient(circle at 15% 10%, rgba(56, 189, 248, 0.24), transparent 46%),
-        radial-gradient(circle at 88% 18%, rgba(251, 191, 36, 0.18), transparent 44%),
-        radial-gradient(circle at 50% 92%, rgba(168, 85, 247, 0.16), transparent 52%),
-        linear-gradient(180deg, #0b1120 0%, #050811 100%);
+        radial-gradient(circle at 18% 10%, rgba(251, 146, 60, 0.32), transparent 46%),
+        radial-gradient(circle at 86% 20%, rgba(244, 114, 182, 0.24), transparent 44%),
+        radial-gradient(circle at 50% 88%, rgba(251, 191, 36, 0.20), transparent 52%),
+        linear-gradient(180deg, #1c1326 0%, #140f1d 55%, #0c0a12 100%);
       justify-content: flex-start;
       padding: 16px 14px 18px;
       gap: 7px;
@@ -478,11 +478,11 @@
       position: relative;
       width: 100%;
       max-width: 364px;
-      background: linear-gradient(155deg, rgba(30, 41, 59, 0.84) 0%, rgba(15, 23, 42, 0.92) 100%);
-      border: 1px solid rgba(125, 211, 252, 0.28);
+      background: linear-gradient(155deg, rgba(49, 31, 56, 0.86) 0%, rgba(28, 19, 38, 0.94) 100%);
+      border: 1.5px solid rgba(253, 186, 116, 0.36);
       border-radius: 22px;
       padding: 13px 14px 12px;
-      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      box-shadow: 0 18px 40px rgba(15, 7, 22, 0.65), inset 0 1px 0 rgba(255, 237, 213, 0.16);
       backdrop-filter: blur(14px);
       overflow: hidden;
     }
@@ -490,11 +490,11 @@
     .hero-card::before {
       content: "";
       position: absolute;
-      top: -40px;
-      right: -30px;
-      width: 110px;
-      height: 110px;
-      background: radial-gradient(circle, rgba(251, 191, 36, 0.22), transparent 70%);
+      top: -38px;
+      right: -28px;
+      width: 120px;
+      height: 120px;
+      background: radial-gradient(circle, rgba(251, 146, 60, 0.32), transparent 70%);
       pointer-events: none;
     }
 
@@ -508,20 +508,20 @@
 
     .tag-pill {
       font-size: 9.5px; font-weight: 800; letter-spacing: 1.2px;
-      color: #fde68a; border: 1px solid rgba(251, 191, 36, 0.45);
-      background: rgba(251, 191, 36, 0.12); padding: 2px 9px; border-radius: 999px;
+      color: #ffedd5; border: 1px solid rgba(251, 146, 60, 0.55);
+      background: rgba(249, 115, 22, 0.22); padding: 2px 9px; border-radius: 999px;
       display: inline-block;
     }
 
     .main-title {
-      font-size: 23px; font-weight: 900; line-height: 1.22; margin-bottom: 4px;
-      background: linear-gradient(135deg, #ffffff 10%, #7dd3fc 52%, #fde68a 100%);
+      font-size: 23.5px; font-weight: 900; line-height: 1.22; margin-bottom: 4px;
+      background: linear-gradient(135deg, #fffbeb 12%, #fed7aa 50%, #fda4af 95%);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      letter-spacing: 0.6px;
+      letter-spacing: 0.7px;
     }
 
     .hero-subtitle {
-      font-size: 11px; color: #cbd5e1; margin-bottom: 8px; line-height: 1.38;
+      font-size: 11px; color: #f5d0fe; margin-bottom: 8px; line-height: 1.38;
     }
 
     .hero-stats-strip {
@@ -532,13 +532,13 @@
     }
 
     .hero-mini-chip {
-      background: rgba(2, 6, 23, 0.55);
-      border: 1px solid rgba(148, 163, 184, 0.18);
+      background: rgba(24, 14, 32, 0.62);
+      border: 1px solid rgba(253, 186, 116, 0.24);
       border-radius: 10px;
       padding: 4px 6px;
       font-size: 10px;
       font-weight: 700;
-      color: #e2e8f0;
+      color: #ffedd5;
     }
 
     .sub-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 10px; }
@@ -546,12 +546,12 @@
     .cloud-badge {
       display: inline-flex; align-items: center; gap: 4px; font-size: 9.5px; font-weight: 800;
       padding: 2px 8px; border-radius: 999px;
-      background: rgba(34, 197, 94, 0.14); border: 1px solid rgba(74, 222, 128, 0.42); color: #4ade80;
+      background: rgba(52, 211, 153, 0.16); border: 1px solid rgba(110, 231, 183, 0.45); color: #6ee7b7;
       white-space: nowrap;
     }
 
     .section-mini-header {
-      font-size: 11px; font-weight: 800; color: #f1f5f9; margin-bottom: 2px;
+      font-size: 11px; font-weight: 800; color: #ffedd5; margin-bottom: 2px;
       width: 100%; max-width: 364px; text-align: left; display: flex; align-items: center; gap: 5px;
     }
 
@@ -560,38 +560,38 @@
 
     .mode-btn {
       position: relative;
-      background: linear-gradient(180deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.95));
-      border: 1.5px solid rgba(148, 163, 184, 0.22);
-      border-radius: 13px; padding: 7px 5px; color: #cbd5e1; cursor: pointer;
-      transition: all 0.16s ease; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.32);
+      background: linear-gradient(180deg, rgba(44, 29, 52, 0.92), rgba(24, 16, 32, 0.96));
+      border: 1.5px solid rgba(251, 146, 60, 0.24);
+      border-radius: 13px; padding: 7px 5px; color: #fce7f3; cursor: pointer;
+      transition: all 0.16s ease; box-shadow: 0 4px 12px rgba(10, 5, 16, 0.38);
     }
-    .mode-btn:hover { border-color: rgba(56, 189, 248, 0.55); transform: translateY(-1px); }
+    .mode-btn:hover { border-color: rgba(253, 186, 116, 0.65); transform: translateY(-1px); }
     .mode-btn.active {
-      background: linear-gradient(160deg, rgba(56, 189, 248, 0.25), rgba(37, 99, 235, 0.18));
-      border-color: var(--accent-gold); color: #fff;
-      box-shadow: 0 0 16px rgba(251, 191, 36, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      background: linear-gradient(160deg, rgba(249, 115, 22, 0.30), rgba(236, 72, 153, 0.22));
+      border-color: #fdba74; color: #fff;
+      box-shadow: 0 0 18px rgba(251, 146, 60, 0.34), inset 0 1px 0 rgba(255, 237, 213, 0.22);
     }
-    .mode-title { font-size: 11.5px; font-weight: 900; color: #fde68a; margin-bottom: 1px; }
-    .mode-sub { font-size: 9px; color: #94a3b8; font-weight: 600; }
+    .mode-title { font-size: 11.5px; font-weight: 900; color: #fed7aa; margin-bottom: 1px; }
+    .mode-sub { font-size: 9px; color: #e9d5ff; font-weight: 600; }
 
     .btn-stack { width: 100%; max-width: 364px; display: flex; flex-direction: column; gap: 6px; }
     .btn-primary {
-      background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 55%, #4f46e5 100%);
-      color: #fff; border: 1px solid rgba(125, 211, 252, 0.5); padding: 11px 16px;
+      background: linear-gradient(135deg, #f97316 0%, #ea580c 48%, #db2777 100%);
+      color: #fff; border: 1px solid rgba(254, 215, 170, 0.55); padding: 11px 16px;
       border-radius: 14px; font-size: 13.5px; font-weight: 900; cursor: pointer;
-      box-shadow: 0 10px 24px rgba(37, 99, 235, 0.45); letter-spacing: 0.5px;
+      box-shadow: 0 10px 24px rgba(234, 88, 12, 0.45); letter-spacing: 0.5px;
       transition: transform 0.14s ease, box-shadow 0.14s ease;
     }
-    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(56, 189, 248, 0.52); }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(249, 115, 22, 0.55); }
     .btn-primary:active { transform: scale(0.98); }
 
     .btn-secondary {
-      background: rgba(30, 41, 59, 0.88); color: #e2e8f0;
-      border: 1px solid rgba(148, 163, 184, 0.26); padding: 8px 10px;
+      background: rgba(41, 26, 48, 0.90); color: #ffedd5;
+      border: 1px solid rgba(253, 186, 116, 0.28); padding: 8px 10px;
       border-radius: 12px; font-size: 11px; font-weight: 700; cursor: pointer;
       transition: all 0.15s ease;
     }
-    .btn-secondary:hover { background: rgba(51, 65, 85, 0.96); border-color: rgba(56, 189, 248, 0.5); }
+    .btn-secondary:hover { background: rgba(62, 38, 72, 0.96); border-color: rgba(253, 186, 116, 0.55); }
 
     .lock-card { width: 100%; max-width: 320px; background: rgba(15, 23, 42, 0.98); border: 2px solid rgba(251, 191, 36, 0.55); border-radius: 20px; padding: 20px 16px; }
     .pin-input { width: 100%; background: #1e293b; border: 2px solid rgba(56, 189, 248, 0.45); color: #fff; padding: 10px; border-radius: 12px; font-size: 18px; font-weight: 800; letter-spacing: 4px; text-align: center; margin: 10px 0 6px; user-select: text; }
