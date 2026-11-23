@@ -3,17 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>百萬大歌星｜經典綜藝接歌生存挑戰（30首金曲題庫＋三大錦囊＋雙人PK＋Reels腳本）</title>
+  <title>百萬大歌星｜2026終極金曲挑戰賽（60首全曲庫＋玩家自訂填詞＋智囊團求救＋雲端同步）</title>
   <style>
     :root {
-      --bg-dark: #070510;
-      --stage-purple: #160c2e;
-      --accent-gold: #fbbf24;
-      --accent-gold-light: #fef08a;
-      --neon-pink: #f43f5e;
-      --neon-cyan: #22d3ee;
-      --neon-purple: #a855f7;
-      --safe-green: #10b981;
+      --bg-dark: #060913;
+      --stage-purple: #1e1b4b;
+      --neon-gold: #fbbf24;
+      --neon-blue: #38bdf8;
+      --neon-pink: #ec4899;
+      --danger-red: #ef4444;
+      --safe-green: #22c55e;
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
     }
@@ -27,7 +26,7 @@
     }
 
     body {
-      background-color: #030208;
+      background-color: #02040a;
       color: var(--text-main);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", sans-serif;
       display: flex;
@@ -42,72 +41,79 @@
       width: 100%;
       max-width: 440px;
       height: 100dvh;
-      max-height: 890px;
+      max-height: 895px;
       background:
-        radial-gradient(circle at 50% 0%, rgba(168, 85, 247, 0.25), transparent 55%),
-        radial-gradient(circle at 50% 100%, rgba(251, 191, 36, 0.14), transparent 50%),
-        var(--bg-dark);
+        radial-gradient(circle at 50% 0%, rgba(251, 191, 36, 0.22), transparent 55%),
+        radial-gradient(circle at 15% 40%, rgba(56, 189, 248, 0.16), transparent 50%),
+        radial-gradient(circle at 85% 40%, rgba(236, 72, 153, 0.16), transparent 50%),
+        linear-gradient(180deg, #0b1021 0%, #050811 100%);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       overflow: hidden;
-      border-left: 1px solid rgba(251, 191, 36, 0.18);
-      border-right: 1px solid rgba(251, 191, 36, 0.18);
+      border-left: 1px solid rgba(251, 191, 36, 0.22);
+      border-right: 1px solid rgba(251, 191, 36, 0.22);
       box-shadow: 0 0 60px rgba(0, 0, 0, 0.95);
+    }
+
+    #stage-fx-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
     }
 
     /* 頂部綜藝舞台 HUD */
     #top-hud {
       position: relative;
       z-index: 20;
-      padding: 8px 11px 6px;
-      background: linear-gradient(180deg, rgba(10, 6, 24, 0.98) 0%, rgba(10, 6, 24, 0.85) 100%);
-      border-bottom: 1px solid rgba(251, 191, 36, 0.25);
+      padding: 8px 10px 6px;
+      background: linear-gradient(180deg, rgba(3, 7, 18, 0.96) 0%, rgba(15, 23, 42, 0.85) 100%);
+      border-bottom: 1px solid rgba(251, 191, 36, 0.28);
     }
 
     .hud-top-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
       gap: 4px;
+      margin-bottom: 6px;
     }
 
     .prize-pill {
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 4px;
-      background: linear-gradient(135deg, rgba(251, 191, 36, 0.22), rgba(217, 119, 6, 0.28));
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.22), rgba(217, 119, 6, 0.25));
       border: 1px solid rgba(251, 191, 36, 0.65);
-      color: var(--accent-gold-light);
-      font-size: 11.5px;
+      color: #fde68a;
+      font-size: 11px;
       font-weight: 900;
-      padding: 3px 9px;
+      padding: 3px 8px;
       border-radius: 999px;
-      box-shadow: 0 0 12px rgba(251, 191, 36, 0.25);
       white-space: nowrap;
+      box-shadow: 0 0 12px rgba(251, 191, 36, 0.25);
     }
 
-    .hearts-pill {
-      display: flex;
+    .lives-pill {
+      display: inline-flex;
       align-items: center;
       gap: 2px;
-      background: rgba(244, 63, 94, 0.18);
-      border: 1px solid rgba(244, 63, 94, 0.5);
-      color: #fda4af;
-      font-size: 11px;
-      font-weight: 800;
-      padding: 3px 7px;
+      background: rgba(239, 68, 68, 0.16);
+      border: 1px solid rgba(239, 68, 68, 0.45);
+      padding: 2px 7px;
       border-radius: 999px;
-      white-space: nowrap;
+      font-size: 11px;
     }
 
     .icon-btn {
-      background: rgba(255, 255, 255, 0.09);
-      border: 1px solid rgba(255, 255, 255, 0.22);
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       color: #fff;
       font-size: 10px;
-      font-weight: 700;
+      font-weight: 800;
       padding: 3px 6px;
       border-radius: 999px;
       cursor: pointer;
@@ -115,46 +121,45 @@
     }
 
     .icon-btn.active-audio {
-      background: rgba(34, 211, 238, 0.22);
-      border-color: var(--neon-cyan);
-      color: #cffafe;
+      background: rgba(56, 189, 248, 0.22);
+      border-color: var(--neon-blue);
+      color: #e0f2fe;
     }
 
     .icon-btn.admin-btn {
       background: linear-gradient(135deg, #f59e0b, #b45309);
       border-color: #fde68a;
-      color: #fff;
     }
 
-    /* 10階獎金階梯視覺燈條 */
-    .ladder-strip {
+    /* 10 階獎金階梯燈條 */
+    .prize-ladder-strip {
       display: grid;
       grid-template-columns: repeat(10, 1fr);
-      gap: 3px;
+      gap: 2.5px;
       margin-bottom: 6px;
     }
 
     .ladder-step {
-      background: rgba(30, 27, 75, 0.85);
+      background: rgba(15, 23, 42, 0.9);
       border: 1px solid rgba(148, 163, 184, 0.2);
-      border-radius: 6px;
-      padding: 2px 1px;
+      border-radius: 5px;
+      padding: 2.5px 1px;
       text-align: center;
       font-size: 8.5px;
       font-weight: 800;
-      color: #94a3b8;
+      color: #64748b;
       transition: all 0.25s ease;
     }
 
     .ladder-step.safe-node {
-      border-color: rgba(34, 211, 238, 0.55);
-      color: #67e8f9;
+      border-color: rgba(56, 189, 248, 0.55);
+      color: #7dd3fc;
     }
 
     .ladder-step.passed {
-      background: rgba(16, 185, 129, 0.28);
-      border-color: #34d399;
-      color: #a7f3d0;
+      background: rgba(34, 197, 94, 0.25);
+      border-color: #4ade80;
+      color: #bbf7d0;
     }
 
     .ladder-step.current {
@@ -162,7 +167,7 @@
       border-color: #fef08a;
       color: #090d16;
       transform: scale(1.08);
-      box-shadow: 0 0 10px rgba(251, 191, 36, 0.7);
+      box-shadow: 0 0 10px rgba(251, 191, 36, 0.75);
     }
 
     /* 三大求救錦囊列 */
@@ -173,46 +178,45 @@
     }
 
     .lifeline-btn {
-      background: linear-gradient(135deg, rgba(88, 28, 135, 0.75), rgba(49, 16, 82, 0.9));
-      border: 1px solid rgba(192, 132, 252, 0.65);
-      color: #f3e8ff;
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+      border: 1px solid rgba(251, 191, 36, 0.48);
+      color: #fde68a;
       font-size: 10.5px;
       font-weight: 800;
-      padding: 4px 4px;
+      padding: 4.5px 4px;
       border-radius: 9px;
       cursor: pointer;
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
       gap: 3px;
-      box-shadow: 0 2px 10px rgba(168, 85, 247, 0.25);
-      transition: transform 0.12s ease, opacity 0.2s ease;
+      transition: transform 0.12s ease, box-shadow 0.15s ease;
     }
 
-    .lifeline-btn:active { transform: scale(0.94); }
+    .lifeline-btn:active { transform: scale(0.95); }
     .lifeline-btn.used {
       opacity: 0.3;
       pointer-events: none;
       text-decoration: line-through;
-      filter: grayscale(1);
+      border-color: rgba(148, 163, 184, 0.2);
     }
 
-    /* 中央大歌星舞台區 */
+    /* 中央提詞機舞台區 */
     #stage-arena {
       position: relative;
+      z-index: 10;
       flex: 1;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 6px 13px;
-      z-index: 10;
+      justify-content: space-between;
+      padding: 7px 13px 6px;
+      overflow-y: auto;
     }
 
-    #timer-box {
+    #timer-bar-wrap {
       width: 100%;
-      background: rgba(30, 14, 52, 0.9);
-      border: 1px solid rgba(251, 191, 36, 0.45);
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(56, 189, 248, 0.45);
       border-radius: 10px;
       padding: 4px 10px;
       margin-bottom: 6px;
@@ -221,79 +225,69 @@
       gap: 8px;
     }
 
-    #timer-box.urgent-pulse {
-      border-color: #f43f5e;
-      background: rgba(136, 19, 55, 0.85);
-      animation: pulseUrgent 0.6s infinite alternate;
+    #timer-bar-wrap.urgent {
+      border-color: #ef4444;
+      background: rgba(127, 29, 29, 0.85);
+      animation: pulseUrgent 0.65s infinite alternate;
     }
 
     @keyframes pulseUrgent {
-      from { box-shadow: 0 0 6px rgba(244, 63, 94, 0.3); }
-      to { box-shadow: 0 0 18px rgba(244, 63, 94, 0.9); }
+      from { box-shadow: 0 0 6px rgba(239, 68, 68, 0.3); }
+      to { box-shadow: 0 0 18px rgba(239, 68, 68, 0.85); }
     }
 
     .timer-label {
       font-size: 11px;
       font-weight: 900;
-      color: #fde68a;
+      color: #e0f2fe;
       white-space: nowrap;
     }
 
-    .timer-bar-bg {
+    .timer-track {
       flex: 1;
       height: 7px;
-      background: #1e1b4b;
+      background: #1e293b;
       border-radius: 999px;
       overflow: hidden;
     }
 
-    #timer-bar-fill {
+    #timer-fill {
       height: 100%;
       width: 100%;
-      background: linear-gradient(90deg, #22d3ee, #fbbf24);
+      background: linear-gradient(90deg, #38bdf8, #fbbf24);
       transition: width 0.1s linear;
     }
 
-    #song-stage-card {
+    /* 歌詞提詞機主螢幕 */
+    #teleprompter-card {
       position: relative;
       width: 100%;
-      flex: 1;
-      max-height: 360px;
-      background: linear-gradient(160deg, #1b1038 0%, #0d081d 60%, #190d2e 100%);
-      border-radius: 22px;
-      overflow: hidden;
-      border: 2px solid rgba(251, 191, 36, 0.42);
-      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.85), inset 0 0 35px rgba(168, 85, 247, 0.22);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 12px 14px;
-      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+      background: linear-gradient(160deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 27, 75, 0.92) 100%);
+      border: 2px solid rgba(251, 191, 36, 0.45);
+      border-radius: 20px;
+      padding: 11px 13px 12px;
+      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      margin-bottom: 7px;
+      transition: border-color 0.25s ease, transform 0.25s ease;
     }
 
-    /* 鎖定答案時的綜藝聚光燈閃爍特效 */
-    #song-stage-card.lock-in-suspense {
+    #teleprompter-card.lock-in-glow {
       border-color: #fbbf24;
-      animation: stageSpotlight 0.22s infinite alternate;
+      box-shadow: 0 0 32px rgba(251, 191, 36, 0.75);
+      transform: scale(1.015);
     }
 
-    @keyframes stageSpotlight {
-      0% { box-shadow: 0 0 25px rgba(251, 191, 36, 0.4), inset 0 0 30px rgba(244, 63, 94, 0.35); }
-      100% { box-shadow: 0 0 45px rgba(34, 211, 238, 0.75), inset 0 0 45px rgba(251, 191, 36, 0.5); }
+    #teleprompter-card.correct-flash {
+      border-color: #22c55e;
+      box-shadow: 0 0 34px rgba(34, 197, 94, 0.8);
     }
 
-    #song-stage-card.reveal-correct {
-      border-color: #10b981;
-      box-shadow: 0 0 35px rgba(16, 185, 129, 0.75);
-    }
-
-    #song-stage-card.reveal-wrong {
+    #teleprompter-card.wrong-shake {
       border-color: #ef4444;
-      box-shadow: 0 0 35px rgba(239, 68, 68, 0.75);
-      animation: wrongShake 0.4s ease;
+      animation: stageShake 0.42s ease;
     }
 
-    @keyframes wrongShake {
+    @keyframes stageShake {
       0%, 100% { transform: translateX(0); }
       20% { transform: translateX(-8px); }
       40% { transform: translateX(8px); }
@@ -301,291 +295,326 @@
       80% { transform: translateX(6px); }
     }
 
-    #fx-canvas {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    .stage-top-meta {
-      position: relative;
-      z-index: 2;
+    .song-meta-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 6px;
+      margin-bottom: 7px;
     }
 
     .genre-badge {
-      background: rgba(244, 63, 94, 0.22);
-      border: 1px solid rgba(251, 113, 133, 0.6);
-      color: #fecdd3;
+      background: rgba(236, 72, 153, 0.22);
+      border: 1px solid rgba(244, 114, 182, 0.55);
+      color: #fbcfe8;
       font-size: 10px;
       font-weight: 800;
-      padding: 3px 9px;
+      padding: 2px 8px;
       border-radius: 999px;
+      white-space: nowrap;
     }
 
-    .step-prize-badge {
-      background: rgba(251, 191, 36, 0.18);
-      border: 1px solid rgba(251, 191, 36, 0.6);
+    .song-title-pill {
+      font-size: 12px;
+      font-weight: 900;
       color: #fde68a;
-      font-size: 10.5px;
-      font-weight: 900;
-      padding: 3px 9px;
-      border-radius: 999px;
+      text-align: right;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .song-header-box {
-      position: relative;
-      z-index: 2;
-      text-align: center;
-      margin: 4px 0;
-    }
-
-    .song-title-text {
-      font-size: 20px;
-      font-weight: 900;
-      background: linear-gradient(135deg, #ffffff 10%, #fde68a 60%, #fbbf24 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      letter-spacing: 0.5px;
-      margin-bottom: 2px;
-    }
-
-    .song-artist-row {
+    /* 音浪等化器動畫 */
+    .equalizer-row {
       display: flex;
       justify-content: center;
-      align-items: center;
-      gap: 8px;
-      font-size: 12px;
-      color: #cbd5e1;
-      font-weight: 700;
+      align-items: flex-end;
+      gap: 3px;
+      height: 16px;
+      margin-bottom: 6px;
     }
 
-    .sing-cue-btn {
-      background: rgba(34, 211, 238, 0.2);
-      border: 1px solid rgba(34, 211, 238, 0.6);
-      color: #cffafe;
-      font-size: 10.5px;
+    .eq-bar {
+      width: 3.5px;
+      background: linear-gradient(180deg, #fbbf24, #38bdf8);
+      border-radius: 2px;
+      animation: eqDance 0.8s ease-in-out infinite alternate;
+    }
+
+    .eq-bar:nth-child(2) { animation-delay: 0.15s; }
+    .eq-bar:nth-child(3) { animation-delay: 0.3s; }
+    .eq-bar:nth-child(4) { animation-delay: 0.1s; }
+    .eq-bar:nth-child(5) { animation-delay: 0.35s; }
+    .eq-bar:nth-child(6) { animation-delay: 0.2s; }
+    .eq-bar:nth-child(7) { animation-delay: 0.4s; }
+
+    @keyframes eqDance {
+      0% { height: 4px; opacity: 0.5; }
+      100% { height: 15px; opacity: 1; }
+    }
+
+    .lead-lyrics-box {
+      background: rgba(2, 6, 23, 0.65);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 12px;
+      padding: 8px 10px;
+      text-align: center;
+      margin-bottom: 7px;
+    }
+
+    .lead-label {
+      font-size: 10px;
+      color: #38bdf8;
+      font-weight: 800;
+      margin-bottom: 3px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .melody-btn {
+      background: rgba(56, 189, 248, 0.2);
+      border: 1px solid rgba(56, 189, 248, 0.55);
+      color: #e0f2fe;
+      font-size: 10px;
       font-weight: 800;
       padding: 2px 8px;
       border-radius: 999px;
       cursor: pointer;
     }
 
-    /* 提詞機歌詞區 */
-    .teleprompter-box {
-      position: relative;
-      z-index: 2;
-      background: rgba(7, 5, 16, 0.78);
-      border: 1.5px solid rgba(168, 85, 247, 0.45);
-      border-radius: 16px;
-      padding: 11px 12px;
+    .lead-lyrics-text {
+      font-size: 14.5px;
+      font-weight: 800;
+      color: #f8fafc;
+      line-height: 1.45;
+      letter-spacing: 0.5px;
+    }
+
+    /* 提詞機空格顯示區 */
+    .blank-slots-box {
+      background: rgba(251, 191, 36, 0.1);
+      border: 1.5px dashed rgba(251, 191, 36, 0.55);
+      border-radius: 12px;
+      padding: 8px 8px;
       text-align: center;
     }
 
-    .prev-lyric-label {
-      font-size: 10px;
-      color: #a78bfa;
+    .blank-hint-header {
+      font-size: 10.5px;
       font-weight: 800;
-      letter-spacing: 1px;
-      margin-bottom: 3px;
-    }
-
-    .prev-lyric-line {
-      font-size: 14px;
-      font-weight: 700;
-      color: #e2e8f0;
-      line-height: 1.45;
-      margin-bottom: 9px;
-    }
-
-    .target-lyric-label {
-      font-size: 10px;
-      color: var(--accent-gold);
-      font-weight: 900;
+      color: #fde68a;
       margin-bottom: 5px;
     }
 
-    .blank-slots-row {
+    .char-slots-row {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 5px;
-      min-height: 36px;
+      gap: 4px;
     }
 
     .char-slot {
-      width: 30px;
-      height: 34px;
-      background: rgba(30, 27, 75, 0.95);
+      width: 24px;
+      height: 28px;
+      background: rgba(15, 23, 42, 0.95);
       border: 1.5px solid rgba(251, 191, 36, 0.65);
-      border-radius: 8px;
+      border-radius: 6px;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 16px;
+      font-size: 13.5px;
       font-weight: 900;
-      color: #fde68a;
-      box-shadow: inset 0 0 8px rgba(251, 191, 36, 0.2);
-      transition: all 0.25s ease;
+      color: #fbbf24;
     }
 
-    .char-slot.hinted {
-      background: rgba(168, 85, 247, 0.35);
-      border-color: #e879f9;
-      color: #fdf4ff;
+    .char-slot.revealed {
+      background: rgba(34, 197, 94, 0.22);
+      border-color: #4ade80;
+      color: #bbf7d0;
     }
 
-    .char-slot.revealed-ok {
-      background: rgba(16, 185, 129, 0.35);
-      border-color: #34d399;
-      color: #a7f3d0;
-      transform: scale(1.08);
-    }
-
-    .char-slot.revealed-bad {
-      background: rgba(239, 68, 68, 0.35);
-      border-color: #f87171;
-      color: #fecaca;
-    }
-
-    .stage-status-msg {
-      position: relative;
-      z-index: 2;
-      text-align: center;
-      font-size: 11.5px;
-      font-weight: 800;
-      color: #fde68a;
-      min-height: 18px;
-    }
-
-    /* 底部雙重作答控制區 */
-    #bottom-controls {
-      position: relative;
-      z-index: 20;
-      padding: 4px 13px 13px;
+    /* 主持人哈林哥即時吐槽泡泡 */
+    .host-bubble {
       display: flex;
-      flex-direction: column;
-      gap: 6px;
-      background: linear-gradient(0deg, rgba(7, 5, 16, 0.98) 0%, rgba(7, 5, 16, 0.85) 100%);
-    }
-
-    .mode-switch-bar {
-      display: flex;
-      justify-content: space-between;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 12px;
+      padding: 6px 10px;
+      margin-bottom: 7px;
+      font-size: 11.5px;
+      color: #e2e8f0;
+      line-height: 1.38;
     }
 
-    .input-toggle-pill {
-      flex: 1;
-      background: rgba(30, 27, 75, 0.9);
-      border: 1px solid rgba(148, 163, 184, 0.3);
-      color: #cbd5e1;
-      font-size: 10.5px;
-      font-weight: 800;
-      padding: 4px 8px;
-      border-radius: 999px;
-      cursor: pointer;
-      text-align: center;
+    .host-avatar {
+      font-size: 20px;
+      flex-shrink: 0;
     }
 
-    .input-toggle-pill.active {
-      background: rgba(251, 191, 36, 0.22);
-      border-color: var(--accent-gold);
-      color: #fef08a;
-    }
-
-    .options-grid-4 {
+    /* 作答模式切換與選項區 */
+    .input-mode-tabs {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 6px;
+      margin-bottom: 6px;
     }
 
-    .lyric-opt-btn {
-      background: rgba(24, 18, 54, 0.95);
-      border: 1.5px solid rgba(168, 85, 247, 0.45);
-      color: #f8fafc;
-      border-radius: 12px;
-      padding: 8px 7px;
-      font-size: 12px;
+    .tab-pill {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      color: #94a3b8;
+      font-size: 11px;
       font-weight: 800;
-      line-height: 1.3;
+      padding: 5px;
+      border-radius: 9px;
       cursor: pointer;
       text-align: center;
+    }
+
+    .tab-pill.active {
+      background: rgba(56, 189, 248, 0.22);
+      border-color: var(--neon-blue);
+      color: #fff;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+
+    .opt-choice-btn {
+      width: 100%;
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.96));
+      border: 1.5px solid rgba(56, 189, 248, 0.35);
+      color: #f8fafc;
+      border-radius: 12px;
+      padding: 8.5px 11px;
+      font-size: 12.5px;
+      font-weight: 700;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
       transition: all 0.15s ease;
     }
 
-    .lyric-opt-btn:hover {
-      border-color: var(--accent-gold);
+    .opt-choice-btn:hover {
+      border-color: var(--neon-gold);
     }
 
-    .lyric-opt-btn.selected {
-      background: linear-gradient(135deg, rgba(251, 191, 36, 0.3), rgba(217, 119, 6, 0.35));
-      border-color: #fde68a;
+    .opt-choice-btn.selected {
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.3), rgba(217, 119, 6, 0.28));
+      border-color: #fbbf24;
       color: #fef08a;
       box-shadow: 0 0 14px rgba(251, 191, 36, 0.35);
     }
 
-    .hardcore-input-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
+    .opt-choice-btn.correct-ans {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.38), rgba(21, 128, 61, 0.35));
+      border-color: #4ade80;
+      color: #dcfce7;
     }
 
-    .hardcore-text-input {
-      width: 100%;
-      background: #130d2b;
-      border: 2px solid var(--accent-gold);
-      color: #fef08a;
-      padding: 9px 12px;
-      border-radius: 12px;
-      font-size: 15px;
+    .opt-choice-btn.wrong-ans {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.38), rgba(185, 28, 28, 0.35));
+      border-color: #f87171;
+      color: #fee2e2;
+    }
+
+    .opt-letter {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: rgba(56, 189, 248, 0.22);
+      border: 1px solid rgba(56, 189, 248, 0.5);
+      color: #7dd3fc;
+      font-size: 11px;
       font-weight: 900;
-      text-align: center;
-      letter-spacing: 2px;
-      user-select: text;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
     }
 
-    .lock-in-btn {
+    /* 手寫接唱輸入框 */
+    #type-answer-box {
+      background: rgba(15, 23, 42, 0.95);
+      border: 1.5px solid rgba(251, 191, 36, 0.55);
+      border-radius: 14px;
+      padding: 10px;
+    }
+
+    .lyrics-text-input {
       width: 100%;
-      background: linear-gradient(135deg, #f59e0b 0%, #ea580c 50%, #e11d48 100%);
+      background: #1e293b;
+      border: 1.5px solid #38bdf8;
       color: #fff;
-      border: 1.5px solid #fde68a;
-      padding: 10px 14px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 800;
+      text-align: center;
+      user-select: text;
+      margin-bottom: 5px;
+    }
+
+    /* 底部鎖定答案與見好就收列 */
+    #bottom-controls {
+      position: relative;
+      z-index: 20;
+      padding: 6px 13px 13px;
+      background: linear-gradient(0deg, rgba(3, 7, 18, 0.98) 0%, rgba(3, 7, 18, 0.85) 100%);
+      display: grid;
+      grid-template-columns: 1fr 1.6fr;
+      gap: 8px;
+    }
+
+    .walkaway-btn {
+      background: rgba(30, 41, 59, 0.95);
+      border: 1.5px solid rgba(148, 163, 184, 0.4);
+      color: #e2e8f0;
       border-radius: 13px;
+      padding: 10px 6px;
+      font-size: 11.5px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .lockin-btn {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 55%, #b45309 100%);
+      border: 1.5px solid #fef08a;
+      color: #fff;
+      border-radius: 13px;
+      padding: 10px 10px;
       font-size: 13.5px;
       font-weight: 900;
-      letter-spacing: 1px;
       cursor: pointer;
-      box-shadow: 0 8px 22px rgba(225, 29, 72, 0.45);
-      transition: transform 0.12s ease, opacity 0.2s ease;
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.42);
+      letter-spacing: 0.5px;
     }
 
-    .lock-in-btn:disabled {
-      opacity: 0.4;
+    .lockin-btn:disabled {
+      opacity: 0.45;
       pointer-events: none;
     }
 
-    .lock-in-btn:active { transform: scale(0.97); }
-
-    /* 全螢幕彈窗樣式 */
+    /* 全屏彈窗系統 */
     .modal-screen {
       position: absolute;
       inset: 0;
       z-index: 40;
-      background: rgba(7, 5, 16, 0.97);
+      background: rgba(3, 7, 18, 0.97);
       backdrop-filter: blur(12px);
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 16px 14px;
+      padding: 15px 14px;
       text-align: center;
       overflow-y: auto;
     }
@@ -594,40 +623,38 @@
 
     #start-modal {
       background:
-        radial-gradient(circle at 20% 10%, rgba(168, 85, 247, 0.32), transparent 48%),
-        radial-gradient(circle at 85% 20%, rgba(251, 191, 36, 0.24), transparent 45%),
-        radial-gradient(circle at 50% 90%, rgba(244, 63, 94, 0.22), transparent 52%),
-        linear-gradient(180deg, #0d0720 0%, #05030c 100%);
+        radial-gradient(circle at 50% 8%, rgba(251, 191, 36, 0.28), transparent 48%),
+        radial-gradient(circle at 15% 30%, rgba(236, 72, 153, 0.2), transparent 45%),
+        radial-gradient(circle at 85% 30%, rgba(56, 189, 248, 0.2), transparent 45%),
+        linear-gradient(180deg, #0b1021 0%, #040711 100%);
       justify-content: flex-start;
-      padding: 15px 14px 18px;
+      padding-top: 15px;
       gap: 7px;
     }
 
     .hero-card {
-      position: relative;
       width: 100%;
       max-width: 368px;
-      background: linear-gradient(155deg, rgba(36, 20, 74, 0.88) 0%, rgba(15, 10, 36, 0.95) 100%);
+      background: linear-gradient(155deg, rgba(30, 27, 75, 0.86) 0%, rgba(15, 23, 42, 0.94) 100%);
       border: 1.5px solid rgba(251, 191, 36, 0.45);
       border-radius: 22px;
       padding: 13px 14px 12px;
-      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.65);
     }
 
     .hero-top-meta {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 6px;
       margin-bottom: 6px;
     }
 
     .tag-pill {
       font-size: 9.5px;
       font-weight: 800;
-      letter-spacing: 1.1px;
+      letter-spacing: 1px;
       color: #fde68a;
-      border: 1px solid rgba(251, 191, 36, 0.55);
+      border: 1px solid rgba(251, 191, 36, 0.5);
       background: rgba(251, 191, 36, 0.14);
       padding: 2px 9px;
       border-radius: 999px;
@@ -642,27 +669,27 @@
       font-weight: 800;
       padding: 2px 8px;
       border-radius: 999px;
-      background: rgba(16, 185, 129, 0.16);
-      border: 1px solid rgba(52, 211, 153, 0.45);
-      color: #6ee7b7;
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(74, 222, 128, 0.45);
+      color: #4ade80;
     }
 
     .main-title {
-      font-size: 24px;
+      font-size: 25px;
       font-weight: 900;
-      line-height: 1.22;
+      line-height: 1.2;
       margin-bottom: 4px;
-      background: linear-gradient(135deg, #ffffff 10%, #fde68a 52%, #f43f5e 100%);
+      background: linear-gradient(135deg, #ffffff 10%, #fde68a 50%, #f59e0b 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      letter-spacing: 0.8px;
+      letter-spacing: 1px;
     }
 
     .hero-subtitle {
       font-size: 11px;
-      color: #e2e8f0;
+      color: #cbd5e1;
       margin-bottom: 8px;
-      line-height: 1.38;
+      line-height: 1.4;
     }
 
     .hero-stats-strip {
@@ -672,52 +699,52 @@
     }
 
     .hero-mini-chip {
-      background: rgba(7, 5, 16, 0.65);
+      background: rgba(2, 6, 23, 0.6);
       border: 1px solid rgba(251, 191, 36, 0.25);
       border-radius: 10px;
       padding: 4px 5px;
       font-size: 10px;
       font-weight: 700;
-      color: #fef08a;
+      color: #fde68a;
     }
 
     .section-mini-header {
       font-size: 11px;
       font-weight: 800;
-      color: #f8fafc;
-      margin-top: 2px;
+      color: #f1f5f9;
       width: 100%;
       max-width: 368px;
       text-align: left;
+      margin-top: 2px;
     }
 
-    .playlist-grid {
+    .mode-selector {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(3, 1fr);
       gap: 6px;
       width: 100%;
       max-width: 368px;
     }
 
     .mode-btn {
-      background: linear-gradient(180deg, rgba(30, 22, 62, 0.92), rgba(15, 10, 36, 0.96));
-      border: 1.5px solid rgba(168, 85, 247, 0.3);
-      border-radius: 13px;
-      padding: 8px 6px;
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.95));
+      border: 1.5px solid rgba(148, 163, 184, 0.25);
+      border-radius: 12px;
+      padding: 7px 4px;
       color: #cbd5e1;
       cursor: pointer;
-      transition: all 0.16s ease;
+      transition: all 0.15s ease;
     }
 
     .mode-btn.active {
-      background: linear-gradient(155deg, rgba(251, 191, 36, 0.25), rgba(244, 63, 94, 0.22));
-      border-color: var(--accent-gold);
+      background: linear-gradient(160deg, rgba(251, 191, 36, 0.24), rgba(217, 119, 6, 0.2));
+      border-color: var(--neon-gold);
       color: #fff;
-      box-shadow: 0 0 16px rgba(251, 191, 36, 0.3);
+      box-shadow: 0 0 14px rgba(251, 191, 36, 0.28);
     }
 
-    .mode-title { font-size: 12px; font-weight: 900; color: #fde68a; margin-bottom: 2px; }
-    .mode-sub { font-size: 9.5px; color: #cbd5e1; font-weight: 600; }
+    .mode-title { font-size: 11.5px; font-weight: 900; color: #fde68a; margin-bottom: 1px; }
+    .mode-sub { font-size: 9px; color: #94a3b8; font-weight: 600; }
 
     .btn-stack {
       width: 100%;
@@ -729,21 +756,21 @@
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, #f59e0b 0%, #db2777 55%, #7c3aed 100%);
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 55%, #b45309 100%);
       color: #fff;
-      border: 1px solid rgba(253, 230, 138, 0.65);
+      border: 1px solid #fef08a;
       padding: 11px 16px;
       border-radius: 14px;
-      font-size: 13.5px;
+      font-size: 14px;
       font-weight: 900;
       cursor: pointer;
-      box-shadow: 0 10px 24px rgba(219, 39, 119, 0.42);
+      box-shadow: 0 10px 24px rgba(217, 119, 6, 0.45);
     }
 
     .btn-secondary {
-      background: rgba(30, 22, 62, 0.9);
+      background: rgba(30, 41, 59, 0.9);
       color: #e2e8f0;
-      border: 1px solid rgba(168, 85, 247, 0.35);
+      border: 1px solid rgba(148, 163, 184, 0.28);
       padding: 8px 10px;
       border-radius: 12px;
       font-size: 11px;
@@ -751,32 +778,98 @@
       cursor: pointer;
     }
 
-    .lock-card {
+    /* 智囊團求救卡片 */
+    .lifeline-card {
       width: 100%;
-      max-width: 340px;
-      background: rgba(15, 10, 36, 0.98);
-      border: 2px solid rgba(251, 191, 36, 0.6);
+      max-width: 345px;
+      background: rgba(15, 23, 42, 0.98);
+      border: 2px solid #fbbf24;
       border-radius: 20px;
       padding: 18px 15px;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.88);
+    }
+
+    .advisor-row {
+      background: rgba(30, 41, 59, 0.92);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 12px;
+      padding: 9px 11px;
+      margin-bottom: 8px;
+      text-align: left;
+    }
+
+    .advisor-name {
+      font-size: 12px;
+      font-weight: 900;
+      color: #38bdf8;
+      margin-bottom: 3px;
+    }
+
+    .advisor-quote {
+      font-size: 12.5px;
+      color: #f8fafc;
+      line-height: 1.42;
+    }
+
+    /* 通用列表、表單、排行榜樣式 */
+    .scroll-list {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-bottom: 12px;
+      text-align: left;
+      max-height: 56dvh;
+      overflow-y: auto;
+    }
+
+    .list-card {
+      background: rgba(30, 41, 59, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 10px;
+      padding: 9px 11px;
+    }
+
+    .list-card.unlocked { border-color: rgba(251, 191, 36, 0.55); }
+    .l-title { font-size: 12.5px; font-weight: 800; color: #fbbf24; margin-bottom: 2px; }
+    .l-desc { font-size: 11.5px; color: #cbd5e1; }
+
+    .rank-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(30, 41, 59, 0.92);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      border-radius: 10px;
+      padding: 8px 12px;
+    }
+
+    .lock-card {
+      width: 100%;
+      max-width: 330px;
+      background: rgba(15, 23, 42, 0.98);
+      border: 2px solid rgba(251, 191, 36, 0.55);
+      border-radius: 20px;
+      padding: 20px 16px;
     }
 
     .pin-input {
       width: 100%;
-      background: #1e1642;
-      border: 2px solid rgba(251, 191, 36, 0.5);
+      background: #1e293b;
+      border: 2px solid rgba(56, 189, 248, 0.45);
       color: #fff;
-      padding: 9px;
+      padding: 10px;
       border-radius: 12px;
-      font-size: 17px;
+      font-size: 18px;
       font-weight: 800;
-      letter-spacing: 3px;
+      letter-spacing: 4px;
       text-align: center;
       margin: 10px 0 6px;
       user-select: text;
     }
 
     .panel-box {
-      background: rgba(18, 12, 42, 0.95);
+      background: rgba(15, 23, 42, 0.95);
       border: 1.5px solid rgba(251, 191, 36, 0.45);
       border-radius: 14px;
       padding: 11px;
@@ -787,7 +880,7 @@
     .panel-title {
       font-size: 12.5px;
       font-weight: 900;
-      color: var(--accent-gold);
+      color: #fbbf24;
       margin-bottom: 8px;
       display: flex;
       justify-content: space-between;
@@ -796,7 +889,7 @@
 
     .form-input {
       width: 100%;
-      background: #1f1747;
+      background: #1e293b;
       border: 1px solid rgba(255, 255, 255, 0.25);
       color: #fff;
       padding: 7px 9px;
@@ -808,13 +901,14 @@
 
     .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 
-    .cast-scroll {
-      width: 100%;
-      max-height: 68dvh;
-      overflow-y: auto;
-      text-align: left;
-      margin-bottom: 10px;
-      padding-right: 4px;
+    .cast-mini-btn {
+      font-size: 10px;
+      background: rgba(56, 189, 248, 0.22);
+      border: 1px solid rgba(56, 189, 248, 0.48);
+      color: #e0f2fe;
+      padding: 3px 7px;
+      border-radius: 6px;
+      cursor: pointer;
     }
 
     .ev-manage-row {
@@ -822,339 +916,383 @@
       justify-content: space-between;
       align-items: center;
       gap: 6px;
-      background: rgba(30, 22, 62, 0.88);
-      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 8px;
       padding: 6px 8px;
       margin-bottom: 5px;
     }
 
-    .cast-mini-btn {
-      font-size: 10px;
-      background: rgba(251, 191, 36, 0.2);
-      border: 1px solid rgba(251, 191, 36, 0.5);
-      color: #fef08a;
-      padding: 3px 6px;
-      border-radius: 6px;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-
-    .scroll-list {
-      width: 100%;
-      max-width: 350px;
-      display: flex;
-      flex-direction: column;
-      gap: 7px;
-      margin-bottom: 12px;
-      text-align: left;
-      max-height: 55dvh;
-      overflow-y: auto;
-    }
-
-    .list-card {
-      background: rgba(26, 18, 56, 0.9);
-      border: 1px solid rgba(251, 191, 36, 0.35);
-      border-radius: 11px;
-      padding: 9px 11px;
-    }
-
-    .l-title { font-size: 12.5px; font-weight: 800; color: var(--accent-gold); margin-bottom: 2px; }
-    .l-desc { font-size: 11px; color: #cbd5e1; line-height: 1.4; }
-
-    .rank-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(26, 18, 56, 0.92);
-      border: 1px solid rgba(251, 191, 36, 0.35);
-      border-radius: 10px;
-      padding: 8px 11px;
-    }
+    .ev-manage-row.disabled-ev { opacity: 0.42; }
 
     .reels-script-box {
       width: 100%;
-      max-width: 350px;
-      height: 250px;
-      background: #120b29;
+      max-width: 345px;
+      height: 255px;
+      background: #0f172a;
       border: 1.5px solid #fbbf24;
       border-radius: 12px;
-      padding: 11px;
+      padding: 12px;
       color: #f8fafc;
-      font-size: 12px;
-      line-height: 1.58;
+      font-size: 12.5px;
+      line-height: 1.6;
       text-align: left;
       overflow-y: auto;
       user-select: text;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       white-space: pre-wrap;
     }
 
-    .sub-desc { font-size: 12px; color: #cbd5e1; line-height: 1.48; margin-bottom: 10px; max-width: 350px; }
-
     #save-toast {
       position: fixed;
-      top: 56px;
+      top: 52px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 80;
-      background: linear-gradient(135deg, #f59e0b, #db2777);
+      background: rgba(217, 119, 6, 0.96);
+      border: 1px solid #fef08a;
       color: #fff;
-      font-size: 11.5px;
-      font-weight: 900;
-      padding: 6px 15px;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 6px 14px;
       border-radius: 999px;
-      border: 1px solid #fde68a;
       opacity: 0;
       transition: opacity 0.25s ease;
       pointer-events: none;
       white-space: nowrap;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
     }
   </style>
 </head>
 <body>
 
-<div id="save-toast">🎤 歡迎來到百萬大歌星！</div>
+<div id="save-toast">🎤 歡迎來到百萬大歌星舞台！</div>
 
 <div id="app-frame">
+  <canvas id="stage-fx-canvas"></canvas>
+
   <!-- 頂部綜藝舞台 HUD -->
   <div id="top-hud">
     <div class="hud-top-row">
-      <div class="prize-pill">💰 $<span id="hud-prize">0</span></div>
-      <div class="hearts-pill" id="hud-hearts">❤️❤️❤️</div>
+      <div class="prize-pill">💰 <span id="hud-prize">$0</span> <span style="color:#94a3b8; font-size:9.5px;">(保底 <span id="hud-safe">$0</span>)</span></div>
+      <div class="lives-pill" id="hud-lives">❤️❤️❤️</div>
       <div style="display:flex; gap:3px;">
-        <button class="icon-btn admin-btn" onclick="openAdminModal()">🔒 題庫(<span id="song-count-badge">30</span>)</button>
-        <button class="icon-btn" onclick="openLeaderboard()">🏅 歌王榜</button>
+        <button class="icon-btn admin-btn" onclick="openAdminModal()">🔒 題庫(<span id="hud-song-count">60</span>)</button>
+        <button class="icon-btn" onclick="openLeaderboard()">🏅</button>
+        <button class="icon-btn" onclick="openGallery()">🏆 <span id="hud-unlock">0</span>/8</button>
         <button id="bgm-btn" class="icon-btn active-audio" onclick="toggleBGM()">🎵</button>
         <button id="voice-btn" class="icon-btn active-audio" onclick="toggleVoice()">🗣️</button>
         <button id="sfx-btn" class="icon-btn active-audio" onclick="toggleSFX()">🔊</button>
       </div>
     </div>
 
-    <!-- 10 階獎金燈條（第 3 階 $5,000、第 7 階 $100,000 為安全線保底） -->
-    <div class="ladder-strip" id="ladder-strip"></div>
+    <!-- 10 階獎金階梯燈條 -->
+    <div class="prize-ladder-strip" id="prize-ladder"></div>
 
     <!-- 三大經典求救錦囊 -->
     <div class="lifelines-bar">
-      <button class="lifeline-btn" id="life-hint3" onclick="useLifelineHint3()">💡 提示三個字</button>
-      <button class="lifeline-btn" id="life-panel" onclick="useLifelinePanel()">👥 智囊團求救</button>
-      <button class="lifeline-btn" id="life-pass" onclick="useLifelinePass()">⏭️ 換一首歌</button>
+      <button class="lifeline-btn" id="ll-hint3" onclick="useLifelineHint3()">💡 提示三個字</button>
+      <button class="lifeline-btn" id="ll-advisors" onclick="useLifelineAdvisors()">👥 智囊團求救</button>
+      <button class="lifeline-btn" id="ll-pass" onclick="useLifelinePass()">⏭️ 換一首歌</button>
     </div>
   </div>
 
-  <!-- 中央大歌星舞台區 -->
+  <!-- 中央提詞機舞台區 -->
   <div id="stage-arena">
-    <div id="coop-banner" class="hidden" style="width:100%; background:rgba(30,22,62,0.95); border:1px solid #22d3ee; border-radius:8px; padding:3px 8px; margin-bottom:5px; font-size:10.5px; font-weight:800; color:#cffafe; display:flex; justify-content:space-between;">
-      <span id="coop-room-info">👥 雙人PK房號：----</span>
-      <span id="coop-turn-status" style="color:#fde68a;">輪到你接唱</span>
+    <div id="coop-banner" class="hidden" style="width:100%; background:rgba(30,27,75,0.95); border:1px solid #fbbf24; border-radius:8px; padding:3px 8px; margin-bottom:5px; font-size:10.5px; font-weight:800; color:#fde68a; display:flex; justify-content:space-between;">
+      <span id="coop-room-info">👥 雙人接歌房號：----</span>
+      <span id="coop-turn-status" style="color:#4ade80;">輪到你接唱</span>
     </div>
 
-    <div id="timer-box">
-      <span class="timer-label" id="timer-label-text">⏱️ 接唱倒數 15.0s</span>
-      <div class="timer-bar-bg"><div id="timer-bar-fill"></div></div>
+    <div id="timer-bar-wrap">
+      <span class="timer-label">⏱️ 接唱倒數 <span id="timer-sec-text">20.0</span>s</span>
+      <div class="timer-track"><div id="timer-fill"></div></div>
     </div>
 
-    <div id="song-stage-card">
-      <canvas id="fx-canvas"></canvas>
-
-      <div class="stage-top-meta">
-        <span class="genre-badge" id="card-genre">經典華語金曲</span>
-        <span class="step-prize-badge" id="card-step-prize">第 1 關｜挑戰獎金 $1,000</span>
+    <!-- 提詞機主螢幕 -->
+    <div id="teleprompter-card">
+      <div class="song-meta-row">
+        <span class="genre-badge" id="song-genre-badge">經典華語</span>
+        <span class="song-title-pill" id="song-title-display">《歌曲名稱》－ 歌手</span>
       </div>
 
-      <div class="song-header-box">
-        <div class="song-title-text" id="card-song-title">《曲名載入中》</div>
-        <div class="song-artist-row">
-          <span id="card-artist">🎤 原唱：歌手</span>
-          <button class="sing-cue-btn" onclick="speakCurrentLyrics()">🔊 朗讀前句節奏</button>
+      <div class="equalizer-row">
+        <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+        <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+        <div class="eq-bar"></div>
+      </div>
+
+      <div class="lead-lyrics-box">
+        <div class="lead-label">
+          <span>🎵 前導原唱歌詞（請接唱下一句）</span>
+          <button class="melody-btn" onclick="playCurrentSongCue()">🎹 聽旋律與提示</button>
         </div>
+        <div class="lead-lyrics-text" id="lead-lyrics-text">歌詞載入中...</div>
       </div>
 
-      <div class="teleprompter-box">
-        <div class="prev-lyric-label">▼ 提詞機前句提示 ▼</div>
-        <div class="prev-lyric-line" id="card-prev-lyric">前段歌詞載入中...</div>
-        <div class="target-lyric-label" id="target-count-label">請接唱下一句（共 7 個字）</div>
-        <div class="blank-slots-row" id="blank-slots-row"></div>
+      <div class="blank-slots-box">
+        <div class="blank-hint-header" id="blank-count-label">🎤 請接唱出正確歌詞（共 7 個字）</div>
+        <div class="char-slots-row" id="char-slots-row"></div>
       </div>
-
-      <div class="stage-status-msg" id="stage-status-msg">請選擇下方歌詞，或切換硬核手寫模式享 1.5 倍獎金！</div>
-    </div>
-  </div>
-
-  <!-- 底部作答控制區 -->
-  <div id="bottom-controls">
-    <div class="mode-switch-bar">
-      <button class="input-toggle-pill active" id="pill-choice-mode" onclick="switchInputMode('choice')">🎯 四選一快速接歌</button>
-      <button class="input-toggle-pill" id="pill-type-mode" onclick="switchInputMode('type')">✍️ 硬核手寫（獎金 1.5 倍！）</button>
     </div>
 
-    <!-- 四選一快選面板 -->
-    <div class="options-grid-4" id="choice-options-grid">
-      <button class="lyric-opt-btn" id="opt-btn-0" onclick="selectOption(0)">選項 A</button>
-      <button class="lyric-opt-btn" id="opt-btn-1" onclick="selectOption(1)">選項 B</button>
-      <button class="lyric-opt-btn" id="opt-btn-2" onclick="selectOption(2)">選項 C</button>
-      <button class="lyric-opt-btn" id="opt-btn-3" onclick="selectOption(3)">選項 D</button>
+    <!-- 主持人哈林哥即時互動泡泡 -->
+    <div class="host-bubble">
+      <div class="host-avatar">🎙️</div>
+      <div id="host-comment-text">哈林哥：「音樂請下！聽清楚旋律跟字數，準備好了就給我喊 LOCK IN！」</div>
     </div>
 
-    <!-- 硬核手寫輸入面板 -->
-    <div class="hardcore-input-wrap hidden" id="hardcore-input-wrap">
-      <input type="text" class="hardcore-text-input" id="hardcore-lyric-input"
-        placeholder="請輸入完整接唱歌詞（免標點符號）"
-        oninput="onHardcoreTyping()"
+    <!-- 作答模式切換（四選一 vs 硬核手寫 1.5 倍加成） -->
+    <div class="input-mode-tabs">
+      <div class="tab-pill active" id="tab-choice" onclick="switchAnswerMode('choice')">🔘 四選一快速接歌</div>
+      <div class="tab-pill" id="tab-type" onclick="switchAnswerMode('type')">✍️ 硬核手寫（獎金1.5倍）</div>
+    </div>
+
+    <!-- 四選一選項區 -->
+    <div class="options-grid" id="options-container"></div>
+
+    <!-- 手寫輸入區 -->
+    <div id="type-answer-box" class="hidden">
+      <input type="text" class="lyrics-text-input" id="typed-lyrics-input" placeholder="請直接輸入完整接唱歌詞（不含標點）" maxlength="24"
         onkeydown="if(event.key==='Enter') lockInAnswer()" />
+      <div style="font-size:10.5px; color:#fde68a; text-align:center;">🔥 手寫一字不差答對，本關獎金直接乘以 1.5 倍！</div>
     </div>
-
-    <button class="lock-in-btn" id="lock-in-btn" disabled onclick="lockInAnswer()">🎤 鎖定答案（LOCK IN）</button>
   </div>
 
-  <!-- ==========================================
-       開場封面畫面
-       ========================================== -->
+  <!-- 底部見好就收與鎖定答案控制列 -->
+  <div id="bottom-controls">
+    <button class="walkaway-btn" id="walkaway-btn" onclick="walkAwayWithPrize()">💰 見好就收<br><span style="font-size:10px; color:#fbbf24;">帶走目前獎金</span></button>
+    <button class="lockin-btn" id="lockin-btn" onclick="lockInAnswer()">🔒 鎖定答案 LOCK IN！</button>
+  </div>
+
+  <!-- 開場封面（百萬大歌星舞台） -->
   <div id="start-modal" class="modal-screen">
     <div class="hero-card">
       <div class="hero-top-meta">
-        <span class="tag-pill">MILLION DOLLAR SINGER</span>
-        <div class="cloud-badge">🟢 雲端題庫已連線</div>
+        <span class="tag-pill">MILLION DOLLAR SINGER 2026</span>
+        <div class="cloud-badge" id="cover-cloud-status">🟢 2026全曲庫已連線</div>
       </div>
       <h1 class="main-title">百萬大歌星</h1>
-      <div class="hero-subtitle">經典綜藝接歌生存挑戰・闖過 10 階拿走 $300,000 最高獎金！</div>
+      <div class="hero-subtitle">經典綜藝接歌生存戰・2026最新金曲全收錄・玩家自由填詞出題！</div>
       <div class="hero-stats-strip">
-        <div class="hero-mini-chip">🎵 30 首經典神曲</div>
-        <div class="hero-mini-chip">💡 三大求救錦囊</div>
-        <div class="hero-mini-chip">✍️ 手寫 1.5 倍賞金</div>
+        <div class="hero-mini-chip">🎵 60首2026金曲</div>
+        <div class="hero-mini-chip">✍️ 玩家自訂填詞</div>
+        <div class="hero-mini-chip">💰 $300,000大獎</div>
       </div>
     </div>
 
-    <div class="section-mini-header">1️⃣ 選擇挑戰歌單題庫：</div>
-    <div class="playlist-grid">
-      <div class="mode-btn active" id="pl-all" onclick="selectPlaylist('all')">
-        <div class="mode-title">🏆 全曲庫大滿貫</div>
-        <div class="mode-sub">30首精選隨機抽10階</div>
+    <div class="section-mini-header">1️⃣ 選擇挑戰身份（附帶專屬舞台天賦）：</div>
+    <div class="mode-selector">
+      <div class="mode-btn active" id="role-rookie" onclick="selectChallenger('rookie')">
+        <div class="mode-title">🎤 樂壇新秀</div>
+        <div class="mode-sub">多 1 顆愛心(4命)</div>
       </div>
-      <div class="mode-btn" id="pl-classic" onclick="selectPlaylist('classic')">
-        <div class="mode-title">🎤 經典華語金曲</div>
-        <div class="mode-sub">2000-2015 黃金年代</div>
+      <div class="mode-btn" id="role-ktv" onclick="selectChallenger('ktv')">
+        <div class="mode-title">👑 KTV麥霸</div>
+        <div class="mode-sub">作答時間 +6 秒</div>
       </div>
-      <div class="mode-btn" id="pl-tiktok" onclick="selectPlaylist('tiktok')">
-        <div class="mode-title">🔥 抖音/短影音神曲</div>
-        <div class="mode-sub">2020-2026 熱門傳唱</div>
-      </div>
-      <div class="mode-btn" id="pl-taiwanese" onclick="selectPlaylist('taiwanese')">
-        <div class="mode-title">🏮 台語 KTV 必點</div>
-        <div class="mode-sub">正港台灣味經典旋律</div>
+      <div class="mode-btn" id="role-producer" onclick="selectChallenger('producer')">
+        <div class="mode-title">🎧 金曲製作人</div>
+        <div class="mode-sub">獎金全程 +20%</div>
       </div>
     </div>
 
-    <div class="section-mini-header">2️⃣ 選擇舞台倒數節奏：</div>
-    <div class="playlist-grid">
-      <div class="mode-btn active" id="pace-timed" onclick="selectPace('timed')">
-        <div class="mode-title">⏱️ 節目限時 15 秒</div>
-        <div class="mode-sub">緊張刺激・獎金全額</div>
+    <div class="section-mini-header">2️⃣ 選擇比賽歌單專場（共收錄 60 首精選金曲）：</div>
+    <div class="mode-selector">
+      <div class="mode-btn active" id="mode-all" onclick="selectMode('all')">
+        <div class="mode-title">🌟 綜合大亂鬥</div>
+        <div class="mode-sub">60首全曲庫隨機</div>
       </div>
-      <div class="mode-btn" id="pace-practice" onclick="selectPace('practice')">
-        <div class="mode-title">☕ 無壓力練習模式</div>
-        <div class="mode-sub">不限時間・輕鬆練歌</div>
+      <div class="mode-btn" id="mode-2026" onclick="selectMode('2026')">
+        <div class="mode-title" style="color:#4ade80;">🔥 2025-2026新歌</div>
+        <div class="mode-sub">周杰倫/林俊傑/Jolin</div>
+      </div>
+      <div class="mode-btn" id="mode-daily" onclick="selectMode('daily')">
+        <div class="mode-title">📅 今日挑戰賽</div>
+        <div class="mode-sub">全服同歌單種子</div>
+      </div>
+      <div class="mode-btn" id="mode-classic" onclick="selectMode('classic')">
+        <div class="mode-title">💿 經典華語</div>
+        <div class="mode-sub">KTV必點傳唱金曲</div>
+      </div>
+      <div class="mode-btn" id="mode-tiktok" onclick="selectMode('tiktok')">
+        <div class="mode-title">📱 抖音神曲</div>
+        <div class="mode-sub">短影音洗腦熱歌</div>
+      </div>
+      <div class="mode-btn" id="mode-taiwanese" onclick="selectMode('taiwanese')">
+        <div class="mode-title">🏮 台語金曲</div>
+        <div class="mode-sub">浪子回頭/愛拚才會贏</div>
       </div>
     </div>
 
     <div class="btn-stack">
-      <button class="btn-primary" onclick="startNewShow()">🎬 聚光燈亮起・登台挑戰！</button>
+      <button class="btn-primary" onclick="startNewGame()">🎬 站上舞台・挑戰三十萬獎金！</button>
       <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px;">
-        <button class="btn-secondary" style="border-color:#22d3ee; color:#cffafe;" onclick="openCoopModal()">👥 雙人連線PK</button>
-        <button class="btn-secondary" style="border-color:#fbbf24; color:#fde68a;" onclick="openLeaderboard()">🏅 全服歌王榜</button>
-        <button class="btn-secondary" style="border-color:#f43f5e; color:#fecdd3;" onclick="openWipeoutRanking()">💥 易唱錯TOP5</button>
+        <button class="btn-secondary" style="border-color:#22c55e; color:#bbf7d0;" onclick="openPlayerSubmitModal()">✍️ 投稿歌詞</button>
+        <button class="btn-secondary" style="border-color:#38bdf8; color:#bae6fd;" onclick="openCoopModal()">👥 雙人PK</button>
+        <button class="btn-secondary" style="border-color:#fbbf24; color:#fde68a;" onclick="openLeaderboard()">🏅 排行榜</button>
       </div>
-      <button class="btn-secondary" style="border-color:#a855f7; color:#e9d5ff;" onclick="openAdminModal()">🔒 管理員題庫後台（新增曲目／匯出JSON／密碼8888）</button>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+        <button class="btn-secondary" onclick="openGallery()">🏆 歌王稱號圖鑑 (<span id="cover-unlock">0</span>/8)</button>
+        <button class="btn-secondary" style="border-color:#f59e0b; color:#fde68a;" onclick="openAdminModal()">🔒 題庫後台 (審核/管理)</button>
+      </div>
     </div>
   </div>
 
-  <!-- 👥 錦囊二：智囊團求救彈窗 -->
-  <div id="panel-modal" class="modal-screen hidden" style="z-index: 46;">
-    <div class="lock-card" style="border-color:#a855f7; max-width:350px;">
-      <div class="tag-pill" style="border-color:#c084fc; color:#f3e8ff;">LIFELINE ・ THINK TANK</div>
-      <h3 style="font-size:18px; font-weight:900; color:#f8fafc; margin:5px 0;">👥 現場智囊團緊急連線</h3>
-      <p style="font-size:11.5px; color:#cbd5e1; margin-bottom:10px;">三位嘉賓中至少有一位給出正確歌詞，請自行判斷誰最靠譜！</p>
-      <div class="scroll-list" id="panel-advisors-list" style="margin-bottom:10px;"></div>
-      <button class="btn-primary" style="width:100%;" onclick="document.getElementById('panel-modal').classList.add('hidden')">收到建議，返回舞台作答</button>
+  <!-- 👥 智囊團求救彈窗 -->
+  <div id="advisors-modal" class="modal-screen hidden" style="z-index: 46;">
+    <div class="lifeline-card">
+      <div class="tag-pill" style="margin-bottom:6px;">LIFELINE・智囊團緊急連線</div>
+      <h3 style="font-size:18px; font-weight:900; color:#f8fafc; margin-bottom:4px;">👥 現場三位智囊團給出建議</h3>
+      <p style="font-size:11.5px; color:#94a3b8; margin-bottom:10px;">注意：智囊團裡可能有人記錯歌詞，請自行判斷誰最可靠！</p>
+      <div id="advisors-list"></div>
+      <button class="btn-primary" style="width:100%; margin-top:4px;" onclick="document.getElementById('advisors-modal').classList.add('hidden')">回到舞台作答</button>
     </div>
   </div>
 
-  <!-- 👥 雙人連線 PK 彈窗 -->
+  <!-- ✍️ 玩家自由投稿自訂填詞彈窗（免密碼直接填詞出題） -->
+  <div id="player-submit-modal" class="modal-screen hidden" style="z-index: 48;">
+    <div class="lock-card" style="border-color:#22c55e; max-width:355px; text-align:left; max-height:92dvh; overflow-y:auto;">
+      <div style="text-align:center;">
+        <div class="tag-pill" style="border-color:#22c55e; color:#4ade80;">PLAYER CUSTOM LYRICS</div>
+        <h3 style="font-size:17.5px; font-weight:900; color:#f8fafc; margin-bottom:4px;">✍️ 玩家自己填詞出題</h3>
+        <p style="font-size:11px; color:#94a3b8; margin-bottom:8px;">填入你想考大家的歌詞，可立即加入本機題庫試玩，並同步送出給管理員審核上架全服！</p>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <span style="font-size:11px; color:#fde68a; font-weight:800;">歌曲基本資料：</span>
+        <button class="cast-mini-btn" style="border-color:#fbbf24; color:#fde68a;" onclick="fillSampleCustomSong()">✨ 一鍵填入範例測試</button>
+      </div>
+
+      <div class="form-row-2">
+        <input type="text" class="form-input" id="ps-title" placeholder="歌名（例：那天下雨了）" maxlength="18" />
+        <input type="text" class="form-input" id="ps-artist" placeholder="歌手（例：周杰倫）" maxlength="14" />
+      </div>
+
+      <div class="form-row-2">
+        <select class="form-input" id="ps-genre">
+          <option value="2026新歌">曲風：2025-2026新歌</option>
+          <option value="經典華語">曲風：經典華語</option>
+          <option value="抖音神曲">曲風：抖音神曲</option>
+          <option value="台語金曲">曲風：台語金曲</option>
+        </select>
+        <input type="text" class="form-input" id="ps-author" placeholder="出題者暱稱（選填）" maxlength="12" />
+      </div>
+
+      <input type="text" class="form-input" id="ps-lead" placeholder="🎵 前導原唱歌詞（例：雨滴落在屋簷下的節奏）" maxlength="34" />
+      <input type="text" class="form-input" style="border-color:#4ade80;" id="ps-answer" placeholder="✅ 正確接唱歌詞（不要加標點符號）" maxlength="22" />
+
+      <div style="font-size:11px; color:#94a3b8; margin-bottom:4px;">干擾選項（讓四選一更刺激，留白會自動補齊）：</div>
+      <input type="text" class="form-input" id="ps-wrong1" placeholder="❌ 干擾選項 1（同字數類似歌詞）" maxlength="22" />
+      <div class="form-row-2">
+        <input type="text" class="form-input" id="ps-wrong2" placeholder="❌ 干擾選項 2" maxlength="22" />
+        <input type="text" class="form-input" id="ps-wrong3" placeholder="❌ 干擾選項 3" maxlength="22" />
+      </div>
+
+      <label style="display:flex; align-items:center; gap:6px; font-size:11.5px; color:#e2e8f0; margin:4px 0 9px; cursor:pointer;">
+        <input type="checkbox" id="ps-play-now" checked />
+        <span>送出後立即加入我的本機歌單（下一局就能抽到！）</span>
+      </label>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+        <button class="btn-secondary" onclick="document.getElementById('player-submit-modal').classList.add('hidden')">取消</button>
+        <button class="btn-primary" style="background:linear-gradient(135deg,#059669,#10b981); border-color:#6ee7b7; padding:9px;" onclick="submitPlayerCustomSong()">🚀 發布填詞題目</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 👥 雙人房號連線 PK 彈窗 -->
   <div id="coop-modal" class="modal-screen hidden" style="z-index: 48;">
-    <div class="lock-card" style="border-color:#22d3ee; max-width:340px;">
-      <div style="font-size:32px; margin-bottom:4px;">🎤🆚🎤</div>
-      <div class="tag-pill" style="border-color:#22d3ee; color:#cffafe;">FIREBASE REALTIME DUET PK</div>
-      <h3 style="font-size:18px; font-weight:900; color:#f8fafc; margin-bottom:6px;">雙人輪流接歌生存合作</h3>
+    <div class="lock-card" style="border-color:#38bdf8; max-width:340px;">
+      <div style="font-size:34px; margin-bottom:4px;">🎤</div>
+      <div class="tag-pill" style="border-color:#38bdf8; color:#38bdf8;">FIREBASE REALTIME DUET</div>
+      <h3 style="font-size:18px; font-weight:900; color:#f8fafc; margin-bottom:6px;">雙人接歌對唱連線模式</h3>
       <p style="font-size:12px; color:#94a3b8; line-height:1.45; margin-bottom:10px;">
-        P1 建立房間取得 4 碼房號，P2 輸入相同房號加入，兩人輪流接唱挑戰最高獎金！
+        一人建立房間擔任 <strong>P1 主唱</strong>，另一人輸入 4 碼房號加入擔任 <strong>P2 合唱</strong>，輪流接唱挑戰十關大獎！
       </p>
-      <button class="btn-primary" style="width:100%; margin-bottom:10px;" onclick="createCoopRoom()">➕ 建立房間（擔任 P1 主唱）</button>
+      <button class="btn-primary" style="width:100%; margin-bottom:10px;" onclick="createCoopRoom()">➕ 建立房間（P1 主唱）</button>
       <div style="display:flex; gap:6px; margin-bottom:10px;">
         <input type="text" class="pin-input" id="coop-room-input" style="margin:0; font-size:16px;" placeholder="輸入4碼房號" maxlength="4" />
-        <button class="btn-primary" style="background:linear-gradient(135deg,#059669,#10b981); padding:8px 12px; white-space:nowrap;" onclick="joinCoopRoom()">加入 P2</button>
+        <button class="btn-primary" style="background:linear-gradient(135deg,#0284c7,#2563eb); border-color:#7dd3fc; padding:8px 12px; white-space:nowrap;" onclick="joinCoopRoom()">加入 P2</button>
       </div>
-      <div id="coop-wait-status" style="font-size:12px; color:#fde68a; min-height:18px; margin-bottom:8px;"></div>
+      <div id="coop-wait-status" style="font-size:12px; color:#fbbf24; min-height:18px; margin-bottom:8px;"></div>
       <button class="btn-secondary" style="width:100%;" onclick="closeCoopModal()">返回封面</button>
     </div>
   </div>
 
-  <!-- 🔐 管理員密碼鎖彈窗 -->
+  <!-- 🔒 管理員密碼鎖 -->
   <div id="admin-lock-modal" class="modal-screen hidden" style="z-index: 50;">
     <div class="lock-card">
-      <div style="font-size:34px; margin-bottom:4px;">🔐</div>
-      <div class="tag-pill">ADMIN SONG STUDIO</div>
-      <h3 style="font-size:18px; font-weight:900; color:#f8fafc; margin:4px 0;">管理員題庫後台驗證</h3>
-      <p style="font-size:11.5px; color:#94a3b8;">預設密碼：8888（解鎖後可雲端同步自訂歌曲）</p>
+      <div style="font-size:36px; margin-bottom:6px;">🔐</div>
+      <div class="tag-pill" style="margin-bottom:6px;">MUSIC DIRECTOR ONLY</div>
+      <h3 style="font-size:18px; font-weight:900; color:#f8fafc; margin-bottom:4px;">音樂總監題庫後台驗證</h3>
+      <p style="font-size:12px; color:#94a3b8;">請輸入管理員密碼解鎖（預設 8888）</p>
       <input type="password" class="pin-input" id="admin-pin-input" placeholder="請輸入密碼" maxlength="16"
         onkeydown="if(event.key==='Enter') verifyAdminPin()" />
-      <div style="color:#f87171; font-size:12px; font-weight:700; min-height:18px; margin-bottom:6px;" id="admin-pin-error"></div>
+      <div style="color:#f87171; font-size:12px; min-height:18px; margin-bottom:8px;" id="admin-pin-error"></div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
         <button class="btn-secondary" onclick="document.getElementById('admin-lock-modal').classList.add('hidden')">取消</button>
-        <button class="btn-primary" style="padding:9px;" onclick="verifyAdminPin()">🔓 確認解鎖</button>
+        <button class="btn-primary" style="padding:10px;" onclick="verifyAdminPin()">🔓 確認解鎖</button>
       </div>
     </div>
   </div>
 
-  <!-- 🎛️ 管理員題庫後台 -->
-  <div id="admin-modal" class="modal-screen hidden">
-    <div class="tag-pill">🔓 ADMIN STUDIO ・ 雲端歌曲庫管理</div>
-    <h2 class="main-title" style="font-size: 19px;">百萬大歌星・曲庫編輯工坊</h2>
+  <!-- 🎛️ 管理員題庫編輯工坊（自訂新歌歌詞＋審核玩家投稿＋單曲試玩＋匯出匯入） -->
+  <div id="admin-modal" class="modal-screen hidden" style="z-index: 51;">
+    <div class="tag-pill">🔓 ADMIN STUDIO ・ 2026 SONG LIBRARY</div>
+    <h2 class="main-title" style="font-size: 19px;">音樂總監自訂歌庫與審核工坊</h2>
 
-    <div class="cast-scroll">
+    <div style="width:100%; max-height:70dvh; overflow-y:auto; margin-bottom:10px; padding-right:3px;">
+      <!-- 玩家投稿審核區 -->
+      <div class="panel-box" style="border-color: rgba(34, 197, 94, 0.55);">
+        <div class="panel-title" style="color:#4ade80;">
+          <span>📬 玩家填詞投稿審核區（<span id="sub-pending-count">0</span> 筆待審）</span>
+          <button class="cast-mini-btn" onclick="loadPendingSubmissions()">🔄 重新整理</button>
+        </div>
+        <div id="pending-sub-list" style="max-height:155px; overflow-y:auto;">
+          <div style="font-size:11px; color:#94a3b8;">點擊重新整理載入玩家填詞投稿...</div>
+        </div>
+      </div>
+
+      <!-- 管理員直接新增/編輯歌曲 -->
       <div class="panel-box">
         <div class="panel-title">
-          <span id="song-editor-title">➕ 新增自訂接歌題目</span>
+          <span id="song-editor-title">➕ 直接新增 2026 歌曲至全服歌庫</span>
           <button class="cast-mini-btn hidden" id="cancel-song-edit-btn" onclick="resetSongEditor()">取消編輯</button>
         </div>
         <div class="form-row-2">
-          <input type="text" class="form-input" id="in-song-title" placeholder="歌名（例：晴天）" maxlength="18" />
-          <input type="text" class="form-input" id="in-song-artist" placeholder="原唱歌手（例：周杰倫）" maxlength="14" />
+          <input type="text" class="form-input" id="new-song-title" placeholder="歌名（例：愛錯）" maxlength="16" />
+          <input type="text" class="form-input" id="new-song-artist" placeholder="歌手（例：王力宏）" maxlength="12" />
         </div>
-        <select class="form-input" id="in-song-cat">
-          <option value="classic">歌單分類：經典華語金曲</option>
-          <option value="tiktok">歌單分類：抖音/短影音神曲</option>
-          <option value="taiwanese">歌單分類：台語 KTV 必點</option>
+        <select class="form-input" id="new-song-genre">
+          <option value="2026新歌">曲風分類：2025-2026新歌</option>
+          <option value="經典華語">曲風分類：經典華語</option>
+          <option value="抖音神曲">曲風分類：抖音神曲</option>
+          <option value="台語金曲">曲風分類：台語金曲</option>
         </select>
-        <input type="text" class="form-input" id="in-song-prev" placeholder="前句歌詞提示（例：故事的小黃花 從出生那年就飄著）" maxlength="45" />
-        <input type="text" class="form-input" id="in-song-ans" placeholder="正確接唱歌詞（純中文字，例：童年的盪鞦韆隨記憶一直晃到現在）" maxlength="24" />
-        <input type="text" class="form-input" id="in-song-d1" placeholder="干擾選項 1（諧音或錯字歌詞）" maxlength="24" />
-        <input type="text" class="form-input" id="in-song-d2" placeholder="干擾選項 2（諧音或錯字歌詞）" maxlength="24" />
-        <input type="text" class="form-input" id="in-song-d3" placeholder="干擾選項 3（諧音或錯字歌詞）" maxlength="24" />
-        <button class="btn-primary" style="width:100%; padding:9px; font-size:12.5px;" onclick="saveSongForm()">💾 儲存歌曲並同步至 Firebase 雲端</button>
+        <input type="text" class="form-input" id="new-song-lead" placeholder="前導原唱歌詞（例：北風毫不留情 把葉子吹落）" maxlength="32" />
+        <input type="text" class="form-input" id="new-song-answer" placeholder="正確接唱歌詞（不要加標點符號）" maxlength="20" />
+        <input type="text" class="form-input" id="new-song-wrong1" placeholder="干擾錯誤選項 1" maxlength="20" />
+        <div class="form-row-2">
+          <input type="text" class="form-input" id="new-song-wrong2" placeholder="干擾錯誤選項 2" maxlength="20" />
+          <input type="text" class="form-input" id="new-song-wrong3" placeholder="干擾錯誤選項 3" maxlength="20" />
+        </div>
+        <button class="btn-primary" id="save-song-btn" style="width:100%; padding:9px; font-size:12.5px;" onclick="saveCustomSong()">✨ 儲存歌曲並同步 Firebase 雲端</button>
       </div>
 
-      <div class="panel-box" style="border-color:rgba(168,85,247,0.5);">
-        <div class="panel-title" style="color:#e9d5ff;"><span>🎵 全部題庫列表（共 <span id="admin-total-songs">30</span> 首）</span></div>
-        <div id="admin-song-list" style="max-height:185px; overflow-y:auto;"></div>
+      <!-- 全歌單開關與單曲試玩 -->
+      <div class="panel-box" style="border-color: rgba(56, 189, 248, 0.45);">
+        <div class="panel-title" style="color:#7dd3fc;"><span>🎵 全歌庫列表開關 ＆ 單曲即時試玩（共 <span id="admin-total-songs">60</span> 首）</span></div>
+        <div id="song-manage-list" style="max-height:200px; overflow-y:auto;"></div>
       </div>
 
-      <div class="panel-box" style="border-color:rgba(34,211,238,0.5); margin-bottom:0;">
-        <div class="panel-title" style="color:#67e8f9;"><span>📦 題庫 JSON 備份 ＆ 修改密碼</span></div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:7px;">
-          <button class="btn-secondary" onclick="exportSongsJSON()">📤 匯出題庫 JSON</button>
+      <!-- JSON 備份與密碼修改 -->
+      <div class="panel-box" style="border-color: rgba(244, 114, 182, 0.45); margin-bottom:0;">
+        <div class="panel-title" style="color:#fbcfe8;"><span>📦 歌庫 JSON 備份 ＆ 管理員密碼</span></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px;">
+          <button class="btn-secondary" onclick="exportSongsJSON()">📤 匯出全歌庫 JSON</button>
           <label class="btn-secondary" style="text-align:center; cursor:pointer;">
-            📥 匯入題庫 JSON
+            📥 匯入歌庫 JSON
             <input type="file" accept=".json" class="hidden" onchange="importSongsJSON(event)" />
           </label>
         </div>
@@ -1166,41 +1304,43 @@
     </div>
 
     <div class="btn-stack" style="flex-direction:row;">
-      <button class="btn-secondary" style="flex:1; border-color:#ef4444; color:#fca5a5;" onclick="isAdminUnlocked=false; document.getElementById('admin-modal').classList.add('hidden');">🔒 鎖定離開</button>
-      <button class="btn-secondary" style="flex:1;" onclick="document.getElementById('admin-modal').classList.add('hidden')">返回遊戲</button>
+      <button class="btn-secondary" style="flex:1; border-color:#ef4444; color:#fca5a5;" onclick="lockAndCloseAdmin()">🔒 鎖定離開</button>
+      <button class="btn-secondary" style="flex:1;" onclick="document.getElementById('admin-modal').classList.add('hidden')">返回舞台</button>
     </div>
   </div>
 
-  <!-- 🏁 結算畫面 -->
-  <div id="end-modal" class="modal-screen hidden">
-    <div class="tag-pill" id="end-badge">SHOW RESULT</div>
-    <h2 class="main-title" id="end-title">挑戰結算</h2>
-    <p class="sub-desc" id="end-desc">結算說明</p>
+  <!-- 🏆 結算畫面 -->
+  <div id="end-modal" class="modal-screen hidden" style="z-index: 45;">
+    <div class="tag-pill" id="end-badge">STAGE RESULT</div>
+    <h2 class="main-title" id="end-title">恭喜抱走三十萬大獎！</h2>
+    <p style="font-size:12.5px; color:#cbd5e1; line-height:1.5; margin-bottom:10px; max-width:340px;" id="end-desc">結算評語</p>
 
-    <div class="panel-box" style="width:100%; max-width:350px; text-align:left;">
-      <div class="panel-title"><span>🏅 登錄全服歌王排行榜（最終抱走獎金：$<span id="final-prize-num">0</span>）</span></div>
+    <div id="score-submit-box" class="panel-box" style="width:100%; max-width:345px;">
+      <div class="panel-title"><span>🏅 登錄全服歌王榜（最終獎金：<span id="final-prize-num">$0</span>）</span></div>
       <div style="display:flex; gap:6px;">
-        <input type="text" class="form-input" id="player-nickname-input" style="margin-bottom:0;" placeholder="輸入你的大歌星藝名" maxlength="12" />
+        <input type="text" class="form-input" id="player-nickname-input" style="margin-bottom:0;" placeholder="輸入你的大歌星藝名" maxlength="10" />
         <button class="btn-primary" id="submit-score-btn" style="padding:8px 12px; font-size:12px; white-space:nowrap;" onclick="submitScoreToLeaderboard()">登錄上榜</button>
       </div>
     </div>
 
     <div class="btn-stack">
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
-        <button class="btn-primary" style="background:linear-gradient(135deg,#059669,#10b981); padding:10px 6px; font-size:12px;" onclick="generateShareCard()">📸 戰績分享圖</button>
-        <button class="btn-primary" style="background:linear-gradient(135deg,#e11d48,#be123c); padding:10px 6px; font-size:12px;" onclick="openReelsScriptModal()">🎬 生成Reels腳本</button>
+        <button class="btn-primary" style="background:linear-gradient(135deg,#059669,#10b981); border-color:#6ee7b7; padding:10px 6px; font-size:12px;" onclick="generateShareCard()">📸 生成戰績分享圖</button>
+        <button class="btn-primary" style="background:linear-gradient(135deg,#e11d48,#be123c); border-color:#fda4af; padding:10px 6px; font-size:12px;" onclick="openReelsScriptModal()">🎬 生成Reels腳本</button>
       </div>
-      <button class="btn-primary" style="background:linear-gradient(135deg,#7c3aed,#6d28d9); padding:9px; font-size:12px;" onclick="openSongLogModal()">📜 查看本場歌單回顧紀錄</button>
-      <button class="btn-primary" onclick="startNewShow()">🎤 再登台挑戰一次</button>
-      <button class="btn-secondary" onclick="document.getElementById('end-modal').classList.add('hidden'); document.getElementById('start-modal').classList.remove('hidden');">返回節目首頁</button>
+      <button class="btn-primary" style="background:linear-gradient(135deg,#7c3aed,#6d28d9); border-color:#ddd6fe; padding:10px; font-size:12.5px;" onclick="openSongLogModal()">📜 查看本局歌單回顧（含全服答對率）</button>
+      <button class="btn-primary" onclick="startNewGame()">🎤 再戰一輪（隨機抽新歌單）</button>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+        <button class="btn-secondary" onclick="openLeaderboard()">🏅 全服歌王排行榜</button>
+        <button class="btn-secondary" onclick="openGallery()">🏆 歌王稱號圖鑑</button>
+      </div>
     </div>
   </div>
 
-  <!-- 🎬 Reels / Shorts 30秒實況腳本生成器 -->
+  <!-- 🎬 Reels 短影音腳本視窗 -->
   <div id="reels-modal" class="modal-screen hidden" style="z-index: 54;">
     <div class="tag-pill">IG REELS / SHORTS SCRIPT</div>
-    <h2 class="main-title" style="font-size: 20px;">🎬 30 秒綜藝接歌實況腳本</h2>
-    <p class="sub-desc" style="margin-bottom:6px;">已根據你本場挑戰歌曲與獎金自動生成口播分鏡：</p>
+    <h2 class="main-title" style="font-size: 20px;">🎬 30秒接歌挑戰口播腳本</h2>
     <div class="reels-script-box" id="reels-script-content"></div>
     <div class="btn-stack">
       <button class="btn-primary" onclick="copyReelsScript()">📋 一鍵複製腳本文字</button>
@@ -1208,82 +1348,87 @@
     </div>
   </div>
 
-  <!-- 📜 本場歌單回顧紀錄 -->
+  <!-- 📜 本局歌單回顧視窗 -->
   <div id="log-modal" class="modal-screen hidden" style="z-index: 52;">
-    <div class="tag-pill">STAGE SETLIST RECAP</div>
-    <h2 class="main-title" style="font-size: 20px;">📜 本場挑戰歌單回顧</h2>
+    <div class="tag-pill">STAGE SETLIST REVIEW</div>
+    <h2 class="main-title" style="font-size: 21px;">📜 本局接歌歌單回顧</h2>
     <div class="scroll-list" id="song-log-list"></div>
     <button class="btn-primary" style="width:100%; max-width:300px;" onclick="document.getElementById('log-modal').classList.add('hidden')">返回結算</button>
   </div>
 
   <!-- 📸 戰績分享圖預覽 -->
   <div id="share-modal" class="modal-screen hidden" style="z-index: 55;">
-    <div class="tag-pill">SHARE YOUR PRIZE CARD</div>
-    <h3 style="font-size:16px; font-weight:900; color:#f8fafc; margin-bottom:8px;">長按圖片儲存，或點擊下方下載</h3>
-    <img id="share-card-img" style="width:245px; border-radius:16px; border:2px solid #fbbf24; margin-bottom:10px; box-shadow:0 10px 30px rgba(0,0,0,0.85);" />
+    <div class="tag-pill">SHARE YOUR STAGE RECORD</div>
+    <h3 style="font-size:16px; font-weight:900; color:#f8fafc; margin-bottom:8px;">長按圖片儲存，或點擊下方按鈕下載</h3>
+    <img id="share-card-img" style="width:245px; border-radius:16px; border:2px solid #fbbf24; margin-bottom:10px;" />
     <div class="btn-stack">
       <button class="btn-primary" onclick="downloadShareCard()">⬇️ 下載戰績圖片 (PNG)</button>
       <button class="btn-secondary" onclick="document.getElementById('share-modal').classList.add('hidden')">關閉預覽</button>
     </div>
   </div>
 
-  <!-- 🏅 全服百萬歌王排行榜 -->
-  <div id="leaderboard-modal" class="modal-screen hidden" style="z-index: 51;">
+  <!-- 🏅 全服排行榜 -->
+  <div id="leaderboard-modal" class="modal-screen hidden" style="z-index: 49;">
     <div class="tag-pill">GLOBAL MILLION SINGER RANKING</div>
-    <h2 class="main-title" style="font-size: 21px;">🏅 全服百萬歌王排行榜</h2>
+    <h2 class="main-title" style="font-size: 21px;">🏅 全服百萬大歌星排行榜</h2>
     <div class="scroll-list" id="leaderboard-list"></div>
-    <button class="btn-primary" style="width:100%; max-width:300px;" onclick="document.getElementById('leaderboard-modal').classList.add('hidden')">返回</button>
+    <div style="display:flex; gap:8px; width:100%; max-width:320px;">
+      <button class="btn-secondary" style="flex:1; border-color:#f97316; color:#fed7aa;" onclick="openWipeoutRanking()">💥 最易唱錯 TOP 5</button>
+      <button class="btn-primary" style="flex:1;" onclick="document.getElementById('leaderboard-modal').classList.add('hidden')">返回</button>
+    </div>
   </div>
 
-  <!-- 💥 全服最容易唱錯金曲 TOP 5 -->
+  <!-- 💥 最易唱錯金曲 TOP 5 -->
   <div id="wipeout-modal" class="modal-screen hidden" style="z-index: 53;">
-    <div class="tag-pill" style="border-color:#f43f5e; color:#fda4af;">MOST MISSED SONGS TOP 5</div>
-    <h2 class="main-title" style="font-size: 20px;">💥 全服最容易唱錯金曲 TOP 5</h2>
-    <p class="sub-desc" style="margin-bottom:8px;">統計全服玩家最常記錯歌詞、痛失獎金的魔王歌曲：</p>
+    <div class="tag-pill" style="border-color:#f97316; color:#fdba74;">MOST MISSED SONGS TOP 5</div>
+    <h2 class="main-title" style="font-size: 20px;">💥 全服最容易忘詞 TOP 5 金曲</h2>
     <div class="scroll-list" id="wipeout-list"></div>
-    <button class="btn-primary" style="width:100%; max-width:300px;" onclick="document.getElementById('wipeout-modal').classList.add('hidden')">返回</button>
+    <button class="btn-primary" style="width:100%; max-width:300px;" onclick="document.getElementById('wipeout-modal').classList.add('hidden')">返回排行榜</button>
+  </div>
+
+  <!-- 🏆 歌王稱號圖鑑 -->
+  <div id="gallery-modal" class="modal-screen hidden" style="z-index: 49;">
+    <div class="tag-pill">SINGER TITLES GALLERY (8 TYPES)</div>
+    <h2 class="main-title" style="font-size: 21px;">百萬大歌星稱號圖鑑</h2>
+    <div class="scroll-list" id="gallery-list"></div>
+    <button class="btn-primary" style="width:100%; max-width:300px;" onclick="document.getElementById('gallery-modal').classList.add('hidden')">返回舞台</button>
   </div>
 </div>
 
 <script>
   // ==========================================
-  // 1. 舞台金色星塵與聚光燈粒子特效
+  // 1. 舞台聚光燈與金粉粒子背景動畫
   // ==========================================
-  const fxCanvas = document.getElementById("fx-canvas");
+  const fxCanvas = document.getElementById("stage-fx-canvas");
   const fxCtx = fxCanvas.getContext("2d");
-  let particles = [];
+  let stageParticles = [];
 
-  function resizeFXCanvas() {
-    const rect = document.getElementById("song-stage-card").getBoundingClientRect();
-    fxCanvas.width = rect.width || 400;
-    fxCanvas.height = rect.height || 340;
-    particles = [];
+  function resizeStageCanvas() {
+    const rect = document.getElementById("app-frame").getBoundingClientRect();
+    fxCanvas.width = rect.width || 420;
+    fxCanvas.height = rect.height || 850;
+    stageParticles = [];
     for (let i = 0; i < 28; i++) {
-      particles.push({
+      stageParticles.push({
         x: Math.random() * fxCanvas.width,
         y: Math.random() * fxCanvas.height,
-        vx: (Math.random() - 0.5) * 0.6,
-        vy: -(0.3 + Math.random() * 0.8),
-        r: 1.5 + Math.random() * 2.5,
-        gold: Math.random() > 0.45,
-        alpha: 0.25 + Math.random() * 0.5
+        r: 1.5 + Math.random() * 2.8,
+        vy: -(0.3 + Math.random() * 0.7),
+        vx: (Math.random() - 0.5) * 0.4,
+        alpha: 0.25 + Math.random() * 0.55,
+        gold: Math.random() > 0.35
       });
     }
   }
 
-  function renderFXLoop() {
-    requestAnimationFrame(renderFXLoop);
+  function renderStageFX() {
+    requestAnimationFrame(renderStageFX);
     fxCtx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
-    particles.forEach(p => {
+    stageParticles.forEach(p => {
       p.x += p.vx;
       p.y += p.vy;
       if (p.y < -10) { p.y = fxCanvas.height + 10; p.x = Math.random() * fxCanvas.width; }
-      if (p.x < 0) p.x = fxCanvas.width;
-      if (p.x > fxCanvas.width) p.x = 0;
-
-      fxCtx.fillStyle = p.gold
-        ? `rgba(251, 191, 36, ${p.alpha})`
-        : `rgba(192, 132, 252, ${p.alpha})`;
+      fxCtx.fillStyle = p.gold ? `rgba(251, 191, 36, ${p.alpha})` : `rgba(56, 189, 248, ${p.alpha})`;
       fxCtx.beginPath();
       fxCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
       fxCtx.fill();
@@ -1291,143 +1436,14 @@
   }
 
   // ==========================================
-  // 2. Web Audio 綜藝節目音效與背景旋律
+  // 2. Firebase 雲端資料庫同步與本機儲存
   // ==========================================
-  let sfxOn = true, voiceOn = true, bgmOn = true;
-  let bgmTimer = null, bgmStep = 0;
-  const AudioCtx = window.AudioContext || window.webkitAudioContext;
-  let audioCtx = null;
-
-  function ensureAudio() {
-    if (!audioCtx) audioCtx = new AudioCtx();
-    if (audioCtx.state === "suspended") audioCtx.resume();
-  }
-
-  function startStageBGM() {
-    stopStageBGM();
-    if (!bgmOn) return;
-    ensureAudio();
-    const notes = [220, 261.63, 329.63, 392.00, 329.63, 293.66, 349.23, 440.00];
-    bgmTimer = setInterval(() => {
-      if (!bgmOn || !audioCtx || audioCtx.state !== "running") return;
-      const now = audioCtx.currentTime;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = "triangle";
-      osc.frequency.setValueAtTime(notes[bgmStep % notes.length], now);
-      gain.gain.setValueAtTime(0.03, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start(now);
-      osc.stop(now + 0.36);
-      bgmStep++;
-    }, 480);
-  }
-
-  function stopStageBGM() {
-    if (bgmTimer) { clearInterval(bgmTimer); bgmTimer = null; }
-  }
-
-  function playSFX(type) {
-    if (!sfxOn) return;
-    ensureAudio();
-    const now = audioCtx.currentTime;
-
-    if (type === "lockin") {
-      // 節目經典鎖定答案懸疑鼓點音效
-      [110, 110, 146.83, 196].forEach((freq, i) => {
-        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-        o.type = "sawtooth";
-        o.frequency.setValueAtTime(freq, now + i * 0.22);
-        g.gain.setValueAtTime(0.24, now + i * 0.22);
-        g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.22 + 0.2);
-        o.connect(g); g.connect(audioCtx.destination);
-        o.start(now + i * 0.22); o.stop(now + i * 0.22 + 0.21);
-      });
-    } else if (type === "correct" || type === "win") {
-      // 答對叮咚與獎金入袋和弦
-      [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
-        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-        o.type = "triangle";
-        o.frequency.setValueAtTime(f, now + i * 0.09);
-        g.gain.setValueAtTime(0.28, now + i * 0.09);
-        g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.09 + 0.32);
-        o.connect(g); g.connect(audioCtx.destination);
-        o.start(now + i * 0.09); o.stop(now + i * 0.09 + 0.34);
-      });
-    } else if (type === "wrong" || type === "fail") {
-      // 綜藝節目答錯低音喇叭噗噗聲
-      [195, 145].forEach((f, i) => {
-        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-        o.type = "sawtooth";
-        o.frequency.setValueAtTime(f, now + i * 0.18);
-        g.gain.setValueAtTime(0.32, now + i * 0.18);
-        g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.18 + 0.28);
-        o.connect(g); g.connect(audioCtx.destination);
-        o.start(now + i * 0.18); o.stop(now + i * 0.18 + 0.3);
-      });
-    } else if (type === "lifeline") {
-      [880, 1174.66].forEach((f, i) => {
-        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-        o.type = "sine";
-        o.frequency.setValueAtTime(f, now + i * 0.08);
-        g.gain.setValueAtTime(0.22, now + i * 0.08);
-        g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.18);
-        o.connect(g); g.connect(audioCtx.destination);
-        o.start(now + i * 0.08); o.stop(now + i * 0.08 + 0.19);
-      });
-    }
-  }
-
-  // Web Speech 語音朗讀前句節奏
-  let zhVoices = [];
-  function loadVoices() {
-    if (!("speechSynthesis" in window)) return;
-    zhVoices = window.speechSynthesis.getVoices().filter(v => v.lang.includes("zh"));
-  }
-  if ("speechSynthesis" in window) { loadVoices(); window.speechSynthesis.onvoiceschanged = loadVoices; }
-
-  function speakText(text) {
-    if (!voiceOn || !("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = "zh-TW";
-    const tw = zhVoices.find(v => v.lang === "zh-TW") || zhVoices[0];
-    if (tw) u.voice = tw;
-    u.pitch = 1.08;
-    u.rate = 0.96;
-    window.speechSynthesis.speak(u);
-  }
-
-  function speakCurrentLyrics() {
-    if (isGameOver || stepIndex >= activeSetlist.length) return;
-    const song = activeSetlist[stepIndex];
-    speakText(`${song.title}，前句是：${song.prevLyric}。請接唱！`);
-  }
-
-  function toggleBGM() {
-    bgmOn = !bgmOn;
-    const btn = document.getElementById("bgm-btn");
-    btn.classList.toggle("active-audio", bgmOn);
-    btn.textContent = bgmOn ? "🎵" : "🎵關";
-    if (bgmOn) startStageBGM(); else stopStageBGM();
-  }
-
-  function toggleVoice() {
-    voiceOn = !voiceOn;
-    const btn = document.getElementById("voice-btn");
-    btn.classList.toggle("active-audio", voiceOn);
-    btn.textContent = voiceOn ? "🗣️" : "🤐";
-    if (!voiceOn && "speechSynthesis" in window) window.speechSynthesis.cancel();
-  }
-
-  function toggleSFX() {
-    sfxOn = !sfxOn;
-    const btn = document.getElementById("sfx-btn");
-    btn.classList.toggle("active-audio", sfxOn);
-    btn.textContent = sfxOn ? "🔊" : "🔇";
-  }
+  const DEFAULT_FIREBASE_URL = "https://realtime-database-1c48d-default-rtdb.asia-southeast1.firebasedatabase.app";
+  const firebaseBaseUrl = DEFAULT_FIREBASE_URL.replace(/\/$/, "");
+  let currentAdminPin = localStorage.getItem("singer_game_admin_pin") || "8888";
+  let isAdminUnlocked = false;
+  let lastCloudTs = 0;
+  let globalSongStats = {};
 
   function showToast(msg) {
     const el = document.getElementById("save-toast");
@@ -1437,468 +1453,513 @@
     el._t = setTimeout(() => { el.style.opacity = "0"; }, 2600);
   }
 
-  // ==========================================
-  // 3. 30 首經典《百萬大歌星》全曲庫
-  // ==========================================
-  const PRIZE_LADDER = [1000, 3000, 5000, 10000, 30000, 50000, 100000, 150000, 200000, 300000];
-  // 安全線保底索引：第 3 階 (index 2 => $5,000)、第 7 階 (index 6 => $100,000)
+  function saveLocalSongs() {
+    try {
+      const customSongs = SONG_LIBRARY.filter(s => s.isCustom);
+      const disabledIds = SONG_LIBRARY.filter(s => s.disabled).map(s => s.id);
+      localStorage.setItem("million_singer_custom_songs_v2", JSON.stringify(customSongs));
+      localStorage.setItem("million_singer_disabled_ids_v2", JSON.stringify(disabledIds));
+    } catch (e) {}
+  }
 
-  const SONG_BANK = [
-    // --- 經典華語金曲 (classic) ---
-    {
-      id: "s01", category: "classic", genre: "經典華語金曲",
-      title: "晴天", artist: "周杰倫",
-      prevLyric: "故事的小黃花 從出生那年就飄著",
-      answer: "童年的盪鞦韆隨記憶一直晃到現在",
-      distractors: ["童年的小紙船隨記憶一直飄到現在", "童年的盪鞦韆隨風兒一直晃到現在", "童年的旋轉木馬隨記憶一直轉到現在"]
-    },
-    {
-      id: "s02", category: "classic", genre: "經典華語金曲",
-      title: "十年", artist: "陳奕迅",
-      prevLyric: "如果那兩個字沒有顫抖 我不會發現我難受",
-      answer: "怎麼說出口也不過是分手",
-      distractors: ["怎麼說出口也只不過是分手", "怎麼說出口也不過是藉口", "怎麼說出口也只能選擇放手"]
-    },
-    {
-      id: "s03", category: "classic", genre: "經典華語金曲",
-      title: "小幸運", artist: "田馥甄",
-      prevLyric: "我聽見雨滴落在青青草地 我聽見遠方下課鐘聲響起",
-      answer: "可是我沒有聽見你的聲音認真呼喚我姓名",
-      distractors: ["可是我沒有聽見你的聲音溫柔呼喚我姓名", "可是我沒有看見你的身影認真呼喚我姓名", "可是我沒有聽見你的腳步認真呼喚我姓名"]
-    },
-    {
-      id: "s04", category: "classic", genre: "經典華語金曲",
-      title: "勇氣", artist: "梁靜茹",
-      prevLyric: "終於做了這個決定 別人怎麼說我不理",
-      answer: "只要你也一樣的肯定",
-      distractors: ["只要你也同樣的肯定", "只要你也一樣的相信", "只要我們都一樣的肯定"]
-    },
-    {
-      id: "s05", category: "classic", genre: "經典華語金曲",
-      title: "突然好想你", artist: "五月天",
-      prevLyric: "最怕空氣突然安靜 最怕朋友突然的關心",
-      answer: "最怕回憶突然翻滾絞痛著不平息",
-      distractors: ["最怕回憶突然翻湧絞痛著不平息", "最怕思念突然翻滾絞痛著不平息", "最怕回憶突然翻滾刺痛著不平息"]
-    },
-    {
-      id: "s06", category: "classic", genre: "經典華語金曲",
-      title: "倒帶", artist: "蔡依林",
-      prevLyric: "我受夠了等待 你所謂的安排",
-      answer: "說的未來到底多久才來",
-      distractors: ["說的幸福到底多久才來", "給的未來到底多久才來", "說的承諾到底多久才來"]
-    },
-    {
-      id: "s07", category: "classic", genre: "經典華語金曲",
-      title: "青花瓷", artist: "周杰倫",
-      prevLyric: "天青色等煙雨 而我在等你",
-      answer: "炊煙裊裊昇起隔江千萬里",
-      distractors: ["炊煙緩緩昇起隔江千萬里", "炊煙裊裊飄起隔江千萬里", "炊煙裊裊昇起隔海千萬里"]
-    },
-    {
-      id: "s08", category: "classic", genre: "經典華語金曲",
-      title: "愛你", artist: "王心凌",
-      prevLyric: "如果你突然打了個噴嚏 那一定就是我在想你",
-      answer: "如果半夜被手機吵醒啊那是因為我關心",
-      distractors: ["如果半夜被簡訊吵醒啊那是因為我關心", "如果半夜被電話吵醒啊那是因為我關心", "如果半夜被鬧鐘吵醒啊那是因為我關心"]
-    },
-    {
-      id: "s09", category: "classic", genre: "經典華語金曲",
-      title: "那些年", artist: "胡夏",
-      prevLyric: "又回到最初的起點 記憶中你青澀的臉",
-      answer: "我們終於來到了這一天",
-      distractors: ["我們終於走到了這一天", "我們還是來到了這一天", "終於我們來到了這一天"]
-    },
-    {
-      id: "s10", category: "classic", genre: "經典華語金曲",
-      title: "修煉愛情", artist: "林俊傑",
-      prevLyric: "修煉愛情的心酸 學會放好以前的渴望",
-      answer: "我們那些信仰要忘記多難",
-      distractors: ["我們那些過往要忘記多難", "我們那些夢想要忘記多難", "我們那些倔強要忘記多難"]
-    },
-    {
-      id: "s11", category: "classic", genre: "經典華語金曲",
-      title: "戀人未滿", artist: "S.H.E",
-      prevLyric: "再靠近一點點 就讓你牽手",
-      answer: "再勇敢一點點我就跟你走",
-      distractors: ["再主動一點點我就跟你走", "再溫柔一點點我就跟你走", "再坦白一點點我就跟你走"]
-    },
-    {
-      id: "s12", category: "classic", genre: "經典華語金曲",
-      title: "說謊", artist: "林宥嘉",
-      prevLyric: "我沒有說謊 我何必說謊",
-      answer: "你懂我的我對你從來就不會假裝",
-      distractors: ["你了解我的我對你從來就不會假裝", "你懂我的我對你從來都不會假裝", "你懂我的我對你向來就不會假裝"]
-    },
-
-    // --- 抖音/短影音洗腦神曲 (tiktok) ---
-    {
-      id: "s13", category: "tiktok", genre: "抖音/短影音神曲",
-      title: "想見你想見你想見你", artist: "八三夭",
-      prevLyric: "想見你只想見你 未來過去我只想見你",
-      answer: "穿越了千個萬個時間線裡人海裡相依",
-      distractors: ["穿越了千個萬個平行時空人海裡相依", "跨越了千個萬個時間線裡人海裡相依", "穿越了千個萬個時間線裡人群裡相依"]
-    },
-    {
-      id: "s14", category: "tiktok", genre: "抖音/短影音神曲",
-      title: "熱愛105°C的你", artist: "阿肆",
-      prevLyric: "Super Idol的笑容 都沒你的甜",
-      answer: "八月正午的陽光都沒你耀眼",
-      distractors: ["七月正午的陽光都沒你耀眼", "八月午後的陽光都沒你耀眼", "八月正午的太陽都沒你耀眼"]
-    },
-    {
-      id: "s15", category: "tiktok", genre: "抖音/短影音神曲",
-      title: "孤勇者", artist: "陳奕迅",
-      prevLyric: "愛你孤身走暗巷 愛你不跪的模樣",
-      answer: "愛你對峙過絕望不肯哭一場",
-      distractors: ["愛你面對過絕望不肯哭一場", "愛你戰勝過絕望不肯哭一場", "愛你熬過了絕望不肯哭一場"]
-    },
-    {
-      id: "s16", category: "tiktok", genre: "抖音/短影音神曲",
-      title: "學貓叫", artist: "小潘潘 / 小峰峰",
-      prevLyric: "我們一起學貓叫 一起喵喵喵喵喵",
-      answer: "在你面前撒個嬌哎呦喵喵喵喵喵",
-      distractors: ["在你懷裡撒個嬌哎呦喵喵喵喵喵", "在你面前撒個嬌一起喵喵喵喵喵", "在你身邊撒個嬌哎呦喵喵喵喵喵"]
-    },
-    {
-      id: "s17", category: "tiktok", genre: "抖音/短影音神曲",
-      title: "烏梅子醬", artist: "李榮浩",
-      prevLyric: "你淺淺的微笑就像 烏梅子醬",
-      answer: "我迎風品嚐你唇邊的溫柔",
-      distractors: ["我迎風感受你唇邊的溫柔", "我輕輕品嚐你唇邊的溫柔", "我迎風品嚐你嘴角的溫柔"]
-    },
-    {
-      id: "s18", category: "tiktok", genre: "抖音/短影音神曲",
-      title: "告別氣球", artist: "周杰倫",
-      prevLyric: "塞納河畔 左岸的咖啡",
-      answer: "我手一杯品嚐你的美",
-      distractors: ["我手一杯回味你的美", "我喝一杯品嚐你的美", "我手一杯欣賞你的美"]
-    },
-    {
-      id: "s19", category: "tiktok", genre: "抖音/短影音神曲",
-      title: "如果可以", artist: "韋禮安",
-      prevLyric: "如果可以 我想和妳回到那天相遇",
-      answer: "讓時間停止那一場雨",
-      distractors: ["讓時間停在那一場雨", "讓時間暫停那一場雨", "讓時光停止那一場雨"]
-    },
-    {
-      id: "s20", category: "tiktok", genre: "抖音/短影音神曲",
-      title: "刻在我心底的名字", artist: "盧廣仲",
-      prevLyric: "刻在我心底的名字 忘記了時間這回事",
-      answer: "既然決定愛上一次就一輩子",
-      distractors: ["既然決定愛過一次就一輩子", "既然選擇愛上一次就一輩子", "既然決定愛上你了就一輩子"]
-    },
-    {
-      id: "s21", category: "tiktok", genre: "抖音/短影音神曲",
-      title: "黑桃A", artist: "DJ版熱門曲",
-      prevLyric: "長長的頭髮黑黑的眼睛 好像在什麼地方見過你",
-      answer: "你是我的寶貝我是你的黑桃A",
-      distractors: ["你是我的唯一我是你的黑桃A", "你是我的寶貝我是你的紅心A", "你是我的公主我是你的黑桃A"]
-    },
-
-    // --- 台語經典 KTV 必點 (taiwanese) ---
-    {
-      id: "s22", category: "taiwanese", genre: "台語 KTV 必點",
-      title: "愛拚才會贏", artist: "葉啟田",
-      prevLyric: "一時失志毋免怨嘆 一時落魄毋免膽寒",
-      answer: "那通失去希望每日醉茫茫",
-      distractors: ["毋通失去希望每日醉茫茫", "那通放棄希望每日醉茫茫", "那通失去信心每日醉茫茫"]
-    },
-    {
-      id: "s23", category: "taiwanese", genre: "台語 KTV 必點",
-      title: "家後", artist: "江蕙",
-      prevLyric: "有一日咱若老 找無人甲咱友孝",
-      answer: "我會陪你坐惦椅寮聽你講少年的時陣你有外敖",
-      distractors: ["我會陪你坐惦椅寮聽你講年輕的時陣你有外敖", "我會陪你坐惦門口聽你講少年的時陣你有外敖", "我會陪你坐惦椅寮聽你講少年的時陣咱有外敖"]
-    },
-    {
-      id: "s24", category: "taiwanese", genre: "台語 KTV 必點",
-      title: "浪子回頭", artist: "茄子蛋",
-      prevLyric: "菸一支一支一支地點 酒一杯一杯一杯地乾",
-      answer: "請你要體諒我我酒量不好賣給我衝康",
-      distractors: ["請你要原諒我我酒量不好賣給我衝康", "請你要體諒我我酒量袂好賣給我衝康", "請你要體諒我我酒量不好麥給我衝康"]
-    },
-    {
-      id: "s25", category: "taiwanese", genre: "台語 KTV 必點",
-      title: "愛情限時批", artist: "伍佰 & 萬芳",
-      prevLyric: "要安怎對你說出心內話 想了歸暝恰想嘛歹勢",
-      answer: "看到你我就完全未說話只好頭犁犁",
-      distractors: ["看到你我就完全袂說話只好頭犁犁", "看到你我就完全未講話只好頭犁犁", "看到你我就緊張未說話只好頭犁犁"]
-    },
-    {
-      id: "s26", category: "taiwanese", genre: "台語 KTV 必點",
-      title: "追追追", artist: "黃妃",
-      prevLyric: "千江水千江月 千里帆千重山",
-      answer: "千里江山我最水",
-      distractors: ["千里江山我尚水", "千山萬水我最水", "千里江山你最水"]
-    },
-    {
-      id: "s27", category: "taiwanese", genre: "台語 KTV 必點",
-      title: "世界第一等", artist: "劉德華",
-      prevLyric: "人生的風景 親像大海的風湧",
-      answer: "有時猛有時平親愛朋友你著小心",
-      distractors: ["有時大有時平親愛朋友你著小心", "有時起有時落親愛朋友你著小心", "有時猛有時靜親愛朋友你著小心"]
-    },
-    {
-      id: "s28", category: "taiwanese", genre: "台語 KTV 必點",
-      title: "愛情的恰恰", artist: "陳小雲",
-      prevLyric: "繁華的夜都市 燈光閃閃熾",
-      answer: "迷人的音樂又響起引阮想起你",
-      distractors: ["迷人的歌聲又響起引阮想起你", "浪漫的音樂又響起引阮想起你", "迷人的音樂又響起害阮想起你"]
-    },
-    {
-      id: "s29", category: "taiwanese", genre: "台語 KTV 必點",
-      title: "舞女", artist: "陳小雲",
-      prevLyric: "打扮著妖嬌模樣 陪人客搖來搖去",
-      answer: "紅紅的霓虹燈閃閃熾熾引我心傷悲",
-      distractors: ["紅紅的霓虹燈閃閃熾熾引阮心傷悲", "亮亮的霓虹燈閃閃熾熾引我心傷悲", "紅紅的霓虹燈閃閃熾熾害我心傷悲"]
-    },
-    {
-      id: "s30", category: "taiwanese", genre: "台語 KTV 必點",
-      title: "堅持", artist: "翁立友",
-      prevLyric: "頭前的路不知多長多呢苦 看不著祝福的土地",
-      answer: "阮猶原一步一步慢慢仔行",
-      distractors: ["我猶原一步一步慢慢仔行", "阮依然一步一步慢慢仔行", "阮猶原一步一步穩穩仔行"]
-    }
-  ];
-
-  // ==========================================
-  // 4. Firebase 雲端同步、題庫管理與排行榜
-  // ==========================================
-  const DEFAULT_FIREBASE_URL = "https://realtime-database-1c48d-default-rtdb.asia-southeast1.firebasedatabase.app";
-  const firebaseBaseUrl = DEFAULT_FIREBASE_URL.replace(/\/$/, "");
-  let currentAdminPin = localStorage.getItem("million_singer_admin_pin") || "8888";
-  let isAdminUnlocked = false;
-  let editingSongId = null;
+  function loadLocalSongs() {
+    try {
+      const customSongs = JSON.parse(localStorage.getItem("million_singer_custom_songs_v2") || "[]");
+      const disabledIds = JSON.parse(localStorage.getItem("million_singer_disabled_ids_v2") || "[]");
+      customSongs.forEach(cs => {
+        if (!SONG_LIBRARY.some(x => x.id === cs.id)) SONG_LIBRARY.push(cs);
+      });
+      SONG_LIBRARY.forEach(s => { s.disabled = disabledIds.includes(s.id); });
+    } catch (e) {}
+  }
 
   async function pushSongsToFirebase() {
-    localStorage.setItem("million_singer_custom_songs", JSON.stringify(SONG_BANK.filter(s => s.isCustom)));
+    saveLocalSongs();
     try {
-      showToast("⏳ 正在同步歌單題庫至 Firebase...");
+      const nowTs = Date.now();
+      const payload = {
+        updatedAt: nowTs,
+        adminPin: currentAdminPin,
+        customSongs: SONG_LIBRARY.filter(s => s.isCustom),
+        disabledIds: SONG_LIBRARY.filter(s => s.disabled).map(s => s.id)
+      };
       await fetch(`${firebaseBaseUrl}/million_singer_sync.json`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          updatedAt: Date.now(),
-          adminPin: currentAdminPin,
-          customSongs: SONG_BANK.filter(s => s.isCustom)
-        })
+        body: JSON.stringify(payload)
       });
-      showToast("☁️ 雲端歌單已同步完成！");
+      lastCloudTs = nowTs;
+      showToast("☁️ 全服歌庫已即時同步至 Firebase 雲端！");
     } catch (e) {
-      showToast("⚠️ 雲端同步失敗，已儲存在本機");
+      showToast("⚠️ 雲端同步異常，已儲存至本機快取");
     }
   }
 
   async function pullSongsFromFirebase() {
     try {
-      const localCustom = JSON.parse(localStorage.getItem("million_singer_custom_songs") || "[]");
-      localCustom.forEach(cs => {
-        if (!SONG_BANK.some(x => x.id === cs.id)) SONG_BANK.push(cs);
-      });
-
-      const resp = await fetch(`${firebaseBaseUrl}/million_singer_sync.json?t=${Date.now()}`);
-      if (!resp.ok) return;
-      const data = await resp.json();
+      const [syncResp, statResp] = await Promise.all([
+        fetch(`${firebaseBaseUrl}/million_singer_sync.json?t=${Date.now()}`),
+        fetch(`${firebaseBaseUrl}/million_singer_stats.json?t=${Date.now()}`)
+      ]);
+      if (statResp.ok) {
+        const st = await statResp.json();
+        if (st && typeof st === "object") globalSongStats = st;
+      }
+      if (!syncResp.ok) return;
+      const data = await syncResp.json();
       if (!data) return;
-      if (data.adminPin) {
-        currentAdminPin = data.adminPin;
-        localStorage.setItem("million_singer_admin_pin", currentAdminPin);
-      }
-      if (Array.isArray(data.customSongs)) {
-        for (let i = SONG_BANK.length - 1; i >= 0; i--) {
-          if (SONG_BANK[i].isCustom) SONG_BANK.splice(i, 1);
+      if (data.updatedAt && data.updatedAt !== lastCloudTs) {
+        lastCloudTs = data.updatedAt;
+        if (data.adminPin) {
+          currentAdminPin = data.adminPin;
+          localStorage.setItem("singer_game_admin_pin", currentAdminPin);
         }
-        data.customSongs.forEach(cs => SONG_BANK.push(cs));
+        if (Array.isArray(data.customSongs)) {
+          for (let i = SONG_LIBRARY.length - 1; i >= 0; i--) {
+            if (SONG_LIBRARY[i].isCustom) SONG_LIBRARY.splice(i, 1);
+          }
+          data.customSongs.forEach(cs => SONG_LIBRARY.push(cs));
+        }
+        if (Array.isArray(data.disabledIds)) {
+          SONG_LIBRARY.forEach(s => { s.disabled = data.disabledIds.includes(s.id); });
+        }
+        saveLocalSongs();
+        updateAllCounters();
+        renderSongManageList();
       }
-      updateSongCountUI();
-      renderAdminSongList();
     } catch (e) {}
   }
 
-  function updateSongCountUI() {
-    document.getElementById("song-count-badge").textContent = SONG_BANK.length;
-    const totalAdminEl = document.getElementById("admin-total-songs");
-    if (totalAdminEl) totalAdminEl.textContent = SONG_BANK.length;
+  function recordSongAccuracy(songId, isCorrect) {
+    if (!globalSongStats[songId]) globalSongStats[songId] = { pass: 1, fail: 1 };
+    if (isCorrect) globalSongStats[songId].pass = (globalSongStats[songId].pass || 0) + 1;
+    else globalSongStats[songId].fail = (globalSongStats[songId].fail || 0) + 1;
+
+    const p = globalSongStats[songId].pass || 0;
+    const f = globalSongStats[songId].fail || 0;
+    const pct = Math.round((p / Math.max(1, p + f)) * 100);
+
+    fetch(`${firebaseBaseUrl}/million_singer_stats/${songId}.json`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(globalSongStats[songId])
+    }).catch(() => {});
+
+    return pct;
   }
 
   // ==========================================
-  // 5. 遊戲核心狀態與作答流程
+  // 3. 60 首完整金曲題庫（含 2025-2026 發燒新歌 ＋ 經典華語 ＋ 抖音神曲 ＋ 台語 KTV）
   // ==========================================
-  let selectedPlaylist = "all";
-  let selectedPace = "timed";
-  let activeSetlist = [];
-  let stepIndex = 0;
+  const SONG_LIBRARY = [
+    // --- 🔥 2025-2026 發燒新歌（25首） ---
+    { id: "n26_01", genre: "2026新歌", title: "那天下雨了", artist: "周杰倫", lead: "雨滴落在舊鋼琴的琴鍵上", answer: "你的背影卻消失在巷口那端", wrongs: ["我的思念卻停留在昨天晚上", "你的笑容還掛在雨後的藍天", "我們的愛卻隨風飄向遠方"], notes: [392, 440, 523.25, 493.88, 392] },
+    { id: "n26_02", genre: "2026新歌", title: "西西里", artist: "周杰倫", lead: "地中海的陽光灑滿石板街", answer: "檸檬香氣吹過古老的鐘樓", wrongs: ["海風輕輕吹過沉默的港口", "晚霞慢慢染紅遠方的山頭", "咖啡香氣飄散在午后街頭"], notes: [329.63, 392, 493.88, 523.25, 587.33] },
+    { id: "n26_03", genre: "2026新歌", title: "太陽之子", artist: "周杰倫", lead: "穿越沙漠盡頭的金黃地平線", answer: "追尋傳說中永不熄滅的光", wrongs: ["尋找記憶裡最溫柔的目光", "守護黑暗中最堅定的夢想", "迎接黎明前最燦爛的希望"], notes: [293.66, 349.23, 440, 523.25, 587.33] },
+    { id: "n26_04", genre: "2026新歌", title: "幸福在歌唱", artist: "A-Lin", lead: "走過風雨之後才終於明白", answer: "原來幸福一直都在身旁歌唱", wrongs: ["原來快樂從來不曾離開身旁", "原來夢想一直都在前方發亮", "原來溫柔一直都藏在你眼眶"], notes: [349.23, 440, 523.25, 587.33, 659.25] },
+    { id: "n26_05", genre: "2026新歌", title: "我對緣分小心翼翼", artist: "林俊傑", lead: "在人海之中與你擦肩而過", answer: "我對緣分總是小心翼翼珍惜", wrongs: ["我對愛情總是猶豫不決逃避", "我對未來總是充滿期待前行", "我對回憶總是念念不忘提起"], notes: [329.63, 392, 440, 523.25, 493.88] },
+    { id: "n26_06", genre: "2026新歌", title: "布拉格廣場 JOLIN Version", artist: "蔡依林", lead: "我就站在布拉格黃昏的廣場", answer: "在許願池投下了希望", wrongs: ["看白鴿飛過教堂的尖塔", "聽鐘聲敲響古老的時光", "等著你出現在我的身旁"], notes: [440, 493.88, 523.25, 587.33, 659.25] },
+    { id: "n26_07", genre: "2026新歌", title: "在這裡等你", artist: "告五人", lead: "城市的霓虹燈一盞盞熄滅", answer: "我會一直在這裡等你回來", wrongs: ["我們在夜色裡靜靜地發呆", "你卻轉身消失在人潮人海", "風吹過屋頂帶走所有無奈"], notes: [392, 440, 523.25, 587.33, 523.25] },
+    { id: "n26_08", genre: "2026新歌", title: "最後一個謊", artist: "理想混蛋", lead: "笑著說再見其實心裡好痛", answer: "這是我對你說的最後一個謊", wrongs: ["這是我為你留的最後一扇窗", "這是我們之間最後一次原諒", "這是黑夜裡最微弱的一道光"], notes: [261.63, 329.63, 392, 440, 392] },
+    { id: "n26_09", genre: "2026新歌", title: "陪你到這", artist: "陳華", lead: "故事寫到最後一頁才發現", answer: "我只能陪你走到這個路口", wrongs: ["我們已經錯過最好的時候", "你早已牽起另一個人的手", "所有的承諾都變成了藉口"], notes: [329.63, 392, 440, 493.88, 523.25] },
+    { id: "n26_10", genre: "2026新歌", title: "甲乙丙丁", artist: "李佳薇", lead: "在你的劇本裡演好配角戲份", answer: "不過是人群中的甲乙丙丁", wrongs: ["不過是生命裡的過客風景", "不過是深夜裡的孤單身影", "不過是故事裡的無名姓名"], notes: [349.23, 392, 440, 523.25, 587.33] },
+    { id: "n26_11", genre: "2026新歌", title: "太陽與地球", artist: "盧廣仲", lead: "每天早起刷牙吃早餐出門", answer: "就像地球繞著太陽公轉一樣", wrongs: ["就像星星陪著月亮發光一樣", "就像微風吹過樹梢搖晃一樣", "就像海浪拍打沙灘歌唱一樣"], notes: [261.63, 293.66, 329.63, 392, 523.25] },
+    { id: "n26_12", genre: "2026新歌", title: "要去什麼地方", artist: "田馥甄", lead: "背上行囊離開熟悉的車站", answer: "不知道下一站要去什麼地方", wrongs: ["只想要尋找一個安靜的天堂", "忘記了昨天所有受過的創傷", "迎著風奔向沒有盡頭的遠方"], notes: [392, 440, 493.88, 523.25, 587.33] },
+    { id: "n26_13", genre: "2026新歌", title: "恆星不忘 Forever Forever", artist: "五月天阿信＆F4", lead: "青春的流星劃過那年星空", answer: "友誼像恆星一樣永遠不忘", wrongs: ["夢想在黑夜裡依然閃閃發亮", "我們並肩站在舞台的中央", "所有的感動都留在心底珍藏"], notes: [329.63, 392, 523.25, 587.33, 659.25] },
+    { id: "n26_14", genre: "2026新歌", title: "像晴天像雨天", artist: "汪蘇瀧", lead: "你的情緒總讓我猜不透", answer: "像晴天像雨天忽遠又忽近", wrongs: ["像春風像秋雨溫柔又安靜", "像白天像黑夜交替著來臨", "像流星像煙火短暫卻美麗"], notes: [392, 440, 523.25, 493.88, 440] },
+    { id: "n26_15", genre: "2026新歌", title: "跳樓機", artist: "LBI利比", lead: "愛你的心情像坐上雲霄飛車", answer: "忽上忽下像失控的跳樓機", wrongs: ["轉來轉去像迷路的旋轉木馬", "起起伏伏像翻湧的海岸潮汐", "搖搖晃晃像風中的紙飛機"], notes: [349.23, 440, 523.25, 587.33, 523.25] },
+    { id: "n26_16", genre: "2026新歌", title: "八方來財", artist: "攬佬", lead: "雙手合十誠心誠意祈求", answer: "祝你今年順風順水八方來財", wrongs: ["祝你每天開開心心笑口常開", "祝你事業步步高升大放異彩", "祝你出門平平安安好運常在"], notes: [261.63, 329.63, 392, 523.25, 659.25] },
+    { id: "n26_17", genre: "2026新歌", title: "沒出息", artist: "禮昂", lead: "每次下定決心說不再想你", answer: "看到你訊息又沒出息地回頭", wrongs: ["聽到你聲音又忍不住地淚流", "想到你笑容又傻傻地點點頭", "夢到你背影又偷偷地跟在後"], notes: [293.66, 349.23, 440, 392, 349.23] },
+    { id: "n26_18", genre: "2026新歌", title: "如果可以", artist: "韋禮安", lead: "如果可以我想和妳回到那天相遇", answer: "讓時間停止那一場雨", wrongs: ["讓微風吹散所有的回憶", "讓命運改寫我們的結局", "讓星空見證永恆的約定"], notes: [329.63, 392, 440, 523.25, 493.88] },
+    { id: "n26_19", genre: "2026新歌", title: "想和你看五月的晚霞", artist: "陳華", lead: "夏夜的微風吹過你的髮梢", answer: "想和你看五月的晚霞", wrongs: ["想和你聽海浪的回答", "想和你走過春秋冬夏", "想和你一起慢慢長大"], notes: [392, 440, 523.25, 587.33, 523.25] },
+    { id: "n26_20", genre: "2026新歌", title: "摯友", artist: "A-Lin", lead: "我們比情人更懂彼此的脆弱", answer: "卻只能當一輩子的摯友", wrongs: ["卻不敢跨出那一步挽留", "卻在轉身之後各自遠走", "卻把真心話都藏在背後"], notes: [349.23, 392, 440, 523.25, 493.88] },
+    { id: "n26_21", genre: "2026新歌", title: "帶你去找夜生活", artist: "告五人", lead: "白天的煩惱全都暫時拋開", answer: "今晚就帶你去找夜生活", wrongs: ["現在就跟我一起去兜風", "別再一個人躲在房間裡頭", "讓音樂帶走所有的寂寞"], notes: [261.63, 329.63, 392, 440, 523.25] },
+    { id: "n26_22", genre: "2026新歌", title: "運氣來得若有似無", artist: "告五人", lead: "在平凡的日子裡尋找奇蹟", answer: "運氣來得若有似無卻很真實", wrongs: ["幸福來得悄無聲息讓人著迷", "愛情來得突如其來無法解釋", "夢想來得遙不可及依然堅持"], notes: [329.63, 392, 440, 523.25, 587.33] },
+    { id: "n26_23", genre: "2026新歌", title: "不是因為天氣晴朗才愛你", artist: "理想混蛋", lead: "不是因為天氣晴朗才愛你", answer: "不是因為看見星星才想你", wrongs: ["不是因為害怕孤單才找你", "不是因為夜色太美才念你", "不是因為微風溫柔才抱你"], notes: [261.63, 329.63, 392, 440, 392] },
+    { id: "n26_24", genre: "2026新歌", title: "閣愛妳一擺", artist: "茄子蛋", lead: "想欲閣愛妳一擺", answer: "予我閣愛妳一擺", wrongs: ["予我閣看妳一擺", "予我閣等妳一擺", "予我閣牽妳一擺"], notes: [392, 440, 523.25, 493.88, 392] },
+    { id: "n26_25", genre: "2026新歌", title: "烏梅子醬", artist: "李榮浩", lead: "你淺淺的微笑就像", answer: "烏梅子醬", wrongs: ["草莓果醬", "焦糖瑪奇朵", "蜂蜜檸檬水"], notes: [329.63, 392, 440, 523.25, 392] },
+
+    // --- 💿 經典華語 KTV 金曲（15首） ---
+    { id: "c01", genre: "經典華語", title: "晴天", artist: "周杰倫", lead: "刮風這天我試過握著你手", answer: "但偏偏雨漸漸大到我看你不見", wrongs: ["但偏偏風慢慢吹散我們的誓言", "但偏偏雲悄悄遮住天邊的光線", "但偏偏淚水模糊了我雙眼"], notes: [392, 440, 493.88, 523.25, 493.88, 440, 392] },
+    { id: "c02", genre: "經典華語", title: "告白氣球", artist: "周杰倫", lead: "塞納河畔左岸的咖啡", answer: "我手一杯品嚐你的美", wrongs: ["你笑著說這風景很美", "微風吹過你揚起的眉", "陽光灑落浪漫的滋味"], notes: [329.63, 392, 440, 523.25, 493.88, 392] },
+    { id: "c03", genre: "經典華語", title: "稻香", artist: "周杰倫", lead: "還記得你說家是唯一的城堡", answer: "隨著稻香河流繼續奔跑", wrongs: ["跟著微風夕陽一起微笑", "看著遠方白雲慢慢飄搖", "沿著田邊小路大聲歌唱"], notes: [261.63, 329.63, 392, 440, 392, 329.63] },
+    { id: "c04", genre: "經典華語", title: "江南", artist: "林俊傑", lead: "風到這裡就是黏", answer: "黏住過客的思念", wrongs: ["留住昨天的畫面", "吹散所有的眷戀", "帶走最後的諾言"], notes: [349.23, 392, 440, 523.25, 493.88] },
+    { id: "c05", genre: "經典華語", title: "修煉愛情", artist: "林俊傑", lead: "修煉愛情的心酸", answer: "學會放好以前的渴望", wrongs: ["忘記曾經受過的創傷", "珍惜現在擁有的時光", "放下所有執著的夢想"], notes: [293.66, 349.23, 440, 392, 349.23] },
+    { id: "c06", genre: "經典華語", title: "突然好想你", artist: "五月天", lead: "最怕空氣突然安靜", answer: "最怕朋友突然的關心", wrongs: ["最怕深夜突然的回憶", "最怕電話突然的響起", "最怕眼淚突然的決堤"], notes: [392, 392, 440, 392, 523.25, 493.88] },
+    { id: "c07", genre: "經典華語", title: "倔強", artist: "五月天", lead: "我和我最後的倔強", answer: "握緊雙手絕對不放", wrongs: ["迎著逆風大步前往", "就算受傷也不投降", "看著前方充滿希望"], notes: [261.63, 329.63, 392, 523.25, 587.33] },
+    { id: "c08", genre: "經典華語", title: "小幸運", artist: "田馥甄", lead: "原來你是我最想留住的幸運", answer: "原來我們和愛情曾經靠得那麼近", wrongs: ["原來我們和夢想曾經走得那麼近", "原來你是我生命裡最美麗的風景", "原來所有的相遇都是命運的註定"], notes: [329.63, 392, 440, 493.88, 523.25, 587.33] },
+    { id: "c09", genre: "經典華語", title: "童話", artist: "光良", lead: "我要變成童話裡", answer: "你愛的那個天使", wrongs: ["守護你的小王子", "最勇敢的騎士", "永遠陪你的影子"], notes: [392, 392, 440, 392, 329.63] },
+    { id: "c10", genre: "經典華語", title: "十年", artist: "陳奕迅", lead: "十年之前我不認識你", answer: "你不屬於我", wrongs: ["我們還只是朋友", "你還沒愛上我", "我們都還很自由"], notes: [329.63, 293.66, 261.63, 293.66, 329.63] },
+    { id: "c11", genre: "經典華語", title: "後來", artist: "劉若英", lead: "後來我總算學會了如何去愛", answer: "可惜你早已遠去消失在人海", wrongs: ["可惜你已經轉身走出了未來", "只是你早已離開不再回來", "無奈時間卻帶走所有的期待"], notes: [392, 440, 493.88, 523.25, 493.88] },
+    { id: "c12", genre: "經典華語", title: "倒帶", artist: "蔡依林", lead: "終於看開愛回不來", answer: "而你總是太晚明白", wrongs: ["我們再也回不到從前", "所有承諾都已成空白", "我決定轉身離開"], notes: [440, 392, 349.23, 392, 440] },
+    { id: "c13", genre: "經典華語", title: "勇氣", artist: "梁靜茹", lead: "愛真的需要勇氣", answer: "來面對流言蜚語", wrongs: ["去相信奇蹟來臨", "陪著你走過風雨", "把真心全部給你"], notes: [261.63, 329.63, 392, 329.63, 293.66] },
+    { id: "c14", genre: "經典華語", title: "說愛你", artist: "蔡依林", lead: "我的世界變得奇妙更難以言喻", answer: "還以為是從天而降的夢境", wrongs: ["還以為是童話故事裡的奇蹟", "還以為是微風吹過來的甜蜜", "還以為是星空閃爍著的秘密"], notes: [392, 440, 523.25, 587.33, 523.25] },
+    { id: "c15", genre: "經典華語", title: "煎熬", artist: "李佳薇", lead: "心一跳愛就開始煎熬", answer: "每一分每一秒", wrongs: ["每一天每一夜", "躲不掉忘不了", "痛到快要瘋掉"], notes: [440, 493.88, 523.25, 587.33, 659.25] },
+
+    // --- 📱 抖音短影音洗腦神曲（10首） ---
+    { id: "t01", genre: "抖音神曲", title: "科目三", artist: "網路熱歌", lead: "江湖一笑浪滔滔", answer: "紅塵盡照Jv誰人笑", wrongs: ["清風明月任逍遙", "千山萬水走一遭", "英雄豪傑比天高"], notes: [392, 440, 523.25, 440, 392] },
+    { id: "t02", genre: "抖音神曲", title: "學貓叫", artist: "小潘潘＆小峰峰", lead: "我們一起學貓叫", answer: "一起喵喵喵喵喵", wrongs: ["一起跳跳跳跳跳", "一起笑笑笑笑笑", "一起抱抱抱抱抱"], notes: [523.25, 523.25, 587.33, 523.25, 440] },
+    { id: "t03", genre: "抖音神曲", title: "熱愛105°C的你", artist: "阿肆", lead: "Super Idol的笑容", answer: "都沒你的甜", wrongs: ["都沒有你耀眼", "溫暖了整個夏天", "讓人好想再見"], notes: [392, 440, 523.25, 587.33, 523.25] },
+    { id: "t04", genre: "抖音神曲", title: "愛你", artist: "王心凌", lead: "如果你突然打了個噴嚏", answer: "那一定就是我在想你", wrongs: ["那肯定就是我在念你", "那代表我正在看著你", "那說明我心裡只有你"], notes: [329.63, 392, 440, 523.25, 493.88] },
+    { id: "t05", genre: "抖音神曲", title: "孤勇者", artist: "陳奕迅", lead: "愛你孤身走暗巷", answer: "愛你不跪的模樣", wrongs: ["愛你無畏的堅強", "愛你勇敢的目光", "愛你逆風的翅膀"], notes: [293.66, 349.23, 392, 440, 392] },
+    { id: "t06", genre: "抖音神曲", title: "起風了", artist: "買辣椒也用券", lead: "我曾難自拔於世界之大", answer: "也沉溺於其中夢話", wrongs: ["也迷失在人潮喧嘩", "也害怕過現實複雜", "也期待過未來回答"], notes: [392, 440, 493.88, 523.25, 587.33] },
+    { id: "t07", genre: "抖音神曲", title: "漠河舞廳", artist: "柳爽", lead: "如果有時間你會來看一看我吧", answer: "看大雪如何衰老的我的眼睛如何融化", wrongs: ["看歲月如何帶走我們曾經說過的情話", "看寒風如何吹散記憶裡最溫暖的晚霞", "看時間如何改變我們當初單純的模樣"], notes: [261.63, 293.66, 329.63, 392, 440] },
+    { id: "t08", genre: "抖音神曲", title: "星辰大海", artist: "黃霄雲", lead: "我向你奔赴而來", answer: "你就是星辰大海", wrongs: ["你就是我的未來", "你就是唯一期待", "你就是所有熱愛"], notes: [349.23, 440, 523.25, 587.33, 659.25] },
+    { id: "t09", genre: "抖音神曲", title: "白月光與硃砂痣", artist: "大籽", lead: "白月光在照耀", answer: "你才想起她的好", wrongs: ["你才後悔放開手", "你才知道有多重要", "你才發現已經遲了"], notes: [329.63, 392, 440, 392, 329.63] },
+    { id: "t10", genre: "抖音神曲", title: "踏山河", artist: "是七叔呢", lead: "秋風吹起了戰鼓", answer: "塞外誰人還未歸", wrongs: ["千里江山任我飛", "長夜漫漫思念誰", "鐵馬冰河入夢來"], notes: [293.66, 349.23, 440, 523.25, 440] },
+
+    // --- 🏮 台語 KTV 必唱神曲（10首） ---
+    { id: "tw01", genre: "台語金曲", title: "浪子回頭", artist: "茄子蛋", lead: "菸一支一支一支地點", answer: "酒一杯一杯一杯地乾", wrongs: ["話一句一句一句地講", "歌一首一首一首地唱", "淚一滴一滴一滴地流"], notes: [261.63, 329.63, 392, 440, 392] },
+    { id: "tw02", genre: "台語金曲", title: "愛拚才會贏", artist: "葉啟田", lead: "一時失志不免怨嘆", answer: "一時落魄不免膽寒", wrongs: ["一時失敗不免傷心", "一時困難不免害怕", "一時孤單不免流淚"], notes: [392, 440, 523.25, 587.33, 523.25] },
+    { id: "tw03", genre: "台語金曲", title: "家後", artist: "江蕙", lead: "有一日咱若老", answer: "找無人甲咱友孝", wrongs: ["我會一直陪在你身旁", "牽你的手慢慢行", "感謝你一生的陪伴"], notes: [329.63, 392, 440, 392, 329.63] },
+    { id: "tw04", genre: "台語金曲", title: "追追追", artist: "黃妃", lead: "千江水千江月", answer: "千里帆千重山", wrongs: ["千般苦千般難", "千言萬語講不完", "千山萬水走透透"], notes: [440, 493.88, 523.25, 587.33, 659.25] },
+    { id: "tw05", genre: "台語金曲", title: "愛情限時批", artist: "伍佰＆萬芳", lead: "要安怎對你說出心內話", answer: "想了歸暝恰想嘛歹勢", wrongs: ["寫了一張愛情限時批", "不知你甘有體會", "希望你會凍了解"], notes: [392, 440, 523.25, 493.88, 440] },
+    { id: "tw06", genre: "台語金曲", title: "浪流連", artist: "茄子蛋", lead: "為著生活咱拼勢", answer: "為著將來咱著愛走闖", wrongs: ["為著理想咱勇敢向前", "為著家庭咱認真打拚", "為著愛情咱甘願等待"], notes: [293.66, 349.23, 440, 392, 349.23] },
+    { id: "tw07", genre: "台語金曲", title: "世界第一等", artist: "劉德華", lead: "人生的風景親像大海的風湧", answer: "有時猛有時平親愛朋友你著小心", wrongs: ["有時起有時落千萬不免太過傷心", "只要咱有信心一定會凍成功出頭天", "無論遇到啥物困難攏愛勇敢向前行"], notes: [329.63, 392, 440, 523.25, 493.88] },
+    { id: "tw08", genre: "台語金曲", title: "舞女", artist: "陳小雲", lead: "打扮著妖嬌模樣", answer: "陪人客搖來搖去", wrongs: ["在舞池轉來轉去", "唱著那悲傷歌曲", "心內的苦楚誰人知"], notes: [392, 440, 493.88, 523.25, 493.88] },
+    { id: "tw09", genre: "台語金曲", title: "樹枝孤鳥", artist: "伍佰", lead: "愛人啊我塊叫你", answer: "你甘有聽見", wrongs: ["你置叨位去", "為何無應聲", "我塊等待你"], notes: [261.63, 293.66, 329.63, 392, 329.63] },
+    { id: "tw10", genre: "台語金曲", title: "魚仔", artist: "盧廣仲", lead: "看魚仔在那游來游去", answer: "游來游去", wrongs: ["飛來飛去", "跑來跑去", "轉來轉去"], notes: [329.63, 392, 440, 392, 329.63] }
+  ];
+
+  // ==========================================
+  // 4. Web Audio 鋼琴前奏旋律與綜藝音效引擎
+  // ==========================================
+  let sfxOn = true, voiceOn = true, bgmOn = true;
+  let audioCtx = null, bgmTimer = null, bgmStep = 0;
+
+  function ensureAudio() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === "suspended") audioCtx.resume();
+  }
+
+  function playCurrentSongCue() {
+    ensureAudio();
+    const song = currentPlaylist[roundIndex];
+    if (!song) return;
+    const notes = song.notes || [392, 440, 523.25, 493.88, 392];
+    const now = audioCtx.currentTime;
+    notes.forEach((freq, i) => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(freq, now + i * 0.22);
+      gain.gain.setValueAtTime(0.24, now + i * 0.22);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.22 + 0.2);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now + i * 0.22);
+      osc.stop(now + i * 0.22 + 0.21);
+    });
+    speakText(`請聽題，${song.artist}的，${song.title}。${song.lead}`);
+  }
+
+  function playSFX(type) {
+    if (!sfxOn) return;
+    ensureAudio();
+    const now = audioCtx.currentTime;
+    if (type === "select") {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = "sine"; o.frequency.setValueAtTime(660, now);
+      g.gain.setValueAtTime(0.18, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+      o.connect(g); g.connect(audioCtx.destination); o.start(now); o.stop(now + 0.13);
+    } else if (type === "lockin") {
+      [220, 277.18, 329.63, 440].forEach((f, i) => {
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.type = "sawtooth"; o.frequency.setValueAtTime(f, now + i * 0.12);
+        g.gain.setValueAtTime(0.22, now + i * 0.12); g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.12 + 0.25);
+        o.connect(g); g.connect(audioCtx.destination); o.start(now + i * 0.12); o.stop(now + i * 0.12 + 0.26);
+      });
+    } else if (type === "correct") {
+      [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.type = "triangle"; o.frequency.setValueAtTime(f, now + i * 0.09);
+        g.gain.setValueAtTime(0.3, now + i * 0.09); g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.09 + 0.28);
+        o.connect(g); g.connect(audioCtx.destination); o.start(now + i * 0.09); o.stop(now + i * 0.09 + 0.3);
+      });
+    } else if (type === "wrong") {
+      [220, 185, 146.83].forEach((f, i) => {
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.type = "sawtooth"; o.frequency.setValueAtTime(f, now + i * 0.15);
+        g.gain.setValueAtTime(0.3, now + i * 0.15); g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.15 + 0.32);
+        o.connect(g); g.connect(audioCtx.destination); o.start(now + i * 0.15); o.stop(now + i * 0.15 + 0.34);
+      });
+    } else if (type === "lifeline") {
+      [880, 1174.66, 1318.5].forEach((f, i) => {
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.type = "sine"; o.frequency.setValueAtTime(f, now + i * 0.08);
+        g.gain.setValueAtTime(0.24, now + i * 0.08); g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.2);
+        o.connect(g); g.connect(audioCtx.destination); o.start(now + i * 0.08); o.stop(now + i * 0.08 + 0.22);
+      });
+    }
+  }
+
+  function startStageBGM() {
+    stopStageBGM();
+    if (!bgmOn) return;
+    ensureAudio();
+    const bassNotes = [130.81, 164.81, 196.00, 164.81, 146.83, 174.61, 220.00, 196.00];
+    bgmTimer = setInterval(() => {
+      if (!bgmOn || !audioCtx || audioCtx.state !== "running") return;
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(bassNotes[bgmStep % bassNotes.length], now);
+      gain.gain.setValueAtTime(0.032, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(now); osc.stop(now + 0.32);
+      bgmStep++;
+    }, 460);
+  }
+
+  function stopStageBGM() {
+    if (bgmTimer) { clearInterval(bgmTimer); bgmTimer = null; }
+  }
+
+  function speakText(text) {
+    if (!voiceOn || !("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "zh-TW";
+    u.pitch = 1.08;
+    u.rate = 1.15;
+    window.speechSynthesis.speak(u);
+  }
+
+  function toggleBGM() {
+    bgmOn = !bgmOn;
+    const b = document.getElementById("bgm-btn");
+    b.classList.toggle("active-audio", bgmOn);
+    b.textContent = bgmOn ? "🎵" : "🎵關";
+    if (bgmOn) startStageBGM(); else stopStageBGM();
+  }
+
+  function toggleVoice() {
+    voiceOn = !voiceOn;
+    const b = document.getElementById("voice-btn");
+    b.classList.toggle("active-audio", voiceOn);
+    b.textContent = voiceOn ? "🗣️" : "🤐";
+    if (!voiceOn && "speechSynthesis" in window) window.speechSynthesis.cancel();
+  }
+
+  function toggleSFX() {
+    sfxOn = !sfxOn;
+    const b = document.getElementById("sfx-btn");
+    b.classList.toggle("active-audio", sfxOn);
+    b.textContent = sfxOn ? "🔊" : "🔇";
+  }
+
+  // ==========================================
+  // 5. 百萬大歌星核心遊戲狀態與獎金階梯
+  // ==========================================
+  const PRIZE_LADDER = [1000, 3000, 5000, 10000, 25000, 50000, 100000, 150000, 200000, 300000];
+  const SAFE_INDICES = [2, 6]; // 第3關($5,000) 與 第7關($100,000) 為安全保底線
+
+  const CHALLENGER_ROLES = {
+    rookie: { name: "樂壇新秀", lives: 4, extraTime: 0, prizeMult: 1.0 },
+    ktv: { name: "KTV麥霸", lives: 3, extraTime: 6, prizeMult: 1.0 },
+    producer: { name: "金曲製作人", lives: 3, extraTime: 0, prizeMult: 1.2 }
+  };
+
+  const GALLERY_TITLES = [
+    { id: "rookie_debut", badge: "🎤 稱號 1/8｜初次登台", title: "超級新秀歌聲", desc: "完成首次百萬大歌星舞台挑戰並抱走獎金。" },
+    { id: "safe_5k", badge: "🛡️ 稱號 2/8｜穩健過關", title: "五千元安全線達人", desc: "成功衝破第 3 關安全線，保底獎金入袋！" },
+    { id: "safe_100k", badge: "💎 稱號 3/8｜十萬俱樂部", title: "十萬元黃金歌王", desc: "成功衝破第 7 關十萬元大關安全線！" },
+    { id: "million_winner", badge: "👑 稱號 4/8｜終極大滿貫", title: "三十萬獎金傳奇歌王", desc: "連闖十關全數答對，抱走節目最高 $300,000 大獎！" },
+    { id: "hardcore_writer", badge: "✍️ 稱號 5/8｜人肉提詞機", title: "一字不差手寫歌神", desc: "使用「硬核手寫模式」答對歌詞並獲得 1.5 倍加成！" },
+    { id: "no_lifeline", badge: "⚡ 稱號 6/8｜裸唱戰神", title: "零求救錦囊通關王", desc: "在不使用任何求救錦囊的情況下通關！" },
+    { id: "lyric_creator", badge: "🎼 稱號 7/8｜黃金作詞人", title: "全民填詞出題大師", desc: "成功發布一首玩家自訂填詞題目！" },
+    { id: "walk_away_pro", badge: "💰 稱號 8/8｜見好就收", title: "精準止盈理財歌王", desc: "在關鍵時刻果斷選擇見好就收，帶著累積獎金安全下莊！" }
+  ];
+
+  let selectedRole = "rookie";
+  let selectedMode = "all";
+  let currentPlaylist = [];
+  let roundIndex = 0;
   let currentPrize = 0;
-  let guaranteedPrize = 0;
-  let hearts = 3;
-  let isGameOver = false;
-  let isLockingIn = false;
-
-  let inputMode = "choice"; // "choice" | "type"
-  let currentOptions = [];
-  let selectedOptIdx = -1;
-  let hintedIndices = [];
-  let lifelinesUsed = { hint3: false, panel: false, pass: false };
-  let stageLogs = [];
+  let safePrize = 0;
+  let lives = 3;
+  let answerMode = "choice";
+  let selectedChoiceText = null;
+  let currentRoundOptions = [];
+  let isRoundLocked = false;
+  let roundTimer = null;
+  let timeRemaining = 20.0;
+  let lifelines = { hint3: false, advisors: false, pass: false };
+  let revealedHintIndices = [];
+  let roundLogs = [];
   let lastShareImageUrl = "";
+  let unlockedTitles = JSON.parse(localStorage.getItem("million_singer_titles_v2") || "[]");
 
-  // 倒數計時器
-  let timerInterval = null;
-  let timeRemaining = 15.0;
-
-  function selectPlaylist(pl) {
-    selectedPlaylist = pl;
-    ["all", "classic", "tiktok", "taiwanese"].forEach(k => {
-      document.getElementById("pl-" + k).classList.toggle("active", k === pl);
-    });
-    playSFX("lifeline");
+  function unlockTitle(id) {
+    if (!unlockedTitles.includes(id)) {
+      unlockedTitles.push(id);
+      localStorage.setItem("million_singer_titles_v2", JSON.stringify(unlockedTitles));
+      updateAllCounters();
+      const meta = GALLERY_TITLES.find(t => t.id === id);
+      if (meta) showToast(`🏆 解鎖新歌王稱號：【${meta.title}】！`);
+    }
   }
 
-  function selectPace(pace) {
-    selectedPace = pace;
-    ["timed", "practice"].forEach(k => {
-      document.getElementById("pace-" + k).classList.toggle("active", k === pace);
-    });
-    playSFX("lifeline");
+  function updateAllCounters() {
+    document.getElementById("hud-song-count").textContent = SONG_LIBRARY.length;
+    document.getElementById("hud-unlock").textContent = unlockedTitles.length;
+    document.getElementById("cover-unlock").textContent = unlockedTitles.length;
+    const adminTotal = document.getElementById("admin-total-songs");
+    if (adminTotal) adminTotal.textContent = SONG_LIBRARY.length;
   }
 
-  function renderLadderStrip() {
-    const box = document.getElementById("ladder-strip");
+  function selectChallenger(roleKey) {
+    selectedRole = roleKey;
+    ["rookie", "ktv", "producer"].forEach(k => {
+      document.getElementById("role-" + k).classList.toggle("active", k === roleKey);
+    });
+    playSFX("select");
+  }
+
+  function selectMode(modeKey) {
+    selectedMode = modeKey;
+    ["all", "2026", "daily", "classic", "tiktok", "taiwanese"].forEach(m => {
+      const el = document.getElementById("mode-" + m);
+      if (el) el.classList.toggle("active", m === modeKey);
+    });
+    playSFX("select");
+  }
+
+  function getDailySeededRandom() {
+    const d = new Date();
+    let seed = d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+    return function() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+  }
+
+  function buildPlaylist() {
+    let pool = SONG_LIBRARY.filter(s => !s.disabled);
+    if (pool.length < 10) pool = [...SONG_LIBRARY];
+
+    if (selectedMode === "2026") {
+      const f = pool.filter(s => s.genre === "2026新歌");
+      if (f.length >= 5) pool = f;
+    } else if (selectedMode === "classic") {
+      const f = pool.filter(s => s.genre === "經典華語");
+      if (f.length >= 5) pool = f;
+    } else if (selectedMode === "tiktok") {
+      const f = pool.filter(s => s.genre === "抖音神曲");
+      if (f.length >= 5) pool = f;
+    } else if (selectedMode === "taiwanese") {
+      const f = pool.filter(s => s.genre === "台語金曲");
+      if (f.length >= 5) pool = f;
+    }
+
+    const rng = selectedMode === "daily" ? getDailySeededRandom() : Math.random;
+    const copy = [...pool];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    // 優先確保玩家剛投稿的本機歌曲容易在前幾關出現
+    const freshCustom = copy.filter(s => s.justSubmitted);
+    const others = copy.filter(s => !s.justSubmitted);
+    return [...freshCustom, ...others].slice(0, 12);
+  }
+
+  function renderPrizeLadder() {
+    const box = document.getElementById("prize-ladder");
     box.innerHTML = "";
-    PRIZE_LADDER.forEach((val, idx) => {
+    PRIZE_LADDER.forEach((amt, idx) => {
       const div = document.createElement("div");
-      const isSafe = idx === 2 || idx === 6; // $5,000 與 $100,000 安全線
-      let cls = "ladder-step";
-      if (isSafe) cls += " safe-node";
-      if (idx < stepIndex) cls += " passed";
-      else if (idx === stepIndex && !isGameOver) cls += " current";
-      div.className = cls;
-      div.textContent = val >= 10000 ? `${val / 10000}萬` : `${val / 1000}K`;
+      div.className = "ladder-step";
+      if (SAFE_INDICES.includes(idx)) div.classList.add("safe-node");
+      if (idx < roundIndex) div.classList.add("passed");
+      if (idx === roundIndex) div.classList.add("current");
+      div.textContent = amt >= 10000 ? `${amt / 10000}萬` : `${amt / 1000}K`;
       box.appendChild(div);
     });
   }
 
-  function renderHeartsAndPrize() {
-    document.getElementById("hud-prize").textContent = currentPrize.toLocaleString();
-    document.getElementById("hud-hearts").textContent = "❤️".repeat(Math.max(0, hearts)) + "🖤".repeat(Math.max(0, 3 - hearts));
+  function renderStageHUD() {
+    document.getElementById("hud-prize").textContent = `$${currentPrize.toLocaleString()}`;
+    document.getElementById("hud-safe").textContent = `$${safePrize.toLocaleString()}`;
+    document.getElementById("hud-lives").textContent = lives > 0 ? "❤️".repeat(lives) : "💔";
+    renderPrizeLadder();
   }
 
-  function startNewShow() {
+  function startNewGame() {
     ensureAudio();
-    resizeFXCanvas();
-
-    let pool = selectedPlaylist === "all"
-      ? [...SONG_BANK]
-      : SONG_BANK.filter(s => s.category === selectedPlaylist);
-    if (pool.length < 10) pool = [...SONG_BANK];
-
-    // 洗牌抽取 11 首（10 階 ＋ 1 首給「換一首歌」錦囊備用）
-    for (let i = pool.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [pool[i], pool[j]] = [pool[j], pool[i]];
-    }
-
-    activeSetlist = pool.slice(0, 11);
-    stepIndex = 0;
+    resizeStageCanvas();
+    const roleCfg = CHALLENGER_ROLES[selectedRole] || CHALLENGER_ROLES.rookie;
+    lives = roleCfg.lives;
     currentPrize = 0;
-    guaranteedPrize = 0;
-    hearts = 3;
-    isGameOver = false;
-    isLockingIn = false;
-    stageLogs = [];
-    lifelinesUsed = { hint3: false, panel: false, pass: false };
+    safePrize = 0;
+    roundIndex = 0;
+    roundLogs = [];
+    lifelines = { hint3: false, advisors: false, pass: false };
+    ["ll-hint3", "ll-advisors", "ll-pass"].forEach(id => document.getElementById(id).classList.remove("used"));
 
-    ["hint3", "panel", "pass"].forEach(k => {
-      document.getElementById("life-" + k).classList.remove("used");
-    });
-
+    currentPlaylist = buildPlaylist();
     document.getElementById("start-modal").classList.add("hidden");
     document.getElementById("end-modal").classList.add("hidden");
     startStageBGM();
-    loadSongStep();
+    loadCurrentRound();
   }
 
-  function loadSongStep() {
-    stopTimer();
-    isLockingIn = false;
-    selectedOptIdx = -1;
-    hintedIndices = [];
-
-    if (stepIndex >= 10 || stepIndex >= activeSetlist.length) {
-      triggerShowEnding(true, "🏆 恭喜登頂《百萬大歌星》歌王寶座！");
+  function loadCurrentRound() {
+    stopRoundTimer();
+    if (roundIndex >= 10 || roundIndex >= currentPlaylist.length) {
+      finishGame("win_million");
       return;
     }
 
-    const song = activeSetlist[stepIndex];
-    const stepPrize = PRIZE_LADDER[stepIndex];
-    const isSafe = stepIndex === 2 || stepIndex === 6;
+    isRoundLocked = false;
+    selectedChoiceText = null;
+    revealedHintIndices = [];
+    const song = currentPlaylist[roundIndex];
+    const roleCfg = CHALLENGER_ROLES[selectedRole] || CHALLENGER_ROLES.rookie;
+    const stepPrize = Math.round(PRIZE_LADDER[roundIndex] * roleCfg.prizeMult);
 
-    renderLadderStrip();
-    renderHeartsAndPrize();
+    renderStageHUD();
 
-    const cardEl = document.getElementById("song-stage-card");
-    cardEl.classList.remove("lock-in-suspense", "reveal-correct", "reveal-wrong");
+    const tpCard = document.getElementById("teleprompter-card");
+    tpCard.classList.remove("lock-in-glow", "correct-flash", "wrong-shake");
 
-    document.getElementById("card-genre").textContent = song.genre;
-    document.getElementById("card-step-prize").textContent =
-      `第 ${stepIndex + 1}/10 關｜$${stepPrize.toLocaleString()}${isSafe ? " 🛡️保底線" : ""}`;
-    document.getElementById("card-song-title").textContent = `《${song.title}》`;
-    document.getElementById("card-artist").textContent = `🎤 原唱：${song.artist}`;
-    document.getElementById("card-prev-lyric").textContent = song.prevLyric;
+    document.getElementById("song-genre-badge").textContent = `第 ${roundIndex + 1}/10 關・${song.genre}`;
+    document.getElementById("song-title-display").textContent = `《${song.title}》－ ${song.artist}`;
+    document.getElementById("lead-lyrics-text").textContent = `「${song.lead}」`;
 
-    const cleanAns = normalizeLyric(song.answer);
-    document.getElementById("target-count-label").textContent = `請接唱下一句（共 ${cleanAns.length} 個字）`;
-    renderBlankSlots(cleanAns, false, false);
+    const cleanAns = song.answer.replace(/\s+/g, "");
+    document.getElementById("blank-count-label").textContent = `🎤 請接唱出正確歌詞（共 ${cleanAns.length} 個字｜本關獎金 $${stepPrize.toLocaleString()}）`;
+    renderBlankSlots(cleanAns);
 
-    // 準備四選一選項
-    const opts = [song.answer, ...(song.distractors || []).slice(0, 3)];
-    while (opts.length < 4) opts.push(song.answer + "啊");
-    for (let i = opts.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [opts[i], opts[j]] = [opts[j], opts[i]];
-    }
-    currentOptions = opts;
+    const hostLines = [
+      `哈林哥：「第 ${roundIndex + 1} 關獎金 $${stepPrize.toLocaleString()}！這首《${song.title}》大家 KTV 必唱吧！」`,
+      `哈林哥：「注意看提詞機一共 ${cleanAns.length} 個字，對自己沒把握隨時可以用求救錦囊！」`,
+      `哈林哥：「音樂聲催落去！想清楚再喊 LOCK IN，千萬別唱錯字啊！」`
+    ];
+    document.getElementById("host-comment-text").textContent = hostLines[roundIndex % hostLines.length];
 
-    for (let i = 0; i < 4; i++) {
-      const btn = document.getElementById("opt-btn-" + i);
-      btn.textContent = currentOptions[i];
-      btn.classList.remove("selected");
-    }
+    // 組合四選一選項
+    const wrongs = (song.wrongs && song.wrongs.length >= 3)
+      ? song.wrongs.slice(0, 3)
+      : ["我的思念還停留在昨天晚上", "讓微風吹散所有的回憶與惆悵", "我們的故事寫到了最後一章"];
+    currentRoundOptions = [song.answer, ...wrongs].sort(() => Math.random() - 0.5);
+    renderChoiceOptions();
 
-    document.getElementById("hardcore-lyric-input").value = "";
-    document.getElementById("lock-in-btn").disabled = true;
-    document.getElementById("stage-status-msg").textContent =
-      inputMode === "type"
-        ? "✍️ 硬核手寫模式啟動中：答對本題獎金直接 × 1.5 倍！"
-        : "🎯 點選下方接唱歌詞後，按下「鎖定答案」！";
+    document.getElementById("typed-lyrics-input").value = "";
+    document.getElementById("lockin-btn").disabled = false;
 
-    if (selectedPace === "timed" && !coopRoomCode) {
-      startTimer();
-    } else {
-      document.getElementById("timer-box").classList.remove("urgent-pulse");
-      document.getElementById("timer-label-text").textContent = coopRoomCode ? "👥 雙人連線協力中" : "☕ 無壓力練習模式";
-      document.getElementById("timer-bar-fill").style.width = "100%";
-    }
-
-    setTimeout(() => speakCurrentLyrics(), 260);
+    startRoundTimer(20 + roleCfg.extraTime);
+    setTimeout(() => playCurrentSongCue(), 300);
   }
 
-  function normalizeLyric(str) {
-    return (str || "").replace(/[\s,，。！？!?、~～「」『』()（）]/g, "").trim();
-  }
-
-  function renderBlankSlots(cleanAns, revealAll, isSuccess) {
-    const row = document.getElementById("blank-slots-row");
+  function renderBlankSlots(cleanAns) {
+    const row = document.getElementById("char-slots-row");
     row.innerHTML = "";
     for (let i = 0; i < cleanAns.length; i++) {
       const slot = document.createElement("div");
       slot.className = "char-slot";
-      if (revealAll) {
+      if (revealedHintIndices.includes(i)) {
+        slot.classList.add("revealed");
         slot.textContent = cleanAns[i];
-        slot.classList.add(isSuccess ? "revealed-ok" : "revealed-bad");
-      } else if (hintedIndices.includes(i)) {
-        slot.textContent = cleanAns[i];
-        slot.classList.add("hinted");
       } else {
         slot.textContent = "？";
       }
@@ -1906,538 +1967,592 @@
     }
   }
 
-  function switchInputMode(mode) {
-    if (isLockingIn) return;
-    inputMode = mode;
-    document.getElementById("pill-choice-mode").classList.toggle("active", mode === "choice");
-    document.getElementById("pill-type-mode").classList.toggle("active", mode === "type");
-    document.getElementById("choice-options-grid").classList.toggle("hidden", mode !== "choice");
-    document.getElementById("hardcore-input-wrap").classList.toggle("hidden", mode !== "type");
-
-    if (mode === "choice") {
-      document.getElementById("lock-in-btn").disabled = selectedOptIdx === -1;
-      document.getElementById("stage-status-msg").textContent = "🎯 點選下方接唱歌詞後，按下「鎖定答案」！";
-    } else {
-      onHardcoreTyping();
-      document.getElementById("stage-status-msg").textContent = "✍️ 硬核手寫模式：答對本題獎金 × 1.5 倍！";
-      document.getElementById("hardcore-lyric-input").focus();
-    }
-  }
-
-  function selectOption(idx) {
-    if (isLockingIn || isGameOver) return;
-    selectedOptIdx = idx;
-    for (let i = 0; i < 4; i++) {
-      document.getElementById("opt-btn-" + i).classList.toggle("selected", i === idx);
-    }
-    document.getElementById("lock-in-btn").disabled = false;
-    playSFX("lifeline");
-  }
-
-  function onHardcoreTyping() {
-    if (isLockingIn || isGameOver) return;
-    const val = normalizeLyric(document.getElementById("hardcore-lyric-input").value);
-    document.getElementById("lock-in-btn").disabled = val.length === 0;
-  }
-
-  // ==========================================
-  // 6. 經典三大求救錦囊邏輯
-  // ==========================================
-  function useLifelineHint3() {
-    if (lifelinesUsed.hint3 || isLockingIn || isGameOver) return;
-    lifelinesUsed.hint3 = true;
-    document.getElementById("life-hint3").classList.add("used");
-    playSFX("lifeline");
-
-    const song = activeSetlist[stepIndex];
-    const cleanAns = normalizeLyric(song.answer);
-    const candidates = [];
-    for (let i = 0; i < cleanAns.length; i++) {
-      if (!hintedIndices.includes(i)) candidates.push(i);
-    }
-    for (let i = candidates.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
-    }
-    hintedIndices.push(...candidates.slice(0, 3));
-    renderBlankSlots(cleanAns, false, false);
-    showToast("💡 已揭露 3 個關鍵中文字！");
-  }
-
-  function useLifelinePanel() {
-    if (lifelinesUsed.panel || isLockingIn || isGameOver) return;
-    lifelinesUsed.panel = true;
-    document.getElementById("life-panel").classList.add("used");
-    playSFX("lifeline");
-
-    const song = activeSetlist[stepIndex];
-    const wrongPool = (song.distractors && song.distractors.length > 0) ? song.distractors : [song.answer];
-    const advisors = [
-      {
-        name: "🎧 金曲製作人・阿哲",
-        guess: song.answer,
-        quote: "這首編曲進副歌前我太熟了，相信我絕對是這句！"
-      },
-      {
-        name: "🎤 KTV麥霸・小美",
-        guess: wrongPool[0] || song.answer,
-        quote: "我上禮拜去包廂才剛點過，印象中好像是這樣唱…"
-      },
-      {
-        name: "🧐 資深樂評人・老王",
-        guess: wrongPool[1] || wrongPool[0] || song.answer,
-        quote: "從作詞人的押韻習慣推斷，這句的可能性最高。"
-      }
-    ];
-
-    // 隨機打亂三位嘉賓順序
-    for (let i = advisors.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [advisors[i], advisors[j]] = [advisors[j], advisors[i]];
-    }
-
-    const list = document.getElementById("panel-advisors-list");
-    list.innerHTML = "";
-    advisors.forEach(adv => {
-      const div = document.createElement("div");
-      div.className = "list-card";
-      div.innerHTML = `
-        <div class="l-title">${adv.name}</div>
-        <div class="l-desc" style="margin-bottom:3px;">「${adv.quote}」</div>
-        <div style="font-size:12px; font-weight:900; color:#67e8f9;">推薦歌詞：${adv.guess}</div>
-      `;
-      list.appendChild(div);
+  function renderChoiceOptions() {
+    const box = document.getElementById("options-container");
+    box.innerHTML = "";
+    const letters = ["A", "B", "C", "D"];
+    currentRoundOptions.forEach((optText, idx) => {
+      const btn = document.createElement("button");
+      btn.className = "opt-choice-btn" + (selectedChoiceText === optText ? " selected" : "");
+      btn.innerHTML = `<span class="opt-letter">${letters[idx]}</span><span>${optText}</span>`;
+      btn.onclick = () => {
+        if (isRoundLocked) return;
+        selectedChoiceText = optText;
+        playSFX("select");
+        renderChoiceOptions();
+      };
+      box.appendChild(btn);
     });
-    document.getElementById("panel-modal").classList.remove("hidden");
   }
 
-  function useLifelinePass() {
-    if (lifelinesUsed.pass || isLockingIn || isGameOver) return;
-    lifelinesUsed.pass = true;
-    document.getElementById("life-pass").classList.add("used");
-    playSFX("lifeline");
-
-    if (activeSetlist.length > 10) {
-      const backupSong = activeSetlist.pop();
-      activeSetlist[stepIndex] = backupSong;
-      showToast("⏭️ 已使用 PASS 錦囊換一首新歌！");
-      loadSongStep();
-    } else {
-      showToast("⚠️ 備用曲庫已用盡");
-    }
+  function switchAnswerMode(mode) {
+    if (isRoundLocked) return;
+    answerMode = mode;
+    document.getElementById("tab-choice").classList.toggle("active", mode === "choice");
+    document.getElementById("tab-type").classList.toggle("active", mode === "type");
+    document.getElementById("options-container").classList.toggle("hidden", mode !== "choice");
+    document.getElementById("type-answer-box").classList.toggle("hidden", mode !== "type");
+    playSFX("select");
   }
 
-  // ==========================================
-  // 7. 鎖定答案（LOCK IN）聚光燈揭曉與獎金判定
-  // ==========================================
-  function lockInAnswer() {
-    if (isLockingIn || isGameOver) return;
-    const song = activeSetlist[stepIndex];
-    const cleanCorrect = normalizeLyric(song.answer);
-
-    let playerRaw = "";
-    if (inputMode === "choice") {
-      if (selectedOptIdx === -1) return;
-      playerRaw = currentOptions[selectedOptIdx];
-    } else {
-      playerRaw = document.getElementById("hardcore-lyric-input").value;
-    }
-    const cleanPlayer = normalizeLyric(playerRaw);
-    if (!cleanPlayer) return;
-
-    stopTimer();
-    isLockingIn = true;
-    document.getElementById("lock-in-btn").disabled = true;
-
-    const cardEl = document.getElementById("song-stage-card");
-    cardEl.classList.add("lock-in-suspense");
-    document.getElementById("stage-status-msg").textContent = "🥁 鎖定答案！全場屏息等待提詞機揭曉……";
-    playSFX("lockin");
-
-    setTimeout(() => {
-      cardEl.classList.remove("lock-in-suspense");
-      const isCorrect = cleanPlayer === cleanCorrect;
-      renderBlankSlots(cleanCorrect, true, isCorrect);
-
-      if (isCorrect) {
-        cardEl.classList.add("reveal-correct");
-        playSFX("correct");
-
-        const basePrize = PRIZE_LADDER[stepIndex];
-        const earned = inputMode === "type" ? Math.round(basePrize * 1.5) : basePrize;
-        currentPrize += earned;
-
-        // 檢查是否通過安全線保底（第3階、第7階）
-        if (stepIndex === 2 || stepIndex === 6) {
-          guaranteedPrize = currentPrize;
-          showToast(`🛡️ 突破安全線！目前保底獎金 $${guaranteedPrize.toLocaleString()}`);
-        } else {
-          showToast(`🎉 接唱完全正確！獲得獎金 +$${earned.toLocaleString()}`);
-        }
-
-        document.getElementById("stage-status-msg").textContent =
-          `✅ 完全正確！《${song.title}》獎金 +$${earned.toLocaleString()}`;
-
-        stageLogs.push({
-          step: stepIndex + 1,
-          title: song.title,
-          artist: song.artist,
-          answer: song.answer,
-          playerAnswer: playerRaw,
-          ok: true,
-          earned
-        });
-
-        renderHeartsAndPrize();
-        setTimeout(() => {
-          stepIndex++;
-          if (coopRoomCode) syncCoopMoveToCloud();
-          loadSongStep();
-        }, 1450);
-      } else {
-        cardEl.classList.add("reveal-wrong");
-        playSFX("wrong");
-        hearts--;
-        recordMissedSong(song.title, song.artist);
-        renderHeartsAndPrize();
-
-        document.getElementById("stage-status-msg").textContent =
-          `❌ 唱錯囉！正確歌詞是：「${song.answer}」`;
-
-        stageLogs.push({
-          step: stepIndex + 1,
-          title: song.title,
-          artist: song.artist,
-          answer: song.answer,
-          playerAnswer: playerRaw,
-          ok: false,
-          earned: 0
-        });
-
-        setTimeout(() => {
-          if (hearts <= 0) {
-            currentPrize = guaranteedPrize;
-            renderHeartsAndPrize();
-            triggerShowEnding(false, `💔 三次失誤淘汰！帶走安全線保底獎金 $${guaranteedPrize.toLocaleString()}`);
-          } else {
-            showToast(`⚠️ 失誤扣除 1 顆愛心！還剩 ${hearts} 次機會`);
-            stepIndex++;
-            if (coopRoomCode) syncCoopMoveToCloud();
-            loadSongStep();
-          }
-        }, 1750);
-      }
-    }, 1050);
-  }
-
-  // ==========================================
-  // 8. 15 秒舞台倒數計時器
-  // ==========================================
-  function startTimer() {
-    stopTimer();
-    timeRemaining = 15.0;
-    const box = document.getElementById("timer-box");
-    const fill = document.getElementById("timer-bar-fill");
-    const lbl = document.getElementById("timer-label-text");
-    box.classList.remove("urgent-pulse");
+  function startRoundTimer(seconds) {
+    stopRoundTimer();
+    timeRemaining = seconds;
+    const total = seconds;
+    const wrap = document.getElementById("timer-bar-wrap");
+    const fill = document.getElementById("timer-fill");
+    const txt = document.getElementById("timer-sec-text");
+    wrap.classList.remove("urgent");
     fill.style.width = "100%";
+    txt.textContent = timeRemaining.toFixed(1);
 
-    timerInterval = setInterval(() => {
-      if (isGameOver || isLockingIn) { stopTimer(); return; }
+    roundTimer = setInterval(() => {
+      if (isRoundLocked) { stopRoundTimer(); return; }
       timeRemaining -= 0.1;
-      if (timeRemaining <= 5.0) box.classList.add("urgent-pulse");
-
+      if (timeRemaining <= 5.0) wrap.classList.add("urgent");
       if (timeRemaining <= 0) {
-        stopTimer();
-        playSFX("wrong");
-        hearts--;
-        const song = activeSetlist[stepIndex];
-        recordMissedSong(song.title, song.artist);
-        renderBlankSlots(normalizeLyric(song.answer), true, false);
-        renderHeartsAndPrize();
-
-        stageLogs.push({
-          step: stepIndex + 1,
-          title: song.title,
-          artist: song.artist,
-          answer: song.answer,
-          playerAnswer: "（時間到未作答）",
-          ok: false,
-          earned: 0
-        });
-
-        if (hearts <= 0) {
-          currentPrize = guaranteedPrize;
-          renderHeartsAndPrize();
-          triggerShowEnding(false, `⏰ 時間到且失誤滿 3 次！帶走保底獎金 $${guaranteedPrize.toLocaleString()}`);
-        } else {
-          showToast(`⏰ 時間到！扣除 1 顆愛心（剩餘 ${hearts} 顆）`);
-          setTimeout(() => {
-            stepIndex++;
-            loadSongStep();
-          }, 1400);
-        }
+        stopRoundTimer();
+        handleAnswerEvaluated(false, "（超時未接唱）", true);
       } else {
-        fill.style.width = ((timeRemaining / 15.0) * 100) + "%";
-        lbl.textContent = `⏱️ 接唱倒數 ${timeRemaining.toFixed(1)}s`;
+        fill.style.width = ((timeRemaining / total) * 100) + "%";
+        txt.textContent = timeRemaining.toFixed(1);
       }
     }, 100);
   }
 
-  function stopTimer() {
-    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  function stopRoundTimer() {
+    if (roundTimer) { clearInterval(roundTimer); roundTimer = null; }
   }
 
   // ==========================================
-  // 9. 結算、歌單回顧、Reels 腳本與戰績圖
+  // 6. 三大經典求救錦囊功能
   // ==========================================
-  function triggerShowEnding(isClear, headline) {
-    stopTimer();
+  function useLifelineHint3() {
+    if (isRoundLocked || lifelines.hint3) return;
+    lifelines.hint3 = true;
+    document.getElementById("ll-hint3").classList.add("used");
+    playSFX("lifeline");
+
+    const cleanAns = currentPlaylist[roundIndex].answer.replace(/\s+/g, "");
+    const indices = [...Array(cleanAns.length).keys()].sort(() => Math.random() - 0.5);
+    revealedHintIndices = indices.slice(0, Math.min(3, cleanAns.length));
+    renderBlankSlots(cleanAns);
+    document.getElementById("host-comment-text").textContent = "哈林哥：「提詞機已經幫你點亮三個關鍵字了，這樣應該很明顯了吧！」";
+    showToast("💡 已揭曉提詞機三個關鍵字！");
+  }
+
+  function useLifelineAdvisors() {
+    if (isRoundLocked || lifelines.advisors) return;
+    lifelines.advisors = true;
+    document.getElementById("ll-advisors").classList.add("used");
+    playSFX("lifeline");
+
+    const song = currentPlaylist[roundIndex];
+    const wrongSample = (song.wrongs && song.wrongs[0]) || "我的思念還停留在昨天晚上";
+    const advisors = [
+      { name: "🎧 資深音樂製作人（可信度 90%）", quote: `「這首《${song.title}》我超熟！原唱下一句絕對是『${song.answer}』，放心鎖定！」` },
+      { name: "🎤 週五夜唱 KTV 霸主（可信度 75%）", quote: `「我記得副歌這裡字數有 ${song.answer.replace(/\s+/g, "").length} 個字，聽起來像是『${song.answer}』！」` },
+      { name: "😵 剛下班有點恍神的觀眾（可信度 30%）", quote: `「咦？我怎麼隱約記得好像是『${wrongSample}』……還是我記成別首歌了？」` }
+    ].sort(() => Math.random() - 0.5);
+
+    const list = document.getElementById("advisors-list");
+    list.innerHTML = "";
+    advisors.forEach(a => {
+      const div = document.createElement("div");
+      div.className = "advisor-row";
+      div.innerHTML = `<div class="advisor-name">${a.name}</div><div class="advisor-quote">${a.quote}</div>`;
+      list.appendChild(div);
+    });
+    document.getElementById("advisors-modal").classList.remove("hidden");
+  }
+
+  function useLifelinePass() {
+    if (isRoundLocked || lifelines.pass) return;
+    lifelines.pass = true;
+    document.getElementById("ll-pass").classList.add("used");
+    playSFX("lifeline");
+
+    const usedIds = new Set(currentPlaylist.map(s => s.id));
+    const replacement = SONG_LIBRARY.find(s => !s.disabled && !usedIds.has(s.id));
+    if (replacement) {
+      currentPlaylist[roundIndex] = replacement;
+      showToast(`⏭️ 已更換新歌：《${replacement.title}》！`);
+      loadCurrentRound();
+    } else {
+      showToast("⚠️ 題庫已無其他替換歌曲");
+    }
+  }
+
+  // ==========================================
+  // 7. 鎖定答案 LOCK IN 與聚光燈停頓揭曉
+  // ==========================================
+  function normalizeLyrics(str) {
+    return (str || "").replace(/[\s，。！？、,.!?「」『』()（）\-—~～]/g, "").trim();
+  }
+
+  function lockInAnswer() {
+    if (isRoundLocked) return;
+    const song = currentPlaylist[roundIndex];
+    let userAns = "";
+
+    if (answerMode === "choice") {
+      if (!selectedChoiceText) {
+        showToast("⚠️ 請先點選一個接唱選項，再按鎖定答案！");
+        return;
+      }
+      userAns = selectedChoiceText;
+    } else {
+      userAns = document.getElementById("typed-lyrics-input").value.trim();
+      if (!userAns) {
+        showToast("⚠️ 請先輸入接唱歌詞，再按鎖定答案！");
+        return;
+      }
+    }
+
+    isRoundLocked = true;
+    stopRoundTimer();
+    document.getElementById("lockin-btn").disabled = true;
+
+    const tpCard = document.getElementById("teleprompter-card");
+    tpCard.classList.add("lock-in-glow");
+    playSFX("lockin");
+    document.getElementById("host-comment-text").textContent = `哈林哥：「選手喊出 LOCK IN！鎖定『${userAns}』！到底對不對呢……？」`;
+
+    setTimeout(() => {
+      const isCorrect = normalizeLyrics(userAns) === normalizeLyrics(song.answer);
+      handleAnswerEvaluated(isCorrect, userAns, false);
+    }, 1150);
+  }
+
+  function handleAnswerEvaluated(isCorrect, userAns, isTimeout) {
+    isRoundLocked = true;
+    const song = currentPlaylist[roundIndex];
+    const tpCard = document.getElementById("teleprompter-card");
+    tpCard.classList.remove("lock-in-glow");
+
+    // 揭曉完整正確歌詞
+    const cleanAns = song.answer.replace(/\s+/g, "");
+    revealedHintIndices = [...Array(cleanAns.length).keys()];
+    renderBlankSlots(cleanAns);
+
+    // 標示四選一按鈕顏色
+    const btns = document.querySelectorAll(".opt-choice-btn");
+    btns.forEach(btn => {
+      if (btn.textContent.includes(song.answer)) btn.classList.add("correct-ans");
+      else if (userAns && btn.textContent.includes(userAns)) btn.classList.add("wrong-ans");
+    });
+
+    const globalPassPct = recordSongAccuracy(song.id, isCorrect);
+    const roleCfg = CHALLENGER_ROLES[selectedRole] || CHALLENGER_ROLES.rookie;
+    const typeMult = answerMode === "type" ? 1.5 : 1.0;
+
+    roundLogs.push({
+      round: roundIndex + 1,
+      title: song.title,
+      artist: song.artist,
+      lead: song.lead,
+      answer: song.answer,
+      userAns: userAns,
+      isCorrect: isCorrect,
+      globalPct: globalPassPct
+    });
+
+    if (isCorrect) {
+      playSFX("correct");
+      tpCard.classList.add("correct-flash");
+      const gained = Math.round(PRIZE_LADDER[roundIndex] * roleCfg.prizeMult * typeMult);
+      currentPrize = gained;
+
+      if (SAFE_INDICES.includes(roundIndex)) {
+        safePrize = currentPrize;
+        if (roundIndex === 2) unlockTitle("safe_5k");
+        if (roundIndex === 6) unlockTitle("safe_100k");
+        showToast(`🛡️ 衝破安全線！保底獎金提升至 $${safePrize.toLocaleString()}！`);
+      } else {
+        showToast(`🎉 接唱正確！獎金累積至 $${currentPrize.toLocaleString()}（全服答對率 ${globalPassPct}%）`);
+      }
+
+      if (answerMode === "type") unlockTitle("hardcore_writer");
+      document.getElementById("host-comment-text").textContent = `哈林哥：「賓果！一字不差完全正確！全服有 ${globalPassPct}% 的人唱對這首！」`;
+      renderStageHUD();
+
+      setTimeout(() => {
+        roundIndex++;
+        if (coopRoomCode) syncCoopMoveToCloud();
+        loadCurrentRound();
+      }, 1500);
+    } else {
+      playSFX("wrong");
+      tpCard.classList.add("wrong-shake");
+      recordWipeoutSong(song);
+      lives--;
+      renderStageHUD();
+
+      const reason = isTimeout ? "時間到沒唱出來" : "歌詞唱錯一個字";
+      document.getElementById("host-comment-text").textContent = `哈林哥：「哎呀！${reason}！正確歌詞是『${song.answer}』！」`;
+      showToast(`💔 ${reason}！剩餘 ${lives} 顆愛心`);
+
+      setTimeout(() => {
+        if (lives <= 0) {
+          finishGame("fail_out");
+        } else {
+          roundIndex++;
+          if (coopRoomCode) syncCoopMoveToCloud();
+          loadCurrentRound();
+        }
+      }, 1750);
+    }
+  }
+
+  function walkAwayWithPrize() {
+    if (isRoundLocked) return;
+    if (currentPrize <= 0) {
+      showToast("⚠️ 目前獎金為 $0，至少先答對第一關才能見好就收喔！");
+      return;
+    }
+    stopRoundTimer();
+    unlockTitle("walk_away_pro");
+    finishGame("walk_away");
+  }
+
+  function finishGame(endReason) {
+    stopRoundTimer();
     stopStageBGM();
-    isGameOver = true;
-    playSFX(isClear ? "win" : "fail");
+    isRoundLocked = true;
 
-    document.getElementById("end-badge").textContent = isClear ? "👑 GRAND CHAMPION" : "🎤 STAGE FINALE";
-    document.getElementById("end-title").textContent = headline;
-    const correctCount = stageLogs.filter(x => x.ok).length;
-    document.getElementById("end-desc").textContent =
-      `本場共接對 ${correctCount} / ${stageLogs.length} 首金曲，最終累積抱走獎金 $${currentPrize.toLocaleString()}！`;
-    document.getElementById("final-prize-num").textContent = currentPrize.toLocaleString();
+    let finalMoney = currentPrize;
+    let badge = "🎤 舞台結算";
+    let title = "";
+    let desc = "";
 
-    const subBtn = document.getElementById("submit-score-btn");
-    subBtn.disabled = false;
-    subBtn.textContent = "登錄上榜";
+    const usedAnyLifeline = lifelines.hint3 || lifelines.advisors || lifelines.pass;
 
+    if (endReason === "win_million") {
+      badge = "👑 終極大滿貫｜三十萬歌王";
+      title = `太神啦！抱走 $${finalMoney.toLocaleString()} 最高獎金！`;
+      desc = "你連闖十關全數精準接唱，成為 2026 百萬大歌星舞台上的傳奇歌王！";
+      unlockTitle("million_winner");
+      unlockTitle("rookie_debut");
+      if (!usedAnyLifeline) unlockTitle("no_lifeline");
+    } else if (endReason === "walk_away") {
+      badge = "💰 見好就收｜安全下莊";
+      title = `精準止盈！帶走 $${finalMoney.toLocaleString()} 獎金！`;
+      desc = `你在第 ${roundIndex + 1} 關前果斷見好就收，成功守住所有累積獎金！`;
+      unlockTitle("rookie_debut");
+    } else {
+      finalMoney = safePrize;
+      badge = "💔 挑戰止步｜安全線結算";
+      title = finalMoney > 0 ? `惜敗出局！帶走安全線保底 $${finalMoney.toLocaleString()}` : "挑戰失敗！差一點就過安全線了！";
+      desc = `你在第 ${roundIndex + 1} 關耗盡愛心，依節目規則帶走最近一道安全線保底獎金！`;
+      if (finalMoney > 0) unlockTitle("rookie_debut");
+    }
+
+    currentPrize = finalMoney;
+    document.getElementById("end-badge").textContent = badge;
+    document.getElementById("end-title").textContent = title;
+    document.getElementById("end-desc").textContent = desc;
+    document.getElementById("final-prize-num").textContent = `$${finalMoney.toLocaleString()}`;
+    document.getElementById("submit-score-btn").disabled = false;
+    document.getElementById("submit-score-btn").textContent = "登錄上榜";
     document.getElementById("end-modal").classList.remove("hidden");
   }
 
-  function openSongLogModal() {
-    playSFX("lifeline");
-    const list = document.getElementById("song-log-list");
-    list.innerHTML = "";
-    stageLogs.forEach(item => {
-      const div = document.createElement("div");
-      div.className = "list-card";
-      div.innerHTML = `
-        <div class="l-title">第 ${item.step} 關｜《${item.title}》－ ${item.artist} ${item.ok ? `✅ +$${item.earned.toLocaleString()}` : "❌ 失誤"}</div>
-        <div class="l-desc">正確歌詞：${item.answer}</div>
-        <div class="l-desc" style="color:${item.ok ? "#6ee7b7" : "#fda4af"};">你的作答：${item.playerAnswer}</div>
-      `;
-      list.appendChild(div);
-    });
-    document.getElementById("log-modal").classList.remove("hidden");
+  // ==========================================
+  // 8. 玩家自由投稿「自己填詞出題」系統
+  // ==========================================
+  function openPlayerSubmitModal() {
+    playSFX("select");
+    document.getElementById("player-submit-modal").classList.remove("hidden");
   }
 
-  function openReelsScriptModal() {
-    playSFX("lifeline");
-    const endTitle = document.getElementById("end-title").textContent;
-    const highlights = stageLogs.slice(0, 3).map((l, i) =>
-      `【分鏡 ${i + 2}｜第 ${l.step} 關《${l.title}》】\n` +
-      `畫面：提詞機亮出前句歌詞，倒數計時器狂閃，按下鎖定答案！\n` +
-      `旁白：「挑戰 ${l.artist} 的《${l.title}》，我直接接唱『${l.playerAnswer}』，結果居然${l.ok ? "一字不差過關！" : "當場唱錯扣愛心！"}」`
-    ).join("\n\n");
-
-    const script =
-      `【30秒 IG Reels / Shorts 綜藝接歌實況腳本】\n` +
-      `挑戰節目：《百萬大歌星》接歌生存挑戰\n` +
-      `最終戰績：抱走獎金 $${currentPrize.toLocaleString()}\n\n` +
-      `【分鏡 1｜開場 Hook（0-3秒）】\n` +
-      `畫面：舞台金色聚光燈亮起，獎金階梯從 $1,000 一路衝向 $300,000。\n` +
-      `旁白：「以前超夯的綜藝節目《百萬大歌星》出網頁版了！你能一字不差接出幾首金曲？」\n\n` +
-      highlights + `\n\n` +
-      `【分鏡 5｜結算反轉（22-30秒）】\n` +
-      `畫面：跳出結算戰績卡【${endTitle}】。\n` +
-      `旁白：「最後我一共抱走 $${currentPrize.toLocaleString()} 獎金！留言告訴我你最拿手哪位歌手的歌！」`;
-
-    document.getElementById("reels-script-content").textContent = script;
-    document.getElementById("reels-modal").classList.remove("hidden");
+  function fillSampleCustomSong() {
+    document.getElementById("ps-title").value = "愛錯";
+    document.getElementById("ps-artist").value = "王力宏";
+    document.getElementById("ps-genre").value = "經典華語";
+    document.getElementById("ps-lead").value = "北風毫不留情 把葉子吹落";
+    document.getElementById("ps-answer").value = "脆弱的她選擇了逃脫";
+    document.getElementById("ps-wrong1").value = "孤單的我選擇了沉默";
+    document.getElementById("ps-wrong2").value = "傷心的你轉身就走過";
+    document.getElementById("ps-wrong3").value = "所有的愛變成了泡沫";
+    showToast("✨ 已填入範例歌詞，可直接按下發布測試！");
   }
 
-  function copyReelsScript() {
-    const txt = document.getElementById("reels-script-content").textContent;
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(txt).then(() => showToast("📋 已複製 Reels 實況腳本！"));
+  async function submitPlayerCustomSong() {
+    const title = document.getElementById("ps-title").value.trim();
+    const artist = document.getElementById("ps-artist").value.trim() || "玩家自創";
+    const genre = document.getElementById("ps-genre").value;
+    const author = document.getElementById("ps-author").value.trim() || "熱心玩家";
+    const lead = document.getElementById("ps-lead").value.trim();
+    const answer = document.getElementById("ps-answer").value.trim().replace(/[，。！？、,.!?]/g, "");
+    const w1 = document.getElementById("ps-wrong1").value.trim() || "我的思念還停留在昨天晚上";
+    const w2 = document.getElementById("ps-wrong2").value.trim() || "讓微風吹散所有的回憶與惆悵";
+    const w3 = document.getElementById("ps-wrong3").value.trim() || "我們的故事寫到了最後一章";
+    const playNow = document.getElementById("ps-play-now").checked;
+
+    if (!title || !lead || !answer) {
+      showToast("⚠️ 請完整填寫「歌名」、「前導歌詞」與「正確接唱歌詞」！");
+      return;
+    }
+
+    const newSongObj = {
+      id: "player_" + Date.now(),
+      genre: genre,
+      title: `${title}（${author}填詞）`,
+      artist: artist,
+      lead: lead,
+      answer: answer,
+      wrongs: [w1, w2, w3],
+      notes: [392, 440, 523.25, 493.88, 392],
+      isCustom: true,
+      justSubmitted: true
+    };
+
+    if (playNow) {
+      SONG_LIBRARY.unshift(newSongObj);
+      saveLocalSongs();
+      updateAllCounters();
+    }
+
+    unlockTitle("lyric_creator");
+    playSFX("correct");
+    document.getElementById("player-submit-modal").classList.add("hidden");
+    showToast("🎉 填詞成功！已加入本機歌單並送出雲端審核！");
+
+    try {
+      await fetch(`${firebaseBaseUrl}/million_singer_submissions.json`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...newSongObj, author })
+      });
+    } catch (e) {}
+  }
+
+  // ==========================================
+  // 9. 管理員題庫後台（審核玩家投稿、增刪改歌曲、單曲試玩）
+  // ==========================================
+  function openAdminModal() {
+    playSFX("select");
+    if (isAdminUnlocked) {
+      showAdminStudio();
     } else {
-      showToast("⚠️ 請長按文字框手動全選複製");
+      document.getElementById("admin-pin-input").value = "";
+      document.getElementById("admin-pin-error").textContent = "";
+      document.getElementById("admin-lock-modal").classList.remove("hidden");
     }
   }
 
-  function generateShareCard() {
-    playSFX("win");
-    const c = document.createElement("canvas");
-    c.width = 540; c.height = 840;
-    const ctx = c.getContext("2d");
-
-    const grad = ctx.createLinearGradient(0, 0, 0, 840);
-    grad.addColorStop(0, "#1e1042");
-    grad.addColorStop(1, "#070510");
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 540, 840);
-
-    ctx.strokeStyle = "#fbbf24";
-    ctx.lineWidth = 6;
-    ctx.strokeRect(18, 18, 504, 804);
-
-    ctx.fillStyle = "#fde68a";
-    ctx.font = "bold 20px sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("MILLION DOLLAR SINGER", 270, 68);
-
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "900 34px sans-serif";
-    ctx.fillText("百萬大歌星・接歌戰績卡", 270, 118);
-
-    ctx.fillStyle = "#fbbf24";
-    ctx.font = "900 44px sans-serif";
-    ctx.fillText(`$${currentPrize.toLocaleString()}`, 270, 195);
-
-    ctx.fillStyle = "#67e8f9";
-    ctx.font = "bold 18px sans-serif";
-    const correctCount = stageLogs.filter(x => x.ok).length;
-    ctx.fillText(`累計接對 ${correctCount} / ${stageLogs.length} 首經典金曲`, 270, 238);
-
-    ctx.textAlign = "left";
-    stageLogs.slice(0, 7).forEach((item, idx) => {
-      const y = 300 + idx * 58;
-      ctx.fillStyle = item.ok ? "#6ee7b7" : "#fda4af";
-      ctx.font = "bold 18px sans-serif";
-      ctx.fillText(`${item.ok ? "✅" : "❌"} 第${item.step}關《${item.title}》－ ${item.artist}`, 52, y);
-      ctx.fillStyle = "#cbd5e1";
-      ctx.font = "14px sans-serif";
-      ctx.fillText(`接唱：${item.answer.slice(0, 20)}`, 78, y + 22);
-    });
-
-    ctx.textAlign = "center";
-    ctx.fillStyle = "#fde68a";
-    ctx.font = "bold 18px sans-serif";
-    ctx.fillText("挑戰你的華語／台語金曲歌詞記憶庫！", 270, 775);
-
-    lastShareImageUrl = c.toDataURL("image/png");
-    document.getElementById("share-card-img").src = lastShareImageUrl;
-    document.getElementById("share-modal").classList.remove("hidden");
+  function verifyAdminPin() {
+    const val = document.getElementById("admin-pin-input").value.trim();
+    if (val === currentAdminPin) {
+      isAdminUnlocked = true;
+      playSFX("correct");
+      document.getElementById("admin-lock-modal").classList.add("hidden");
+      showAdminStudio();
+    } else {
+      playSFX("wrong");
+      document.getElementById("admin-pin-error").textContent = "❌ 密碼錯誤";
+    }
   }
 
-  function downloadShareCard() {
-    if (!lastShareImageUrl) return;
+  function showAdminStudio() {
+    renderSongManageList();
+    loadPendingSubmissions();
+    document.getElementById("admin-modal").classList.remove("hidden");
+  }
+
+  function lockAndCloseAdmin() {
+    isAdminUnlocked = false;
+    document.getElementById("admin-modal").classList.add("hidden");
+    showToast("🔒 管理員後台已上鎖");
+  }
+
+  let editingSongId = null;
+
+  function renderSongManageList() {
+    updateAllCounters();
+    const box = document.getElementById("song-manage-list");
+    if (!box) return;
+    box.innerHTML = "";
+    SONG_LIBRARY.forEach((s, idx) => {
+      const row = document.createElement("div");
+      row.className = "ev-manage-row" + (s.disabled ? " disabled-ev" : "");
+      row.innerHTML = `
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:11px; font-weight:800; color:#fde68a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">[${s.genre}] 《${s.title}》－${s.artist}</div>
+          <div style="font-size:10px; color:#94a3b8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">接唱：${s.answer}</div>
+        </div>
+        <div style="display:flex; gap:4px;">
+          <button class="cast-mini-btn" style="border-color:#22c55e; color:#bbf7d0;" onclick="testSingleSong(${idx})">▶️ 試唱</button>
+          <button class="cast-mini-btn" onclick="toggleSongEnabled(${idx})">${s.disabled ? "🚫 停用" : "✅ 啟用"}</button>
+        </div>
+      `;
+      box.appendChild(row);
+    });
+  }
+
+  async function toggleSongEnabled(idx) {
+    SONG_LIBRARY[idx].disabled = !SONG_LIBRARY[idx].disabled;
+    renderSongManageList();
+    await pushSongsToFirebase();
+  }
+
+  function testSingleSong(idx) {
+    const song = SONG_LIBRARY[idx];
+    if (!song) return;
+    document.getElementById("admin-modal").classList.add("hidden");
+    document.getElementById("start-modal").classList.add("hidden");
+    document.getElementById("end-modal").classList.add("hidden");
+    ensureAudio();
+    resizeStageCanvas();
+    lives = 3;
+    currentPrize = 0;
+    safePrize = 0;
+    roundIndex = 0;
+    currentPlaylist = [song];
+    loadCurrentRound();
+    showToast(`▶️ 正在單曲試唱：《${song.title}》`);
+  }
+
+  function resetSongEditor() {
+    editingSongId = null;
+    document.getElementById("song-editor-title").textContent = "➕ 直接新增 2026 歌曲至全服歌庫";
+    document.getElementById("cancel-song-edit-btn").classList.add("hidden");
+    ["new-song-title", "new-song-artist", "new-song-lead", "new-song-answer", "new-song-wrong1", "new-song-wrong2", "new-song-wrong3"].forEach(id => {
+      document.getElementById(id).value = "";
+    });
+  }
+
+  async function saveCustomSong() {
+    const title = document.getElementById("new-song-title").value.trim() || "自訂金曲";
+    const artist = document.getElementById("new-song-artist").value.trim() || "神秘歌手";
+    const genre = document.getElementById("new-song-genre").value;
+    const lead = document.getElementById("new-song-lead").value.trim() || "前奏響起的那一瞬間";
+    const answer = document.getElementById("new-song-answer").value.trim() || "我們一起大聲唱出來";
+    const w1 = document.getElementById("new-song-wrong1").value.trim() || "我的思念還停留在昨天晚上";
+    const w2 = document.getElementById("new-song-wrong2").value.trim() || "讓微風吹散所有的回憶與惆悵";
+    const w3 = document.getElementById("new-song-wrong3").value.trim() || "我們的故事寫到了最後一章";
+
+    SONG_LIBRARY.unshift({
+      id: "admin_" + Date.now(),
+      genre,
+      title,
+      artist,
+      lead,
+      answer,
+      wrongs: [w1, w2, w3],
+      notes: [392, 440, 523.25, 493.88, 392],
+      isCustom: true
+    });
+
+    resetSongEditor();
+    renderSongManageList();
+    playSFX("correct");
+    await pushSongsToFirebase();
+  }
+
+  let pendingSubmissionsMap = {};
+  async function loadPendingSubmissions() {
+    const list = document.getElementById("pending-sub-list");
+    if (!list) return;
+    try {
+      const resp = await fetch(`${firebaseBaseUrl}/million_singer_submissions.json?t=${Date.now()}`);
+      const data = await resp.json();
+      pendingSubmissionsMap = data || {};
+      const keys = Object.keys(pendingSubmissionsMap);
+      document.getElementById("sub-pending-count").textContent = keys.length;
+      if (keys.length === 0) {
+        list.innerHTML = `<div style="font-size:11px; color:#94a3b8;">目前沒有待審核的玩家填詞投稿</div>`;
+        return;
+      }
+      list.innerHTML = "";
+      keys.forEach(k => {
+        const sub = pendingSubmissionsMap[k];
+        const row = document.createElement("div");
+        row.className = "ev-manage-row";
+        row.innerHTML = `
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:11px; font-weight:800; color:#fde68a;">《${sub.title}》－${sub.artist}</div>
+            <div style="font-size:10px; color:#e2e8f0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${sub.lead} → ${sub.answer}</div>
+          </div>
+          <div style="display:flex; gap:4px;">
+            <button class="cast-mini-btn" onclick="approveSubmission('${k}')">✅ 核准</button>
+            <button class="cast-mini-btn" onclick="rejectSubmission('${k}')">✕</button>
+          </div>
+        `;
+        list.appendChild(row);
+      });
+    } catch (e) {}
+  }
+
+  async function approveSubmission(key) {
+    const sub = pendingSubmissionsMap[key];
+    if (!sub) return;
+    SONG_LIBRARY.unshift({
+      id: "approved_" + Date.now(),
+      genre: sub.genre || "2026新歌",
+      title: sub.title,
+      artist: sub.artist,
+      lead: sub.lead,
+      answer: sub.answer,
+      wrongs: sub.wrongs || ["我的思念還停留在昨天晚上", "讓微風吹散所有的回憶與惆悵", "我們的故事寫到了最後一章"],
+      notes: [392, 440, 523.25, 493.88, 392],
+      isCustom: true
+    });
+    await fetch(`${firebaseBaseUrl}/million_singer_submissions/${key}.json`, { method: "DELETE" });
+    renderSongManageList();
+    await loadPendingSubmissions();
+    await pushSongsToFirebase();
+  }
+
+  async function rejectSubmission(key) {
+    await fetch(`${firebaseBaseUrl}/million_singer_submissions/${key}.json`, { method: "DELETE" });
+    await loadPendingSubmissions();
+  }
+
+  async function changeAdminPassword() {
+    const newPin = document.getElementById("new-admin-pin-input").value.trim();
+    if (newPin.length < 4) { showToast("⚠️ 密碼至少需 4 碼"); return; }
+    currentAdminPin = newPin;
+    localStorage.setItem("singer_game_admin_pin", currentAdminPin);
+    document.getElementById("new-admin-pin-input").value = "";
+    await pushSongsToFirebase();
+  }
+
+  function exportSongsJSON() {
+    const blob = new Blob([JSON.stringify(SONG_LIBRARY, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
-    a.href = lastShareImageUrl;
-    a.download = "million_singer_score.png";
+    a.href = URL.createObjectURL(blob);
+    a.download = "million_singer_2026_songs.json";
     a.click();
   }
 
-  // ==========================================
-  // 10. Firebase 歌王排行榜 ＆ 最易唱錯 TOP 5
-  // ==========================================
-  async function submitScoreToLeaderboard() {
-    const nick = document.getElementById("player-nickname-input").value.trim() || "神秘挑戰歌王";
-    const btn = document.getElementById("submit-score-btn");
-    btn.disabled = true;
-    btn.textContent = "上傳中...";
-    try {
-      const plNames = { all: "全曲庫大滿貫", classic: "經典華語金曲", tiktok: "抖音短影音神曲", taiwanese: "台語KTV必點" };
-      await fetch(`${firebaseBaseUrl}/million_singer_leaderboard.json`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: nick,
-          prize: currentPrize,
-          playlist: plNames[selectedPlaylist] || "全曲庫大滿貫",
-          date: new Date().toLocaleDateString("zh-TW")
-        })
-      });
-      btn.textContent = "✅ 已上榜";
-      showToast("🏅 已成功登錄全服歌王排行榜！");
-    } catch (e) {
-      btn.disabled = false;
-      btn.textContent = "重試";
-    }
-  }
-
-  async function openLeaderboard() {
-    playSFX("lifeline");
-    document.getElementById("leaderboard-modal").classList.remove("hidden");
-    const list = document.getElementById("leaderboard-list");
-    list.innerHTML = `<div class="l-desc" style="text-align:center;">正在讀取全服歌王榜...</div>`;
-    try {
-      const resp = await fetch(`${firebaseBaseUrl}/million_singer_leaderboard.json?t=${Date.now()}`);
-      const data = await resp.json();
-      if (!data) {
-        list.innerHTML = `<div class="l-desc" style="text-align:center;">尚無上榜紀錄，快來搶下首位歌王！</div>`;
-        return;
+  function importSongsJSON(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async e => {
+      try {
+        const arr = JSON.parse(e.target.result);
+        if (Array.isArray(arr) && arr.length > 0) {
+          SONG_LIBRARY.length = 0;
+          arr.forEach(s => SONG_LIBRARY.push(s));
+          renderSongManageList();
+          await pushSongsToFirebase();
+        }
+      } catch (err) {
+        showToast("⚠️ JSON 格式錯誤");
       }
-      const rows = Object.values(data).sort((a, b) => b.prize - a.prize).slice(0, 15);
-      list.innerHTML = "";
-      rows.forEach((r, idx) => {
-        const medal = idx === 0 ? "🥇" : (idx === 1 ? "🥈" : (idx === 2 ? "🥉" : `#${idx + 1}`));
-        const div = document.createElement("div");
-        div.className = "rank-row";
-        div.innerHTML = `
-          <div>
-            <div style="font-size:13px; font-weight:800; color:#f8fafc;">${medal} ${r.name}</div>
-            <div style="font-size:10.5px; color:#94a3b8;">${r.playlist} ・ ${r.date || ""}</div>
-          </div>
-          <div style="font-size:14.5px; font-weight:900; color:#fbbf24;">$${(r.prize || 0).toLocaleString()}</div>
-        `;
-        list.appendChild(div);
-      });
-    } catch (e) {
-      list.innerHTML = `<div class="l-desc" style="text-align:center;">讀取失敗，請檢查網路</div>`;
-    }
-  }
-
-  function recordMissedSong(title, artist) {
-    const safeKey = encodeURIComponent(title).replace(/\./g, "_");
-    fetch(`${firebaseBaseUrl}/million_singer_missed/${safeKey}/count.json?t=${Date.now()}`)
-      .then(r => r.json())
-      .then(cur => {
-        const nextVal = (typeof cur === "number" ? cur : 0) + 1;
-        return fetch(`${firebaseBaseUrl}/million_singer_missed/${safeKey}.json`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title, artist, count: nextVal })
-        });
-      })
-      .catch(() => {});
-  }
-
-  async function openWipeoutRanking() {
-    playSFX("lifeline");
-    document.getElementById("wipeout-modal").classList.remove("hidden");
-    const list = document.getElementById("wipeout-list");
-    list.innerHTML = `<div class="l-desc" style="text-align:center;">正在統計最易唱錯金曲...</div>`;
-    try {
-      const resp = await fetch(`${firebaseBaseUrl}/million_singer_missed.json?t=${Date.now()}`);
-      const data = await resp.json();
-      if (!data) {
-        list.innerHTML = `<div class="l-desc" style="text-align:center;">目前尚無唱錯統計紀錄！</div>`;
-        return;
-      }
-      const rows = Object.values(data).filter(x => x && x.title).sort((a, b) => b.count - a.count).slice(0, 5);
-      list.innerHTML = "";
-      rows.forEach((r, idx) => {
-        const div = document.createElement("div");
-        div.className = "rank-row";
-        div.innerHTML = `
-          <div>
-            <div style="font-size:13px; font-weight:800; color:#fda4af;">#${idx + 1} 《${r.title}》－ ${r.artist}</div>
-            <div style="font-size:10.5px; color:#94a3b8;">全服歌詞記憶大魔王</div>
-          </div>
-          <div style="font-size:13.5px; font-weight:900; color:#f43f5e;">${r.count} 次唱錯</div>
-        `;
-        list.appendChild(div);
-      });
-    } catch (e) {
-      list.innerHTML = `<div class="l-desc" style="text-align:center;">讀取失敗</div>`;
-    }
+    };
+    reader.readAsText(file);
   }
 
   // ==========================================
-  // 11. 雙人連線 PK（沿用 Firebase 4 碼房號）
+  // 10. 雙人房號對唱 PK 連線模式
   // ==========================================
   let coopRoomCode = null, coopRole = null, coopPollTimer = null, coopLastSynced = -1;
 
   function openCoopModal() {
-    playSFX("lifeline");
+    playSFX("select");
     document.getElementById("coop-wait-status").textContent = "";
     document.getElementById("coop-modal").classList.remove("hidden");
   }
@@ -2452,266 +2567,323 @@
   async function createCoopRoom() {
     const code = String(Math.floor(1000 + Math.random() * 9000));
     coopRoomCode = code; coopRole = "P1";
-    const pool = [...SONG_BANK].sort(() => Math.random() - 0.5).slice(0, 11);
-    const roomState = { stepIndex: 0, currentPrize: 0, hearts: 3, setlist: pool, updatedAt: Date.now() };
-    await fetch(`${firebaseBaseUrl}/million_singer_rooms/${code}.json`, {
-      method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(roomState)
+    const deck = buildPlaylist().slice(0, 10);
+    const state = { roundIndex: 0, currentPrize: 0, lives: 3, deck, updatedAt: Date.now() };
+    await fetch(`${firebaseBaseUrl}/million_singer_coop/${code}.json`, {
+      method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(state)
     });
-    startCoopSession(roomState);
+    startCoopSession(state);
   }
 
   async function joinCoopRoom() {
     const code = document.getElementById("coop-room-input").value.trim();
     if (code.length !== 4) { document.getElementById("coop-wait-status").textContent = "⚠️ 請輸入 4 碼房號"; return; }
-    const resp = await fetch(`${firebaseBaseUrl}/million_singer_rooms/${code}.json?t=${Date.now()}`);
-    const roomState = await resp.json();
-    if (!roomState || !Array.isArray(roomState.setlist)) {
-      document.getElementById("coop-wait-status").textContent = "❌ 找不到此房間";
-      return;
-    }
+    const resp = await fetch(`${firebaseBaseUrl}/million_singer_coop/${code}.json?t=${Date.now()}`);
+    const state = await resp.json();
+    if (!state || !Array.isArray(state.deck)) { document.getElementById("coop-wait-status").textContent = "❌ 找不到此房間"; return; }
     coopRoomCode = code; coopRole = "P2";
-    startCoopSession(roomState);
+    startCoopSession(state);
   }
 
-  function startCoopSession(roomState) {
-    ensureAudio(); resizeFXCanvas();
+  function startCoopSession(state) {
+    ensureAudio(); resizeStageCanvas();
     document.getElementById("coop-modal").classList.add("hidden");
     document.getElementById("start-modal").classList.add("hidden");
     document.getElementById("end-modal").classList.add("hidden");
-
-    activeSetlist = roomState.setlist;
-    stepIndex = roomState.stepIndex || 0;
-    currentPrize = roomState.currentPrize || 0;
-    hearts = roomState.hearts || 3;
-    coopLastSynced = stepIndex;
-    isGameOver = false;
-    stageLogs = [];
-
+    currentPlaylist = state.deck;
+    roundIndex = state.roundIndex || 0;
+    currentPrize = state.currentPrize || 0;
+    lives = state.lives || 3;
+    coopLastSynced = roundIndex;
     document.getElementById("coop-banner").classList.remove("hidden");
-    document.getElementById("coop-room-info").textContent = `👥 房號 ${coopRoomCode}（${coopRole === "P1" ? "P1 主唱" : "P2 搭檔"}）`;
-    loadSongStep();
+    document.getElementById("coop-room-info").textContent = `👥 房號 ${coopRoomCode}（${coopRole === "P1" ? "P1 主唱" : "P2 合唱"}）`;
+    loadCurrentRound();
     updateCoopTurnLock();
-
     if (coopPollTimer) clearInterval(coopPollTimer);
-    coopPollTimer = setInterval(pollCoopRoom, 2500);
+    coopPollTimer = setInterval(pollCoopState, 2500);
   }
 
   function updateCoopTurnLock() {
     if (!coopRoomCode) return;
-    const isMyTurn = (stepIndex % 2 === 0 && coopRole === "P1") || (stepIndex % 2 === 1 && coopRole === "P2");
-    const statusEl = document.getElementById("coop-turn-status");
-    const controls = document.getElementById("bottom-controls");
+    const isMyTurn = (roundIndex % 2 === 0 && coopRole === "P1") || (roundIndex % 2 === 1 && coopRole === "P2");
+    const st = document.getElementById("coop-turn-status");
+    const lockBtn = document.getElementById("lockin-btn");
     if (isMyTurn) {
-      statusEl.textContent = "🟢 輪到你接唱！";
-      statusEl.style.color = "#6ee7b7";
-      controls.style.pointerEvents = "auto";
-      controls.style.opacity = "1";
+      st.textContent = "🟢 輪到你接唱！";
+      st.style.color = "#4ade80";
+      lockBtn.disabled = false;
     } else {
-      statusEl.textContent = "⏳ 等待隊友接唱中...";
-      statusEl.style.color = "#fde68a";
-      controls.style.pointerEvents = "none";
-      controls.style.opacity = "0.45";
+      st.textContent = "⏳ 等待隊友接唱中...";
+      st.style.color = "#fbbf24";
+      lockBtn.disabled = true;
     }
   }
 
   async function syncCoopMoveToCloud() {
     if (!coopRoomCode) return;
-    coopLastSynced = stepIndex;
-    await fetch(`${firebaseBaseUrl}/million_singer_rooms/${coopRoomCode}.json`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ stepIndex, currentPrize, hearts, updatedAt: Date.now() })
+    coopLastSynced = roundIndex;
+    await fetch(`${firebaseBaseUrl}/million_singer_coop/${coopRoomCode}.json`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ roundIndex, currentPrize, lives, updatedAt: Date.now() })
     });
     updateCoopTurnLock();
   }
 
-  async function pollCoopRoom() {
-    if (!coopRoomCode || isGameOver) return;
+  async function pollCoopState() {
+    if (!coopRoomCode) return;
     try {
-      const resp = await fetch(`${firebaseBaseUrl}/million_singer_rooms/${coopRoomCode}.json?t=${Date.now()}`);
+      const resp = await fetch(`${firebaseBaseUrl}/million_singer_coop/${coopRoomCode}.json?t=${Date.now()}`);
       const data = await resp.json();
-      if (data && typeof data.stepIndex === "number" && data.stepIndex > coopLastSynced) {
-        coopLastSynced = data.stepIndex;
-        stepIndex = data.stepIndex;
+      if (data && typeof data.roundIndex === "number" && data.roundIndex > coopLastSynced) {
+        coopLastSynced = data.roundIndex;
+        roundIndex = data.roundIndex;
         currentPrize = data.currentPrize;
-        hearts = data.hearts;
-        loadSongStep();
+        lives = data.lives;
+        loadCurrentRound();
         updateCoopTurnLock();
       }
     } catch (e) {}
   }
 
   // ==========================================
-  // 12. 管理員題庫後台
+  // 11. 排行榜、最易唱錯 TOP 5、歌單回顧、分享圖與 Reels 腳本
   // ==========================================
-  function openAdminModal() {
-    playSFX("lifeline");
-    if (isAdminUnlocked) {
-      resetSongEditor();
-      renderAdminSongList();
-      document.getElementById("admin-modal").classList.remove("hidden");
-    } else {
-      document.getElementById("admin-pin-input").value = "";
-      document.getElementById("admin-pin-error").textContent = "";
-      document.getElementById("admin-lock-modal").classList.remove("hidden");
-    }
-  }
-
-  function verifyAdminPin() {
-    const val = document.getElementById("admin-pin-input").value.trim();
-    if (val === currentAdminPin) {
-      isAdminUnlocked = true;
-      playSFX("win");
-      document.getElementById("admin-lock-modal").classList.add("hidden");
-      resetSongEditor();
-      renderAdminSongList();
-      document.getElementById("admin-modal").classList.remove("hidden");
-    } else {
-      playSFX("wrong");
-      document.getElementById("admin-pin-error").textContent = "❌ 管理員密碼錯誤";
-    }
-  }
-
-  function renderAdminSongList() {
-    updateSongCountUI();
-    const box = document.getElementById("admin-song-list");
-    if (!box) return;
-    box.innerHTML = "";
-    SONG_BANK.forEach(song => {
-      const row = document.createElement("div");
-      row.className = "ev-manage-row";
-      row.innerHTML = `
-        <div style="flex:1; min-width:0;">
-          <div style="font-size:11px; font-weight:800; color:#fde68a;">《${song.title}》－ ${song.artist}</div>
-          <div style="font-size:10px; color:#cbd5e1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">接唱：${song.answer}</div>
-        </div>
-        <div style="display:flex; gap:4px;">
-          ${song.isCustom ? `<button class="cast-mini-btn" onclick="editCustomSong('${song.id}')">✏️</button>` : ""}
-          ${song.isCustom ? `<button class="cast-mini-btn" style="background:rgba(239,68,68,0.3); border-color:#f87171;" onclick="deleteCustomSong('${song.id}')">🗑️</button>` : `<span style="font-size:9.5px; color:#94a3b8;">內建</span>`}
-        </div>
-      `;
-      box.appendChild(row);
-    });
-  }
-
-  function resetSongEditor() {
-    editingSongId = null;
-    document.getElementById("song-editor-title").textContent = "➕ 新增自訂接歌題目";
-    document.getElementById("cancel-song-edit-btn").classList.add("hidden");
-    ["in-song-title", "in-song-artist", "in-song-prev", "in-song-ans", "in-song-d1", "in-song-d2", "in-song-d3"].forEach(id => {
-      document.getElementById(id).value = "";
-    });
-  }
-
-  function editCustomSong(id) {
-    const s = SONG_BANK.find(x => x.id === id);
-    if (!s) return;
-    editingSongId = id;
-    document.getElementById("song-editor-title").textContent = `✏️ 編輯：《${s.title}》`;
-    document.getElementById("cancel-song-edit-btn").classList.remove("hidden");
-    document.getElementById("in-song-title").value = s.title;
-    document.getElementById("in-song-artist").value = s.artist;
-    document.getElementById("in-song-cat").value = s.category;
-    document.getElementById("in-song-prev").value = s.prevLyric;
-    document.getElementById("in-song-ans").value = s.answer;
-    document.getElementById("in-song-d1").value = s.distractors[0] || "";
-    document.getElementById("in-song-d2").value = s.distractors[1] || "";
-    document.getElementById("in-song-d3").value = s.distractors[2] || "";
-  }
-
-  async function saveSongForm() {
-    const title = document.getElementById("in-song-title").value.trim();
-    const artist = document.getElementById("in-song-artist").value.trim() || "神秘歌手";
-    const category = document.getElementById("in-song-cat").value;
-    const prevLyric = document.getElementById("in-song-prev").value.trim();
-    const answer = document.getElementById("in-song-ans").value.trim();
-    const d1 = document.getElementById("in-song-d1").value.trim() || answer + "呀";
-    const d2 = document.getElementById("in-song-d2").value.trim() || answer + "喔";
-    const d3 = document.getElementById("in-song-d3").value.trim() || answer + "吧";
-
-    if (!title || !prevLyric || !answer) {
-      showToast("⚠️ 請完整填寫歌名、前句提示與正確接唱歌詞");
-      return;
-    }
-
-    const genreMap = { classic: "經典華語金曲", tiktok: "抖音/短影音神曲", taiwanese: "台語 KTV 必點" };
-    if (editingSongId) {
-      const target = SONG_BANK.find(x => x.id === editingSongId);
-      if (target) {
-        Object.assign(target, { title, artist, category, genre: genreMap[category], prevLyric, answer, distractors: [d1, d2, d3] });
-      }
-    } else {
-      SONG_BANK.push({
-        id: "custom_" + Date.now(),
-        isCustom: true,
-        category,
-        genre: genreMap[category],
-        title,
-        artist,
-        prevLyric,
-        answer,
-        distractors: [d1, d2, d3]
+  async function submitScoreToLeaderboard() {
+    const nick = document.getElementById("player-nickname-input").value.trim() || "神祕大歌星";
+    const btn = document.getElementById("submit-score-btn");
+    btn.disabled = true;
+    btn.textContent = "上傳中...";
+    try {
+      await fetch(`${firebaseBaseUrl}/million_singer_leaderboard.json`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: nick,
+          prize: currentPrize,
+          role: CHALLENGER_ROLES[selectedRole]?.name || "樂壇新秀",
+          date: new Date().toLocaleDateString("zh-TW")
+        })
       });
+      btn.textContent = "✅ 已上榜";
+      showToast("🏅 已成功登錄全服百萬大歌星排行榜！");
+    } catch (e) {
+      btn.disabled = false;
+      btn.textContent = "重試";
     }
-
-    resetSongEditor();
-    renderAdminSongList();
-    playSFX("win");
-    await pushSongsToFirebase();
   }
 
-  async function deleteCustomSong(id) {
-    const idx = SONG_BANK.findIndex(x => x.id === id);
-    if (idx !== -1) SONG_BANK.splice(idx, 1);
-    renderAdminSongList();
-    playSFX("wrong");
-    await pushSongsToFirebase();
-  }
-
-  async function changeAdminPassword() {
-    const newPin = document.getElementById("new-admin-pin-input").value.trim();
-    if (newPin.length < 4) { showToast("⚠️ 密碼至少需 4 碼"); return; }
-    currentAdminPin = newPin;
-    localStorage.setItem("million_singer_admin_pin", currentAdminPin);
-    document.getElementById("new-admin-pin-input").value = "";
-    await pushSongsToFirebase();
-    showToast("🔑 管理員密碼已更新並同步雲端！");
-  }
-
-  function exportSongsJSON() {
-    const blob = new Blob([JSON.stringify(SONG_BANK, null, 2)], { type: "application/json" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "million_singer_songbank.json";
-    a.click();
-    showToast("📤 已匯出全曲庫 JSON！");
-  }
-
-  function importSongsJSON(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = async e => {
-      try {
-        const arr = JSON.parse(e.target.result);
-        if (Array.isArray(arr) && arr.length > 0) {
-          SONG_BANK.length = 0;
-          arr.forEach(s => SONG_BANK.push(s));
-          renderAdminSongList();
-          await pushSongsToFirebase();
-          showToast("📥 題庫 JSON 匯入成功！");
-        }
-      } catch (err) {
-        showToast("⚠️ JSON 格式錯誤");
+  async function openLeaderboard() {
+    playSFX("select");
+    document.getElementById("leaderboard-modal").classList.remove("hidden");
+    const list = document.getElementById("leaderboard-list");
+    list.innerHTML = `<div class="l-desc" style="text-align:center;">正在讀取雲端歌王榜...</div>`;
+    try {
+      const resp = await fetch(`${firebaseBaseUrl}/million_singer_leaderboard.json?t=${Date.now()}`);
+      const data = await resp.json();
+      if (!data) {
+        list.innerHTML = `<div class="l-desc" style="text-align:center;">目前還沒有登錄紀錄，快來搶下首位三十萬歌王！</div>`;
+        return;
       }
-    };
-    reader.readAsText(file);
+      const rows = Object.values(data).sort((a, b) => b.prize - a.prize).slice(0, 15);
+      list.innerHTML = "";
+      rows.forEach((r, idx) => {
+        const medal = idx === 0 ? "🥇" : (idx === 1 ? "🥈" : (idx === 2 ? "🥉" : `#${idx + 1}`));
+        const div = document.createElement("div");
+        div.className = "rank-row";
+        div.innerHTML = `
+          <div>
+            <div style="font-size:13px; font-weight:800; color:#f8fafc;">${medal} ${r.name}</div>
+            <div style="font-size:10.5px; color:#94a3b8;">${r.role || "挑戰者"} ・ ${r.date || ""}</div>
+          </div>
+          <div style="font-size:15px; font-weight:900; color:#fbbf24;">$${(r.prize || 0).toLocaleString()}</div>
+        `;
+        list.appendChild(div);
+      });
+    } catch (e) {
+      list.innerHTML = `<div class="l-desc" style="text-align:center;">讀取失敗，請檢查網路連線</div>`;
+    }
   }
 
-  window.addEventListener("resize", resizeFXCanvas);
-  resizeFXCanvas();
-  renderFXLoop();
-  updateSongCountUI();
+  function recordWipeoutSong(song) {
+    if (!song) return;
+    fetch(`${firebaseBaseUrl}/million_singer_wipeouts/${song.id}/count.json?t=${Date.now()}`)
+      .then(r => r.json())
+      .then(cur => {
+        const nextVal = (typeof cur === "number" ? cur : 0) + 1;
+        return fetch(`${firebaseBaseUrl}/million_singer_wipeouts/${song.id}.json`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: song.title, artist: song.artist, count: nextVal })
+        });
+      })
+      .catch(() => {});
+  }
+
+  async function openWipeoutRanking() {
+    playSFX("select");
+    const list = document.getElementById("wipeout-list");
+    list.innerHTML = `<div class="l-desc" style="text-align:center;">正在讀取全服忘詞統計...</div>`;
+    document.getElementById("wipeout-modal").classList.remove("hidden");
+    try {
+      const resp = await fetch(`${firebaseBaseUrl}/million_singer_wipeouts.json?t=${Date.now()}`);
+      const data = await resp.json();
+      if (!data) {
+        list.innerHTML = `<div class="l-desc" style="text-align:center;">目前尚無忘詞淘汰紀錄！</div>`;
+        return;
+      }
+      const rows = Object.values(data).filter(x => x && x.title).sort((a, b) => b.count - a.count).slice(0, 5);
+      list.innerHTML = "";
+      rows.forEach((r, idx) => {
+        const div = document.createElement("div");
+        div.className = "rank-row";
+        div.innerHTML = `
+          <div>
+            <div style="font-size:13px; font-weight:800; color:#fdba74;">#${idx + 1} 《${r.title}》－${r.artist}</div>
+            <div style="font-size:10.5px; color:#94a3b8;">全服最多挑戰者卡關唱錯</div>
+          </div>
+          <div style="font-size:14px; font-weight:900; color:#ef4444;">${r.count} 次唱錯</div>
+        `;
+        list.appendChild(div);
+      });
+    } catch (e) {}
+  }
+
+  function openSongLogModal() {
+    playSFX("select");
+    const list = document.getElementById("song-log-list");
+    list.innerHTML = "";
+    roundLogs.forEach(item => {
+      const div = document.createElement("div");
+      div.className = "list-card unlocked";
+      div.innerHTML = `
+        <div class="l-title">第 ${item.round} 關｜《${item.title}》－${item.artist}（${item.isCorrect ? "✅ 答對" : "❌ 唱錯"}）</div>
+        <div style="font-size:11.5px; color:#e2e8f0;">上句：${item.lead}</div>
+        <div style="font-size:11.5px; color:#4ade80;">正解：${item.answer}（全服答對率 ${item.globalPct}%）</div>
+      `;
+      list.appendChild(div);
+    });
+    document.getElementById("log-modal").classList.remove("hidden");
+  }
+
+  function openGallery() {
+    playSFX("select");
+    const list = document.getElementById("gallery-list");
+    list.innerHTML = "";
+    GALLERY_TITLES.forEach(t => {
+      const isOk = unlockedTitles.includes(t.id);
+      const div = document.createElement("div");
+      div.className = "list-card" + (isOk ? " unlocked" : "");
+      div.innerHTML = `
+        <div class="l-title">${isOk ? t.badge + "｜" + t.title : "🔒 " + t.badge + "｜尚未解鎖"}</div>
+        <div class="l-desc">${t.desc}</div>
+      `;
+      list.appendChild(div);
+    });
+    document.getElementById("gallery-modal").classList.remove("hidden");
+  }
+
+  function openReelsScriptModal() {
+    playSFX("select");
+    const endTitle = document.getElementById("end-title").textContent;
+    const highlights = roundLogs.slice(0, 3).map((l, i) =>
+      `【分鏡 ${i + 2}｜第 ${l.round} 關《${l.title}》】\n` +
+      `畫面：提詞機顯示「${l.lead}」，選手喊出 LOCK IN！\n` +
+      `旁白：「遇到 ${l.artist} 的《${l.title}》，我接唱『${l.userAns}』，結果${l.isCorrect ? "一字不差過關" : "竟然唱錯字"}！」`
+    ).join("\n\n");
+
+    const script =
+      `【30秒 IG Reels / Shorts 百萬大歌星實況腳本】\n` +
+      `挑戰獎金：$${currentPrize.toLocaleString()}\n\n` +
+      `【分鏡 1｜開場 Hook（0-3秒）】\n` +
+      `畫面：站上《百萬大歌星》霓虹舞台，挑戰 2026 最新金曲接歌！\n` +
+      `旁白：「挑戰經典綜藝《百萬大歌星》，2026最新金曲你能一字不差接唱幾首？」\n\n` +
+      `${highlights}\n\n` +
+      `【分鏡 5｜結算反轉（22-30秒）】\n` +
+      `畫面：跳出結算畫面【${endTitle}】。\n` +
+      `旁白：「最後我抱走了 $${currentPrize.toLocaleString()} 獎金！下方留言你最怕哪一首歌忘詞，換你來挑戰！」`;
+
+    document.getElementById("reels-script-content").textContent = script;
+    document.getElementById("reels-modal").classList.remove("hidden");
+  }
+
+  function copyReelsScript() {
+    const txt = document.getElementById("reels-script-content").textContent;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(txt).then(() => showToast("📋 已複製 Reels 短影音腳本！"));
+    }
+  }
+
+  function generateShareCard() {
+    playSFX("correct");
+    const c = document.createElement("canvas");
+    c.width = 540; c.height = 840;
+    const ctx = c.getContext("2d");
+
+    const grad = ctx.createLinearGradient(0, 0, 0, 840);
+    grad.addColorStop(0, "#1e1b4b");
+    grad.addColorStop(1, "#050811");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 540, 840);
+
+    ctx.strokeStyle = "#fbbf24";
+    ctx.lineWidth = 6;
+    ctx.strokeRect(18, 18, 504, 804);
+
+    ctx.fillStyle = "#fbbf24";
+    ctx.font = "bold 20px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("MILLION DOLLAR SINGER 2026", 270, 68);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "900 34px sans-serif";
+    ctx.fillText("百萬大歌星", 270, 118);
+
+    ctx.fillStyle = "#38bdf8";
+    ctx.font = "bold 19px sans-serif";
+    ctx.fillText(document.getElementById("end-badge").textContent, 270, 172);
+
+    ctx.fillStyle = "#fde68a";
+    ctx.font = "900 38px sans-serif";
+    ctx.fillText(`$${currentPrize.toLocaleString()}`, 270, 240);
+
+    ctx.fillStyle = "#e2e8f0";
+    ctx.font = "bold 18px sans-serif";
+    ctx.fillText(`挑戰身分：${CHALLENGER_ROLES[selectedRole]?.name || "樂壇新秀"}`, 270, 295);
+    ctx.fillText(`本局接唱曲數：${roundLogs.length} 首 ｜ 答對：${roundLogs.filter(x => x.isCorrect).length} 首`, 270, 335);
+
+    ctx.textAlign = "left";
+    roundLogs.slice(0, 5).forEach((l, i) => {
+      const y = 400 + i * 48;
+      ctx.fillStyle = l.isCorrect ? "#4ade80" : "#f87171";
+      ctx.font = "bold 17px sans-serif";
+      ctx.fillText(`${l.isCorrect ? "✔" : "✘"} 《${l.title}》－ ${l.artist}`, 65, y);
+    });
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "bold 17px sans-serif";
+    ctx.fillText(`已解鎖歌王稱號：${unlockedTitles.length} / 8`, 270, 710);
+    ctx.fillText("掃描或點擊連結，挑戰你的 KTV 歌詞庫！", 270, 765);
+
+    lastShareImageUrl = c.toDataURL("image/png");
+    document.getElementById("share-card-img").src = lastShareImageUrl;
+    document.getElementById("share-modal").classList.remove("hidden");
+  }
+
+  function downloadShareCard() {
+    if (!lastShareImageUrl) return;
+    const a = document.createElement("a");
+    a.href = lastShareImageUrl;
+    a.download = "million_singer_2026_record.png";
+    a.click();
+  }
+
+  // 初始化啟動
+  window.addEventListener("resize", resizeStageCanvas);
+  resizeStageCanvas();
+  renderStageFX();
+  loadLocalSongs();
+  updateAllCounters();
   pullSongsFromFirebase();
 </script>
 </body>
