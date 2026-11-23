@@ -438,7 +438,7 @@
       border: 1.5px solid #e879f9;
       color: #fdf4ff;
       border-radius: 11px;
-      padding: 8px 10px;
+      padding: 11px 12px;
       font-size: 13px;
       font-weight: 800;
       cursor: pointer;
@@ -462,26 +462,28 @@
 
     .hidden { display: none !important; }
 
-    /* 日系動漫黃昏暖色系首頁：暮色霞光漸層、櫻珊瑚點綴、暖金字體與柔和玻璃卡片 */
+    /* 滿版日系動漫黃昏暖色系首頁：撐滿全螢幕高度與寬度，消除底部留白 */
     #start-modal {
+      width: 100%;
+      height: 100%;
       background:
-        radial-gradient(circle at 18% 10%, rgba(251, 146, 60, 0.32), transparent 46%),
-        radial-gradient(circle at 86% 20%, rgba(244, 114, 182, 0.24), transparent 44%),
-        radial-gradient(circle at 50% 88%, rgba(251, 191, 36, 0.20), transparent 52%),
-        linear-gradient(180deg, #1c1326 0%, #140f1d 55%, #0c0a12 100%);
-      justify-content: flex-start;
-      padding: 16px 14px 18px;
-      gap: 7px;
+        radial-gradient(circle at 18% 10%, rgba(251, 146, 60, 0.36), transparent 48%),
+        radial-gradient(circle at 86% 20%, rgba(244, 114, 182, 0.28), transparent 46%),
+        radial-gradient(circle at 50% 88%, rgba(251, 191, 36, 0.24), transparent 54%),
+        linear-gradient(180deg, #21152d 0%, #161020 55%, #0e0b15 100%);
+      justify-content: space-between;
+      padding: 22px 16px 24px;
+      gap: 10px;
     }
 
     .hero-card {
       position: relative;
       width: 100%;
-      max-width: 364px;
-      background: linear-gradient(155deg, rgba(49, 31, 56, 0.86) 0%, rgba(28, 19, 38, 0.94) 100%);
-      border: 1.5px solid rgba(253, 186, 116, 0.36);
+      max-width: 100%;
+      background: linear-gradient(155deg, rgba(54, 34, 62, 0.90) 0%, rgba(28, 19, 38, 0.96) 100%);
+      border: 1.5px solid rgba(253, 186, 116, 0.42);
       border-radius: 22px;
-      padding: 13px 14px 12px;
+      padding: 18px 16px 16px;
       box-shadow: 0 18px 40px rgba(15, 7, 22, 0.65), inset 0 1px 0 rgba(255, 237, 213, 0.16);
       backdrop-filter: blur(14px);
       overflow: hidden;
@@ -552,17 +554,17 @@
 
     .section-mini-header {
       font-size: 12.5px; font-weight: 800; color: #ffedd5; margin-bottom: 2px;
-      width: 100%; max-width: 364px; text-align: left; display: flex; align-items: center; gap: 5px;
+      width: 100%; max-width: 100%; text-align: left; display: flex; align-items: center; gap: 5px;
     }
 
-    .role-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; width: 100%; max-width: 364px; margin-bottom: 3px; }
-    .mode-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; max-width: 364px; margin-bottom: 5px; }
+    .role-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; width: 100%; max-width: 100%; margin-bottom: 3px; }
+    .mode-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; max-width: 100%; margin-bottom: 5px; }
 
     .mode-btn {
       position: relative;
       background: linear-gradient(180deg, rgba(44, 29, 52, 0.92), rgba(24, 16, 32, 0.96));
       border: 1.5px solid rgba(251, 146, 60, 0.24);
-      border-radius: 13px; padding: 7px 5px; color: #fce7f3; cursor: pointer;
+      border-radius: 13px; padding: 12px 7px; color: #fce7f3; cursor: pointer;
       transition: all 0.16s ease; box-shadow: 0 4px 12px rgba(10, 5, 16, 0.38);
     }
     .mode-btn:hover { border-color: rgba(253, 186, 116, 0.65); transform: translateY(-1px); }
@@ -574,10 +576,10 @@
     .mode-title { font-size: 13px; font-weight: 900; color: #fed7aa; margin-bottom: 1px; }
     .mode-sub { font-size: 9px; color: #e9d5ff; font-weight: 600; }
 
-    .btn-stack { width: 100%; max-width: 364px; display: flex; flex-direction: column; gap: 6px; }
+    .btn-stack { width: 100%; max-width: 100%; display: flex; flex-direction: column; gap: 6px; }
     .btn-primary {
       background: linear-gradient(135deg, #f97316 0%, #ea580c 48%, #db2777 100%);
-      color: #fff; border: 1px solid rgba(254, 215, 170, 0.55); padding: 12px 16px;
+      color: #fff; border: 1px solid rgba(254, 215, 170, 0.55); padding: 15px 18px;
       border-radius: 14px; font-size: 15px; font-weight: 900; cursor: pointer;
       box-shadow: 0 10px 24px rgba(234, 88, 12, 0.45); letter-spacing: 0.5px;
       transition: transform 0.14s ease, box-shadow 0.14s ease;
@@ -587,7 +589,7 @@
 
     .btn-secondary {
       background: rgba(41, 26, 48, 0.90); color: #ffedd5;
-      border: 1px solid rgba(253, 186, 116, 0.28); padding: 8px 10px;
+      border: 1px solid rgba(253, 186, 116, 0.28); padding: 11px 12px;
       border-radius: 12px; font-size: 11px; font-weight: 700; cursor: pointer;
       transition: all 0.15s ease;
     }
@@ -599,7 +601,7 @@
 
     .cast-scroll { width: 100%; max-height: 68dvh; overflow-y: auto; text-align: left; margin-bottom: 10px; padding-right: 4px; }
     .cast-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-bottom: 12px; }
-    .cast-card { background: rgba(30, 41, 59, 0.9); border: 1.5px solid rgba(56, 189, 248, 0.3); border-radius: 12px; padding: 7px 5px; text-align: center; position: relative; }
+    .cast-card { background: rgba(30, 41, 59, 0.9); border: 1.5px solid rgba(56, 189, 248, 0.3); border-radius: 12px; padding: 12px 7px; text-align: center; position: relative; }
     .cast-del-btn { position: absolute; top: 4px; right: 4px; background: rgba(239, 68, 68, 0.85); color: #fff; border: none; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: 900; cursor: pointer; }
     .cast-avatar { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; object-position: center 15%; border: 2px solid var(--accent-gold); margin: 0 auto 4px; display: block; background: #0f172a; }
     .cast-name { font-size: 11px; font-weight: 800; color: #f8fafc; }
