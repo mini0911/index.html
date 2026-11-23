@@ -1157,7 +1157,7 @@
   }
 
   function processMediaFileToDataURL(file, callback) {
-    if (file.type.startsWith("video/")) {
+    if (file.type.startsWith("video/") || file.type === "image/gif" || (file.name && file.name.toLowerCase().endsWith(".gif"))) {
       const reader = new FileReader();
       reader.onload = e => callback(e.target.result);
       reader.readAsDataURL(file);
@@ -1365,14 +1365,14 @@
   }
 
   const CHARACTER_ROSTER = [
-    { id: "officer", name: "陳宇（校安人員）", role: "主角・第一線校安", voice: "officer", img: "./officer.jpg", fallback: makeCharacterPortrait("#1e3a8a", "#0f172a", "#1e293b", "#1d4ed8", "vest", "👮‍♂️") },
-    { id: "parent", name: "王先生（恐龍家長）", role: "反派・財大氣粗家長", voice: "parent_angry", img: "./parent.jpg", fallback: makeCharacterPortrait("#7f1d1d", "#0f172a", "#1e293b", "#334155", "tie", "🕴️") },
-    { id: "director", name: "林主任（學務主任）", role: "長官・危機處理主管", voice: "elder", img: "./director.jpg", fallback: makeCharacterPortrait("#065f46", "#0f172a", "#475569", "#1e293b", "glasses", "👨‍💼") },
-    { id: "counselor", name: "張老師（輔導老師）", role: "同事・溫柔心輔教師", voice: "student", img: "./counselor.jpg", fallback: makeCharacterPortrait("#831843", "#1e1b4b", "#78350f", "#db2777", "long_hair", "👩‍🏫") },
-    { id: "student", name: "阿豪（叛逆高三生）", role: "學生・愛騎車闖禍王", voice: "student", img: "./student.jpg", fallback: makeCharacterPortrait("#9a3412", "#0f172a", "#292524", "#2563eb", "uniform", "🎒") },
-    { id: "inspector", name: "趙督學（教育局視察）", role: "長官・突襲考核官", voice: "elder", img: "./inspector.jpg", fallback: makeCharacterPortrait("#312e81", "#090d16", "#94a3b8", "#334155", "glasses", "🧐") },
-    { id: "intruder", name: "鴨舌帽黑衣人", role: "懸疑・校外可疑人士", voice: "parent_angry", img: "./intruder.jpg", fallback: makeCharacterPortrait("#18181b", "#000000", "#09090b", "#18181b", "hoodie", "🕵️") },
-    { id: "dog", name: "校狗阿福（米克斯）", role: "萌寵・校園巡邏吉祥物", voice: "student", img: "./dog.jpg", fallback: makeCharacterPortrait("#92400e", "#1c1917", "#b45309", "#d97706", "dog", "🐕") }
+    { id: "officer", name: "陳宇（校安人員）", role: "主角・第一線校安", voice: "officer", img: "./officer.mp4", fallbackImg: "./officer.jpg", fallback: makeCharacterPortrait("#1e3a8a", "#0f172a", "#1e293b", "#1d4ed8", "vest", "👮‍♂️") },
+    { id: "parent", name: "王先生（恐龍家長）", role: "反派・財大氣粗家長", voice: "parent_angry", img: "./parent.mp4", fallbackImg: "./parent.jpg", fallback: makeCharacterPortrait("#7f1d1d", "#0f172a", "#1e293b", "#334155", "tie", "🕴️") },
+    { id: "director", name: "林主任（學務主任）", role: "長官・危機處理主管", voice: "elder", img: "./director.mp4", fallbackImg: "./director.jpg", fallback: makeCharacterPortrait("#065f46", "#0f172a", "#475569", "#1e293b", "glasses", "👨‍💼") },
+    { id: "counselor", name: "張老師（輔導老師）", role: "同事・溫柔心輔教師", voice: "student", img: "./counselor.mp4", fallbackImg: "./counselor.jpg", fallback: makeCharacterPortrait("#831843", "#1e1b4b", "#78350f", "#db2777", "long_hair", "👩‍🏫") },
+    { id: "student", name: "阿豪（叛逆高三生）", role: "學生・愛騎車闖禍王", voice: "student", img: "./student.mp4", fallbackImg: "./student.jpg", fallback: makeCharacterPortrait("#9a3412", "#0f172a", "#292524", "#2563eb", "uniform", "🎒") },
+    { id: "inspector", name: "趙督學（教育局視察）", role: "長官・突襲考核官", voice: "elder", img: "./inspector.mp4", fallbackImg: "./inspector.jpg", fallback: makeCharacterPortrait("#312e81", "#090d16", "#94a3b8", "#334155", "glasses", "🧐") },
+    { id: "intruder", name: "鴨舌帽黑衣人", role: "懸疑・校外可疑人士", voice: "parent_angry", img: "./intruder.mp4", fallbackImg: "./intruder.jpg", fallback: makeCharacterPortrait("#18181b", "#000000", "#09090b", "#18181b", "hoodie", "🕵️") },
+    { id: "dog", name: "校狗阿福（米克斯）", role: "萌寵・校園巡邏吉祥物", voice: "student", img: "./陽光下搖尾巴的柯基動畫九格.gif", fallbackImg: "./dog.jpg", fallback: makeCharacterPortrait("#92400e", "#1c1917", "#b45309", "#d97706", "dog", "🐕") }
   ];
 
   // 三大執勤主角職業定義
@@ -2640,10 +2640,21 @@
     if (isVideo) {
       artEl.style.display = "none";
       videoEl.style.display = "block";
-      videoEl.src = ch.img;
       videoEl.className = card.filter || "";
+      videoEl.onerror = () => {
+        videoEl.onerror = null;
+        videoEl.style.display = "none";
+        artEl.style.display = "block";
+        const fallbackSrc = ch.fallbackImg || ch.fallback || "";
+        artEl.style.backgroundImage = `url('${fallbackSrc}')`;
+        artEl.style.backgroundPosition = ch.id === "officer" ? "center 18%" : "center 12%";
+        artEl.className = card.filter || "";
+      };
+      videoEl.src = ch.img;
+      videoEl.load();
       videoEl.play().catch(() => {});
     } else {
+      videoEl.onerror = null;
       videoEl.style.display = "none";
       artEl.style.display = "block";
       artEl.style.backgroundImage = `url('${ch.img}')`;
