@@ -462,97 +462,136 @@
 
     .hidden { display: none !important; }
 
-    /* 質感升級：首頁光暈背景與玻璃卡片 */
+    /* 精緻化首頁：動態極光底色、玻璃主視覺卡、角色預覽徽章與層次按鈕 */
     #start-modal {
       background:
-        radial-gradient(circle at 20% 12%, rgba(56, 189, 248, 0.22), transparent 45%),
-        radial-gradient(circle at 85% 22%, rgba(251, 191, 36, 0.16), transparent 42%),
-        radial-gradient(circle at 50% 90%, rgba(168, 85, 247, 0.16), transparent 50%),
-        linear-gradient(180deg, rgba(9, 13, 22, 0.97) 0%, rgba(3, 7, 18, 0.99) 100%);
+        radial-gradient(circle at 15% 10%, rgba(56, 189, 248, 0.24), transparent 46%),
+        radial-gradient(circle at 88% 18%, rgba(251, 191, 36, 0.18), transparent 44%),
+        radial-gradient(circle at 50% 92%, rgba(168, 85, 247, 0.16), transparent 52%),
+        linear-gradient(180deg, #0b1120 0%, #050811 100%);
       justify-content: flex-start;
-      padding: 20px 16px 22px;
-      gap: 8px;
+      padding: 16px 14px 18px;
+      gap: 7px;
     }
 
     .hero-card {
+      position: relative;
       width: 100%;
-      max-width: 356px;
-      background: rgba(15, 23, 42, 0.78);
-      border: 1px solid rgba(148, 163, 184, 0.22);
-      border-radius: 20px;
-      padding: 14px 14px 12px;
-      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55);
-      backdrop-filter: blur(10px);
-      margin-bottom: 2px;
+      max-width: 364px;
+      background: linear-gradient(155deg, rgba(30, 41, 59, 0.84) 0%, rgba(15, 23, 42, 0.92) 100%);
+      border: 1px solid rgba(125, 211, 252, 0.28);
+      border-radius: 22px;
+      padding: 13px 14px 12px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(14px);
+      overflow: hidden;
+    }
+
+    .hero-card::before {
+      content: "";
+      position: absolute;
+      top: -40px;
+      right: -30px;
+      width: 110px;
+      height: 110px;
+      background: radial-gradient(circle, rgba(251, 191, 36, 0.22), transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-top-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
     }
 
     .tag-pill {
-      font-size: 10px; font-weight: 800; letter-spacing: 1.4px;
-      color: var(--accent-gold); border: 1px solid rgba(251, 191, 36, 0.45);
-      background: rgba(251, 191, 36, 0.12); padding: 3px 11px; border-radius: 999px;
-      display: inline-block; margin-bottom: 6px;
+      font-size: 9.5px; font-weight: 800; letter-spacing: 1.2px;
+      color: #fde68a; border: 1px solid rgba(251, 191, 36, 0.45);
+      background: rgba(251, 191, 36, 0.12); padding: 2px 9px; border-radius: 999px;
+      display: inline-block;
     }
 
     .main-title {
-      font-size: 24px; font-weight: 900; line-height: 1.25; margin-bottom: 6px;
-      background: linear-gradient(135deg, #ffffff 15%, #7dd3fc 55%, #fde68a 100%);
+      font-size: 23px; font-weight: 900; line-height: 1.22; margin-bottom: 4px;
+      background: linear-gradient(135deg, #ffffff 10%, #7dd3fc 52%, #fde68a 100%);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.6px;
     }
 
     .hero-subtitle {
-      font-size: 11.5px; color: #cbd5e1; margin-bottom: 8px; line-height: 1.4;
+      font-size: 11px; color: #cbd5e1; margin-bottom: 8px; line-height: 1.38;
+    }
+
+    .hero-stats-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+      margin-top: 4px;
+    }
+
+    .hero-mini-chip {
+      background: rgba(2, 6, 23, 0.55);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 10px;
+      padding: 4px 6px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #e2e8f0;
     }
 
     .sub-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 10px; }
 
     .cloud-badge {
-      display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 800;
-      padding: 3px 10px; border-radius: 999px;
-      background: rgba(34, 197, 94, 0.14); border: 1px solid rgba(74, 222, 128, 0.45); color: #4ade80;
+      display: inline-flex; align-items: center; gap: 4px; font-size: 9.5px; font-weight: 800;
+      padding: 2px 8px; border-radius: 999px;
+      background: rgba(34, 197, 94, 0.14); border: 1px solid rgba(74, 222, 128, 0.42); color: #4ade80;
+      white-space: nowrap;
     }
 
     .section-mini-header {
-      font-size: 11px; font-weight: 800; color: #e2e8f0; margin-bottom: 4px;
-      width: 100%; max-width: 356px; text-align: left; display: flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 800; color: #f1f5f9; margin-bottom: 2px;
+      width: 100%; max-width: 364px; text-align: left; display: flex; align-items: center; gap: 5px;
     }
 
-    .role-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; width: 100%; max-width: 356px; margin-bottom: 6px; }
-    .mode-selector { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; width: 100%; max-width: 356px; margin-bottom: 8px; }
+    .role-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; width: 100%; max-width: 364px; margin-bottom: 3px; }
+    .mode-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; max-width: 364px; margin-bottom: 5px; }
 
     .mode-btn {
-      background: linear-gradient(180deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.92));
+      position: relative;
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.95));
       border: 1.5px solid rgba(148, 163, 184, 0.22);
-      border-radius: 13px; padding: 8px 5px; color: #cbd5e1; cursor: pointer;
-      transition: all 0.18s ease; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      border-radius: 13px; padding: 7px 5px; color: #cbd5e1; cursor: pointer;
+      transition: all 0.16s ease; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.32);
     }
     .mode-btn:hover { border-color: rgba(56, 189, 248, 0.55); transform: translateY(-1px); }
     .mode-btn.active {
-      background: linear-gradient(180deg, rgba(56, 189, 248, 0.24), rgba(37, 99, 235, 0.18));
+      background: linear-gradient(160deg, rgba(56, 189, 248, 0.25), rgba(37, 99, 235, 0.18));
       border-color: var(--accent-gold); color: #fff;
-      box-shadow: 0 0 16px rgba(251, 191, 36, 0.25);
+      box-shadow: 0 0 16px rgba(251, 191, 36, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.15);
     }
-    .mode-title { font-size: 12px; font-weight: 900; color: #fde68a; margin-bottom: 2px; }
-    .mode-sub { font-size: 9.5px; color: #94a3b8; font-weight: 600; }
+    .mode-title { font-size: 11.5px; font-weight: 900; color: #fde68a; margin-bottom: 1px; }
+    .mode-sub { font-size: 9px; color: #94a3b8; font-weight: 600; }
 
-    .btn-stack { width: 100%; max-width: 356px; display: flex; flex-direction: column; gap: 7px; }
+    .btn-stack { width: 100%; max-width: 364px; display: flex; flex-direction: column; gap: 6px; }
     .btn-primary {
       background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 55%, #4f46e5 100%);
-      color: #fff; border: 1px solid rgba(125, 211, 252, 0.45); padding: 12px 16px;
-      border-radius: 14px; font-size: 14px; font-weight: 900; cursor: pointer;
+      color: #fff; border: 1px solid rgba(125, 211, 252, 0.5); padding: 11px 16px;
+      border-radius: 14px; font-size: 13.5px; font-weight: 900; cursor: pointer;
       box-shadow: 0 10px 24px rgba(37, 99, 235, 0.45); letter-spacing: 0.5px;
       transition: transform 0.14s ease, box-shadow 0.14s ease;
     }
-    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(56, 189, 248, 0.5); }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(56, 189, 248, 0.52); }
     .btn-primary:active { transform: scale(0.98); }
 
     .btn-secondary {
       background: rgba(30, 41, 59, 0.88); color: #e2e8f0;
-      border: 1px solid rgba(148, 163, 184, 0.28); padding: 9px 12px;
-      border-radius: 12px; font-size: 11.5px; font-weight: 700; cursor: pointer;
+      border: 1px solid rgba(148, 163, 184, 0.26); padding: 8px 10px;
+      border-radius: 12px; font-size: 11px; font-weight: 700; cursor: pointer;
       transition: all 0.15s ease;
     }
-    .btn-secondary:hover { background: rgba(51, 65, 85, 0.95); border-color: rgba(56, 189, 248, 0.5); }
+    .btn-secondary:hover { background: rgba(51, 65, 85, 0.96); border-color: rgba(56, 189, 248, 0.5); }
 
     .lock-card { width: 100%; max-width: 320px; background: rgba(15, 23, 42, 0.98); border: 2px solid rgba(251, 191, 36, 0.55); border-radius: 20px; padding: 20px 16px; }
     .pin-input { width: 100%; background: #1e293b; border: 2px solid rgba(56, 189, 248, 0.45); color: #fff; padding: 10px; border-radius: 12px; font-size: 18px; font-weight: 800; letter-spacing: 4px; text-align: center; margin: 10px 0 6px; user-select: text; }
@@ -711,13 +750,20 @@
     </button>
   </div>
 
-  <!-- 開場封面（整合三主角職業 ＋ 四大劇本模式選擇） -->
+  <!-- 開場封面（整合三主角職業 ＋ 多重值勤模式選擇） -->
   <div id="start-modal" class="modal-screen">
     <div class="hero-card">
-      <div class="tag-pill">CAMPUS SAFETY SURVIVAL SIMULATOR</div>
+      <div class="hero-top-meta">
+        <span class="tag-pill">17:30 準時打卡生存戰</span>
+        <div class="cloud-badge" id="cover-cloud-status">🟢 雲端同步已連線</div>
+      </div>
       <h1 class="main-title">今天也要平安下班</h1>
-      <div class="hero-subtitle">17:30 準時打卡生存戰・40 關全劇本＆三主角群像</div>
-      <div class="cloud-badge" id="cover-cloud-status">🟢 雲端同步已連線</div>
+      <div class="hero-subtitle">校園群像生存模擬器・平衡四維指標，撐到下班鐘響！</div>
+      <div class="hero-stats-strip">
+        <div class="hero-mini-chip">🎭 40 關全劇本</div>
+        <div class="hero-mini-chip">⚡ 三職權特技</div>
+        <div class="hero-mini-chip">💥 翻車熱力榜</div>
+      </div>
     </div>
 
     <div class="section-mini-header">1️⃣ 選擇執勤主角崗位（附帶專屬職權特技）：</div>
@@ -1065,7 +1111,19 @@
     <div class="tag-pill">GLOBAL CAMPUS SAFETY RANKING</div>
     <h2 class="main-title" style="font-size: 21px;">🏅 全服金牌校安生存排行榜</h2>
     <div class="scroll-list" id="leaderboard-list"></div>
-    <button class="btn-primary" style="width:100%; max-width:300px;" onclick="document.getElementById('leaderboard-modal').classList.add('hidden')">返回</button>
+    <div style="display:flex; gap:8px; width:100%; max-width:320px;">
+      <button class="btn-secondary" style="flex:1; border-color:#f97316; color:#fed7aa;" onclick="openWipeoutRanking()">💥 最易翻車 TOP 5</button>
+      <button class="btn-primary" style="flex:1;" onclick="document.getElementById('leaderboard-modal').classList.add('hidden')">返回</button>
+    </div>
+  </div>
+
+  <!-- 💥 全服最容易翻車關卡 TOP 5 視窗 -->
+  <div id="wipeout-modal" class="modal-screen hidden" style="z-index: 53;">
+    <div class="tag-pill" style="border-color:#f97316; color:#fdba74;">GLOBAL WIPEOUT TOP 5</div>
+    <h2 class="main-title" style="font-size: 20px;">💥 全校最容易出事 TOP 5 關卡</h2>
+    <p class="sub-desc" style="margin-bottom:10px;">統計玩家在各關導致數值歸零或爆表而提前下班的次數：</p>
+    <div class="scroll-list" id="wipeout-list"></div>
+    <button class="btn-primary" style="width:100%; max-width:300px;" onclick="document.getElementById('wipeout-modal').classList.add('hidden')">返回排行榜</button>
   </div>
 
   <!-- 結局圖鑑視窗 -->
@@ -1157,7 +1215,7 @@
   }
 
   function processMediaFileToDataURL(file, callback) {
-    if (file.type.startsWith("video/") || file.type === "image/gif" || (file.name && file.name.toLowerCase().endsWith(".gif"))) {
+    if (file.type.startsWith("video/")) {
       const reader = new FileReader();
       reader.onload = e => callback(e.target.result);
       reader.readAsDataURL(file);
@@ -1365,14 +1423,14 @@
   }
 
   const CHARACTER_ROSTER = [
-    { id: "officer", name: "陳宇（校安人員）", role: "主角・第一線校安", voice: "officer", img: "./officer.mp4", fallbackImg: "./officer.jpg", fallback: makeCharacterPortrait("#1e3a8a", "#0f172a", "#1e293b", "#1d4ed8", "vest", "👮‍♂️") },
-    { id: "parent", name: "王先生（恐龍家長）", role: "反派・財大氣粗家長", voice: "parent_angry", img: "./parent.mp4", fallbackImg: "./parent.jpg", fallback: makeCharacterPortrait("#7f1d1d", "#0f172a", "#1e293b", "#334155", "tie", "🕴️") },
-    { id: "director", name: "林主任（學務主任）", role: "長官・危機處理主管", voice: "elder", img: "./director.mp4", fallbackImg: "./director.jpg", fallback: makeCharacterPortrait("#065f46", "#0f172a", "#475569", "#1e293b", "glasses", "👨‍💼") },
-    { id: "counselor", name: "張老師（輔導老師）", role: "同事・溫柔心輔教師", voice: "student", img: "./counselor.mp4", fallbackImg: "./counselor.jpg", fallback: makeCharacterPortrait("#831843", "#1e1b4b", "#78350f", "#db2777", "long_hair", "👩‍🏫") },
-    { id: "student", name: "阿豪（叛逆高三生）", role: "學生・愛騎車闖禍王", voice: "student", img: "./student.mp4", fallbackImg: "./student.jpg", fallback: makeCharacterPortrait("#9a3412", "#0f172a", "#292524", "#2563eb", "uniform", "🎒") },
-    { id: "inspector", name: "趙督學（教育局視察）", role: "長官・突襲考核官", voice: "elder", img: "./inspector.mp4", fallbackImg: "./inspector.jpg", fallback: makeCharacterPortrait("#312e81", "#090d16", "#94a3b8", "#334155", "glasses", "🧐") },
-    { id: "intruder", name: "鴨舌帽黑衣人", role: "懸疑・校外可疑人士", voice: "parent_angry", img: "./intruder.mp4", fallbackImg: "./intruder.jpg", fallback: makeCharacterPortrait("#18181b", "#000000", "#09090b", "#18181b", "hoodie", "🕵️") },
-    { id: "dog", name: "校狗阿福（米克斯）", role: "萌寵・校園巡邏吉祥物", voice: "student", img: "./陽光下搖尾巴的柯基動畫九格.gif", fallbackImg: "./dog.jpg", fallback: makeCharacterPortrait("#92400e", "#1c1917", "#b45309", "#d97706", "dog", "🐕") }
+    { id: "officer", name: "陳宇（校安人員）", role: "主角・第一線校安", voice: "officer", img: "./officer.jpg", fallback: makeCharacterPortrait("#1e3a8a", "#0f172a", "#1e293b", "#1d4ed8", "vest", "👮‍♂️") },
+    { id: "parent", name: "王先生（恐龍家長）", role: "反派・財大氣粗家長", voice: "parent_angry", img: "./parent.jpg", fallback: makeCharacterPortrait("#7f1d1d", "#0f172a", "#1e293b", "#334155", "tie", "🕴️") },
+    { id: "director", name: "林主任（學務主任）", role: "長官・危機處理主管", voice: "elder", img: "./director.jpg", fallback: makeCharacterPortrait("#065f46", "#0f172a", "#475569", "#1e293b", "glasses", "👨‍💼") },
+    { id: "counselor", name: "張老師（輔導老師）", role: "同事・溫柔心輔教師", voice: "student", img: "./counselor.jpg", fallback: makeCharacterPortrait("#831843", "#1e1b4b", "#78350f", "#db2777", "long_hair", "👩‍🏫") },
+    { id: "student", name: "阿豪（叛逆高三生）", role: "學生・愛騎車闖禍王", voice: "student", img: "./student.jpg", fallback: makeCharacterPortrait("#9a3412", "#0f172a", "#292524", "#2563eb", "uniform", "🎒") },
+    { id: "inspector", name: "趙督學（教育局視察）", role: "長官・突襲考核官", voice: "elder", img: "./inspector.jpg", fallback: makeCharacterPortrait("#312e81", "#090d16", "#94a3b8", "#334155", "glasses", "🧐") },
+    { id: "intruder", name: "鴨舌帽黑衣人", role: "懸疑・校外可疑人士", voice: "parent_angry", img: "./intruder.jpg", fallback: makeCharacterPortrait("#18181b", "#000000", "#09090b", "#18181b", "hoodie", "🕵️") },
+    { id: "dog", name: "校狗阿福（米克斯）", role: "萌寵・校園巡邏吉祥物", voice: "student", img: "./dog.jpg", fallback: makeCharacterPortrait("#92400e", "#1c1917", "#b45309", "#d97706", "dog", "🐕") }
   ];
 
   // 三大執勤主角職業定義
@@ -1410,6 +1468,59 @@
     roleSkillUsed = true;
     stopQTE();
     playSFX("win");
+
+    // 隱藏彩蛋關卡 1：若走到倒數第 2 關且四維皆落在 45~55 之間，觸發「✨ 隱藏彩蛋・平衡結界」
+    if (!coopRoomCode && !window._hiddenEggBalancedShown && turnIndex === Math.max(1, activeDeck.length - 2)) {
+      const allBalanced = ["safety", "admin", "parent", "sanity"].every(k => stats[k] >= 45 && stats[k] <= 55);
+      if (allBalanced) {
+        window._hiddenEggBalancedShown = true;
+        activeDeck.splice(turnIndex, 0, {
+          time: "17:20",
+          tag: "✨ 隱藏彩蛋・平衡結界",
+          charId: "dog",
+          filter: "art-morning",
+          sfx: "win",
+          isChain: true,
+          text: "【隱藏關卡】你的四項數值竟然奇蹟般維持在 45～55 之間！校狗阿福叼來『準時下班通行證』向你搖尾巴！",
+          left: { label: "收下通行證並穩健巡檢最後動線", effect: { safety: +10, admin: +10, parent: -10, sanity: +10 }, bondDelta: +20 },
+          right: { label: "帶著阿福去合作社買份點心慶祝", effect: { safety: +5, admin: +5, parent: -5, sanity: +15 }, bondDelta: +15 }
+        });
+      }
+    }
+
+    // 隱藏彩蛋關卡 2：若午休隨堂考答對，解鎖「🌟 隱藏彩蛋・SOP神救援」
+    if (!coopRoomCode && window._quizAnsweredCorrect && !window._hiddenEggQuizShown && turnIndex === Math.max(2, activeDeck.length - 3)) {
+      window._hiddenEggQuizShown = true;
+      activeDeck.splice(turnIndex, 0, {
+        time: "15:50",
+        tag: "🌟 隱藏彩蛋・SOP神救援",
+        charId: "director",
+        filter: "art-morning",
+        sfx: "win",
+        isChain: true,
+        text: "【隱藏關卡】因為你午休隨堂考表現亮眼，林主任特地前來肯定你的應變並交付一項輕鬆的行政核對任務！",
+        left: { label: "迅速完成核對並回報主任", effect: { safety: +10, admin: +15, parent: -5, sanity: +10 }, bondDelta: +15 },
+        right: { label: "順便請主任協助協調後續導護人力", effect: { safety: +15, admin: +10, parent: -10, sanity: +5 }, bondDelta: +10 }
+      });
+    }
+
+    // 條件事件門檻檢查（minParent / minBond）
+    while (turnIndex < activeDeck.length) {
+      const candidate = activeDeck[turnIndex];
+      if (typeof candidate.minParent === "number" && stats.parent < candidate.minParent) {
+        turnIndex++;
+        continue;
+      }
+      if (typeof candidate.minBond === "number" && getCharAffinity(candidate.charId) < candidate.minBond) {
+        turnIndex++;
+        continue;
+      }
+      break;
+    }
+    if (turnIndex >= activeDeck.length) {
+      loadCard();
+      return;
+    }
 
     const card = activeDeck[turnIndex];
     const ch = CHARACTER_ROSTER.find(c => c.id === card.charId) || CHARACTER_ROSTER[0];
@@ -1748,6 +1859,18 @@
       right: { label: "猜測是風聲或老舊管線作響，直接返崗", effect: { safety: -15, admin: -10, parent: 0, sanity: +10 }, bondDelta: -10 }
     },
     {
+      time: "15:50", tag: "條件事件・家長會長關切", charId: "parent", filter: "art-danger", sfx: "slam", urgent: false, isChain: true, minParent: 75,
+      text: "【條件觸發・家長情緒≥75】校內氣氛紧繃，王先生竟聯合家長會長來到學安室要求立刻說明導護與管理標準！",
+      left: { label: "出示監視器與SOP紀錄冷靜說明並承諾改善動線", effect: { safety: +10, admin: +15, parent: -25, sanity: -10 }, bondDelta: +5 },
+      right: { label: "堅持執法立場不退讓，請對方依規定申訴", effect: { safety: +10, admin: -10, parent: +15, sanity: -10 }, bondDelta: -10 }
+    },
+    {
+      time: "16:35", tag: "條件事件・阿福叼出關鍵線索", charId: "dog", filter: "art-morning", sfx: "walkie", urgent: false, isChain: true, minBond: 70,
+      text: "【條件觸發・阿福好感≥70】平時跟你感情最好的校狗阿福，突然把遺落在走廊角落的門禁卡與巡邏單叼到你腳邊！",
+      left: { label: "立刻收回門禁卡並給阿福雙份肉乾獎勵", effect: { safety: +20, admin: +20, parent: 0, sanity: +10 }, bondDelta: +10 },
+      right: { label: "先收好門禁卡，繼續前往下一個巡邏點", effect: { safety: +15, admin: +10, parent: 0, sanity: +5 }, bondDelta: +5 }
+    },
+    {
       time: "20:50", tag: "夜間保全交接", charId: "officer", filter: "art-night", sfx: "walkie", category: "special",
       text: "準備與夜間保全進行交接，需確認當日留校名單、門禁狀態與異常紀錄。",
       left: { label: "核對留校人員全數離校並完成書面交接", effect: { safety: +20, admin: +20, parent: 0, sanity: -10 }, bondDelta: +10 },
@@ -2072,6 +2195,7 @@
       btn.onclick = () => {
         document.getElementById("quiz-modal").classList.add("hidden");
         if (idx === qObj.correct) {
+          window._quizAnsweredCorrect = true;
           playSFX("win");
           const extra = TACTICAL_ITEMS[Math.floor(Math.random() * TACTICAL_ITEMS.length)];
           activeItems.push({ ...extra, used: false });
@@ -2565,6 +2689,9 @@
     queuedChainEvent = null;
     shiftLogs = [];
     currentDay = 1;
+    window._hiddenEggBalancedShown = false;
+    window._hiddenEggQuizShown = false;
+    window._quizAnsweredCorrect = false;
     runSafetyNeverBelow50 = true;
     runSanityAlwaysBalanced = true;
     runUsedAnyItem = false;
@@ -2640,21 +2767,10 @@
     if (isVideo) {
       artEl.style.display = "none";
       videoEl.style.display = "block";
-      videoEl.className = card.filter || "";
-      videoEl.onerror = () => {
-        videoEl.onerror = null;
-        videoEl.style.display = "none";
-        artEl.style.display = "block";
-        const fallbackSrc = ch.fallbackImg || ch.fallback || "";
-        artEl.style.backgroundImage = `url('${fallbackSrc}')`;
-        artEl.style.backgroundPosition = ch.id === "officer" ? "center 18%" : "center 12%";
-        artEl.className = card.filter || "";
-      };
       videoEl.src = ch.img;
-      videoEl.load();
+      videoEl.className = card.filter || "";
       videoEl.play().catch(() => {});
     } else {
-      videoEl.onerror = null;
       videoEl.style.display = "none";
       artEl.style.display = "block";
       artEl.style.backgroundImage = `url('${ch.img}')`;
@@ -2856,6 +2972,9 @@
 
   function triggerEnding(endKey) {
     stopQTE();
+    if (!endKey.startsWith("win_") && activeDeck[turnIndex]) {
+      recordWipeoutEvent(activeDeck[turnIndex].tag);
+    }
     isGameOver = true;
     saveEnding(endKey);
     const data = ENDINGS[endKey];
@@ -3308,6 +3427,61 @@
       box.appendChild(btn);
     });
     document.getElementById("line-modal").classList.remove("hidden");
+  }
+
+
+  // ==========================================
+  // 全服最容易翻車關卡 TOP 5 統計
+  // ==========================================
+  function recordWipeoutEvent(tag) {
+    if (!tag) return;
+    const safeKey = encodeURIComponent(tag).replace(/\./g, "_");
+    fetch(`${firebaseBaseUrl}/campus_wipeout_stats/${safeKey}/count.json?t=${Date.now()}`)
+      .then(r => r.json())
+      .then(cur => {
+        const nextVal = (typeof cur === "number" ? cur : 0) + 1;
+        return fetch(`${firebaseBaseUrl}/campus_wipeout_stats/${safeKey}.json`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tag: tag, count: nextVal })
+        });
+      })
+      .catch(() => {});
+  }
+
+  async function openWipeoutRanking() {
+    playSFX("walkie");
+    const list = document.getElementById("wipeout-list");
+    list.innerHTML = `<div class="l-desc" style="text-align:center;">正在讀取全服翻車統計...</div>`;
+    document.getElementById("wipeout-modal").classList.remove("hidden");
+
+    try {
+      const resp = await fetch(`${firebaseBaseUrl}/campus_wipeout_stats.json?t=${Date.now()}`);
+      const data = await resp.json();
+      if (!data) {
+        list.innerHTML = `<div class="l-desc" style="text-align:center;">目前尚無翻車紀錄，大家都穩健下班！</div>`;
+        return;
+      }
+      const rows = Object.values(data)
+        .filter(x => x && x.tag && typeof x.count === "number")
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+      list.innerHTML = "";
+      rows.forEach((r, idx) => {
+        const div = document.createElement("div");
+        div.className = "rank-row";
+        div.innerHTML = `
+          <div>
+            <div style="font-size:13px; font-weight:800; color:#fdba74;">#${idx + 1} ${r.tag}</div>
+            <div style="font-size:10.5px; color:#94a3b8;">導致提前結束值勤的兇險關卡</div>
+          </div>
+          <div style="font-size:14px; font-weight:900; color:#ef4444;">${r.count} 次翻車</div>
+        `;
+        list.appendChild(div);
+      });
+    } catch (e) {
+      list.innerHTML = `<div class="l-desc" style="text-align:center;">讀取失敗，請檢查網路連線</div>`;
+    }
   }
 
   window.addEventListener("resize", resizeFXCanvas);
