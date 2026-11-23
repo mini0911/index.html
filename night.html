@@ -462,41 +462,97 @@
 
     .hidden { display: none !important; }
 
+    /* 質感升級：首頁光暈背景與玻璃卡片 */
+    #start-modal {
+      background:
+        radial-gradient(circle at 20% 12%, rgba(56, 189, 248, 0.22), transparent 45%),
+        radial-gradient(circle at 85% 22%, rgba(251, 191, 36, 0.16), transparent 42%),
+        radial-gradient(circle at 50% 90%, rgba(168, 85, 247, 0.16), transparent 50%),
+        linear-gradient(180deg, rgba(9, 13, 22, 0.97) 0%, rgba(3, 7, 18, 0.99) 100%);
+      justify-content: flex-start;
+      padding: 20px 16px 22px;
+      gap: 8px;
+    }
+
+    .hero-card {
+      width: 100%;
+      max-width: 356px;
+      background: rgba(15, 23, 42, 0.78);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      border-radius: 20px;
+      padding: 14px 14px 12px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(10px);
+      margin-bottom: 2px;
+    }
+
     .tag-pill {
-      font-size: 10.5px; font-weight: 800; letter-spacing: 1.2px;
+      font-size: 10px; font-weight: 800; letter-spacing: 1.4px;
       color: var(--accent-gold); border: 1px solid rgba(251, 191, 36, 0.45);
-      background: rgba(251, 191, 36, 0.1); padding: 4px 11px; border-radius: 999px; margin-bottom: 7px;
+      background: rgba(251, 191, 36, 0.12); padding: 3px 11px; border-radius: 999px;
+      display: inline-block; margin-bottom: 6px;
     }
 
     .main-title {
-      font-size: 22px; font-weight: 900; line-height: 1.28; margin-bottom: 6px;
-      background: linear-gradient(90deg, #fff, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      font-size: 24px; font-weight: 900; line-height: 1.25; margin-bottom: 6px;
+      background: linear-gradient(135deg, #ffffff 15%, #7dd3fc 55%, #fde68a 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      letter-spacing: 0.5px;
+    }
+
+    .hero-subtitle {
+      font-size: 11.5px; color: #cbd5e1; margin-bottom: 8px; line-height: 1.4;
     }
 
     .sub-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 10px; }
 
     .cloud-badge {
-      display: inline-flex; align-items: center; gap: 6px; font-size: 10.5px; font-weight: 800;
-      padding: 4px 10px; border-radius: 999px; margin-bottom: 10px;
-      background: rgba(34, 197, 94, 0.16); border: 1px solid #22c55e; color: #4ade80;
+      display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 800;
+      padding: 3px 10px; border-radius: 999px;
+      background: rgba(34, 197, 94, 0.14); border: 1px solid rgba(74, 222, 128, 0.45); color: #4ade80;
     }
 
-    /* 三大主角職業選擇器 ＋ 四大值勤模式選擇器 */
     .section-mini-header {
-      font-size: 11px; font-weight: 800; color: #94a3b8; margin-bottom: 5px; width: 100%; max-width: 345px; text-align: left;
+      font-size: 11px; font-weight: 800; color: #e2e8f0; margin-bottom: 4px;
+      width: 100%; max-width: 356px; text-align: left; display: flex; align-items: center; gap: 5px;
     }
 
-    .role-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; max-width: 345px; margin-bottom: 10px; }
-    .mode-selector { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; width: 100%; max-width: 345px; margin-bottom: 12px; }
+    .role-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; width: 100%; max-width: 356px; margin-bottom: 6px; }
+    .mode-selector { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; width: 100%; max-width: 356px; margin-bottom: 8px; }
 
-    .mode-btn { background: rgba(30, 41, 59, 0.85); border: 1.5px solid rgba(56, 189, 248, 0.3); border-radius: 11px; padding: 7px 4px; color: #cbd5e1; cursor: pointer; }
-    .mode-btn.active { background: rgba(56, 189, 248, 0.22); border-color: var(--accent-gold); color: #fff; }
-    .mode-title { font-size: 11.5px; font-weight: 800; color: var(--accent-gold); margin-bottom: 2px; }
-    .mode-sub { font-size: 9.5px; color: var(--text-muted); }
+    .mode-btn {
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.92));
+      border: 1.5px solid rgba(148, 163, 184, 0.22);
+      border-radius: 13px; padding: 8px 5px; color: #cbd5e1; cursor: pointer;
+      transition: all 0.18s ease; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    .mode-btn:hover { border-color: rgba(56, 189, 248, 0.55); transform: translateY(-1px); }
+    .mode-btn.active {
+      background: linear-gradient(180deg, rgba(56, 189, 248, 0.24), rgba(37, 99, 235, 0.18));
+      border-color: var(--accent-gold); color: #fff;
+      box-shadow: 0 0 16px rgba(251, 191, 36, 0.25);
+    }
+    .mode-title { font-size: 12px; font-weight: 900; color: #fde68a; margin-bottom: 2px; }
+    .mode-sub { font-size: 9.5px; color: #94a3b8; font-weight: 600; }
 
-    .btn-stack { width: 100%; max-width: 345px; display: flex; flex-direction: column; gap: 7px; }
-    .btn-primary { background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; border: none; padding: 11px 14px; border-radius: 12px; font-size: 13.5px; font-weight: 800; cursor: pointer; box-shadow: 0 8px 22px rgba(37, 99, 235, 0.45); }
-    .btn-secondary { background: rgba(30, 41, 59, 0.9); color: #e2e8f0; border: 1px solid rgba(255, 255, 255, 0.2); padding: 9px 12px; border-radius: 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .btn-stack { width: 100%; max-width: 356px; display: flex; flex-direction: column; gap: 7px; }
+    .btn-primary {
+      background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 55%, #4f46e5 100%);
+      color: #fff; border: 1px solid rgba(125, 211, 252, 0.45); padding: 12px 16px;
+      border-radius: 14px; font-size: 14px; font-weight: 900; cursor: pointer;
+      box-shadow: 0 10px 24px rgba(37, 99, 235, 0.45); letter-spacing: 0.5px;
+      transition: transform 0.14s ease, box-shadow 0.14s ease;
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(56, 189, 248, 0.5); }
+    .btn-primary:active { transform: scale(0.98); }
+
+    .btn-secondary {
+      background: rgba(30, 41, 59, 0.88); color: #e2e8f0;
+      border: 1px solid rgba(148, 163, 184, 0.28); padding: 9px 12px;
+      border-radius: 12px; font-size: 11.5px; font-weight: 700; cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-secondary:hover { background: rgba(51, 65, 85, 0.95); border-color: rgba(56, 189, 248, 0.5); }
 
     .lock-card { width: 100%; max-width: 320px; background: rgba(15, 23, 42, 0.98); border: 2px solid rgba(251, 191, 36, 0.55); border-radius: 20px; padding: 20px 16px; }
     .pin-input { width: 100%; background: #1e293b; border: 2px solid rgba(56, 189, 248, 0.45); color: #fff; padding: 10px; border-radius: 12px; font-size: 18px; font-weight: 800; letter-spacing: 4px; text-align: center; margin: 10px 0 6px; user-select: text; }
@@ -657,9 +713,12 @@
 
   <!-- 開場封面（整合三主角職業 ＋ 四大劇本模式選擇） -->
   <div id="start-modal" class="modal-screen">
-    <div class="tag-pill">COMPLETE ANTHOLOGY ・ 40關全劇本＋三主角</div>
-    <h1 class="main-title">今天也要平安下班<br>：校園群像生存模擬器</h1>
-    <div class="cloud-badge" id="cover-cloud-status">🟢 已綁定 Firebase 雲端（全服選擇統計＋同步）</div>
+    <div class="hero-card">
+      <div class="tag-pill">CAMPUS SAFETY SURVIVAL SIMULATOR</div>
+      <h1 class="main-title">今天也要平安下班</h1>
+      <div class="hero-subtitle">17:30 準時打卡生存戰・40 關全劇本＆三主角群像</div>
+      <div class="cloud-badge" id="cover-cloud-status">🟢 雲端同步已連線</div>
+    </div>
 
     <div class="section-mini-header">1️⃣ 選擇執勤主角崗位（附帶專屬職權特技）：</div>
     <div class="role-selector">
