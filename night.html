@@ -281,6 +281,7 @@
       position: relative;
       width: 100%;
       flex: 1;
+      min-height: 260px;
       max-height: 430px;
       background: #1e293b;
       border-radius: 22px;
@@ -2702,6 +2703,10 @@
       artEl.style.backgroundPosition = ch.id === "officer" ? "center 18%" : "center 12%";
       artEl.className = card.filter || "";
       const safeFallback = ch.fallback || "";
+      if (safeFallback) {
+        artEl.style.backgroundImage = `url("${safeFallback}")`;
+      }
+      if (!primaryUrl || primaryUrl === safeFallback) return;
       const tryImg = new Image();
       tryImg.onload = () => {
         artEl.style.backgroundImage = `url("${primaryUrl}")`;
@@ -2712,15 +2717,10 @@
           trySecond.onload = () => {
             artEl.style.backgroundImage = `url("${ch.fallbackImg}")`;
           };
-          trySecond.onerror = () => {
-            if (safeFallback) artEl.style.backgroundImage = `url("${safeFallback}")`;
-          };
           trySecond.src = ch.fallbackImg;
-        } else if (safeFallback) {
-          artEl.style.backgroundImage = `url("${safeFallback}")`;
         }
       };
-      tryImg.src = primaryUrl || safeFallback;
+      tryImg.src = primaryUrl;
     }
 
     if (isVideo) {
