@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>百萬大歌星｜2026終極金曲挑戰賽（60首全曲庫＋玩家自訂填詞＋智囊團求救＋雲端同步）</title>
+  <title>百萬大歌星｜2026終極金曲挑戰賽（60首全曲庫＋KTV伴唱歌聲＋音檔上傳＋玩家填詞）</title>
   <style>
     :root {
       --bg-dark: #060913;
@@ -366,29 +366,30 @@
       font-size: 10px;
       color: #38bdf8;
       font-weight: 800;
-      margin-bottom: 3px;
+      margin-bottom: 4px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 4px;
     }
 
     .melody-btn {
-      background: rgba(56, 189, 248, 0.2);
-      border: 1px solid rgba(56, 189, 248, 0.55);
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.28), rgba(236, 72, 153, 0.25));
+      border: 1px solid rgba(56, 189, 248, 0.65);
       color: #e0f2fe;
       font-size: 10px;
       font-weight: 800;
-      padding: 2px 8px;
+      padding: 2.5px 8px;
       border-radius: 999px;
       cursor: pointer;
     }
 
     .lead-lyrics-text {
-      font-size: 14.5px;
-      font-weight: 800;
+      font-size: 15.5px;
+      font-weight: 900;
       color: #f8fafc;
       line-height: 1.45;
-      letter-spacing: 0.5px;
+      letter-spacing: 1px;
     }
 
     /* 提詞機空格顯示區 */
@@ -846,11 +847,11 @@
 
     .lock-card {
       width: 100%;
-      max-width: 330px;
+      max-width: 345px;
       background: rgba(15, 23, 42, 0.98);
       border: 2px solid rgba(251, 191, 36, 0.55);
       border-radius: 20px;
-      padding: 20px 16px;
+      padding: 18px 15px;
     }
 
     .pin-input {
@@ -981,7 +982,7 @@
         <button class="icon-btn" onclick="openLeaderboard()">🏅</button>
         <button class="icon-btn" onclick="openGallery()">🏆 <span id="hud-unlock">0</span>/8</button>
         <button id="bgm-btn" class="icon-btn active-audio" onclick="toggleBGM()">🎵</button>
-        <button id="voice-btn" class="icon-btn active-audio" onclick="toggleVoice()">🗣️</button>
+        <button id="voice-btn" class="icon-btn active-audio" onclick="toggleSingVoice()">🎤</button>
         <button id="sfx-btn" class="icon-btn active-audio" onclick="toggleSFX()">🔊</button>
       </div>
     </div>
@@ -1024,8 +1025,8 @@
 
       <div class="lead-lyrics-box">
         <div class="lead-label">
-          <span>🎵 前導原唱歌詞（請接唱下一句）</span>
-          <button class="melody-btn" onclick="playCurrentSongCue()">🎹 聽旋律與提示</button>
+          <span id="audio-source-tag">🎤 KTV伴唱歌聲（逐字發光提詞）</span>
+          <button class="melody-btn" onclick="playCurrentSongCue()">🎶 重聽原唱旋律</button>
         </div>
         <div class="lead-lyrics-text" id="lead-lyrics-text">歌詞載入中...</div>
       </div>
@@ -1036,10 +1037,10 @@
       </div>
     </div>
 
-    <!-- 主持人哈林哥即時互動泡泡 -->
+    <!-- 主持人哈林哥即時吐槽泡泡 -->
     <div class="host-bubble">
       <div class="host-avatar">🎙️</div>
-      <div id="host-comment-text">哈林哥：「音樂請下！聽清楚旋律跟字數，準備好了就給我喊 LOCK IN！」</div>
+      <div id="host-comment-text">哈林哥：「音樂請下！跟著 KTV 逐字燈號一起唱，準備好了就喊 LOCK IN！」</div>
     </div>
 
     <!-- 作答模式切換（四選一 vs 硬核手寫 1.5 倍加成） -->
@@ -1070,13 +1071,13 @@
     <div class="hero-card">
       <div class="hero-top-meta">
         <span class="tag-pill">MILLION DOLLAR SINGER 2026</span>
-        <div class="cloud-badge" id="cover-cloud-status">🟢 2026全曲庫已連線</div>
+        <div class="cloud-badge" id="cover-cloud-status">🟢 KTV歌聲＋2026全曲庫</div>
       </div>
       <h1 class="main-title">百萬大歌星</h1>
-      <div class="hero-subtitle">經典綜藝接歌生存戰・2026最新金曲全收錄・玩家自由填詞出題！</div>
+      <div class="hero-subtitle">KTV逐字伴唱歌聲・支援上傳 .mp3 翻唱音檔・玩家自由填詞出題！</div>
       <div class="hero-stats-strip">
-        <div class="hero-mini-chip">🎵 60首2026金曲</div>
-        <div class="hero-mini-chip">✍️ 玩家自訂填詞</div>
+        <div class="hero-mini-chip">🎤 伴唱歌聲旋律</div>
+        <div class="hero-mini-chip">✍️ 填詞＋音檔上傳</div>
         <div class="hero-mini-chip">💰 $300,000大獎</div>
       </div>
     </div>
@@ -1128,13 +1129,13 @@
     <div class="btn-stack">
       <button class="btn-primary" onclick="startNewGame()">🎬 站上舞台・挑戰三十萬獎金！</button>
       <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px;">
-        <button class="btn-secondary" style="border-color:#22c55e; color:#bbf7d0;" onclick="openPlayerSubmitModal()">✍️ 投稿歌詞</button>
+        <button class="btn-secondary" style="border-color:#22c55e; color:#bbf7d0;" onclick="openPlayerSubmitModal()">✍️ 投稿歌詞/音檔</button>
         <button class="btn-secondary" style="border-color:#38bdf8; color:#bae6fd;" onclick="openCoopModal()">👥 雙人PK</button>
         <button class="btn-secondary" style="border-color:#fbbf24; color:#fde68a;" onclick="openLeaderboard()">🏅 排行榜</button>
       </div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
         <button class="btn-secondary" onclick="openGallery()">🏆 歌王稱號圖鑑 (<span id="cover-unlock">0</span>/8)</button>
-        <button class="btn-secondary" style="border-color:#f59e0b; color:#fde68a;" onclick="openAdminModal()">🔒 題庫後台 (審核/管理)</button>
+        <button class="btn-secondary" style="border-color:#f59e0b; color:#fde68a;" onclick="openAdminModal()">🔒 題庫後台 (音檔/審核)</button>
       </div>
     </div>
   </div>
@@ -1150,13 +1151,13 @@
     </div>
   </div>
 
-  <!-- ✍️ 玩家自由投稿自訂填詞彈窗（免密碼直接填詞出題） -->
+  <!-- ✍️ 玩家自由投稿自訂填詞＋伴唱音檔上傳彈窗 -->
   <div id="player-submit-modal" class="modal-screen hidden" style="z-index: 48;">
     <div class="lock-card" style="border-color:#22c55e; max-width:355px; text-align:left; max-height:92dvh; overflow-y:auto;">
       <div style="text-align:center;">
-        <div class="tag-pill" style="border-color:#22c55e; color:#4ade80;">PLAYER CUSTOM LYRICS</div>
-        <h3 style="font-size:17.5px; font-weight:900; color:#f8fafc; margin-bottom:4px;">✍️ 玩家自己填詞出題</h3>
-        <p style="font-size:11px; color:#94a3b8; margin-bottom:8px;">填入你想考大家的歌詞，可立即加入本機題庫試玩，並同步送出給管理員審核上架全服！</p>
+        <div class="tag-pill" style="border-color:#22c55e; color:#4ade80;">PLAYER CUSTOM LYRICS & AUDIO</div>
+        <h3 style="font-size:17.5px; font-weight:900; color:#f8fafc; margin-bottom:4px;">✍️ 玩家自己填詞與音檔出題</h3>
+        <p style="font-size:11px; color:#94a3b8; margin-bottom:8px;">可上傳你用 AI 生成的 .mp3 翻唱音檔，或交給內建 KTV 合成器自動伴唱！</p>
       </div>
 
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
@@ -1181,6 +1182,19 @@
 
       <input type="text" class="form-input" id="ps-lead" placeholder="🎵 前導原唱歌詞（例：雨滴落在屋簷下的節奏）" maxlength="34" />
       <input type="text" class="form-input" style="border-color:#4ade80;" id="ps-answer" placeholder="✅ 正確接唱歌詞（不要加標點符號）" maxlength="22" />
+
+      <div style="background:rgba(56,189,248,0.1); border:1px dashed rgba(56,189,248,0.45); border-radius:9px; padding:7px 8px; margin-bottom:7px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <span style="font-size:11px; color:#7dd3fc; font-weight:800;" id="ps-audio-status">🎶 原唱/AI伴唱音檔（選填，未上傳則自動合成歌聲）：</span>
+        </div>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <label class="cast-mini-btn" style="padding:4px 8px; white-space:nowrap;">
+            📁 上傳 .mp3 / .m4a
+            <input type="file" accept="audio/*" class="hidden" onchange="handlePlayerAudioUpload(event)" />
+          </label>
+          <input type="text" class="form-input" id="ps-audio-url" style="margin-bottom:0; font-size:11px;" placeholder="或貼上 MP3 音檔網址" />
+        </div>
+      </div>
 
       <div style="font-size:11px; color:#94a3b8; margin-bottom:4px;">干擾選項（讓四選一更刺激，留白會自動補齊）：</div>
       <input type="text" class="form-input" id="ps-wrong1" placeholder="❌ 干擾選項 1（同字數類似歌詞）" maxlength="22" />
@@ -1237,10 +1251,10 @@
     </div>
   </div>
 
-  <!-- 🎛️ 管理員題庫編輯工坊（自訂新歌歌詞＋審核玩家投稿＋單曲試玩＋匯出匯入） -->
+  <!-- 🎛️ 管理員題庫編輯工坊（支援為任何歌曲掛載 .mp3 原唱伴唱音檔＋審核玩家投稿＋單曲試玩） -->
   <div id="admin-modal" class="modal-screen hidden" style="z-index: 51;">
-    <div class="tag-pill">🔓 ADMIN STUDIO ・ 2026 SONG LIBRARY</div>
-    <h2 class="main-title" style="font-size: 19px;">音樂總監自訂歌庫與審核工坊</h2>
+    <div class="tag-pill">🔓 ADMIN STUDIO ・ 2026 SONG & AUDIO LIBRARY</div>
+    <h2 class="main-title" style="font-size: 19px;">音樂總監歌庫、伴唱音檔與審核工坊</h2>
 
     <div style="width:100%; max-height:70dvh; overflow-y:auto; margin-bottom:10px; padding-right:3px;">
       <!-- 玩家投稿審核區 -->
@@ -1254,7 +1268,7 @@
         </div>
       </div>
 
-      <!-- 管理員直接新增/編輯歌曲 -->
+      <!-- 管理員直接新增/編輯歌曲與音檔 -->
       <div class="panel-box">
         <div class="panel-title">
           <span id="song-editor-title">➕ 直接新增 2026 歌曲至全服歌庫</span>
@@ -1272,6 +1286,18 @@
         </select>
         <input type="text" class="form-input" id="new-song-lead" placeholder="前導原唱歌詞（例：北風毫不留情 把葉子吹落）" maxlength="32" />
         <input type="text" class="form-input" id="new-song-answer" placeholder="正確接唱歌詞（不要加標點符號）" maxlength="20" />
+
+        <div style="background:rgba(56,189,248,0.1); border:1px dashed rgba(56,189,248,0.45); border-radius:8px; padding:6px 8px; margin-bottom:6px;">
+          <div style="font-size:10.5px; color:#7dd3fc; margin-bottom:4px;" id="admin-audio-status">🎶 原唱 / AI 翻唱伴唱音檔（選填）：</div>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <label class="cast-mini-btn" style="padding:4px 8px; white-space:nowrap;">
+              📁 選擇 .mp3
+              <input type="file" accept="audio/*" class="hidden" onchange="handleAdminAudioUpload(event)" />
+            </label>
+            <input type="text" class="form-input" id="new-song-audio-url" style="margin-bottom:0; font-size:11px;" placeholder="或貼上 MP3 音檔網址" />
+          </div>
+        </div>
+
         <input type="text" class="form-input" id="new-song-wrong1" placeholder="干擾錯誤選項 1" maxlength="20" />
         <div class="form-row-2">
           <input type="text" class="form-input" id="new-song-wrong2" placeholder="干擾錯誤選項 2" maxlength="20" />
@@ -1280,10 +1306,10 @@
         <button class="btn-primary" id="save-song-btn" style="width:100%; padding:9px; font-size:12.5px;" onclick="saveCustomSong()">✨ 儲存歌曲並同步 Firebase 雲端</button>
       </div>
 
-      <!-- 全歌單開關與單曲試玩 -->
+      <!-- 全歌單開關、音檔掛載與單曲試玩 -->
       <div class="panel-box" style="border-color: rgba(56, 189, 248, 0.45);">
-        <div class="panel-title" style="color:#7dd3fc;"><span>🎵 全歌庫列表開關 ＆ 單曲即時試玩（共 <span id="admin-total-songs">60</span> 首）</span></div>
-        <div id="song-manage-list" style="max-height:200px; overflow-y:auto;"></div>
+        <div class="panel-title" style="color:#7dd3fc;"><span>🎵 全歌庫列表開關、掛載伴唱音檔 ＆ 試唱（共 <span id="admin-total-songs">60</span> 首）</span></div>
+        <div id="song-manage-list" style="max-height:210px; overflow-y:auto;"></div>
       </div>
 
       <!-- JSON 備份與密碼修改 -->
@@ -1457,19 +1483,28 @@
     try {
       const customSongs = SONG_LIBRARY.filter(s => s.isCustom);
       const disabledIds = SONG_LIBRARY.filter(s => s.disabled).map(s => s.id);
-      localStorage.setItem("million_singer_custom_songs_v2", JSON.stringify(customSongs));
-      localStorage.setItem("million_singer_disabled_ids_v2", JSON.stringify(disabledIds));
+      const audioOverrides = {};
+      SONG_LIBRARY.forEach(s => {
+        if (!s.isCustom && s.audioUrl) audioOverrides[s.id] = s.audioUrl;
+      });
+      localStorage.setItem("million_singer_custom_songs_v3", JSON.stringify(customSongs));
+      localStorage.setItem("million_singer_disabled_ids_v3", JSON.stringify(disabledIds));
+      localStorage.setItem("million_singer_audio_overrides_v3", JSON.stringify(audioOverrides));
     } catch (e) {}
   }
 
   function loadLocalSongs() {
     try {
-      const customSongs = JSON.parse(localStorage.getItem("million_singer_custom_songs_v2") || "[]");
-      const disabledIds = JSON.parse(localStorage.getItem("million_singer_disabled_ids_v2") || "[]");
+      const customSongs = JSON.parse(localStorage.getItem("million_singer_custom_songs_v3") || "[]");
+      const disabledIds = JSON.parse(localStorage.getItem("million_singer_disabled_ids_v3") || "[]");
+      const audioOverrides = JSON.parse(localStorage.getItem("million_singer_audio_overrides_v3") || "{}");
       customSongs.forEach(cs => {
-        if (!SONG_LIBRARY.some(x => x.id === cs.id)) SONG_LIBRARY.push(cs);
+        if (!SONG_LIBRARY.some(x => x.id === cs.id)) SONG_LIBRARY.unshift(cs);
       });
-      SONG_LIBRARY.forEach(s => { s.disabled = disabledIds.includes(s.id); });
+      SONG_LIBRARY.forEach(s => {
+        s.disabled = disabledIds.includes(s.id);
+        if (audioOverrides[s.id]) s.audioUrl = audioOverrides[s.id];
+      });
     } catch (e) {}
   }
 
@@ -1477,11 +1512,16 @@
     saveLocalSongs();
     try {
       const nowTs = Date.now();
+      const audioOverrides = {};
+      SONG_LIBRARY.forEach(s => {
+        if (!s.isCustom && s.audioUrl) audioOverrides[s.id] = s.audioUrl;
+      });
       const payload = {
         updatedAt: nowTs,
         adminPin: currentAdminPin,
         customSongs: SONG_LIBRARY.filter(s => s.isCustom),
-        disabledIds: SONG_LIBRARY.filter(s => s.disabled).map(s => s.id)
+        disabledIds: SONG_LIBRARY.filter(s => s.disabled).map(s => s.id),
+        audioOverrides: audioOverrides
       };
       await fetch(`${firebaseBaseUrl}/million_singer_sync.json`, {
         method: "PUT",
@@ -1489,9 +1529,9 @@
         body: JSON.stringify(payload)
       });
       lastCloudTs = nowTs;
-      showToast("☁️ 全服歌庫已即時同步至 Firebase 雲端！");
+      showToast("☁️ 全服歌庫與伴唱音檔已即時同步至 Firebase！");
     } catch (e) {
-      showToast("⚠️ 雲端同步異常，已儲存至本機快取");
+      showToast("⚠️ 雲端同步異常（若 MP3 檔案較大建議控制在 2MB 內）");
     }
   }
 
@@ -1518,10 +1558,15 @@
           for (let i = SONG_LIBRARY.length - 1; i >= 0; i--) {
             if (SONG_LIBRARY[i].isCustom) SONG_LIBRARY.splice(i, 1);
           }
-          data.customSongs.forEach(cs => SONG_LIBRARY.push(cs));
+          data.customSongs.forEach(cs => SONG_LIBRARY.unshift(cs));
         }
         if (Array.isArray(data.disabledIds)) {
           SONG_LIBRARY.forEach(s => { s.disabled = data.disabledIds.includes(s.id); });
+        }
+        if (data.audioOverrides && typeof data.audioOverrides === "object") {
+          SONG_LIBRARY.forEach(s => {
+            if (data.audioOverrides[s.id]) s.audioUrl = data.audioOverrides[s.id];
+          });
         }
         saveLocalSongs();
         updateAllCounters();
@@ -1622,35 +1667,124 @@
   ];
 
   // ==========================================
-  // 4. Web Audio 鋼琴前奏旋律與綜藝音效引擎
+  // 4. KTV 伴唱歌聲共振峰引擎 ＋ 真實人聲音檔播放系統
   // ==========================================
-  let sfxOn = true, voiceOn = true, bgmOn = true;
+  let sfxOn = true, singVoiceOn = true, bgmOn = true;
   let audioCtx = null, bgmTimer = null, bgmStep = 0;
+  let activeRealAudio = null;
+  let karaokeTimers = [];
 
   function ensureAudio() {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     if (audioCtx.state === "suspended") audioCtx.resume();
   }
 
+  function stopCurrentSinging() {
+    if (activeRealAudio) {
+      try { activeRealAudio.pause(); activeRealAudio.currentTime = 0; } catch (e) {}
+      activeRealAudio = null;
+    }
+    karaokeTimers.forEach(t => clearTimeout(t));
+    karaokeTimers = [];
+  }
+
   function playCurrentSongCue() {
-    ensureAudio();
+    stopCurrentSinging();
     const song = currentPlaylist[roundIndex];
     if (!song) return;
-    const notes = song.notes || [392, 440, 523.25, 493.88, 392];
-    const now = audioCtx.currentTime;
-    notes.forEach((freq, i) => {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = "triangle";
-      osc.frequency.setValueAtTime(freq, now + i * 0.22);
-      gain.gain.setValueAtTime(0.24, now + i * 0.22);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.22 + 0.2);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start(now + i * 0.22);
-      osc.stop(now + i * 0.22 + 0.21);
+
+    const chars = song.lead.replace(/[\s，。！？、]/g, "").split("");
+    const leadEl = document.getElementById("lead-lyrics-text");
+    const sourceTag = document.getElementById("audio-source-tag");
+
+    // 1. 優先檢查是否掛載了真實原唱 / AI 翻唱 MP3 音檔
+    if (song.audioUrl && singVoiceOn) {
+      sourceTag.textContent = "🎧 真實人聲 / AI翻唱原音伴唱中";
+      activeRealAudio = new Audio(song.audioUrl);
+      activeRealAudio.volume = 0.9;
+      activeRealAudio.play().catch(() => {
+        // 若外部連結被瀏覽器阻擋，自動降級為合成器歌聲
+        playSynthKTVVoice(song, chars, leadEl, sourceTag);
+      });
+      // 同步逐字發光提詞
+      const stepMs = 340;
+      leadEl.innerHTML = chars.map((c, i) => `<span id="karaoke-ch-${i}" style="transition:color 0.15s;">${c}</span>`).join("");
+      chars.forEach((_, i) => {
+        const tid = setTimeout(() => {
+          const sp = document.getElementById(`karaoke-ch-${i}`);
+          if (sp) { sp.style.color = "#fbbf24"; sp.style.textShadow = "0 0 12px #fbbf24"; }
+        }, i * stepMs);
+        karaokeTimers.push(tid);
+      });
+      return;
+    }
+
+    // 2. 無上傳音檔時，啟動 Web Audio 人聲共振峰＋歌手抖音合成器
+    playSynthKTVVoice(song, chars, leadEl, sourceTag);
+  }
+
+  function playSynthKTVVoice(song, chars, leadEl, sourceTag) {
+    sourceTag.textContent = "🎤 KTV伴唱歌聲（逐字發光提詞）";
+    const beatSec = 0.36;
+
+    // 逐字發光卡拉OK字幕
+    leadEl.innerHTML = chars.map((c, i) => `<span id="karaoke-ch-${i}" style="transition:color 0.15s;">${c}</span>`).join("");
+    chars.forEach((_, i) => {
+      const tid = setTimeout(() => {
+        const span = document.getElementById(`karaoke-ch-${i}`);
+        if (span) {
+          span.style.color = "#fbbf24";
+          span.style.textShadow = "0 0 12px #fbbf24";
+        }
+      }, i * beatSec * 1000);
+      karaokeTimers.push(tid);
     });
-    speakText(`請聽題，${song.artist}的，${song.title}。${song.lead}`);
+
+    if (!singVoiceOn) return;
+    ensureAudio();
+
+    const baseNotes = song.notes || [392, 440, 523.25, 493.88, 392];
+    const now = audioCtx.currentTime;
+    const vowelFormants = [730, 530, 270, 570, 300];
+
+    chars.forEach((ch, idx) => {
+      const startTime = now + idx * beatSec;
+      const freq = baseNotes[idx % baseNotes.length];
+
+      // 聲帶主振盪器（鋸齒波模擬人聲泛音）
+      const voiceOsc = audioCtx.createOscillator();
+      voiceOsc.type = "sawtooth";
+      voiceOsc.frequency.setValueAtTime(freq, startTime);
+
+      // 歌手抖音效果（Vibrato LFO）
+      const vibrato = audioCtx.createOscillator();
+      const vibratoGain = audioCtx.createGain();
+      vibrato.frequency.setValueAtTime(5.6, startTime);
+      vibratoGain.gain.setValueAtTime(4.8, startTime);
+      vibrato.connect(vibratoGain);
+      vibratoGain.connect(voiceOsc.frequency);
+
+      // 人聲母音共振峰濾波器
+      const formantFilter = audioCtx.createBiquadFilter();
+      formantFilter.type = "bandpass";
+      formantFilter.frequency.setValueAtTime(vowelFormants[ch.charCodeAt(0) % vowelFormants.length] * 1.55, startTime);
+      formantFilter.Q.setValueAtTime(3.0, startTime);
+
+      // 換氣包絡線
+      const envGain = audioCtx.createGain();
+      envGain.gain.setValueAtTime(0.001, startTime);
+      envGain.gain.linearRampToValueAtTime(0.28, startTime + 0.05);
+      envGain.gain.exponentialRampToValueAtTime(0.001, startTime + beatSec * 0.92);
+
+      voiceOsc.connect(formantFilter);
+      formantFilter.connect(envGain);
+      envGain.connect(audioCtx.destination);
+
+      voiceOsc.start(startTime);
+      vibrato.start(startTime);
+      voiceOsc.stop(startTime + beatSec);
+      vibrato.stop(startTime + beatSec);
+    });
   }
 
   function playSFX(type) {
@@ -1705,26 +1839,16 @@
       const gain = audioCtx.createGain();
       osc.type = "sine";
       osc.frequency.setValueAtTime(bassNotes[bgmStep % bassNotes.length], now);
-      gain.gain.setValueAtTime(0.032, now);
+      gain.gain.setValueAtTime(0.025, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
       osc.connect(gain); gain.connect(audioCtx.destination);
       osc.start(now); osc.stop(now + 0.32);
       bgmStep++;
-    }, 460);
+    }, 480);
   }
 
   function stopStageBGM() {
     if (bgmTimer) { clearInterval(bgmTimer); bgmTimer = null; }
-  }
-
-  function speakText(text) {
-    if (!voiceOn || !("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = "zh-TW";
-    u.pitch = 1.08;
-    u.rate = 1.15;
-    window.speechSynthesis.speak(u);
   }
 
   function toggleBGM() {
@@ -1735,12 +1859,13 @@
     if (bgmOn) startStageBGM(); else stopStageBGM();
   }
 
-  function toggleVoice() {
-    voiceOn = !voiceOn;
+  function toggleSingVoice() {
+    singVoiceOn = !singVoiceOn;
     const b = document.getElementById("voice-btn");
-    b.classList.toggle("active-audio", voiceOn);
-    b.textContent = voiceOn ? "🗣️" : "🤐";
-    if (!voiceOn && "speechSynthesis" in window) window.speechSynthesis.cancel();
+    b.classList.toggle("active-audio", singVoiceOn);
+    b.textContent = singVoiceOn ? "🎤" : "🎤靜";
+    if (!singVoiceOn) stopCurrentSinging();
+    else playCurrentSongCue();
   }
 
   function toggleSFX() {
@@ -1754,7 +1879,7 @@
   // 5. 百萬大歌星核心遊戲狀態與獎金階梯
   // ==========================================
   const PRIZE_LADDER = [1000, 3000, 5000, 10000, 25000, 50000, 100000, 150000, 200000, 300000];
-  const SAFE_INDICES = [2, 6]; // 第3關($5,000) 與 第7關($100,000) 為安全保底線
+  const SAFE_INDICES = [2, 6];
 
   const CHALLENGER_ROLES = {
     rookie: { name: "樂壇新秀", lives: 4, extraTime: 0, prizeMult: 1.0 },
@@ -1790,12 +1915,12 @@
   let revealedHintIndices = [];
   let roundLogs = [];
   let lastShareImageUrl = "";
-  let unlockedTitles = JSON.parse(localStorage.getItem("million_singer_titles_v2") || "[]");
+  let unlockedTitles = JSON.parse(localStorage.getItem("million_singer_titles_v3") || "[]");
 
   function unlockTitle(id) {
     if (!unlockedTitles.includes(id)) {
       unlockedTitles.push(id);
-      localStorage.setItem("million_singer_titles_v2", JSON.stringify(unlockedTitles));
+      localStorage.setItem("million_singer_titles_v3", JSON.stringify(unlockedTitles));
       updateAllCounters();
       const meta = GALLERY_TITLES.find(t => t.id === id);
       if (meta) showToast(`🏆 解鎖新歌王稱號：【${meta.title}】！`);
@@ -1857,7 +1982,6 @@
       const j = Math.floor(rng() * (i + 1));
       [copy[i], copy[j]] = [copy[j], copy[i]];
     }
-    // 優先確保玩家剛投稿的本機歌曲容易在前幾關出現
     const freshCustom = copy.filter(s => s.justSubmitted);
     const others = copy.filter(s => !s.justSubmitted);
     return [...freshCustom, ...others].slice(0, 12);
@@ -1905,6 +2029,7 @@
 
   function loadCurrentRound() {
     stopRoundTimer();
+    stopCurrentSinging();
     if (roundIndex >= 10 || roundIndex >= currentPlaylist.length) {
       finishGame("win_million");
       return;
@@ -1924,20 +2049,19 @@
 
     document.getElementById("song-genre-badge").textContent = `第 ${roundIndex + 1}/10 關・${song.genre}`;
     document.getElementById("song-title-display").textContent = `《${song.title}》－ ${song.artist}`;
-    document.getElementById("lead-lyrics-text").textContent = `「${song.lead}」`;
+    document.getElementById("lead-lyrics-text").textContent = song.lead;
 
     const cleanAns = song.answer.replace(/\s+/g, "");
     document.getElementById("blank-count-label").textContent = `🎤 請接唱出正確歌詞（共 ${cleanAns.length} 個字｜本關獎金 $${stepPrize.toLocaleString()}）`;
     renderBlankSlots(cleanAns);
 
     const hostLines = [
-      `哈林哥：「第 ${roundIndex + 1} 關獎金 $${stepPrize.toLocaleString()}！這首《${song.title}》大家 KTV 必唱吧！」`,
+      `哈林哥：「第 ${roundIndex + 1} 關獎金 $${stepPrize.toLocaleString()}！跟著 KTV 逐字燈號一起接唱《${song.title}》！」`,
       `哈林哥：「注意看提詞機一共 ${cleanAns.length} 個字，對自己沒把握隨時可以用求救錦囊！」`,
       `哈林哥：「音樂聲催落去！想清楚再喊 LOCK IN，千萬別唱錯字啊！」`
     ];
     document.getElementById("host-comment-text").textContent = hostLines[roundIndex % hostLines.length];
 
-    // 組合四選一選項
     const wrongs = (song.wrongs && song.wrongs.length >= 3)
       ? song.wrongs.slice(0, 3)
       : ["我的思念還停留在昨天晚上", "讓微風吹散所有的回憶與惆悵", "我們的故事寫到了最後一章"];
@@ -1948,7 +2072,7 @@
     document.getElementById("lockin-btn").disabled = false;
 
     startRoundTimer(20 + roleCfg.extraTime);
-    setTimeout(() => playCurrentSongCue(), 300);
+    setTimeout(() => playCurrentSongCue(), 280);
   }
 
   function renderBlankSlots(cleanAns) {
@@ -2111,6 +2235,7 @@
 
     isRoundLocked = true;
     stopRoundTimer();
+    stopCurrentSinging();
     document.getElementById("lockin-btn").disabled = true;
 
     const tpCard = document.getElementById("teleprompter-card");
@@ -2130,12 +2255,10 @@
     const tpCard = document.getElementById("teleprompter-card");
     tpCard.classList.remove("lock-in-glow");
 
-    // 揭曉完整正確歌詞
     const cleanAns = song.answer.replace(/\s+/g, "");
     revealedHintIndices = [...Array(cleanAns.length).keys()];
     renderBlankSlots(cleanAns);
 
-    // 標示四選一按鈕顏色
     const btns = document.querySelectorAll(".opt-choice-btn");
     btns.forEach(btn => {
       if (btn.textContent.includes(song.answer)) btn.classList.add("correct-ans");
@@ -2211,12 +2334,14 @@
       return;
     }
     stopRoundTimer();
+    stopCurrentSinging();
     unlockTitle("walk_away_pro");
     finishGame("walk_away");
   }
 
   function finishGame(endReason) {
     stopRoundTimer();
+    stopCurrentSinging();
     stopStageBGM();
     isRoundLocked = true;
 
@@ -2258,11 +2383,31 @@
   }
 
   // ==========================================
-  // 8. 玩家自由投稿「自己填詞出題」系統
+  // 8. 玩家自由投稿「自己填詞＋伴唱音檔」出題系統
   // ==========================================
+  let pendingPlayerAudioData = null;
+
   function openPlayerSubmitModal() {
     playSFX("select");
+    pendingPlayerAudioData = null;
+    document.getElementById("ps-audio-status").textContent = "🎶 原唱/AI伴唱音檔（選填，未上傳則自動合成歌聲）：";
     document.getElementById("player-submit-modal").classList.remove("hidden");
+  }
+
+  function handlePlayerAudioUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 3.5 * 1024 * 1024) {
+      showToast("⚠️ 音檔請控制在 3.5MB 內（建議剪輯 8-12 秒副歌片段）");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = e => {
+      pendingPlayerAudioData = e.target.result;
+      document.getElementById("ps-audio-status").textContent = `✅ 已載入音檔：${file.name}`;
+      showToast("🎧 已成功載入伴唱音檔！");
+    };
+    reader.readAsDataURL(file);
   }
 
   function fillSampleCustomSong() {
@@ -2287,6 +2432,8 @@
     const w1 = document.getElementById("ps-wrong1").value.trim() || "我的思念還停留在昨天晚上";
     const w2 = document.getElementById("ps-wrong2").value.trim() || "讓微風吹散所有的回憶與惆悵";
     const w3 = document.getElementById("ps-wrong3").value.trim() || "我們的故事寫到了最後一章";
+    const audioInputUrl = document.getElementById("ps-audio-url").value.trim();
+    const finalAudio = pendingPlayerAudioData || audioInputUrl || "";
     const playNow = document.getElementById("ps-play-now").checked;
 
     if (!title || !lead || !answer) {
@@ -2303,6 +2450,7 @@
       answer: answer,
       wrongs: [w1, w2, w3],
       notes: [392, 440, 523.25, 493.88, 392],
+      audioUrl: finalAudio,
       isCustom: true,
       justSubmitted: true
     };
@@ -2316,7 +2464,7 @@
     unlockTitle("lyric_creator");
     playSFX("correct");
     document.getElementById("player-submit-modal").classList.add("hidden");
-    showToast("🎉 填詞成功！已加入本機歌單並送出雲端審核！");
+    showToast("🎉 填詞與音檔發布成功！下一局即可唱到！");
 
     try {
       await fetch(`${firebaseBaseUrl}/million_singer_submissions.json`, {
@@ -2328,8 +2476,10 @@
   }
 
   // ==========================================
-  // 9. 管理員題庫後台（審核玩家投稿、增刪改歌曲、單曲試玩）
+  // 9. 管理員題庫後台（為歌曲掛載音檔、審核玩家投稿、單曲試唱）
   // ==========================================
+  let pendingAdminAudioData = null;
+
   function openAdminModal() {
     playSFX("select");
     if (isAdminUnlocked) {
@@ -2355,6 +2505,7 @@
   }
 
   function showAdminStudio() {
+    resetSongEditor();
     renderSongManageList();
     loadPendingSubmissions();
     document.getElementById("admin-modal").classList.remove("hidden");
@@ -2366,7 +2517,37 @@
     showToast("🔒 管理員後台已上鎖");
   }
 
-  let editingSongId = null;
+  function handleAdminAudioUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 3.5 * 1024 * 1024) {
+      showToast("⚠️ 音檔請控制在 3.5MB 內以利雲端同步");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = e => {
+      pendingAdminAudioData = e.target.result;
+      document.getElementById("admin-audio-status").textContent = `✅ 已選取音檔：${file.name}`;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function attachAudioToExistingSong(event, idx) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 3.5 * 1024 * 1024) {
+      showToast("⚠️ 音檔請控制在 3.5MB 內");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = async e => {
+      SONG_LIBRARY[idx].audioUrl = e.target.result;
+      renderSongManageList();
+      playSFX("correct");
+      await pushSongsToFirebase();
+    };
+    reader.readAsDataURL(file);
+  }
 
   function renderSongManageList() {
     updateAllCounters();
@@ -2374,16 +2555,23 @@
     if (!box) return;
     box.innerHTML = "";
     SONG_LIBRARY.forEach((s, idx) => {
+      const hasAudio = Boolean(s.audioUrl);
       const row = document.createElement("div");
       row.className = "ev-manage-row" + (s.disabled ? " disabled-ev" : "");
       row.innerHTML = `
         <div style="flex:1; min-width:0;">
-          <div style="font-size:11px; font-weight:800; color:#fde68a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">[${s.genre}] 《${s.title}》－${s.artist}</div>
+          <div style="font-size:11px; font-weight:800; color:#fde68a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+            [${s.genre}] 《${s.title}》${hasAudio ? "🎧" : "🎹"}
+          </div>
           <div style="font-size:10px; color:#94a3b8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">接唱：${s.answer}</div>
         </div>
-        <div style="display:flex; gap:4px;">
-          <button class="cast-mini-btn" style="border-color:#22c55e; color:#bbf7d0;" onclick="testSingleSong(${idx})">▶️ 試唱</button>
-          <button class="cast-mini-btn" onclick="toggleSongEnabled(${idx})">${s.disabled ? "🚫 停用" : "✅ 啟用"}</button>
+        <div style="display:flex; gap:3px;">
+          <label class="cast-mini-btn" title="上傳原唱MP3">
+            🎵
+            <input type="file" accept="audio/*" class="hidden" onchange="attachAudioToExistingSong(event, ${idx})" />
+          </label>
+          <button class="cast-mini-btn" style="border-color:#22c55e; color:#bbf7d0;" onclick="testSingleSong(${idx})">▶️</button>
+          <button class="cast-mini-btn" onclick="toggleSongEnabled(${idx})">${s.disabled ? "🚫" : "✅"}</button>
         </div>
       `;
       box.appendChild(row);
@@ -2414,10 +2602,11 @@
   }
 
   function resetSongEditor() {
-    editingSongId = null;
+    pendingAdminAudioData = null;
     document.getElementById("song-editor-title").textContent = "➕ 直接新增 2026 歌曲至全服歌庫";
     document.getElementById("cancel-song-edit-btn").classList.add("hidden");
-    ["new-song-title", "new-song-artist", "new-song-lead", "new-song-answer", "new-song-wrong1", "new-song-wrong2", "new-song-wrong3"].forEach(id => {
+    document.getElementById("admin-audio-status").textContent = "🎶 原唱 / AI 翻唱伴唱音檔（選填）：";
+    ["new-song-title", "new-song-artist", "new-song-lead", "new-song-answer", "new-song-audio-url", "new-song-wrong1", "new-song-wrong2", "new-song-wrong3"].forEach(id => {
       document.getElementById(id).value = "";
     });
   }
@@ -2428,6 +2617,8 @@
     const genre = document.getElementById("new-song-genre").value;
     const lead = document.getElementById("new-song-lead").value.trim() || "前奏響起的那一瞬間";
     const answer = document.getElementById("new-song-answer").value.trim() || "我們一起大聲唱出來";
+    const audioUrlInput = document.getElementById("new-song-audio-url").value.trim();
+    const finalAudio = pendingAdminAudioData || audioUrlInput || "";
     const w1 = document.getElementById("new-song-wrong1").value.trim() || "我的思念還停留在昨天晚上";
     const w2 = document.getElementById("new-song-wrong2").value.trim() || "讓微風吹散所有的回憶與惆悵";
     const w3 = document.getElementById("new-song-wrong3").value.trim() || "我們的故事寫到了最後一章";
@@ -2439,6 +2630,7 @@
       artist,
       lead,
       answer,
+      audioUrl: finalAudio,
       wrongs: [w1, w2, w3],
       notes: [392, 440, 523.25, 493.88, 392],
       isCustom: true
@@ -2471,7 +2663,7 @@
         row.className = "ev-manage-row";
         row.innerHTML = `
           <div style="flex:1; min-width:0;">
-            <div style="font-size:11px; font-weight:800; color:#fde68a;">《${sub.title}》－${sub.artist}</div>
+            <div style="font-size:11px; font-weight:800; color:#fde68a;">《${sub.title}》－${sub.artist} ${sub.audioUrl ? "🎧" : ""}</div>
             <div style="font-size:10px; color:#e2e8f0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${sub.lead} → ${sub.answer}</div>
           </div>
           <div style="display:flex; gap:4px;">
@@ -2494,6 +2686,7 @@
       artist: sub.artist,
       lead: sub.lead,
       answer: sub.answer,
+      audioUrl: sub.audioUrl || "",
       wrongs: sub.wrongs || ["我的思念還停留在昨天晚上", "讓微風吹散所有的回憶與惆悵", "我們的故事寫到了最後一章"],
       notes: [392, 440, 523.25, 493.88, 392],
       isCustom: true
