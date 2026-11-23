@@ -2628,27 +2628,22 @@
     const endDesc = document.getElementById("end-desc").textContent;
 
     const highlights = shiftLogs.slice(0, 3).map((l, i) =>
-      `【分鏡 ${i + 2}｜${l.time} ${l.tag}】
-畫面：${l.speaker}登場突發狀況，手指滑動選擇「${l.choiceLabel}」。
-旁白：「${l.time} 遇到${l.tag}，我直接選擇${l.choiceLabel}，居然有 ${l.globalPct || 50}% 的人跟我選一樣！」`
-    ).join("
-
-");
+      "【分鏡 " + (i + 2) + "｜" + l.time + " " + l.tag + "】\n" +
+      "畫面：" + l.speaker + "登場突發狀況，手指滑動選擇「" + l.choiceLabel + "」。\n" +
+      "旁白：「" + l.time + " 遇到" + l.tag + "，我直接選擇" + l.choiceLabel + "，居然有 " + (l.globalPct || 50) + "% 的人跟我選一樣！」"
+    ).join("\n\n");
 
     const scriptText =
-`【30秒 IG Reels / Shorts 實況腳本】
-角色視角：${roleName}
-綜合戰績：${lastRunScore} 分
-
-【分鏡 1｜開場 Hook（0-3秒）】
-畫面：開啟《今天也要平安下班》遊戲畫面，四項指標全滿 50%。
-旁白：「挑戰當一天校園校安人員，你能撐到下午五點半準時打卡下班嗎？」
-
-${highlights}
-
-【分鏡 5｜結局反轉（22-30秒）】
-畫面：跳出結局結算畫面【${endTitle}】。
-旁白：「撐了一整天，最後我竟然解鎖了『${endTitle}』！${endDesc} 換你來挑戰看看你能活到幾點！」`;
+      "【30秒 IG Reels / Shorts 實況腳本】\n" +
+      "角色視角：" + roleName + "\n" +
+      "綜合戰績：" + lastRunScore + " 分\n\n" +
+      "【分鏡 1｜開場 Hook（0-3秒）】\n" +
+      "畫面：開啟《今天也要平安下班》遊戲畫面，四項指標全滿 50%。\n" +
+      "旁白：「挑戰當一天校園校安人員，你能撐到下午五點半準時打卡下班嗎？」\n\n" +
+      highlights + "\n\n" +
+      "【分鏡 5｜結局反轉（22-30秒）】\n" +
+      "畫面：跳出結局結算畫面【" + endTitle + "】。\n" +
+      "旁白：「撐了一整天，最後我竟然解鎖了『" + endTitle + "』！" + endDesc + " 換你來挑戰看看你能活到幾點！」";
 
     document.getElementById("reels-script-content").textContent = scriptText;
     document.getElementById("reels-modal").classList.remove("hidden");
