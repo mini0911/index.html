@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>今天也要平安下班｜大滿貫旗艦版（.mp4動態立繪＋今日執勤事件簿＋單卡試玩開關）</title>
+  <title>今天也要平安下班｜終極全集大滿貫（40關全劇本＋三主角職業＋全服選擇比例＋Reels腳本）</title>
   <style>
     :root {
       --bg-dark: #090d16;
@@ -54,8 +54,8 @@
     #top-hud {
       position: relative;
       z-index: 20;
-      padding: 10px 12px 6px;
-      background: linear-gradient(180deg, rgba(3, 7, 18, 0.98) 0%, rgba(3, 7, 18, 0.8) 100%);
+      padding: 9px 11px 6px;
+      background: linear-gradient(180deg, rgba(3, 7, 18, 0.98) 0%, rgba(3, 7, 18, 0.82) 100%);
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
 
@@ -63,7 +63,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
+      margin-bottom: 7px;
       gap: 3px;
     }
 
@@ -76,7 +76,7 @@
       color: var(--accent-blue);
       font-size: 10.5px;
       font-weight: 800;
-      padding: 4px 7px;
+      padding: 3px 7px;
       border-radius: 999px;
       white-space: nowrap;
     }
@@ -103,7 +103,7 @@
       color: #fff;
       font-size: 10px;
       font-weight: 700;
-      padding: 4px 6px;
+      padding: 3px 6px;
       border-radius: 999px;
       cursor: pointer;
       white-space: nowrap;
@@ -125,14 +125,14 @@
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 5px;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
     }
 
     .meter-item {
       background: rgba(15, 23, 42, 0.9);
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 9px;
-      padding: 5px 5px 6px;
+      padding: 4px 5px 5px;
       text-align: center;
       transition: transform 0.2s ease, border-color 0.2s ease;
     }
@@ -171,7 +171,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
       padding-top: 2px;
     }
 
@@ -181,7 +181,7 @@
       color: #fde68a;
       background: rgba(251, 191, 36, 0.12);
       border: 1px solid rgba(251, 191, 36, 0.35);
-      padding: 3px 7px;
+      padding: 3px 6px;
       border-radius: 8px;
       white-space: nowrap;
       overflow: hidden;
@@ -194,7 +194,7 @@
       color: #fbcfe8;
       background: rgba(236, 72, 153, 0.16);
       border: 1px solid rgba(244, 114, 182, 0.45);
-      padding: 3px 7px;
+      padding: 3px 6px;
       border-radius: 8px;
       white-space: nowrap;
       cursor: pointer;
@@ -225,7 +225,7 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 8px 14px;
+      padding: 7px 14px;
       z-index: 10;
     }
 
@@ -234,8 +234,8 @@
       background: rgba(127, 29, 29, 0.9);
       border: 1.5px solid #ef4444;
       border-radius: 10px;
-      padding: 5px 10px;
-      margin-bottom: 6px;
+      padding: 4px 10px;
+      margin-bottom: 5px;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -254,20 +254,20 @@
 
     #swipe-preview-banner {
       width: 100%;
-      min-height: 36px;
+      min-height: 34px;
       background: rgba(15, 23, 42, 0.92);
       border: 1px solid rgba(56, 189, 248, 0.35);
       border-radius: 11px;
-      padding: 5px 10px;
-      margin-bottom: 8px;
+      padding: 4px 10px;
+      margin-bottom: 7px;
       display: flex;
       justify-content: center;
       align-items: center;
       text-align: center;
-      font-size: 12.5px;
+      font-size: 12px;
       font-weight: 700;
       color: var(--accent-gold);
-      opacity: 0.45;
+      opacity: 0.55;
       transition: all 0.2s ease;
     }
 
@@ -277,12 +277,11 @@
       box-shadow: 0 0 18px rgba(251, 191, 36, 0.25);
     }
 
-    /* 番劇動畫演出特效 ＋ .mp4 動態立繪影片播放器 */
     #event-card {
       position: relative;
       width: 100%;
       flex: 1;
-      max-height: 440px;
+      max-height: 430px;
       background: #1e293b;
       border-radius: 22px;
       overflow: hidden;
@@ -394,7 +393,7 @@
       border-radius: 999px;
     }
 
-    .card-bottom-info { position: relative; z-index: 5; padding: 14px 15px 16px; }
+    .card-bottom-info { position: relative; z-index: 5; padding: 14px 15px 15px; }
     .speaker-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
     .char-title { font-size: 14.5px; font-weight: 900; color: var(--accent-blue); display: flex; align-items: center; gap: 6px; }
 
@@ -409,62 +408,95 @@
       cursor: pointer;
     }
 
-    .event-desc { font-size: 14px; line-height: 1.55; color: #f8fafc; font-weight: 500; }
+    .event-desc { font-size: 13.8px; line-height: 1.52; color: #f8fafc; font-weight: 500; }
 
+    /* 底部決策區（包含左滑、右滑＋主角專屬第三職權技能按鈕） */
     #bottom-controls {
-      position: relative; z-index: 20; padding: 6px 14px 16px;
-      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+      position: relative; z-index: 20; padding: 5px 14px 14px;
+      display: flex; flex-direction: column; gap: 7px;
       background: linear-gradient(0deg, rgba(3, 7, 18, 0.98) 0%, rgba(3, 7, 18, 0.8) 100%);
+    }
+
+    .choice-row-2 {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
     }
 
     .action-btn {
       background: rgba(30, 41, 59, 0.95); border: 1px solid rgba(56, 189, 248, 0.4);
-      color: #f8fafc; border-radius: 14px; padding: 10px 9px;
-      font-size: 12.5px; font-weight: 700; line-height: 1.35; cursor: pointer;
-      display: flex; flex-direction: column; align-items: center; text-align: center; gap: 3px;
+      color: #f8fafc; border-radius: 13px; padding: 9px 8px;
+      font-size: 12px; font-weight: 700; line-height: 1.32; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; text-align: center; gap: 2px;
       transition: all 0.15s ease;
     }
 
     .action-btn:active { transform: scale(0.96); background: rgba(56, 189, 248, 0.25); }
-    .action-dir { font-size: 10px; color: var(--accent-gold); letter-spacing: 0.5px; }
+    .action-dir { font-size: 10px; color: var(--accent-gold); letter-spacing: 0.4px; }
+
+    .role-skill-btn {
+      width: 100%;
+      background: linear-gradient(135deg, rgba(168, 85, 247, 0.28), rgba(236, 72, 153, 0.28));
+      border: 1.5px solid #e879f9;
+      color: #fdf4ff;
+      border-radius: 11px;
+      padding: 7px 10px;
+      font-size: 11.5px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .role-skill-btn.used {
+      opacity: 0.35;
+      pointer-events: none;
+    }
 
     .modal-screen {
       position: absolute; inset: 0; z-index: 40;
       background: rgba(3, 7, 18, 0.97); backdrop-filter: blur(12px);
       display: flex; flex-direction: column; justify-content: center; align-items: center;
-      padding: 18px 16px; text-align: center; overflow-y: auto;
+      padding: 16px 15px; text-align: center; overflow-y: auto;
     }
 
     .hidden { display: none !important; }
 
     .tag-pill {
-      font-size: 11px; font-weight: 800; letter-spacing: 1.5px;
+      font-size: 10.5px; font-weight: 800; letter-spacing: 1.2px;
       color: var(--accent-gold); border: 1px solid rgba(251, 191, 36, 0.45);
-      background: rgba(251, 191, 36, 0.1); padding: 4px 12px; border-radius: 999px; margin-bottom: 8px;
+      background: rgba(251, 191, 36, 0.1); padding: 4px 11px; border-radius: 999px; margin-bottom: 7px;
     }
 
     .main-title {
-      font-size: 23px; font-weight: 900; line-height: 1.3; margin-bottom: 8px;
+      font-size: 22px; font-weight: 900; line-height: 1.28; margin-bottom: 6px;
       background: linear-gradient(90deg, #fff, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
 
-    .sub-desc { font-size: 13px; color: var(--text-muted); line-height: 1.55; margin-bottom: 12px; }
+    .sub-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 10px; }
 
     .cloud-badge {
-      display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 800;
-      padding: 4px 11px; border-radius: 999px; margin-bottom: 12px;
+      display: inline-flex; align-items: center; gap: 6px; font-size: 10.5px; font-weight: 800;
+      padding: 4px 10px; border-radius: 999px; margin-bottom: 10px;
       background: rgba(34, 197, 94, 0.16); border: 1px solid #22c55e; color: #4ade80;
     }
 
-    .mode-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; max-width: 340px; margin-bottom: 14px; }
-    .mode-btn { background: rgba(30, 41, 59, 0.85); border: 1.5px solid rgba(56, 189, 248, 0.3); border-radius: 12px; padding: 8px 4px; color: #cbd5e1; cursor: pointer; }
-    .mode-btn.active { background: rgba(56, 189, 248, 0.2); border-color: var(--accent-gold); color: #fff; }
-    .mode-title { font-size: 12px; font-weight: 800; color: var(--accent-gold); margin-bottom: 2px; }
-    .mode-sub { font-size: 10px; color: var(--text-muted); }
+    /* 三大主角職業選擇器 ＋ 四大值勤模式選擇器 */
+    .section-mini-header {
+      font-size: 11px; font-weight: 800; color: #94a3b8; margin-bottom: 5px; width: 100%; max-width: 345px; text-align: left;
+    }
 
-    .btn-stack { width: 100%; max-width: 330px; display: flex; flex-direction: column; gap: 8px; }
-    .btn-primary { background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; border: none; padding: 12px 16px; border-radius: 12px; font-size: 14px; font-weight: 800; cursor: pointer; box-shadow: 0 8px 22px rgba(37, 99, 235, 0.45); }
-    .btn-secondary { background: rgba(30, 41, 59, 0.9); color: #e2e8f0; border: 1px solid rgba(255, 255, 255, 0.2); padding: 10px 14px; border-radius: 12px; font-size: 12.5px; font-weight: 700; cursor: pointer; }
+    .role-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; max-width: 345px; margin-bottom: 10px; }
+    .mode-selector { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; width: 100%; max-width: 345px; margin-bottom: 12px; }
+
+    .mode-btn { background: rgba(30, 41, 59, 0.85); border: 1.5px solid rgba(56, 189, 248, 0.3); border-radius: 11px; padding: 7px 4px; color: #cbd5e1; cursor: pointer; }
+    .mode-btn.active { background: rgba(56, 189, 248, 0.22); border-color: var(--accent-gold); color: #fff; }
+    .mode-title { font-size: 11.5px; font-weight: 800; color: var(--accent-gold); margin-bottom: 2px; }
+    .mode-sub { font-size: 9.5px; color: var(--text-muted); }
+
+    .btn-stack { width: 100%; max-width: 345px; display: flex; flex-direction: column; gap: 7px; }
+    .btn-primary { background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; border: none; padding: 11px 14px; border-radius: 12px; font-size: 13.5px; font-weight: 800; cursor: pointer; box-shadow: 0 8px 22px rgba(37, 99, 235, 0.45); }
+    .btn-secondary { background: rgba(30, 41, 59, 0.9); color: #e2e8f0; border: 1px solid rgba(255, 255, 255, 0.2); padding: 9px 12px; border-radius: 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
 
     .lock-card { width: 100%; max-width: 320px; background: rgba(15, 23, 42, 0.98); border: 2px solid rgba(251, 191, 36, 0.55); border-radius: 20px; padding: 20px 16px; }
     .pin-input { width: 100%; background: #1e293b; border: 2px solid rgba(56, 189, 248, 0.45); color: #fff; padding: 10px; border-radius: 12px; font-size: 18px; font-weight: 800; letter-spacing: 4px; text-align: center; margin: 10px 0 6px; user-select: text; }
@@ -487,19 +519,11 @@
     .form-row-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 7px; }
     .mini-num-label { font-size: 10px; color: #94a3b8; text-align: center; }
 
-    /* 後台事件卡開關＋單卡試玩清單 */
     .ev-manage-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 6px;
-      background: rgba(30, 41, 59, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 8px;
-      padding: 6px 8px;
-      margin-bottom: 5px;
+      display: flex; justify-content: space-between; align-items: center; gap: 6px;
+      background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px; padding: 6px 8px; margin-bottom: 5px;
     }
-
     .ev-manage-row.disabled-ev { opacity: 0.45; }
 
     .scroll-list { width: 100%; display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; text-align: left; max-height: 55dvh; overflow-y: auto; }
@@ -511,6 +535,12 @@
 
     .quiz-card { width: 100%; max-width: 340px; background: rgba(15, 23, 42, 0.98); border: 2px solid #38bdf8; border-radius: 20px; padding: 20px 16px; box-shadow: 0 18px 45px rgba(0, 0, 0, 0.85); }
     .quiz-opt-btn { width: 100%; text-align: left; background: #1e293b; border: 1.5px solid rgba(56, 189, 248, 0.4); color: #f8fafc; padding: 10px 12px; border-radius: 10px; font-size: 12.5px; font-weight: 700; margin-bottom: 8px; cursor: pointer; }
+
+    .reels-script-box {
+      width: 100%; max-width: 340px; height: 260px; background: #0f172a; border: 1.5px solid #38bdf8;
+      border-radius: 12px; padding: 12px; color: #f8fafc; font-size: 12.5px; line-height: 1.6;
+      text-align: left; overflow-y: auto; user-select: text; margin-bottom: 12px; white-space: pre-wrap;
+    }
 
     #save-toast { position: fixed; top: 56px; left: 50%; transform: translateX(-50%); z-index: 70; background: rgba(34, 197, 94, 0.95); color: #fff; font-size: 12px; font-weight: 800; padding: 5px 14px; border-radius: 999px; opacity: 0; transition: opacity 0.25s ease; pointer-events: none; white-space: nowrap; }
   </style>
@@ -602,50 +632,76 @@
   </div>
 
   <div id="bottom-controls">
-    <button class="action-btn" id="btn-left"
-      onmouseenter="previewChoice('left')" onmouseleave="clearPreview()"
-      onclick="commitChoice('left')">
-      <span class="action-dir">◀ 左滑選擇</span>
-      <span id="left-text">選項 A</span>
-    </button>
-    <button class="action-btn" id="btn-right"
-      onmouseenter="previewChoice('right')" onmouseleave="clearPreview()"
-      onclick="commitChoice('right')">
-      <span class="action-dir">右滑選擇 ▶</span>
-      <span id="right-text">選項 B</span>
+    <div class="choice-row-2">
+      <button class="action-btn" id="btn-left"
+        onmouseenter="previewChoice('left')" onmouseleave="clearPreview()"
+        onclick="commitChoice('left')">
+        <span class="action-dir" id="left-dir-label">◀ 左滑選擇</span>
+        <span id="left-text">選項 A</span>
+      </button>
+      <button class="action-btn" id="btn-right"
+        onmouseenter="previewChoice('right')" onmouseleave="clearPreview()"
+        onclick="commitChoice('right')">
+        <span class="action-dir" id="right-dir-label">右滑選擇 ▶</span>
+        <span id="right-text">選項 B</span>
+      </button>
+    </div>
+    <button class="role-skill-btn" id="role-skill-btn" onclick="useProtagonistSkill()">
+      ⚡ 職權特技：啟動標準校安處置（單局限 1 次）
     </button>
   </div>
 
-  <!-- 開場封面 -->
+  <!-- 開場封面（整合三主角職業 ＋ 四大劇本模式選擇） -->
   <div id="start-modal" class="modal-screen">
-    <div class="tag-pill">GRAND SLAM EDITION ・ .MP4 動態立繪＋事件簿</div>
+    <div class="tag-pill">COMPLETE ANTHOLOGY ・ 40關全劇本＋三主角</div>
     <h1 class="main-title">今天也要平安下班<br>：校園群像生存模擬器</h1>
-    <div class="cloud-badge" id="cover-cloud-status">🟢 已綁定 Firebase 雲端（全系統完全體）</div>
+    <div class="cloud-badge" id="cover-cloud-status">🟢 已綁定 Firebase 雲端（全服選擇統計＋同步）</div>
 
+    <div class="section-mini-header">1️⃣ 選擇執勤主角崗位（附帶專屬職權特技）：</div>
+    <div class="role-selector">
+      <div class="mode-btn active" id="role-officer" onclick="selectRole('officer')">
+        <div class="mode-title">👮‍♂️ 校安陳宇</div>
+        <div class="mode-sub">安全+10 / 緊急處置</div>
+      </div>
+      <div class="mode-btn" id="role-director" onclick="selectRole('director')">
+        <div class="mode-title">👨‍💼 林主任</div>
+        <div class="mode-sub">信任+15 / 行政協調</div>
+      </div>
+      <div class="mode-btn" id="role-counselor" onclick="selectRole('counselor')">
+        <div class="mode-title">👩‍🏫 張老師</div>
+        <div class="mode-sub">理智+15 / 深度安撫</div>
+      </div>
+    </div>
+
+    <div class="section-mini-header">2️⃣ 選擇值勤劇本與關卡池（共收錄 40 關全事件）：</div>
     <div class="mode-selector">
       <div class="mode-btn active" id="mode-normal" onclick="selectMode('normal')">
         <div class="mode-title">☀️ 一般值勤</div>
-        <div class="mode-sub">單日隨機 12 關</div>
+        <div class="mode-sub">隨機 12 關（含自訂）</div>
       </div>
       <div class="mode-btn" id="mode-week" onclick="selectMode('week')">
         <div class="mode-title">📆 週一至五</div>
-        <div class="mode-sub">5 天連續生存戰</div>
+        <div class="mode-sub">5 天連續生存挑戰</div>
+      </div>
+      <div class="mode-btn" id="mode-special" onclick="selectMode('special')">
+        <div class="mode-title">🎪 特殊活動篇</div>
+        <div class="mode-sub">校慶/颱風/畢典/夜巡</div>
       </div>
       <div class="mode-btn" id="mode-full" onclick="selectMode('full')">
-        <div class="mode-title">🔥 魔鬼全日</div>
-        <div class="mode-sub">單日完整全事件</div>
+        <div class="mode-title">🔥 40關全集魔鬼班</div>
+        <div class="mode-sub">全套劇本完整大挑戰</div>
       </div>
     </div>
 
     <div class="btn-stack">
       <button class="btn-primary" onclick="startNewShift()">🎬 開啟動態番劇・開始值勤</button>
       <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:5px;">
-        <button class="btn-secondary" style="border-color:#f472b6; color:#fbcfe8; padding:9px 3px;" onclick="openBondModal()">💖 羈絆</button>
-        <button class="btn-secondary" style="border-color:#a855f7; color:#e9d5ff; padding:9px 3px;" onclick="openAchievements()">🎖️ (<span id="cover-ach">0</span>/4)</button>
-        <button class="btn-secondary" style="border-color:#38bdf8; color:#bae6fd; padding:9px 3px;" onclick="openLeaderboard()">🏅 排行</button>
-        <button class="btn-secondary" style="padding:9px 3px;" onclick="openGallery()">🏆 (<span id="cover-unlock">0</span>/11)</button>
+        <button class="btn-secondary" style="border-color:#f472b6; color:#fbcfe8; padding:8px 3px;" onclick="openBondModal()">💖 羈絆</button>
+        <button class="btn-secondary" style="border-color:#a855f7; color:#e9d5ff; padding:8px 3px;" onclick="openAchievements()">🎖️ (<span id="cover-ach">0</span>/4)</button>
+        <button class="btn-secondary" style="border-color:#38bdf8; color:#bae6fd; padding:8px 3px;" onclick="openLeaderboard()">🏅 排行</button>
+        <button class="btn-secondary" style="padding:8px 3px;" onclick="openGallery()">🏆 (<span id="cover-unlock">0</span>/11)</button>
       </div>
-      <button class="btn-secondary" style="border-color:#fbbf24; color:#fde68a;" onclick="openCastModal()">🔒 管理員後台（角色／.mp4動圖／事件開關試玩）</button>
+      <button class="btn-secondary" style="border-color:#fbbf24; color:#fde68a;" onclick="openCastModal()">🔒 管理員後台（角色／.mp4動圖／全40關開關試玩）</button>
     </div>
   </div>
 
@@ -653,7 +709,7 @@
   <div id="bond-modal" class="modal-screen hidden">
     <div class="tag-pill">CHARACTER AFFINITY & SYNERGY</div>
     <h2 class="main-title" style="font-size: 21px;">💖 校園角色好感度羈絆</h2>
-    <p class="sub-desc" style="margin-bottom:10px;">好感度達 70 以上可解鎖角色支援加成與隱藏結局！</p>
+    <p class="sub-desc" style="margin-bottom:10px;">好感度達 70 以上可提高機率檢定大成功率並減免負面扣分！</p>
     <div class="scroll-list" id="bond-list"></div>
     <button class="btn-primary" style="width:100%; max-width:300px;" onclick="document.getElementById('bond-modal').classList.add('hidden')">返回</button>
   </div>
@@ -684,16 +740,14 @@
     </div>
   </div>
 
-  <!-- 管理員進階後台（支援 .mp4 動圖上傳、事件卡開關、單卡即時試玩） -->
+  <!-- 管理員進階後台 -->
   <div id="cast-modal" class="modal-screen hidden">
-    <div class="tag-pill">🔓 ADMIN STUDIO ・ .MP4 & CARD TESTER</div>
-    <h2 class="main-title" style="font-size: 19px;">管理員角色、動圖與事件編輯工坊</h2>
+    <div class="tag-pill">🔓 ADMIN STUDIO ・ 40 EVENTS & .MP4</div>
+    <h2 class="main-title" style="font-size: 19px;">管理員角色、動圖與全劇本編輯工坊</h2>
 
     <div class="cast-scroll">
-      <!-- 1. 角色庫（支援圖片與 .mp4/.webp 動態立繪上傳） -->
       <div class="cast-grid" id="cast-grid-list"></div>
 
-      <!-- 2. 新增／編輯角色與專屬事件卡 -->
       <div class="panel-box">
         <div class="panel-title">
           <span id="editor-form-title">➕ 新增全新角色與專屬事件卡</span>
@@ -739,17 +793,16 @@
         <button class="btn-primary" id="save-char-submit-btn" style="width:100%; padding:9px; font-size:13px;" onclick="saveCharacterForm()">✨ 確認新增並雲端同步</button>
       </div>
 
-      <!-- 3. 事件卡啟用開關與單卡即時試玩器 -->
+      <!-- 全 40 關事件卡啟用開關與單卡即時試玩器 -->
       <div class="panel-box" style="border-color: rgba(168, 85, 247, 0.45);">
-        <div class="panel-title" style="color: #e9d5ff;"><span>🎛️ 事件卡抽題開關 ＆ 單卡即時試玩</span></div>
-        <div id="event-manage-list" style="max-height: 170px; overflow-y: auto;"></div>
+        <div class="panel-title" style="color: #e9d5ff;"><span>🎛️ 全劇本事件卡開關 ＆ 單卡試玩（共 <span id="total-ev-count">37</span> 張）</span></div>
+        <div id="event-manage-list" style="max-height: 190px; overflow-y: auto;"></div>
       </div>
 
-      <!-- 4. 劇本包匯出/匯入 與 密碼變更 -->
       <div class="panel-box" style="border-color: rgba(56, 189, 248, 0.45); margin-bottom: 0;">
         <div class="panel-title" style="color: var(--accent-blue);"><span>📦 劇本包備份 ＆ 管理員密碼</span></div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px;">
-          <button class="btn-secondary" style="padding:7px; font-size:11.5px;" onclick="exportScriptJSON()">📤 匯出劇本 JSON</button>
+          <button class="btn-secondary" style="padding:7px; font-size:11.5px;" onclick="exportScriptJSON()">📤 匯出全劇本 JSON</button>
           <label class="btn-secondary" style="padding:7px; font-size:11.5px; text-align:center; cursor:pointer;">
             📥 匯入劇本 JSON
             <input type="file" accept=".json" class="hidden" onchange="importScriptJSON(event)" />
@@ -768,13 +821,13 @@
     </div>
   </div>
 
-  <!-- 結局結算畫面（新增「📜 今日執勤事件簿回顧」按鈕） -->
+  <!-- 結局結算畫面（含短影音旁白腳本生成 ＋ 今日執勤事件簿 ＋ 戰績分享圖） -->
   <div id="end-modal" class="modal-screen hidden">
     <div class="tag-pill" id="end-badge">ENDING</div>
     <h2 class="main-title" id="end-title">結局標題</h2>
     <p class="sub-desc" id="end-desc">結局說明</p>
 
-    <div id="score-submit-box" class="panel-box hidden" style="width:100%; max-width:330px; text-align:left;">
+    <div id="score-submit-box" class="panel-box hidden" style="width:100%; max-width:340px; text-align:left;">
       <div class="panel-title"><span>🏅 登錄全服排行榜（得分：<span id="final-score-num">0</span>）</span></div>
       <select class="form-input" id="title-select-box" style="margin-bottom:6px;">
         <option value="">稱號：無掛載稱號</option>
@@ -787,23 +840,36 @@
 
     <div class="btn-stack">
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
-        <button class="btn-primary" style="background:linear-gradient(135deg,#059669,#10b981); padding:10px 6px; font-size:12.5px;" onclick="generateShareCard()">📸 生成戰績分享圖</button>
-        <button class="btn-primary" style="background:linear-gradient(135deg,#7c3aed,#6d28d9); padding:10px 6px; font-size:12.5px;" onclick="openShiftLogModal()">📜 今日執勤事件簿</button>
+        <button class="btn-primary" style="background:linear-gradient(135deg,#059669,#10b981); padding:10px 6px; font-size:12px;" onclick="generateShareCard()">📸 戰績分享圖</button>
+        <button class="btn-primary" style="background:linear-gradient(135deg,#e11d48,#be123c); padding:10px 6px; font-size:12px;" onclick="openReelsScriptModal()">🎬 生成Reels腳本</button>
       </div>
+      <button class="btn-primary" style="background:linear-gradient(135deg,#7c3aed,#6d28d9); padding:10px; font-size:12.5px;" onclick="openShiftLogModal()">📜 查看今日執勤事件簿（含全服選擇比例）</button>
       <button class="btn-primary" onclick="startNewShift()">再輪一次班（隨機新事件）</button>
       <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px;">
-        <button class="btn-secondary" style="padding:9px 4px;" onclick="openAchievements()">🎖️ 成就</button>
-        <button class="btn-secondary" style="padding:9px 4px;" onclick="openLeaderboard()">🏅 排行</button>
-        <button class="btn-secondary" style="padding:9px 4px;" onclick="openGallery()">🏆 圖鑑</button>
+        <button class="btn-secondary" style="padding:8px 4px;" onclick="openAchievements()">🎖️ 成就</button>
+        <button class="btn-secondary" style="padding:8px 4px;" onclick="openLeaderboard()">🏅 排行</button>
+        <button class="btn-secondary" style="padding:8px 4px;" onclick="openGallery()">🏆 圖鑑</button>
       </div>
+    </div>
+  </div>
+
+  <!-- IG Reels / Shorts 30秒旁白腳本自動生成視窗 -->
+  <div id="reels-modal" class="modal-screen hidden" style="z-index: 54;">
+    <div class="tag-pill">IG REELS / SHORTS SCRIPT GENERATOR</div>
+    <h2 class="main-title" style="font-size: 20px;">🎬 短影音 30 秒口播分鏡腳本</h2>
+    <p class="sub-desc" style="margin-bottom:8px;">已根據你本局真實決策與驚險轉折自動寫好腳本：</p>
+    <div class="reels-script-box" id="reels-script-content"></div>
+    <div class="btn-stack">
+      <button class="btn-primary" onclick="copyReelsScript()">📋 一鍵複製腳本文字</button>
+      <button class="btn-secondary" onclick="document.getElementById('reels-modal').classList.add('hidden')">返回結算</button>
     </div>
   </div>
 
   <!-- 今日執勤事件簿時間軸回顧視窗 -->
   <div id="log-modal" class="modal-screen hidden" style="z-index: 52;">
-    <div class="tag-pill">DAILY SHIFT CHRONICLE</div>
+    <div class="tag-pill">DAILY SHIFT CHRONICLE & GLOBAL STATS</div>
     <h2 class="main-title" style="font-size: 21px;">📜 今日執勤事件簿回顧</h2>
-    <p class="sub-desc" style="margin-bottom:10px;">完整記錄本局時間軸、決策選擇與四維指標變化：</p>
+    <p class="sub-desc" style="margin-bottom:10px;">顯示本局每關決策、四維變化與全服玩家路線選擇比例：</p>
     <div class="scroll-list" id="shift-log-list"></div>
     <button class="btn-primary" style="width:100%; max-width:300px;" onclick="document.getElementById('log-modal').classList.add('hidden')">返回結算</button>
   </div>
@@ -857,7 +923,7 @@
   function resizeFXCanvas() {
     const rect = document.getElementById("event-card").getBoundingClientRect();
     fxCanvas.width = rect.width || 400;
-    fxCanvas.height = rect.height || 440;
+    fxCanvas.height = rect.height || 430;
     initParticles();
   }
 
@@ -905,12 +971,13 @@
   }
 
   // ==========================================
-  // 2. Firebase 雲端資料庫連線與同步核心
+  // 2. Firebase 雲端資料庫連線、同步與全服路線統計
   // ==========================================
   const DEFAULT_FIREBASE_URL = "https://realtime-database-1c48d-default-rtdb.asia-southeast1.firebasedatabase.app";
   let firebaseBaseUrl = DEFAULT_FIREBASE_URL.replace(/\/$/, "");
   let cloudPollTimer = null;
   let lastCloudTimestamp = 0;
+  let globalChoiceStats = {}; // { eventKey: { left: 12, right: 8 } }
 
   let currentAdminPin = localStorage.getItem("campus_game_admin_pin") || "8888";
   let isAdminUnlocked = false;
@@ -923,7 +990,6 @@
     el._t = setTimeout(() => { el.style.opacity = "0"; }, 2600);
   }
 
-  // 支援圖片自動壓縮轉 DataURL，若是 .mp4 / .webm 影片則直接轉成 DataURL 保留動態播放
   function processMediaFileToDataURL(file, callback) {
     if (file.type.startsWith("video/")) {
       const reader = new FileReader();
@@ -952,7 +1018,7 @@
   async function pushDataToFirebase() {
     await saveToIndexedDB();
     try {
-      showSaveToast("⏳ 正在同步角色與劇本至 Firebase...");
+      showSaveToast("⏳ 正在同步角色與全劇本至 Firebase...");
       const nowTs = Date.now();
       const customEvents = ALL_EVENTS.filter(e => e.isCustom);
       const disabledEventTags = ALL_EVENTS.filter(e => e.disabled).map(e => e.tag);
@@ -978,9 +1044,16 @@
 
   async function pullDataFromFirebase(silent = false) {
     try {
-      const resp = await fetch(`${firebaseBaseUrl}/campus_game_sync.json?t=${Date.now()}`);
-      if (!resp.ok) return;
-      const data = await resp.json();
+      const [syncResp, statsResp] = await Promise.all([
+        fetch(`${firebaseBaseUrl}/campus_game_sync.json?t=${Date.now()}`),
+        fetch(`${firebaseBaseUrl}/campus_choice_stats.json?t=${Date.now()}`)
+      ]);
+      if (statsResp.ok) {
+        const sData = await statsResp.json();
+        if (sData && typeof sData === "object") globalChoiceStats = sData;
+      }
+      if (!syncResp.ok) return;
+      const data = await syncResp.json();
       if (!data) {
         if (!silent) await pushDataToFirebase();
         return;
@@ -1015,15 +1088,36 @@
     } catch (e) {}
   }
 
+  // 上報本關玩家選擇，並回傳全服選擇相同路線的百分比
+  function recordAndGetGlobalChoicePercent(tag, dir) {
+    const safeKey = encodeURIComponent(tag).replace(/\./g, "_");
+    if (!globalChoiceStats[safeKey]) globalChoiceStats[safeKey] = { left: 1, right: 1 };
+    globalChoiceStats[safeKey][dir] = (globalChoiceStats[safeKey][dir] || 0) + 1;
+
+    const lCount = globalChoiceStats[safeKey].left || 0;
+    const rCount = globalChoiceStats[safeKey].right || 0;
+    const total = Math.max(1, lCount + rCount);
+    const pct = Math.round(((dir === "left" ? lCount : rCount) / total) * 100);
+
+    // 非同步背景寫回 Firebase
+    fetch(`${firebaseBaseUrl}/campus_choice_stats/${safeKey}.json`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(globalChoiceStats[safeKey])
+    }).catch(() => {});
+
+    return pct;
+  }
+
   function startCloudPolling() {
     if (cloudPollTimer) clearInterval(cloudPollTimer);
-    cloudPollTimer = setInterval(() => pullDataFromFirebase(true), 6000);
+    cloudPollTimer = setInterval(() => pullDataFromFirebase(true), 8000);
   }
 
   // ==========================================
   // 3. 本機 IndexedDB 離線快取
   // ==========================================
-  const DB_NAME = "CampusSafetyGameDB_V6";
+  const DB_NAME = "CampusSafetyGameDB_V7";
   const STORE_NAME = "customData";
 
   function openDB() {
@@ -1075,7 +1169,7 @@
   }
 
   // ==========================================
-  // 4. 角色庫、好感度羈絆與前後連鎖事件卡資料
+  // 4. 角色庫、三大主角職業系統與全部 40 關完整劇本庫
   // ==========================================
   function makeCharacterPortrait(bg1, bg2, hairColor, outfitColor, accessory, emojiBadge) {
     const c = document.createElement("canvas");
@@ -1114,6 +1208,80 @@
     { id: "intruder", name: "鴨舌帽黑衣人", role: "懸疑・校外可疑人士", voice: "parent_angry", img: "./intruder.jpg", fallback: makeCharacterPortrait("#18181b", "#000000", "#09090b", "#18181b", "hoodie", "🕵️") },
     { id: "dog", name: "校狗阿福（米克斯）", role: "萌寵・校園巡邏吉祥物", voice: "student", img: "./dog.jpg", fallback: makeCharacterPortrait("#92400e", "#1c1917", "#b45309", "#d97706", "dog", "🐕") }
   ];
+
+  // 三大執勤主角職業定義
+  const PROTAGONIST_ROLES = {
+    officer: {
+      name: "校安人員・陳宇",
+      initBonus: { safety: +10, admin: 0, parent: 0, sanity: 0 },
+      skillLabel: "⚡ 校安特技：啟動緊急SOP處置（安全+20、跳過本關危機）"
+    },
+    director: {
+      name: "學務主任・林主任",
+      initBonus: { safety: 0, admin: +15, parent: 0, sanity: -5 },
+      skillLabel: "⚡ 主任特技：行政協調與處室支援（信任+20、家長情緒-15）"
+    },
+    counselor: {
+      name: "輔導老師・張老師",
+      initBonus: { safety: 0, admin: 0, parent: -10, sanity: +15 },
+      skillLabel: "⚡ 心輔特技：深度同理安撫會談（理智+20、家長情緒-20）"
+    }
+  };
+
+  let selectedRole = "officer";
+  let roleSkillUsed = false;
+
+  function selectRole(roleKey) {
+    selectedRole = roleKey;
+    ["officer", "director", "counselor"].forEach(r => {
+      document.getElementById("role-" + r).classList.toggle("active", roleKey === r);
+    });
+    playSFX("walkie");
+  }
+
+  function useProtagonistSkill() {
+    if (isGameOver || roleSkillUsed || turnIndex >= activeDeck.length) return;
+    roleSkillUsed = true;
+    stopQTE();
+    playSFX("win");
+
+    const card = activeDeck[turnIndex];
+    const ch = CHARACTER_ROSTER.find(c => c.id === card.charId) || CHARACTER_ROSTER[0];
+    const deltas = { safety: 0, admin: 0, parent: 0, sanity: 0 };
+
+    if (selectedRole === "officer") {
+      deltas.safety = +20;
+      stats.safety = Math.min(95, stats.safety + 20);
+      showSaveToast("⚡ 啟動校安緊急SOP！直接化解危機（安全+20）");
+    } else if (selectedRole === "director") {
+      deltas.admin = +20;
+      deltas.parent = -15;
+      stats.admin = Math.min(95, stats.admin + 20);
+      stats.parent = Math.max(5, stats.parent - 15);
+      showSaveToast("⚡ 主任跨處室協調！化解行政與家長壓力");
+    } else {
+      deltas.sanity = +20;
+      deltas.parent = -20;
+      stats.sanity = Math.min(95, stats.sanity + 20);
+      stats.parent = Math.max(5, stats.parent - 20);
+      showSaveToast("⚡ 心輔深度安撫！雙方情緒全面降溫");
+    }
+
+    shiftLogs.push({
+      day: document.getElementById("day-badge").textContent,
+      time: card.time,
+      tag: card.tag,
+      speaker: ch.name,
+      choiceLabel: "【發動職權特技】直接化解現場狀況",
+      deltas: deltas,
+      globalPct: 100
+    });
+
+    document.getElementById("role-skill-btn").classList.add("used");
+    renderMeters();
+    turnIndex++;
+    loadCard();
+  }
 
   let affinityMap = {
     officer: 50, parent: 50, director: 50, counselor: 50,
@@ -1160,6 +1328,7 @@
     });
   }
 
+  // 前後連鎖事件卡庫
   const CHAIN_EVENTS = {
     chain_parent_revenge: {
       time: "15:55", tag: "連鎖伏筆・家長再臨", charId: "parent", filter: "art-danger", sfx: "slam", urgent: false, isChain: true,
@@ -1183,90 +1352,240 @@
 
   let queuedChainEvent = null;
 
+  // ==========================================
+  // 全劇本合集（日常勤務 14 關 ＋ 校慶園遊會 6 關 ＋ 颱風防汛 6 關 ＋ 畢典段考 6 關 ＋ 夜間寒暑假 5 關 = 37+3連鎖 = 40關全收錄！）
+  // ==========================================
   const ALL_EVENTS = [
+    // --- 日常勤務篇（14關） ---
     {
-      time: "07:30", tag: "早自習校門導護", charId: "parent", filter: "art-danger", sfx: "alarm",
+      time: "07:30", tag: "早自習校門導護", charId: "parent", filter: "art-danger", sfx: "alarm", category: "daily",
       text: "清晨七點半校門口大塞車，王先生直接把黑色轎車停在斑馬線正中央放小孩下車，後方機車差點追撞！",
       left: { label: "吹哨請他往前開至家長接送區再下車", effect: { safety: +15, admin: +10, parent: +15, sanity: -5 }, bondDelta: -5 },
       right: { label: "揮手示意趕快開走就好，不開單也不攔停", effect: { safety: -15, admin: -10, parent: -10, sanity: +5 }, bondDelta: +10, chainNext: "chain_parent_revenge" }
     },
     {
-      time: "08:05", tag: "早晨翻牆遲到", charId: "student", filter: "art-morning", sfx: "walkie",
+      time: "08:05", tag: "早晨翻牆遲到", charId: "student", filter: "art-morning", sfx: "walkie", category: "daily",
       text: "阿豪帶著四名高二學生背著書包翻越側門矮牆想躲避遲到登記，結果褲管勾到鐵欄杆掛在半空中大喊救命！",
       left: { label: "立刻衝過去扶下學生並帶回學安室安全教育", effect: { safety: +20, admin: +15, parent: +5, sanity: -10 }, bondDelta: +15, chainNext: "chain_student_grateful" },
       right: { label: "先拍照存證傳給生教組長再慢慢過去放人", effect: { safety: -10, admin: +10, parent: +15, sanity: +5 }, bondDelta: -15 }
     },
     {
-      time: "08:45", tag: "校狗巡邏奇遇", charId: "dog", filter: "art-morning", sfx: "walkie",
+      time: "08:45", tag: "校狗巡邏奇遇", charId: "dog", filter: "art-morning", sfx: "walkie", category: "daily",
       text: "校狗阿福突然對著總務處倉庫草叢瘋狂吠叫，還叼出一串不知道是哪位老師遺失的備用教室鑰匙圈！",
       left: { label: "摸摸阿福獎勵肉乾，立刻把鑰匙送回總務處清點", effect: { safety: +15, admin: +15, parent: 0, sanity: +10 }, bondDelta: +20, chainNext: "chain_dog_alert" },
       right: { label: "隨手把鑰匙掛在警衛室牆上等失主自己來找", effect: { safety: -15, admin: -10, parent: 0, sanity: +5 }, bondDelta: -10 }
     },
     {
-      time: "09:30", tag: "學務處緊急會議", charId: "director", filter: "", sfx: "walkie",
+      time: "09:30", tag: "學務處緊急會議", charId: "director", filter: "", sfx: "walkie", category: "daily",
       text: "林主任把你叫進辦公室：「下週校慶園遊會預計湧入兩千名校外人士，動線規劃跟緊急救護站你打算怎麼安排？」",
       left: { label: "提出人車分流與重點樓層門禁管制企劃案", effect: { safety: +20, admin: +20, parent: 0, sanity: -15 }, bondDelta: +15 },
       right: { label: "照抄去年校慶的舊配置圖交差了事", effect: { safety: -15, admin: -20, parent: 0, sanity: +15 }, bondDelta: -15 }
     },
     {
-      time: "10:20", tag: "籃球場意外衝突", charId: "student", filter: "", sfx: "alarm", urgent: true,
+      time: "10:20", tag: "籃球場意外衝突", charId: "student", filter: "", sfx: "alarm", urgent: true, category: "daily",
       text: "【緊急】阿豪在籃球場跟隔壁班搶籃板撞傷眉角流血，兩人正互相推擠嗆聲，現場圍了一圈同學拿手機拍攝！",
       left: { label: "強勢隔開兩人、疏散圍觀群眾並護送包紮", effect: { safety: +20, admin: +15, parent: -10, sanity: -10 }, bondDelta: +10 },
       right: { label: "在場邊大喊「全部回教室」然後打電話找主任", effect: { safety: -15, admin: -15, parent: +15, sanity: +5 }, bondDelta: -10 }
     },
     {
-      time: "11:30", tag: "家長電話轟炸", charId: "parent", filter: "art-danger", sfx: "phone",
+      time: "11:30", tag: "家長電話轟炸", charId: "parent", filter: "art-danger", sfx: "phone", category: "daily",
       text: "學安室電話響個不停，王先生打來怒吼：「我兒子說他早上名牌水壺忘在穿堂，你們校安有沒有幫忙保管？」",
       left: { label: "耐心安撫並協助調閱穿堂監視器幫學生找回水壺", effect: { safety: +5, admin: +10, parent: -20, sanity: -15 }, bondDelta: +10 },
       right: { label: "冷淡回覆個人物品請自行保管，不負責協尋", effect: { safety: 0, admin: -10, parent: +25, sanity: +10 }, bondDelta: -15 }
     },
     {
-      time: "12:45", tag: "午休頂樓禁區", charId: "student", filter: "", sfx: "alarm", urgent: true,
+      time: "12:45", tag: "午休頂樓禁區", charId: "student", filter: "", sfx: "alarm", urgent: true, category: "daily",
       text: "【緊急】午休巡邏發現頂樓安全門警鈴被貼了膠帶消音，推開門看到阿豪正坐在女兒牆邊緣滑手機吹風！",
       left: { label: "放輕腳步靠近將人安全帶離，通報輔導室關懷", effect: { safety: +25, admin: +20, parent: -5, sanity: -10 }, bondDelta: +15 },
       right: { label: "大聲喝斥並當場記大過處分以儆效尤", effect: { safety: +10, admin: +5, parent: +20, sanity: -5 }, bondDelta: -15 }
     },
     {
-      time: "14:05", tag: "輔導室緊急支援", charId: "counselor", filter: "", sfx: "walkie", urgent: true,
+      time: "14:05", tag: "輔導室緊急支援", charId: "counselor", filter: "", sfx: "walkie", urgent: true, category: "daily",
       text: "【緊急】張老師氣喘吁吁跑來求救：「剛才晤談的高一新生情緒崩潰往校門衝出去了，請立刻幫我攔住他！」",
       left: { label: "通知警衛室先關小門，從側翼溫和攔截陪伴安撫", effect: { safety: +25, admin: +20, parent: -10, sanity: -10 }, bondDelta: +15 },
       right: { label: "在走廊大喊站住別跑！全力衝刺在後面追趕", effect: { safety: -10, admin: -10, parent: +15, sanity: -15 }, bondDelta: -10 }
     },
     {
-      time: "14:40", tag: "教育局突襲訪視", charId: "inspector", filter: "", sfx: "walkie",
+      time: "14:40", tag: "教育局突襲訪視", charId: "inspector", filter: "", sfx: "walkie", category: "daily",
       text: "趙督學無預警走進學安室抽查：「請出示本學期校園安全地圖、監視器妥善率紀錄與防震演練簽到表！」",
       left: { label: "平時都有歸檔，從容拿出完整資料夾逐一簡報", effect: { safety: +10, admin: +25, parent: 0, sanity: -10 }, bondDelta: +15 },
       right: { label: "慌張翻找抽屜並推說承辦組長剛好請假不在", effect: { safety: -5, admin: -25, parent: 0, sanity: -15 }, bondDelta: -15 }
     },
     {
-      time: "15:15", tag: "辦公室強勢對峙", charId: "parent", filter: "art-danger", sfx: "slam",
+      time: "15:15", tag: "辦公室強勢對峙", charId: "parent", filter: "art-danger", sfx: "slam", category: "daily",
       text: "砰的一聲，王先生推開大門把手機拍在桌上：「你們校安怎麼當的？攔我兒子的車害他差點趕不上補習！」",
       left: { label: "冷靜開啟密錄器，請他坐下調閱雲端監控", effect: { safety: +10, admin: +10, parent: -15, sanity: -5 }, bondDelta: +5 },
       right: { label: "直接回嗆：是你兒子無照騎車衝進校園！", effect: { safety: +5, admin: -15, parent: +30, sanity: -15 }, bondDelta: -20 }
     },
     {
-      time: "16:10", tag: "暴雨放學導護", charId: "officer", filter: "", sfx: "alarm",
+      time: "16:10", tag: "暴雨放學導護", charId: "officer", filter: "", sfx: "alarm", category: "daily",
       text: "突然下起傾盆大雨！接送家長的轎車全部違停在校門口紅線並排，後方公車按喇叭按到震天響，交通完全打結。",
       left: { label: "穿上雨衣衝進雨中吹哨指揮加速分流", effect: { safety: +25, admin: +15, parent: -10, sanity: -20 }, bondDelta: +10 },
       right: { label: "站在穿堂屋簷下用大聲公廣播勸導", effect: { safety: -15, admin: -10, parent: +10, sanity: +10 }, bondDelta: 0 }
     },
     {
-      time: "16:45", tag: "長官臨時交辦", charId: "director", filter: "", sfx: "phone",
+      time: "16:45", tag: "長官臨時交辦", charId: "director", filter: "", sfx: "phone", category: "daily",
       text: "林主任急忙走過來：「家長會長剛才打給校長抱怨交通導護太嚴格，校長要你寫一份委婉的說明報告！」",
       left: { label: "附上完整違規監視器截圖，不卑不亢陳述安全立場", effect: { safety: +15, admin: +15, parent: +5, sanity: -10 }, bondDelta: +10 },
       right: { label: "寫一份檢討自己態度不佳的道歉聲明給長官交差", effect: { safety: -15, admin: +10, parent: -20, sanity: -20 }, bondDelta: +5 }
     },
     {
-      time: "17:15", tag: "黃昏可疑黑衣人", charId: "intruder", filter: "art-night", sfx: "alarm", urgent: true,
+      time: "17:15", tag: "黃昏可疑黑衣人", charId: "intruder", filter: "art-night", sfx: "alarm", urgent: true, category: "daily",
       text: "【緊急】中控室紅燈閃爍！一名戴鴨舌帽的黑衣人趁著黃昏翻過後門圍牆，正鬼鬼祟祟往二樓資訊機房移動！",
       left: { label: "立即通報轄區派出所並啟動全校門禁遠端上鎖", effect: { safety: +30, admin: +20, parent: 0, sanity: -10 }, bondDelta: -10 },
-      right: { label: "怕只是學生忘記拿書包，自己拿手電筒慢慢走上去", effect: { safety: -30, admin: -15, parent: 0, sanity: +5 }, bondDelta: 0 }
+      right: { label: "🎲 賭一把自己拿手電筒慢慢走上去查看", effect: { safety: -30, admin: -15, parent: 0, sanity: +5 }, risky: true, bondDelta: 0 }
     },
     {
-      time: "17:29", tag: "下班前一分鐘", charId: "dog", filter: "", sfx: "walkie",
+      time: "17:29", tag: "下班前一分鐘", charId: "dog", filter: "", sfx: "walkie", category: "daily",
       text: "時鐘指向五點二十九分，你正準備打卡下班，校狗阿福突然咬著你的褲管往地下室停車場方向拉，似乎發現了什麼！",
       left: { label: "跟著阿福去巡檢地下室確認門窗安全再走", effect: { safety: +20, admin: +15, parent: 0, sanity: -10 }, bondDelta: +15 },
       right: { label: "摸摸阿福的頭說交給夜班保全，準時五點半打卡！", effect: { safety: 0, admin: -5, parent: 0, sanity: +20 }, bondDelta: -5 }
+    },
+
+    // --- 校慶園遊會／運動會篇（6關） ---
+    {
+      time: "08:30", tag: "校慶進場分流", charId: "director", filter: "art-morning", sfx: "walkie", category: "special",
+      text: "校慶開幕前半小時，社區民眾與家長親友團同時湧入校門，造成人行道與車道交織打結。",
+      left: { label: "啟用人車分流動線並加派導護哨引導", effect: { safety: +20, admin: +15, parent: -10, sanity: -10 }, bondDelta: +10 },
+      right: { label: "先打開側門讓大家快速進場避免排隊抱怨", effect: { safety: -15, admin: -15, parent: +10, sanity: +5 }, bondDelta: -10 }
+    },
+    {
+      time: "10:15", tag: "園遊會用火安全", charId: "officer", filter: "", sfx: "alarm", urgent: true, category: "special",
+      text: "【緊急】巡查園遊會攤位時發現烤香腸攤瓦斯桶緊貼塑膠帳篷支柱，旁邊還有學生在玩打火機！",
+      left: { label: "立即要求調整瓦斯位置、備妥滅火器並勸導學生", effect: { safety: +25, admin: +20, parent: -5, sanity: -15 }, bondDelta: +10 },
+      right: { label: "只口頭提醒攤商注意安全就繼續巡下一攤", effect: { safety: -20, admin: -15, parent: +5, sanity: +10 }, bondDelta: -10 }
+    },
+    {
+      time: "11:40", tag: "攤位延長線跳電", charId: "student", filter: "", sfx: "walkie", category: "special",
+      text: "阿豪班上的冰沙機與熱壓吐司機同時啟動，整排園遊會攤位瞬間跳電，同學在攤位前急得跳腳。",
+      left: { label: "聯絡總務處水電人員排查負載並重新分配插座", effect: { safety: +15, admin: +15, parent: 0, sanity: -10 }, bondDelta: +15 },
+      right: { label: "叫學生自己去總電箱把開關扳回去就好", effect: { safety: -20, admin: -15, parent: +5, sanity: +10 }, bondDelta: -10 }
+    },
+    {
+      time: "13:20", tag: "走失幼童與可疑訪客", charId: "counselor", filter: "", sfx: "phone", urgent: true, category: "special",
+      text: "【緊急】廣播室連續收到通報：一名五歲幼童與家長走散，同時中庭出現未配戴證件的可疑推銷人員。",
+      left: { label: "先護送幼童至學安室安撫廣播，並請警衛盤查訪客", effect: { safety: +25, admin: +20, parent: -15, sanity: -15 }, bondDelta: +15 },
+      right: { label: "只處理走失小孩，推銷員等散場再說", effect: { safety: -15, admin: -10, parent: +10, sanity: +10 }, bondDelta: -5 }
+    },
+    {
+      time: "15:00", tag: "賽程與車位抗議", charId: "parent", filter: "art-danger", sfx: "slam", category: "special",
+      text: "王先生衝到學安室拍桌：「啦啦隊比賽提前了，我繞了半小時找不到車位，害我沒看到小孩上場！」",
+      left: { label: "開啟密錄器，提供替代停車資訊與賽程轉播時段", effect: { safety: +10, admin: +15, parent: -20, sanity: -10 }, bondDelta: +10 },
+      right: { label: "當場回嗆校慶本來就車多，請提早出門", effect: { safety: 0, admin: -15, parent: +30, sanity: -15 }, bondDelta: -20 }
+    },
+    {
+      time: "16:50", tag: "閉幕清場失物招領", charId: "dog", filter: "art-night", sfx: "walkie", category: "special",
+      text: "閉幕典禮結束，校狗阿福在操場看台邊緣嗅出遺留的貴重相機包，同時清場廣播已響起。",
+      left: { label: "保管相機包並公告失物招領，同時引導人潮離校", effect: { safety: +20, admin: +20, parent: -10, sanity: -10 }, bondDelta: +15 },
+      right: { label: "急著趕下班，先請清潔人員代為收著", effect: { safety: -10, admin: -10, parent: +5, sanity: +15 }, bondDelta: -10 }
+    },
+
+    // --- 颱風天／防汛戒備篇（6關） ---
+    {
+      time: "06:50", tag: "清晨颱風警戒", charId: "director", filter: "art-night", sfx: "phone", category: "special",
+      text: "清晨風雨交加，家長群組與校安專線響不停，都在問今天是否停班停課、校車到底開不開。",
+      left: { label: "依市府最新公告發布明確訊息並確認校車調度", effect: { safety: +20, admin: +20, parent: -15, sanity: -10 }, bondDelta: +15 },
+      right: { label: "等主任起床再說，先掛電話避免接太多", effect: { safety: -10, admin: -20, parent: +25, sanity: +10 }, bondDelta: -15 }
+    },
+    {
+      time: "09:10", tag: "地下室積水警報", charId: "officer", filter: "art-night", sfx: "alarm", urgent: true, category: "special",
+      text: "【緊急】風雨增強導致地下停車場排水溝倒灌，水位快速上升，還停放著幾輛教職員與學生車輛。",
+      left: { label: "確認自身安全後拉起封鎖線、通知總務抽水與移車", effect: { safety: +25, admin: +20, parent: -5, sanity: -15 }, bondDelta: +10 },
+      right: { label: "🎲 賭一把自己涉水走進深水區去推車", effect: { safety: -25, admin: -15, parent: +10, sanity: -20 }, risky: true, bondDelta: 0 }
+    },
+    {
+      time: "11:25", tag: "校門樹木傾倒", charId: "inspector", filter: "art-danger", sfx: "alarm", category: "special",
+      text: "強陣風吹倒校門側邊大樹，枝幹壓住部分人行道並擦撞圍牆，路過行人紛紛閃避。",
+      left: { label: "立刻設置警示圍欄改道並通報 1999 與總務處", effect: { safety: +25, admin: +20, parent: -5, sanity: -10 }, bondDelta: +15 },
+      right: { label: "拍照回報就好，等風雨小一點再處理", effect: { safety: -20, admin: -15, parent: +10, sanity: +10 }, bondDelta: -15 }
+    },
+    {
+      time: "14:15", tag: "家長冒雨接送爭執", charId: "parent", filter: "art-danger", sfx: "slam", category: "special",
+      text: "王先生撐著被吹翻的雨傘衝進警衛室：「風這麼大還不快把學生叫出來？淋濕生病算誰的？」",
+      left: { label: "安排學生在穿堂避風雨並協助安全接送交接", effect: { safety: +15, admin: +15, parent: -20, sanity: -10 }, bondDelta: +15 },
+      right: { label: "提醒大家颱風天盡量減少外出，別怪學校", effect: { safety: 0, admin: -15, parent: +30, sanity: -10 }, bondDelta: -20 }
+    },
+    {
+      time: "16:30", tag: "留校人員撤離清點", charId: "counselor", filter: "art-night", sfx: "walkie", urgent: true, category: "special",
+      text: "【緊急】晚間風雨轉強，巡檢發現仍有社團學生與行政人員留在綜合大樓，尚未完成安全撤離。",
+      left: { label: "逐層廣播清場、確認全員平安離校並回報中心", effect: { safety: +30, admin: +25, parent: -10, sanity: -15 }, bondDelta: +15 },
+      right: { label: "打電話請他們自己注意安全，不逐一巡查", effect: { safety: -25, admin: -20, parent: +10, sanity: +10 }, bondDelta: -15 }
+    },
+    {
+      time: "17:25", tag: "防汛設備交接", charId: "dog", filter: "art-night", sfx: "walkie", category: "special",
+      text: "下班前夕，校狗阿福守在沙包堆旁低吠，提醒你還有幾包防汛沙包還沒堆疊整齊。",
+      left: { label: "補強沙包防線並清楚交接給晚班值勤人員", effect: { safety: +20, admin: +20, parent: 0, sanity: -10 }, bondDelta: +15 },
+      right: { label: "交接單寫一寫就準時打卡離開", effect: { safety: -10, admin: -10, parent: 0, sanity: +15 }, bondDelta: -5 }
+    },
+
+    // --- 畢業典禮／段考週篇（6關） ---
+    {
+      time: "08:10", tag: "段考走廊秩序", charId: "inspector", filter: "art-morning", sfx: "walkie", category: "special",
+      text: "段考進行中，走廊突然傳來學生討論聲與手機鈴聲，監考老師透過對講機請求支援維持安靜。",
+      left: { label: "輕聲引導學生離開考場動線並依規登記處理", effect: { safety: +20, admin: +20, parent: +5, sanity: -10 }, bondDelta: +15 },
+      right: { label: "在考場外大聲吹哨喝斥大家安靜", effect: { safety: +5, admin: -15, parent: +15, sanity: -10 }, bondDelta: -15 }
+    },
+    {
+      time: "10:00", tag: "畢典外賓違停", charId: "parent", filter: "art-danger", sfx: "alarm", urgent: true, category: "special",
+      text: "【緊急】畢業典禮親友團湧入，多輛遊覽車與轎車堵住消防通道，救護與緊急動線受阻！",
+      left: { label: "立即協調疏通消防通道並引導車輛至指定停車場", effect: { safety: +30, admin: +20, parent: -10, sanity: -15 }, bondDelta: +5 },
+      right: { label: "等典禮結束再請大家一起移車", effect: { safety: -25, admin: -20, parent: +10, sanity: +10 }, bondDelta: +5 }
+    },
+    {
+      time: "11:20", tag: "操場違規空拍機", charId: "intruder", filter: "", sfx: "alarm", category: "special",
+      text: "典禮拍照時，操場側邊突然升起一台不明無人機低空盤旋靠近人群，引起師生驚呼。",
+      left: { label: "立刻上前制止違規飛行、疏散下方群眾並通報", effect: { safety: +25, admin: +20, parent: -5, sanity: -10 }, bondDelta: -10 },
+      right: { label: "覺得只是拍畢業照花絮，先不干預", effect: { safety: -20, admin: -15, parent: +10, sanity: +10 }, bondDelta: +5 }
+    },
+    {
+      time: "13:40", tag: "畢業生走廊狂歡", charId: "student", filter: "", sfx: "walkie", category: "special",
+      text: "阿豪與幾名畢業生在走廊噴灑彩帶與丟水球，地板濕滑，後方還有低年級學弟妹經過。",
+      left: { label: "制止危險行為、設置濕滑警示並請班級協助清理", effect: { safety: +20, admin: +15, parent: +5, sanity: -10 }, bondDelta: +5 },
+      right: { label: "笑著說難得畢業就讓他們瘋一下，不介入", effect: { safety: -20, admin: -15, parent: +10, sanity: +10 }, bondDelta: +15 }
+    },
+    {
+      time: "15:30", tag: "離校情緒起伏", charId: "counselor", filter: "", sfx: "phone", category: "special",
+      text: "離校時段有畢業生因師生道別與升學壓力情緒激動，輔導老師請求協助陪伴至家長接送區。",
+      left: { label: "溫和陪伴安撫並與家長確認安全接回", effect: { safety: +20, admin: +20, parent: -15, sanity: -10 }, bondDelta: +15 },
+      right: { label: "請導師與輔導室自行處理，自己繼續巡邏", effect: { safety: -10, admin: -15, parent: +15, sanity: +5 }, bondDelta: -15 }
+    },
+    {
+      time: "17:20", tag: "離校門禁與清場", charId: "director", filter: "art-night", sfx: "walkie", category: "special",
+      text: "畢業典禮圓滿落幕，主任交代確認所有外賓離校、門禁上鎖並完成今日事件結案。",
+      left: { label: "逐一確認門禁與清場後再準時打卡下班", effect: { safety: +20, admin: +20, parent: 0, sanity: -10 }, bondDelta: +15 },
+      right: { label: "先打卡下班，門禁交給警衛室處理", effect: { safety: -10, admin: -10, parent: 0, sanity: +15 }, bondDelta: -10 }
+    },
+
+    // --- 寒暑假／夜間留校巡檢篇（5關） ---
+    {
+      time: "18:10", tag: "夜間門禁感應異常", charId: "intruder", filter: "art-night", sfx: "alarm", urgent: true, category: "special",
+      text: "【緊急】暮色降臨，教學大樓側門感應器跳出異常開啟警示，走廊燈光忽明忽暗。",
+      left: { label: "開啟密錄器與照明，呼叫警衛協同前往查看", effect: { safety: +25, admin: +20, parent: 0, sanity: -15 }, bondDelta: -5 },
+      right: { label: "🎲 賭一把單槍匹馬關掉警示燈就當沒事", effect: { safety: -25, admin: -15, parent: 0, sanity: +5 }, risky: true, bondDelta: 0 }
+    },
+    {
+      time: "19:00", tag: "暑期營隊場地衝突", charId: "director", filter: "art-night", sfx: "phone", category: "special",
+      text: "寒暑假營隊與校隊集訓撞期借用活動中心，雙方帶隊人員在門口爭執不下。",
+      left: { label: "調閱場地借用表協調分區或時段，維持秩序", effect: { safety: +15, admin: +20, parent: -10, sanity: -10 }, bondDelta: +15 },
+      right: { label: "請他們自己協調，不介入借用爭議", effect: { safety: -10, admin: -15, parent: +15, sanity: +10 }, bondDelta: -15 }
+    },
+    {
+      time: "19:45", tag: "集訓中暑與扭傷", charId: "counselor", filter: "art-night", sfx: "alarm", urgent: true, category: "special",
+      text: "【緊急】晚間社團集訓時，一名學員疑似中暑頭暈並伴隨腳踝扭傷，需要立刻降溫與休息。",
+      left: { label: "移至通風陰涼處降溫冰敷、通知家長並視況送醫", effect: { safety: +25, admin: +20, parent: -15, sanity: -10 }, bondDelta: +15 },
+      right: { label: "讓學員坐著休息一下就好，不通知家長", effect: { safety: -20, admin: -20, parent: +25, sanity: +10 }, bondDelta: -15 }
+    },
+    {
+      time: "20:20", tag: "冷清走廊神秘腳步", charId: "dog", filter: "art-night", sfx: "walkie", category: "special",
+      text: "安靜的行政樓層傳來腳步聲，校狗阿福警覺地豎起耳朵往樓梯間走去。",
+      left: { label: "跟隨阿福巡查並確認是否為留校人員或訪客", effect: { safety: +20, admin: +15, parent: 0, sanity: -10 }, bondDelta: +15 },
+      right: { label: "猜測是風聲或老舊管線作響，直接返崗", effect: { safety: -15, admin: -10, parent: 0, sanity: +10 }, bondDelta: -10 }
+    },
+    {
+      time: "20:50", tag: "夜間保全交接", charId: "officer", filter: "art-night", sfx: "walkie", category: "special",
+      text: "準備與夜間保全進行交接，需確認當日留校名單、門禁狀態與異常紀錄。",
+      left: { label: "核對留校人員全數離校並完成書面交接", effect: { safety: +20, admin: +20, parent: 0, sanity: -10 }, bondDelta: +10 },
+      right: { label: "口頭交代幾句就匆匆結束值勤", effect: { safety: -15, admin: -15, parent: 0, sanity: +15 }, bondDelta: -5 }
     }
   ];
 
@@ -1738,6 +2057,8 @@
 
   function renderEventManageList() {
     const box = document.getElementById("event-manage-list");
+    const countEl = document.getElementById("total-ev-count");
+    if (countEl) countEl.textContent = ALL_EVENTS.length + Object.keys(CHAIN_EVENTS).length;
     if (!box) return;
     box.innerHTML = "";
     ALL_EVENTS.forEach((ev, idx) => {
@@ -1764,7 +2085,6 @@
     await pushDataToFirebase();
   }
 
-  // 單卡即時試玩：直接關閉後台並把該張事件卡插入目前畫面進行測試！
   function testSingleEventCard(idx) {
     const targetCard = ALL_EVENTS[idx];
     if (!targetCard) return;
@@ -1893,7 +2213,7 @@
       const avatarUrl = pendingNewCharImg || makeCharacterPortrait("#1d4ed8", "#090d16", "#1e293b", "#0284c7", "glasses", "⭐");
       CHARACTER_ROSTER.push({ id: newId, name, role: "自訂新角色", voice, img: avatarUrl });
       ALL_EVENTS.splice(ALL_EVENTS.length - 1, 0, {
-        time: "15:40", tag: "自訂突發事件", charId: newId, filter: "", sfx: "walkie", isCustom: true,
+        time: "15:40", tag: "自訂突發事件", charId: newId, filter: "", sfx: "walkie", isCustom: true, category: "daily",
         text: eventText,
         left: { label: leftLabel, effect: leftEffect, bondDelta: +10 },
         right: { label: rightLabel, effect: rightEffect, bondDelta: -5 }
@@ -1913,9 +2233,9 @@
     const blob = new Blob([dataStr], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "campus_safety_script_pack.json";
+    a.download = "campus_safety_full_40_scripts.json";
     a.click();
-    showSaveToast("📤 已匯出劇本包 JSON 檔！");
+    showSaveToast("📤 已匯出全劇本 JSON 檔！");
   }
 
   function importScriptJSON(event) {
@@ -1963,19 +2283,19 @@
   };
 
   // ==========================================
-  // 11. 遊戲核心循環（含今日執勤事件簿紀錄）
+  // 11. 遊戲核心循環（含機率檢定骰子、全服統計、Reels腳本生成）
   // ==========================================
   let stats = { safety: 50, admin: 50, parent: 50, sanity: 50 };
   let activeDeck = [], turnIndex = 0, selectedMode = "normal", isGameOver = false;
   let currentDay = 1;
   let lastRunScore = 0;
   let lastShareImageUrl = "";
-  let shiftLogs = []; // 記錄每關時間、角色、選擇與數值變化
-  let unlocked = JSON.parse(localStorage.getItem("viral_campus_endings_v3") || "[]");
+  let shiftLogs = [];
+  let unlocked = JSON.parse(localStorage.getItem("viral_campus_endings_v4") || "[]");
 
   function selectMode(mode) {
     selectedMode = mode;
-    ["normal", "week", "full"].forEach(m => {
+    ["normal", "week", "special", "full"].forEach(m => {
       document.getElementById("mode-" + m).classList.toggle("active", mode === m);
     });
     playSFX("walkie");
@@ -1984,13 +2304,18 @@
   function buildDeckForShift() {
     const enabledPool = ALL_EVENTS.filter(ev => !ev.disabled);
     const sourcePool = enabledPool.length > 0 ? enabledPool : ALL_EVENTS;
+
     if (selectedMode === "full") return [...sourcePool];
+    if (selectedMode === "special") {
+      const specials = sourcePool.filter(ev => ev.category === "special");
+      return specials.length > 0 ? specials : [...sourcePool];
+    }
 
     const countPerDay = selectedMode === "week" ? 6 : 12;
     const customIndices = [], normalIndices = [];
     sourcePool.forEach((ev, idx) => {
       if (ev.charId.startsWith("custom_")) customIndices.push(idx);
-      else normalIndices.push(idx);
+      else if (ev.category !== "special") normalIndices.push(idx);
     });
     for (let i = normalIndices.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -2012,7 +2337,7 @@
   function saveEnding(id) {
     if (!unlocked.includes(id)) {
       unlocked.push(id);
-      localStorage.setItem("viral_campus_endings_v3", JSON.stringify(unlocked));
+      localStorage.setItem("viral_campus_endings_v4", JSON.stringify(unlocked));
       updateUnlockUI();
     }
   }
@@ -2055,7 +2380,18 @@
   function startNewShift() {
     ensureAudio();
     resizeFXCanvas();
-    stats = { safety: 50, admin: 50, parent: 50, sanity: 50 };
+    const roleCfg = PROTAGONIST_ROLES[selectedRole] || PROTAGONIST_ROLES.officer;
+    stats = {
+      safety: 50 + (roleCfg.initBonus.safety || 0),
+      admin: 50 + (roleCfg.initBonus.admin || 0),
+      parent: 50 + (roleCfg.initBonus.parent || 0),
+      sanity: 50 + (roleCfg.initBonus.sanity || 0)
+    };
+    roleSkillUsed = false;
+    const skillBtn = document.getElementById("role-skill-btn");
+    skillBtn.classList.remove("used");
+    skillBtn.textContent = roleCfg.skillLabel;
+
     affinityMap = { officer: 50, parent: 50, director: 50, counselor: 50, student: 50, inspector: 50, intruder: 50, dog: 50 };
     queuedChainEvent = null;
     shiftLogs = [];
@@ -2068,7 +2404,7 @@
 
   function startDayShift() {
     const dayNames = ["週一", "週二", "週三", "週四", "週五"];
-    document.getElementById("day-badge").textContent = selectedMode === "week" ? dayNames[currentDay - 1] : "單日";
+    document.getElementById("day-badge").textContent = selectedMode === "week" ? dayNames[currentDay - 1] : (selectedMode === "special" ? "特輯" : "單日");
     activeDeck = buildDeckForShift();
     turnIndex = 0;
     quizTriggeredThisShift = false;
@@ -2119,7 +2455,6 @@
     document.getElementById("chain-tag").classList.toggle("hidden", !card.isChain);
     updateAffinityPill();
 
-    // 支援靜態圖片或 .mp4/.webm 動態立繪影片自動切換播放
     const artEl = document.getElementById("card-art");
     const videoEl = document.getElementById("card-video");
     const isVideo = ch.img && (ch.img.toLowerCase().endsWith(".mp4") || ch.img.startsWith("data:video/"));
@@ -2182,20 +2517,35 @@
 
     playSFX("swipe");
 
+    // 紀錄並取得全服玩家相同選擇百分比
+    const globalPct = recordAndGetGlobalChoicePercent(card.tag, dir);
+
     const bDelta = choice.bondDelta || 0;
     const prevBond = getCharAffinity(card.charId);
     affinityMap[card.charId] = Math.max(0, Math.min(100, prevBond + bDelta));
 
     const bondShield = affinityMap[card.charId] >= 70 ? 0.75 : 1.0;
 
+    // 🎲 高風險選項機率檢定（若好感度 >= 70 則大成功機率提升至 75%，否則 45%）
+    let diceOutcomeNote = "";
+    let riskySuccess = false;
+    if (choice.risky) {
+      const successChance = affinityMap[card.charId] >= 70 ? 0.75 : 0.45;
+      riskySuccess = Math.random() < successChance;
+      diceOutcomeNote = riskySuccess ? "【🎲 檢定大成功！】" : "【🎲 檢定大失敗！】";
+    }
+
     if (choice.chainNext && CHAIN_EVENTS[choice.chainNext]) {
       queuedChainEvent = CHAIN_EVENTS[choice.chainNext];
-      showSaveToast("🔗 選擇埋下伏筆！後續將觸發連鎖事件");
     }
 
     const appliedDeltas = {};
     ["safety", "admin", "parent", "sanity"].forEach(key => {
       let delta = choice.effect[key] || 0;
+      if (choice.risky && riskySuccess) {
+        // 大成功把原本負面數值反轉為正面獎勵！
+        delta = Math.abs(delta) > 0 ? Math.round(Math.abs(delta) * 0.6) : 10;
+      }
       if (key === "parent" && currentWeather.mod.parentMult) delta = Math.round(delta * currentWeather.mod.parentMult);
       if (key === "admin" && delta < 0 && currentWeather.mod.adminPenaltyMult) delta = Math.round(delta * currentWeather.mod.adminPenaltyMult);
       if (delta < 0) delta = Math.round(delta * bondShield);
@@ -2208,14 +2558,22 @@
       if (delta < 0) box.classList.add("pulse-down");
     });
 
-    // 寫入今日執勤事件簿日誌
+    if (diceOutcomeNote) {
+      showSaveToast(`${diceOutcomeNote} 有 ${globalPct}% 的人跟你選一樣`);
+    } else if (choice.chainNext && CHAIN_EVENTS[choice.chainNext]) {
+      showSaveToast(`🔗 埋下連鎖伏筆！（${globalPct}% 玩家同選）`);
+    } else {
+      showSaveToast(`📊 全服有 ${globalPct}% 的校安人員跟你做了相同選擇`);
+    }
+
     shiftLogs.push({
       day: document.getElementById("day-badge").textContent,
       time: card.time,
       tag: card.tag,
       speaker: ch.name,
-      choiceLabel: choice.label,
-      deltas: appliedDeltas
+      choiceLabel: diceOutcomeNote + choice.label,
+      deltas: appliedDeltas,
+      globalPct: globalPct
     });
 
     if (stats.safety < 50) runSafetyNeverBelow50 = false;
@@ -2252,7 +2610,8 @@
         div.className = "list-card unlocked";
         div.innerHTML = `
           <div class="l-title">#${idx + 1} [${entry.day} ${entry.time}] ${entry.tag}（${entry.speaker}）</div>
-          <div style="font-size:12px; color:#f8fafc; margin-bottom:3px;">決策：${entry.choiceLabel}</div>
+          <div style="font-size:12px; color:#f8fafc; margin-bottom:2px;">決策：${entry.choiceLabel}</div>
+          <div style="font-size:11px; color:#38bdf8; margin-bottom:2px;">📊 全服路線統計：有 ${entry.globalPct || 50}% 玩家跟你做了相同選擇</div>
           <div class="l-desc">安全 ${fmt(entry.deltas.safety)} ｜ 信任 ${fmt(entry.deltas.admin)} ｜ 家長 ${fmt(entry.deltas.parent)} ｜ 理智 ${fmt(entry.deltas.sanity)}</div>
         `;
         list.appendChild(div);
@@ -2261,9 +2620,52 @@
     document.getElementById("log-modal").classList.remove("hidden");
   }
 
+  // 🎬 一鍵自動生成 IG Reels / Shorts 30 秒旁白分鏡腳本
+  function openReelsScriptModal() {
+    playSFX("walkie");
+    const roleName = PROTAGONIST_ROLES[selectedRole]?.name || "校安人員・陳宇";
+    const endTitle = document.getElementById("end-title").textContent;
+    const endDesc = document.getElementById("end-desc").textContent;
+
+    const highlights = shiftLogs.slice(0, 3).map((l, i) =>
+      `【分鏡 ${i + 2}｜${l.time} ${l.tag}】
+畫面：${l.speaker}登場突發狀況，手指滑動選擇「${l.choiceLabel}」。
+旁白：「${l.time} 遇到${l.tag}，我直接選擇${l.choiceLabel}，居然有 ${l.globalPct || 50}% 的人跟我選一樣！」`
+    ).join("
+
+");
+
+    const scriptText =
+`【30秒 IG Reels / Shorts 實況腳本】
+角色視角：${roleName}
+綜合戰績：${lastRunScore} 分
+
+【分鏡 1｜開場 Hook（0-3秒）】
+畫面：開啟《今天也要平安下班》遊戲畫面，四項指標全滿 50%。
+旁白：「挑戰當一天校園校安人員，你能撐到下午五點半準時打卡下班嗎？」
+
+${highlights}
+
+【分鏡 5｜結局反轉（22-30秒）】
+畫面：跳出結局結算畫面【${endTitle}】。
+旁白：「撐了一整天，最後我竟然解鎖了『${endTitle}』！${endDesc} 換你來挑戰看看你能活到幾點！」`;
+
+    document.getElementById("reels-script-content").textContent = scriptText;
+    document.getElementById("reels-modal").classList.remove("hidden");
+  }
+
+  function copyReelsScript() {
+    const txt = document.getElementById("reels-script-content").textContent;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(txt).then(() => showSaveToast("📋 已複製 Reels 短影音腳本！"));
+    } else {
+      showSaveToast("⚠️ 請長按文字框手動全選複製");
+    }
+  }
+
   function calculateBalanceScore() {
     const diff = Math.abs(stats.safety - 50) + Math.abs(stats.admin - 50) + Math.abs(stats.parent - 50) + Math.abs(stats.sanity - 50);
-    const modeBonus = selectedMode === "week" ? 500 : (selectedMode === "full" ? 300 : 100);
+    const modeBonus = selectedMode === "week" ? 500 : (selectedMode === "full" ? 600 : (selectedMode === "special" ? 300 : 100));
     return Math.max(50, (200 - diff) * 5 + modeBonus);
   }
 
@@ -2322,7 +2724,8 @@
     btn.textContent = "上傳中...";
 
     try {
-      const modeLabel = selectedMode === "week" ? "五日連續戰" : (selectedMode === "full" ? "魔鬼全日班" : "一般值勤班");
+      const modeMap = { week: "五日連續戰", full: "40關全集魔鬼班", special: "特殊活動篇", normal: "一般值勤班" };
+      const modeLabel = modeMap[selectedMode] || "一般值勤班";
       const entry = {
         name: nick,
         score: lastRunScore,
