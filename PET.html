@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>毛孩星光餐廳 - 全螢幕掌機點陣開羅重構版</title>
+<title>毛孩星光餐廳 - 可愛Q版像素重製版</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
   :root {
     --kairo-dark: #261810;
     --kairo-brown: #4e311e;
     --kairo-cream: #fff6de;
-    --kairo-cream-2: #f4e2b8;
+    --kairo-panel: #f4e2b8;
     --kairo-gold: #f7b529;
     --kairo-orange: #e66722;
     --kairo-green: #3ca34b;
@@ -40,7 +40,6 @@
   }
   #app.fullscreen-mode { max-width: 100vw; border: none; }
 
-  /* 全螢幕點陣畫布 */
   #pixelCanvas {
     position: absolute;
     inset: 0;
@@ -52,16 +51,11 @@
     touch-action: none;
   }
 
-  /* 浮動頂部開羅狀態條 */
   .float-top {
     position: absolute;
-    top: 6px;
-    left: 6px;
-    right: 6px;
+    top: 6px; left: 6px; right: 6px;
     z-index: 12;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+    display: flex; flex-direction: column; gap: 4px;
     pointer-events: none;
   }
   .float-top > * { pointer-events: auto; }
@@ -72,255 +66,93 @@
     border-radius: 4px;
     padding: 4px 6px;
     color: #fff6de;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 4px;
-    flex-wrap: wrap;
-    font-size: 10.5px;
-    font-weight: 800;
+    display: flex; justify-content: space-between; align-items: center; gap: 4px; flex-wrap: wrap;
+    font-size: 10.5px; font-weight: 800;
   }
-  .hud-tag {
-    background: #f7b529;
-    color: #261810;
-    padding: 1px 5px;
-    border-radius: 3px;
-    font-weight: 900;
-  }
+  .hud-tag { background: #f7b529; color: #261810; padding: 1px 5px; border-radius: 3px; font-weight: 900; }
   .hud-val-gold { color: #ffd95a; }
   .hud-val-heart { color: #ff8aa8; }
   .hud-val-star { color: #8be9fd; }
-  .spd-mini {
-    display: inline-flex;
-    background: #170e09;
-    border: 1px solid #8c6239;
-    border-radius: 3px;
-    overflow: hidden;
-  }
-  .spd-mini button {
-    border: none;
-    background: transparent;
-    color: #ccc;
-    font-size: 9.5px;
-    font-weight: 900;
-    padding: 1px 4px;
-    cursor: pointer;
-  }
+  .spd-mini { display: inline-flex; background: #170e09; border: 1px solid #8c6239; border-radius: 3px; overflow: hidden; }
+  .spd-mini button { border: none; background: transparent; color: #ccc; font-size: 9.5px; font-weight: 900; padding: 1px 4px; cursor: pointer; }
   .spd-mini button.active { background: #f7b529; color: #261810; }
-  .mini-icon-btn {
-    background: #5b3923;
-    color: #fff6de;
-    border: 1px solid #b5835a;
-    border-radius: 3px;
-    font-size: 9.5px;
-    font-weight: 800;
-    padding: 1px 5px;
-    cursor: pointer;
-  }
+  .mini-icon-btn { background: #5b3923; color: #fff6de; border: 1px solid #b5835a; border-radius: 3px; font-size: 9.5px; font-weight: 800; padding: 1px 5px; cursor: pointer; }
 
-  /* 精簡三層目標條 */
   .mini-goals {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 4px;
-    background: rgba(24, 14, 9, 0.84);
-    border: 1.5px solid #7d5333;
-    border-radius: 3px;
-    padding: 2px 5px;
-    font-size: 9px;
-    color: #ffe599;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+    background: rgba(24, 14, 9, 0.84); border: 1.5px solid #7d5333; border-radius: 3px;
+    padding: 2px 5px; font-size: 9px; color: #ffe599;
   }
   .g-bar { height: 3px; background: #120a06; margin-top: 1px; }
   .g-fill { height: 100%; background: #4ade80; transition: width 0.2s; }
 
-  /* VIP / FEVER 橫幅 */
   .vip-strip {
-    display: none;
-    background: #d91b5c;
-    color: #fff;
-    border: 2px solid #261810;
-    border-radius: 4px;
-    padding: 3px 7px;
-    font-size: 10.5px;
-    font-weight: 900;
-    align-items: center;
-    justify-content: space-between;
-    gap: 6px;
+    display: none; background: #d91b5c; color: #fff; border: 2px solid #261810; border-radius: 4px;
+    padding: 3px 7px; font-size: 10.5px; font-weight: 900; align-items: center; justify-content: space-between; gap: 6px;
   }
   .vip-strip.show { display: flex; }
   .vip-strip.fever { background: #e66722; }
   .vip-meter { flex: 1; height: 7px; background: rgba(0,0,0,0.4); border: 1px solid #fff; }
   .vip-meter-fill { height: 100%; background: #fde047; width: 0%; }
 
-  /* 右側浮動地圖按鈕 */
-  .side-actions {
-    position: absolute;
-    right: 6px;
-    top: 96px;
-    z-index: 12;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
+  .side-actions { position: absolute; right: 6px; top: 96px; z-index: 12; display: flex; flex-direction: column; gap: 5px; }
   .px-float-btn {
-    background: #fff6de;
-    color: #261810;
-    border: 2px solid #261810;
+    background: #fff6de; color: #261810; border: 2px solid #261810;
     box-shadow: inset 0 0 0 1.5px #d9b882, 0 2px 0 #261810;
-    border-radius: 4px;
-    padding: 4px 7px;
-    font-size: 10.5px;
-    font-weight: 900;
-    cursor: pointer;
+    border-radius: 4px; padding: 4px 7px; font-size: 10.5px; font-weight: 900; cursor: pointer;
   }
   .px-float-btn.active { background: #e66722; color: #fff; }
   .px-float-btn.merchant { background: #7d4cdb; color: #fff; border-color: #fde047; }
 
-  /* 佈置操作列 */
   .arrange-hud {
-    position: absolute;
-    top: 96px;
-    left: 6px;
-    z-index: 13;
-    display: none;
-    flex-direction: column;
-    gap: 4px;
-    background: #fff6de;
-    border: 2px solid #261810;
-    box-shadow: inset 0 0 0 1.5px #d9b882, 0 3px 0 #261810;
-    border-radius: 4px;
-    padding: 5px 7px;
-    font-size: 10.5px;
-    font-weight: 900;
-    max-width: 68%;
+    position: absolute; top: 96px; left: 6px; z-index: 13; display: none; flex-direction: column; gap: 4px;
+    background: #fff6de; border: 2px solid #261810; box-shadow: inset 0 0 0 1.5px #d9b882, 0 3px 0 #261810;
+    border-radius: 4px; padding: 5px 7px; font-size: 10.5px; font-weight: 900; max-width: 68%;
   }
   .arrange-hud.show { display: flex; }
 
-  /* 開羅相性 / 靈感彈出卡 */
   .kairo-toast {
-    position: absolute;
-    top: 105px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 84%;
-    background: #fff6de;
-    border: 3px solid #261810;
-    box-shadow: inset 0 0 0 2px #f7b529, 0 4px 0 #261810;
-    border-radius: 4px;
-    padding: 6px 10px;
-    text-align: center;
-    z-index: 25;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s;
+    position: absolute; top: 105px; left: 50%; transform: translateX(-50%); width: 84%;
+    background: #fff6de; border: 3px solid #261810; box-shadow: inset 0 0 0 2px #f7b529, 0 4px 0 #261810;
+    border-radius: 4px; padding: 6px 10px; text-align: center; z-index: 25; opacity: 0; pointer-events: none; transition: opacity 0.2s;
   }
   .kairo-toast.show { opacity: 1; }
   .kairo-toast h4 { font-size: 12.5px; color: #b45309; font-weight: 900; }
   .kairo-toast p { font-size: 10.5px; color: #261810; font-weight: 700; margin-top: 2px; }
 
-  /* 底部精簡開羅 5 鍵工具列 */
   .kairo-dock {
-    position: absolute;
-    bottom: 6px;
-    left: 6px;
-    right: 6px;
-    z-index: 15;
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 4px;
-    background: rgba(38, 24, 16, 0.94);
-    border: 2px solid #261810;
-    box-shadow: 0 3px 0 #120a06;
-    border-radius: 5px;
-    padding: 4px;
+    position: absolute; bottom: 6px; left: 6px; right: 6px; z-index: 15;
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px;
+    background: rgba(38, 24, 16, 0.94); border: 2px solid #261810; box-shadow: 0 3px 0 #120a06;
+    border-radius: 5px; padding: 4px;
   }
   .dock-btn {
-    background: #fff6de;
-    color: #261810;
-    border: 2px solid #261810;
-    box-shadow: inset 0 0 0 1.5px #dfc291;
-    border-radius: 3px;
-    padding: 4px 2px;
-    font-size: 10.5px;
-    font-weight: 900;
-    cursor: pointer;
-    text-align: center;
+    background: #fff6de; color: #261810; border: 2px solid #261810; box-shadow: inset 0 0 0 1.5px #dfc291;
+    border-radius: 3px; padding: 4px 2px; font-size: 10.5px; font-weight: 900; cursor: pointer; text-align: center;
   }
   .dock-btn.open { background: #f7b529; }
 
-  /* 彈出式開羅雙線框抽屜視窗 */
   .drawer-sheet {
-    position: absolute;
-    left: 6px;
-    right: 6px;
-    bottom: 50px;
-    max-height: 58dvh;
-    z-index: 20;
-    display: none;
-    flex-direction: column;
-    background: var(--kairo-cream);
-    border: 3px solid var(--kairo-dark);
-    box-shadow: inset 0 0 0 2px #d8be92, 0 5px 0 var(--kairo-dark);
-    border-radius: 5px;
-    overflow: hidden;
+    position: absolute; left: 6px; right: 6px; bottom: 50px; max-height: 58dvh; z-index: 20;
+    display: none; flex-direction: column;
+    background: var(--kairo-cream); border: 3px solid var(--kairo-dark); box-shadow: inset 0 0 0 2px #d8be92, 0 5px 0 var(--kairo-dark);
+    border-radius: 5px; overflow: hidden;
   }
   .drawer-sheet.show { display: flex; }
   .drawer-header {
-    background: #5d3b24;
-    color: #fff6de;
-    padding: 5px 8px;
-    font-size: 12px;
-    font-weight: 900;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 2px solid var(--kairo-dark);
+    background: #5d3b24; color: #fff6de; padding: 5px 8px; font-size: 12px; font-weight: 900;
+    display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--kairo-dark);
   }
-  .drawer-close {
-    background: #e66722;
-    color: #fff;
-    border: 1.5px solid #261810;
-    border-radius: 3px;
-    padding: 1px 7px;
-    font-size: 11px;
-    font-weight: 900;
-    cursor: pointer;
-  }
-  .drawer-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 6px;
-    background: var(--kairo-panel);
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
+  .drawer-close { background: #e66722; color: #fff; border: 1.5px solid #261810; border-radius: 3px; padding: 1px 7px; font-size: 11px; font-weight: 900; cursor: pointer; }
+  .drawer-body { flex: 1; overflow-y: auto; padding: 6px; background: var(--kairo-panel); display: flex; flex-direction: column; gap: 5px; }
 
   .sub-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
-  .sub-pill {
-    flex: 1;
-    min-width: 72px;
-    padding: 4px;
-    border: 2px solid var(--kairo-dark);
-    border-radius: 3px;
-    background: #e6d3ad;
-    font-size: 10.5px;
-    font-weight: 800;
-    cursor: pointer;
-    text-align: center;
-  }
+  .sub-pill { flex: 1; min-width: 72px; padding: 4px; border: 2px solid var(--kairo-dark); border-radius: 3px; background: #e6d3ad; font-size: 10.5px; font-weight: 800; cursor: pointer; text-align: center; }
   .sub-pill.active { background: var(--kairo-orange); color: #fff; }
 
   .card {
-    background: #fffdf8;
-    border: 2px solid var(--kairo-dark);
-    box-shadow: inset 0 0 0 1px #ead8b7;
-    border-radius: 4px;
-    padding: 6px 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 6px;
+    background: #fffdf8; border: 2px solid var(--kairo-dark); box-shadow: inset 0 0 0 1px #ead8b7;
+    border-radius: 4px; padding: 6px 8px; display: flex; justify-content: space-between; align-items: center; gap: 6px;
   }
   .card-info { flex: 1; }
   .card-title { font-size: 12px; font-weight: 900; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
@@ -335,15 +167,8 @@
   .card-actions { display: flex; flex-direction: column; gap: 3px; }
 
   .btn {
-    border: 2px solid var(--kairo-dark);
-    border-radius: 3px;
-    padding: 4px 7px;
-    font-size: 10px;
-    font-weight: 900;
-    cursor: pointer;
-    box-shadow: 0 2px 0 var(--kairo-dark);
-    white-space: nowrap;
-    text-align: center;
+    border: 2px solid var(--kairo-dark); border-radius: 3px; padding: 4px 7px; font-size: 10px; font-weight: 900;
+    cursor: pointer; box-shadow: 0 2px 0 var(--kairo-dark); white-space: nowrap; text-align: center;
   }
   .btn:active { transform: translateY(2px); box-shadow: none; }
   .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
@@ -361,29 +186,14 @@
   .ing-btn { width: 100%; text-align: left; font-size: 9.5px; padding: 3px 4px; margin-bottom: 2px; border: 1px solid #a1887f; background: #fff; cursor: pointer; font-weight: 700; }
   .ing-btn.selected { background: #fef08a; border-color: #d97706; color: #92400e; font-weight: 900; }
 
-  /* 模態彈窗 */
   .modal-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.72);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    padding: 12px;
-    z-index: 40;
+    position: absolute; inset: 0; background: rgba(0,0,0,0.72); display: none; justify-content: center; align-items: center;
+    padding: 12px; z-index: 40;
   }
   .modal-overlay.show { display: flex; }
   .modal-box {
-    background: var(--kairo-cream);
-    border: 3px solid var(--kairo-dark);
-    box-shadow: inset 0 0 0 2px #d8be92, 0 6px 0 var(--kairo-dark);
-    border-radius: 5px;
-    padding: 12px;
-    width: 100%;
-    max-width: 400px;
-    max-height: 85dvh;
-    overflow-y: auto;
-    text-align: center;
+    background: var(--kairo-cream); border: 3px solid var(--kairo-dark); box-shadow: inset 0 0 0 2px #d8be92, 0 6px 0 var(--kairo-dark);
+    border-radius: 5px; padding: 12px; width: 100%; max-width: 400px; max-height: 85dvh; overflow-y: auto; text-align: center;
   }
   .modal-title { font-size: 14.5px; font-weight: 900; color: var(--kairo-orange); margin-bottom: 6px; border-bottom: 2px dashed #bcaaa4; padding-bottom: 4px; }
   .report-row { display: flex; justify-content: space-between; font-size: 11.5px; padding: 4px 0; border-bottom: 1px solid #e0d2b8; }
@@ -395,10 +205,8 @@
 </head>
 <body>
 <div id="app">
-  <!-- 全螢幕點陣畫布 -->
   <canvas id="pixelCanvas"></canvas>
 
-  <!-- 浮動頂部 HUD -->
   <div class="float-top">
     <div class="kairo-hud-bar">
       <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
@@ -438,29 +246,25 @@
     </div>
   </div>
 
-  <!-- 佈置工具列 -->
   <div class="arrange-hud" id="arrange-hud">
-    <div id="arrange-text">佈置模式：點設施移動，或拖曳畫面巡視</div>
+    <div id="arrange-text">佈置模式：點設施移動，或拖曳畫面</div>
     <div id="arrange-ops" style="display:none;gap:4px;flex-wrap:wrap;">
       <button class="btn btn-gold" style="font-size:9.5px;padding:2px 5px;" onclick="upgradeSelectedPlaced()">⬆️升級</button>
       <button class="btn btn-red" style="font-size:9.5px;padding:2px 5px;" onclick="removeSelectedPlaced()">📦拆除</button>
     </div>
   </div>
 
-  <!-- 右側浮動按鈕 -->
   <div class="side-actions">
     <button class="px-float-btn" id="btn-arrange" onclick="toggleArrangeMode()">✥ 佈置</button>
     <button class="px-float-btn" onclick="resetCamera()">🎯 置中</button>
     <button class="px-float-btn merchant" id="btn-merchant" style="display:none;" onclick="openMerchantModal()">🎃 商會</button>
   </div>
 
-  <!-- 開羅相性 / 靈感卡片 -->
   <div class="kairo-toast" id="kairo-toast">
     <h4 id="kairo-toast-title">💡 開羅靈感爆發！</h4>
     <p id="kairo-toast-desc">食譜等級提升！</p>
   </div>
 
-  <!-- 彈出式開羅雙線框管理抽屜 -->
   <div class="drawer-sheet" id="drawer-sheet">
     <div class="drawer-header">
       <span id="drawer-title">🏠 設施與佈置</span>
@@ -469,7 +273,6 @@
     <div class="drawer-body" id="drawer-body"></div>
   </div>
 
-  <!-- 底部開羅 5 鍵選單 -->
   <div class="kairo-dock">
     <button class="dock-btn" data-d="facility" onclick="toggleDrawer('facility')">🏠 建造</button>
     <button class="dock-btn" data-d="menu" onclick="toggleDrawer('menu')">🍽️ 菜單</button>
@@ -478,7 +281,6 @@
     <button class="dock-btn" data-d="event" onclick="toggleDrawer('event')">🏪 連鎖</button>
   </div>
 
-  <!-- 每日結算彈窗 -->
   <div class="modal-overlay" id="report-modal">
     <div class="modal-box">
       <div class="modal-title" id="report-title">🌙 第 1 天連鎖結算</div>
@@ -487,7 +289,6 @@
     </div>
   </div>
 
-  <!-- 競賽評審彈窗 -->
   <div class="modal-overlay" id="contest-modal">
     <div class="modal-box">
       <div class="modal-title" id="contest-modal-title">🏆 評審團現場試吃評分</div>
@@ -502,7 +303,6 @@
     </div>
   </div>
 
-  <!-- 南瓜商會彈窗 -->
   <div class="modal-overlay" id="merchant-modal">
     <div class="modal-box">
       <div class="modal-title" style="color:#7d4cdb;">🎃 神秘南瓜寵物商會</div>
@@ -512,7 +312,6 @@
     </div>
   </div>
 
-  <!-- 三年總決賽 & 二周目繼承彈窗 -->
   <div class="modal-overlay" id="ngplus-modal">
     <div class="modal-box">
       <div class="modal-title" style="color:#b45309;">👑 三年經營榮譽總結算！</div>
@@ -523,7 +322,6 @@
     </div>
   </div>
 
-  <!-- 排行與存檔彈窗 -->
   <div class="modal-overlay" id="cloud-modal">
     <div class="modal-box">
       <div class="modal-title">🏆 連鎖評比榜 & 存檔管理</div>
@@ -552,16 +350,12 @@ class RetroAudio {
     this.melody = [523.25, 659.25, 783.99, 659.25, 880.00, 783.99, 659.25, 587.33, 523.25, 587.33, 659.25, 783.99, 659.25, 587.33, 523.25, 0];
   }
   init() {
-    if (!this.ctx) {
-      const AC = window.AudioContext || window.webkitAudioContext;
-      if (AC) this.ctx = new AC();
-    }
+    if (!this.ctx) { const AC = window.AudioContext || window.webkitAudioContext; if (AC) this.ctx = new AC(); }
     if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
     if (!this.bgmTimer) {
       this.bgmTimer = setInterval(() => {
         if (!this.enabled || !this.ctx) return;
-        const f = this.melody[this.step % this.melody.length];
-        this.step++;
+        const f = this.melody[this.step % this.melody.length]; this.step++;
         if (f > 0) this.tone(f, 0.12, 'triangle', 0.02);
       }, 330);
     }
@@ -571,10 +365,8 @@ class RetroAudio {
     try {
       const o = this.ctx.createOscillator(); const g = this.ctx.createGain();
       o.type = type; o.frequency.setValueAtTime(freq, this.ctx.currentTime);
-      g.gain.setValueAtTime(vol, this.ctx.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + dur);
-      o.connect(g); g.connect(this.ctx.destination);
-      o.start(); o.stop(this.ctx.currentTime + dur);
+      g.gain.setValueAtTime(vol, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + dur);
+      o.connect(g); g.connect(this.ctx.destination); o.start(); o.stop(this.ctx.currentTime + dur);
     } catch (e) {}
   }
   coin() { this.tone(987.77, 0.07, 'square', 0.05); setTimeout(() => this.tone(1318.5, 0.12, 'square', 0.05), 65); }
@@ -599,11 +391,11 @@ const SEASONS = [
 ];
 
 const JOB_TREE = {
-  trainee: { name: '見習生', next: ['barista', 'chef_master', 'pet_trainer'], speedMul: 1.0, tipMul: 1.0, heartMul: 1.0 },
-  barista: { name: '拉花咖啡師', next: ['chef_master', 'pet_trainer'], speedMul: 1.25, tipMul: 1.35, heartMul: 1.1 },
-  chef_master: { name: '五星主廚', next: ['barista', 'pet_trainer'], speedMul: 1.45, tipMul: 1.25, heartMul: 1.1 },
-  pet_trainer: { name: '寵物訓練師', next: ['barista', 'chef_master'], speedMul: 1.2, tipMul: 1.15, heartMul: 1.6 },
-  kairo_king: { name: '開羅吉祥物店長', next: [], speedMul: 1.85, tipMul: 1.8, heartMul: 2.0 }
+  trainee: { name: '見習生', next: ['barista', 'chef_master', 'pet_trainer'], speedMul: 1.0, heartMul: 1.0 },
+  barista: { name: '拉花咖啡師', next: ['chef_master', 'pet_trainer'], speedMul: 1.25, heartMul: 1.1 },
+  chef_master: { name: '五星主廚', next: ['barista', 'pet_trainer'], speedMul: 1.45, heartMul: 1.1 },
+  pet_trainer: { name: '寵物訓練師', next: ['barista', 'chef_master'], speedMul: 1.2, heartMul: 1.6 },
+  kairo_king: { name: '開羅吉祥物店長', next: [], speedMul: 1.85, heartMul: 2.0 }
 };
 
 const FACILITY_DEFS = [
@@ -693,7 +485,7 @@ const PET_DEFS = [
   { id: 'pet_niuniu', name: '妞妞 (貼心老狗)', coat: '#d7ccc8', desc: '治癒呼嚕：客人在店消費金額 +15%', baseCost: 300 },
   { id: 'pet_doudou', name: '豆豆 (元氣柴犬)', coat: '#e69d45', desc: '迎賓搖尾：路人進店機率大幅提升', baseCost: 650 },
   { id: 'pet_mikan', name: '橘子 (撒嬌橘貓)', coat: '#ff9800', desc: '愛心磁鐵：定時噴發愛心點數', baseCost: 1100 },
-  { id: 'pet_border', name: '小黑 (天才邊牧)', coat: '#1e293b', desc: '傳說牧羊犬：會自動幫忙端盤送餐！', baseCost: 2600 }
+  { id: 'pet_border', name: '小黑 (天才邊牧)', coat: '#261810', desc: '傳說牧羊犬：會自動幫忙端盤送餐！', baseCost: 2600 }
 ];
 
 const CONTEST_DEFS = [
@@ -759,7 +551,7 @@ const DEFAULT_STATE = {
 
 let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
 try {
-  const saved = localStorage.getItem('kairo_pet_cafe_ascii_v1');
+  const saved = localStorage.getItem('kairo_pet_cafe_chibi_v1');
   if (saved) {
     const p = JSON.parse(saved);
     state = Object.assign({}, JSON.parse(JSON.stringify(DEFAULT_STATE)), p);
@@ -775,138 +567,153 @@ try {
   }
 } catch (e) {}
 
-function saveGame() { try { localStorage.setItem('kairo_pet_cafe_ascii_v1', JSON.stringify(state)); } catch (e) {} }
+function saveGame() { try { localStorage.setItem('kairo_pet_cafe_chibi_v1', JSON.stringify(state)); } catch (e) {} }
 function getActiveBranchRec() { return state.branches[state.activeBranch] || state.branches.b_nangang; }
 function getPlacedItems() { return getActiveBranchRec().placedItems; }
 
-let activeDrawer = null;
-let activeSubTab = 'main';
-let isPaused = false;
-let arrangeMode = false;
-let selectedUid = null;
-let branchFlashAlpha = 0;
-
-// 單指拖曳巡視相機偏移
-let camPanX = 0, camPanY = 0;
-let isDragging = false, dragStartX = 0, dragStartY = 0, dragMoved = false;
-
+let activeDrawer = null, activeSubTab = 'main', isPaused = false, arrangeMode = false, selectedUid = null, branchFlashAlpha = 0;
+let camPanX = 0, camPanY = 0, isDragging = false, dragStartX = 0, dragStartY = 0, dragMoved = false;
 let labState = { cat: 'human', base: 'hb1', top: 'ht1', sauce: 'hs1' };
-let vipEvent = null;
-let feverTimer = 0;
-let merchantTimer = 0;
-let ngPlusSelection = 'menu';
+let vipEvent = null, feverTimer = 0, merchantTimer = 0, ngPlusSelection = 'menu';
 
-// ==================== 4. 點陣字元矩陣（ASCII Pixel Art）手繪圖庫 ====================
-// 色碼對照：O=#261810(外框), W=#ffffff, S=#ffdbac(膚色), R=#e66722, G=#3ca34b, B=#2f7ae5, Y=#f7b529, P=#f25c84, T=#8d5524, L=#d97706, C=#38bdf8
-const ASCII_SPRITES = {
-  // 12x14 像素豆豆眼人物（一般／廚師高帽／開羅君）
-  human_0: [
-    '..OOOOOO....',
-    '.OSSSSSSO...',
-    '.OSWSSWSO...',
-    '.OSSSSSSO...',
-    '..OSSSSO....',
-    '.OORRRROO...',
-    'OOSRRRRSOO..',
-    'OOSRRRRSOO..',
-    '..OOOOOO....',
-    '...OOBBOO...',
-    '...OO..OO...',
-    '..OO....OO..'
-  ],
-  chef_0: [
-    '..OOOOOO....',
-    '..OWWWWO....',
-    '.OOOOOOOO...',
-    '.OSSSSSSO...',
-    '.OSWSSWSO...',
-    '..OSSSSO....',
-    '.OOWWWWOO...',
-    'OOSWWWWWSO..',
-    'OOSWWWWWSO..',
-    '..OOOOOO....',
-    '...OOCCOO...',
-    '..OO....OO..'
-  ],
-  kairo_0: [
-    '..OOOOOOOO..',
-    '.OYYYYYYYYO.',
-    '.OYYOOOOYYO.',
-    '.OYYOCCOYYO.',
-    '.OYYOOOOYYO.',
-    '..OOOOOOOO..',
-    '.OYYYYYYYYO.',
-    '.OYYRRRRYYO.',
-    '..OOOOOOOO..',
-    '...OO..OO...',
-    '..OO....OO..'
-  ],
-  // 10x9 像素毛孩（狗／貓）
-  dog_0: [
-    'OO........',
-    'OYOOOOOO..',
-    'OYWYYWYYO.',
-    'OYYYYYYYYO',
-    '.OOYYYYYYO',
-    '..OYYYYYYO',
-    '..OO..OO..',
-    '..OO..OO..'
-  ],
-  cat_0: [
-    '.OY....YO.',
-    '.OYYYYYYO.',
-    '.OYWYYWYO.',
-    '.OYYYYYYO.',
-    '..OYYYYYYO',
-    '..OO..OO..',
-    '..OO..OO..'
-  ]
-};
+// ==================== 4. 可愛開羅 Q 版像素角色與毛孩精靈圖 ====================
+// 14x17 精細像素矩陣：蓬鬆髮型＋大眼高光＋粉紅腮紅＋領口／圍裙＋擺動手腳
+const CHIBI_14X17 = [
+  '....OOOOOO....',
+  '...OHHHHHHO...',
+  '..OHHWWWWWHHO.',
+  '..OHHHHHHHHO..',
+  '..OSSSSSSSSO..',
+  '..OSWSSWSSSO..',
+  '..OPSSSSSSPO..',
+  '...OSSSSSSO...',
+  '...OORRRROO...',
+  '..OORRRRRROO..',
+  '.OOSRRRRRRSOO.',
+  '.OO.ORRRRRO.OO',
+  '....OORROO....',
+  '....OO..OO....',
+  '...OO....OO...'
+];
 
-function renderAsciiMatrix(lines, palette, scale = 2) {
-  const h = lines.length;
-  const w = lines[0].length;
+const CHEF_14X17 = [
+  '....OOOOOO....',
+  '...OWWWWWWO...',
+  '..OWWWWWWWWO..',
+  '..OOOOOOOOOO..',
+  '..OSSSSSSSSO..',
+  '..OSWSSWSSSO..',
+  '..OPSSSSSSPO..',
+  '...OSSSSSSO...',
+  '...OOWWWWOO...',
+  '..OOWWWWWWWO..',
+  '.OOSWWWWWWSSO.',
+  '.OO.OWWWWWO.OO',
+  '....OOCCOO....',
+  '....OO..OO....',
+  '...OO....OO...'
+];
+
+const KAIRO_14X17 = [
+  '...OOOOOOOO...',
+  '..OYYYYYYYYO..',
+  '..OYYOOOOYYO..',
+  '..OYYOCCOYYO..',
+  '..OYYOOOOYYO..',
+  '...OOOOOOOO...',
+  '..OYYYYYYYYO..',
+  '..OYYRRRRYYO..',
+  '..OYYYYYYYYO..',
+  '...OOOOOOOO...',
+  '....OO..OO....',
+  '...OO....OO...'
+];
+
+// 12x10 可愛毛孩像素矩陣（立耳／垂耳＋大眼高光＋尾巴）
+const DOG_12X10 = [
+  '.OO......OO.',
+  'OYYOOOOOOYYO',
+  'OYYYYYYYYYYO',
+  '.OYWYYWYYYO.',
+  '.OYYYYYYYYO.',
+  '..OYYYYYYYO.',
+  '..OYYYYYYYO.',
+  '...OO....OO.',
+  '..OO......OO'
+];
+
+const CAT_12X10 = [
+  '..OY....YO..',
+  '.OYYOOOOYYO.',
+  '.OYYYYYYYYO.',
+  '.OYWYYWYYYO.',
+  '.OYYYYYYYYO.',
+  '..OYYYYYYYO.',
+  '...OO....OO.',
+  '..OO......OO'
+];
+
+function buildPixelFromMatrix(lines, pal, stepFrame, isPet = false) {
+  const h = lines.length, w = lines[0].length;
   const c = document.createElement('canvas');
-  c.width = w * scale;
-  c.height = h * scale;
+  c.width = w; c.height = h;
   const x = c.getContext('2d');
   x.imageSmoothingEnabled = false;
+  const put = (px, py, col) => {
+    if (px < 0 || py < 0 || px >= w || py >= h) return;
+    x.fillStyle = col; x.fillRect(px, py, 1, 1);
+  };
   for (let y = 0; y < h; y++) {
     for (let xi = 0; xi < w; xi++) {
       const ch = lines[y][xi];
       if (ch === '.') continue;
-      x.fillStyle = palette[ch] || '#261810';
-      x.fillRect(xi * scale, y * scale, scale, scale);
+      const col = pal[ch];
+      if (!col) continue;
+      let ox = xi, oy = y;
+      // 走路兩幀微調手腳與尾巴
+      if (!isPet && y >= h - 3) {
+        if (stepFrame === 1) { ox += (xi < w / 2 ? -1 : 1); oy -= (xi < w / 2 ? 1 : 0); }
+      } else if (isPet && y >= h - 2) {
+        if (stepFrame === 1) ox += (xi < w / 2 ? -1 : 1);
+      }
+      put(ox, oy, col);
     }
   }
   return c;
 }
 
-const spriteBank = {};
-function getCharacterPixelCanvas(key, hairCol, shirtCol, isChef, isKairo) {
-  const id = `${key}_${hairCol}_${shirtCol}_${isChef}_${isKairo}`;
-  if (spriteBank[id]) return spriteBank[id];
-  const tpl = isKairo ? ASCII_SPRITES.kairo_0 : (isChef ? ASCII_SPRITES.chef_0 : ASCII_SPRITES.human_0);
+const chibiCache = {};
+function getCuteChibiSprite(key, hairCol, shirtCol, isChef, stepFrame, isKairo) {
+  const id = `${key}_${hairCol}_${shirtCol}_${isChef}_${stepFrame}_${isKairo}`;
+  if (chibiCache[id]) return chibiCache[id];
+  const lines = isKairo ? KAIRO_14X17 : (isChef ? CHEF_14X17 : CHIBI_14X17);
+  const hairLight = '#fff3c4';
   const pal = {
     O: '#261810',
-    W: '#ffffff',
+    H: hairCol,
+    L: hairLight,
     S: '#ffdbac',
+    W: '#ffffff',
+    P: '#ff8a80',
     R: shirtCol,
-    B: '#2f7ae5',
     C: '#38bdf8',
-    Y: hairCol
+    Y: '#f7b529'
   };
-  spriteBank[id] = renderAsciiMatrix(tpl, pal, 2);
-  return spriteBank[id];
+  // 幫頭頂加上 1px 高光點
+  const c = buildPixelFromMatrix(lines, pal, stepFrame, false);
+  const cx = c.getContext('2d');
+  if (!isKairo && !isChef) { cx.fillStyle = '#fff5d6'; cx.fillRect(5, 2, 2, 1); }
+  chibiCache[id] = c;
+  return c;
 }
 
-function getPetPixelCanvas(coatCol, isCat) {
-  const id = `pet_${coatCol}_${isCat}`;
-  if (spriteBank[id]) return spriteBank[id];
-  const tpl = isCat ? ASCII_SPRITES.cat_0 : ASCII_SPRITES.dog_0;
-  const pal = { O: '#261810', W: '#ffffff', Y: coatCol };
-  spriteBank[id] = renderAsciiMatrix(tpl, pal, 2);
-  return spriteBank[id];
+function getCutePetSprite(coatCol, isCat, stepFrame) {
+  const id = `pet_${coatCol}_${isCat}_${stepFrame}`;
+  if (chibiCache[id]) return chibiCache[id];
+  const lines = isCat ? CAT_12X10 : DOG_12X10;
+  const pal = { O: '#261810', Y: coatCol, W: '#ffffff' };
+  chibiCache[id] = buildPixelFromMatrix(lines, pal, stepFrame, true);
+  return chibiCache[id];
 }
 
 // ==================== 5. 空間與數值計算 ====================
@@ -922,8 +729,7 @@ function isCellOccupiedByItem(gx, gy, ignoreUid = null) {
   return getPlacedItems().some(it => it.uid !== ignoreUid && it.gx === gx && it.gy === gy);
 }
 function findFreeTile(prefGx, prefGy) {
-  const G = state.maxGridSize;
-  const candidates = [];
+  const G = state.maxGridSize, candidates = [];
   for (let gx = 1; gx < G - 1; gx++) {
     for (let gy = 1; gy < G - 1; gy++) {
       if (!isRestrictedFurnitureCell(gx, gy) && !isCellOccupiedByItem(gx, gy)) {
@@ -944,32 +750,24 @@ function computeBranchStars(bid) {
   const itemScore = rec.placedItems.reduce((acc, it) => acc + it.lv, 0);
   return Math.min(5.0, Number((1.0 + itemScore * 0.12 + (rec.supportLv || 0) * 0.45).toFixed(1)));
 }
-function refreshAllBranchStars() {
-  BRANCH_DEFS.forEach(b => { if (state.branches[b.id]) state.branches[b.id].stars = computeBranchStars(b.id); });
-}
+function refreshAllBranchStars() { BRANCH_DEFS.forEach(b => { if (state.branches[b.id]) state.branches[b.id].stars = computeBranchStars(b.id); }); }
 function hasFacility(defId) { return getPlacedItems().some(it => it.defId === defId); }
 function countFacility(defId) { return getPlacedItems().filter(it => it.defId === defId).length; }
 
 function getActiveCombos() {
-  const active = [];
-  const items = getPlacedItems();
+  const active = [], items = getPlacedItems();
   COMBO_DEFS.forEach(c => {
     const [a, b] = c.req;
-    const listA = items.filter(it => it.defId === a);
-    const listB = items.filter(it => it.defId === b);
+    const listA = items.filter(it => it.defId === a), listB = items.filter(it => it.defId === b);
     let matched = false;
     for (const pa of listA) {
-      for (const pb of listB) {
-        if (Math.hypot(pa.gx - pb.gx, pa.gy - pb.gy) <= 2.4) { matched = true; break; }
-      }
+      for (const pb of listB) { if (Math.hypot(pa.gx - pb.gx, pa.gy - pb.gy) <= 2.4) { matched = true; break; } }
       if (matched) break;
     }
     if (matched) {
       active.push(c);
       if (!state.discoveredCombos.includes(c.id)) {
-        state.discoveredCombos.push(c.id);
-        showKairoToast(`✨ 設施相性發見：【${c.name}】`, c.bonusText);
-        sfx.combo();
+        state.discoveredCombos.push(c.id); showKairoToast(`✨ 設施相性發見：【${c.name}】`, c.bonusText); sfx.combo();
       }
     }
   });
@@ -987,9 +785,7 @@ function getTotalAppeal() {
 }
 
 function getMenuPrice(m) {
-  const lv = state.menus[m.id] || 1;
-  const branchInfo = getBranchInfo();
-  const branchRec = getActiveBranchRec();
+  const lv = state.menus[m.id] || 1, branchInfo = getBranchInfo(), branchRec = getActiveBranchRec();
   let mul = 1 + (lv - 1) * 0.25;
   if (m.cat === 'human' && hasFacility('coffee_bar')) mul += 0.15;
   if (hasFacility('bakery_case')) mul += 0.18;
@@ -1008,8 +804,7 @@ function getMenuPrice(m) {
 }
 
 function getCustomDishPrice(cm) {
-  const branchInfo = getBranchInfo();
-  const branchRec = getActiveBranchRec();
+  const branchInfo = getBranchInfo(), branchRec = getActiveBranchRec();
   let mul = 1 + (cm.lv - 1) * 0.25;
   if (hasFacility('bakery_case')) mul += 0.18;
   if (branchInfo.favCat === cm.cat || branchInfo.favCat === 'both') mul += 0.20;
@@ -1029,71 +824,52 @@ function getHeartMultiplier() {
   return mul;
 }
 function getChefSpeedMultiplier() {
-  const s = state.staff.chef_1;
-  const sup = (getActiveBranchRec()?.supportLv || 0) * 0.15;
+  const s = state.staff.chef_1, sup = (getActiveBranchRec()?.supportLv || 0) * 0.15;
   return (1 + (s.lv - 1) * 0.2 + sup) * (JOB_TREE[s.job]?.speedMul || 1);
 }
 function getWaiterSpeedMultiplier(id) {
-  const s = state.staff[id];
-  const sup = (getActiveBranchRec()?.supportLv || 0) * 0.15;
+  const s = state.staff[id], sup = (getActiveBranchRec()?.supportLv || 0) * 0.15;
   return (1 + (s.lv - 1) * 0.2 + sup) * (JOB_TREE[s.job]?.speedMul || 1);
 }
 
-// ==================== 6. 全螢幕點陣 2.5D 渲染 ====================
-const canvas = document.getElementById('pixelCanvas');
-const ctx = canvas.getContext('2d');
+// ==================== 6. 點陣等角場景與立體家具渲染 ====================
+const canvas = document.getElementById('pixelCanvas'), ctx = canvas.getContext('2d');
 let CW = 480, CH = 720;
-const TILE_W = 36;
-const TILE_H = 18;
+const TILE_W = 36, TILE_H = 18;
 
 function resizeCanvas() {
-  const app = document.getElementById('app');
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  CW = app.clientWidth;
-  CH = app.clientHeight;
-  canvas.width = CW * dpr;
-  canvas.height = CH * dpr;
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.imageSmoothingEnabled = false;
+  const app = document.getElementById('app'), dpr = Math.min(window.devicePixelRatio || 1, 2);
+  CW = app.clientWidth; CH = app.clientHeight;
+  canvas.width = CW * dpr; canvas.height = CH * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.imageSmoothingEnabled = false;
 }
 window.addEventListener('resize', resizeCanvas);
 function resetCamera() { camPanX = 0; camPanY = 0; }
 
 function gridToIso(gx, gy) {
-  const originX = CW * 0.50 + camPanX;
-  const originY = CH * 0.34 + camPanY;
-  return {
-    x: originX + (gx - gy) * (TILE_W / 2),
-    y: originY + (gx + gy) * (TILE_H / 2)
-  };
+  return { x: CW * 0.50 + camPanX + (gx - gy) * (TILE_W / 2), y: CH * 0.34 + camPanY + (gx + gy) * (TILE_H / 2) };
 }
 function isoToGrid(sx, sy) {
-  const originX = CW * 0.50 + camPanX;
-  const originY = CH * 0.34 + camPanY;
-  const dx = sx - originX;
-  const dy = sy - originY;
-  const gx = Math.floor((dx / (TILE_W / 2) + dy / (TILE_H / 2)) / 2);
-  const gy = Math.floor((dy / (TILE_H / 2) - dx / (TILE_W / 2)) / 2);
-  return { gx, gy };
+  const dx = sx - (CW * 0.50 + camPanX), dy = sy - (CH * 0.34 + camPanY);
+  return {
+    gx: Math.floor((dx / (TILE_W / 2) + dy / (TILE_H / 2)) / 2),
+    gy: Math.floor((dy / (TILE_H / 2) - dx / (TILE_W / 2)) / 2)
+  };
 }
 
 function drawIsoBox(cx, baseY, rx, ry, h, topCol, leftCol, rightCol, outline = '#261810') {
-  ctx.beginPath();
-  ctx.moveTo(cx - rx, baseY - h); ctx.lineTo(cx, baseY + ry - h); ctx.lineTo(cx, baseY + ry); ctx.lineTo(cx - rx, baseY);
+  ctx.beginPath(); ctx.moveTo(cx - rx, baseY - h); ctx.lineTo(cx, baseY + ry - h); ctx.lineTo(cx, baseY + ry); ctx.lineTo(cx - rx, baseY);
   ctx.closePath(); ctx.fillStyle = leftCol; ctx.fill(); ctx.strokeStyle = outline; ctx.lineWidth = 1; ctx.stroke();
 
-  ctx.beginPath();
-  ctx.moveTo(cx, baseY + ry - h); ctx.lineTo(cx + rx, baseY - h); ctx.lineTo(cx + rx, baseY); ctx.lineTo(cx, baseY + ry);
+  ctx.beginPath(); ctx.moveTo(cx, baseY + ry - h); ctx.lineTo(cx + rx, baseY - h); ctx.lineTo(cx + rx, baseY); ctx.lineTo(cx, baseY + ry);
   ctx.closePath(); ctx.fillStyle = rightCol; ctx.fill(); ctx.stroke();
 
-  ctx.beginPath();
-  ctx.moveTo(cx, baseY - ry - h); ctx.lineTo(cx + rx, baseY - h); ctx.lineTo(cx, baseY + ry - h); ctx.lineTo(cx - rx, baseY - h);
+  ctx.beginPath(); ctx.moveTo(cx, baseY - ry - h); ctx.lineTo(cx + rx, baseY - h); ctx.lineTo(cx, baseY + ry - h); ctx.lineTo(cx - rx, baseY - h);
   ctx.closePath(); ctx.fillStyle = topCol; ctx.fill(); ctx.stroke();
 }
 
 function drawIsoFurnitureSet(defId, gx, gy, frame) {
-  const p = gridToIso(gx, gy);
-  const cx = p.x, baseY = p.y + TILE_H * 0.65;
+  const p = gridToIso(gx, gy), cx = p.x, baseY = p.y + TILE_H * 0.65;
   if (defId === 'table_1') {
     drawIsoBox(cx - 10, baseY - 2, 4, 2, 5, '#b45309', '#92400e', '#78350f');
     drawIsoBox(cx + 10, baseY + 2, 4, 2, 5, '#b45309', '#92400e', '#78350f');
@@ -1138,10 +914,8 @@ function drawIsoFurnitureSet(defId, gx, gy, frame) {
 }
 
 function drawIsoTile(gx, gy, topColor, leftColor, rightColor, height = 4, stroke = 'rgba(38,24,16,0.24)') {
-  const p = gridToIso(gx, gy);
-  const hw = TILE_W / 2, hh = TILE_H / 2;
-  ctx.beginPath();
-  ctx.moveTo(p.x, p.y); ctx.lineTo(p.x + hw, p.y + hh); ctx.lineTo(p.x, p.y + TILE_H); ctx.lineTo(p.x - hw, p.y + hh);
+  const p = gridToIso(gx, gy), hw = TILE_W / 2, hh = TILE_H / 2;
+  ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x + hw, p.y + hh); ctx.lineTo(p.x, p.y + TILE_H); ctx.lineTo(p.x - hw, p.y + hh);
   ctx.closePath(); ctx.fillStyle = topColor; ctx.fill();
   if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke(); }
   if (height > 0) {
@@ -1153,9 +927,7 @@ function drawIsoTile(gx, gy, topColor, leftColor, rightColor, height = 4, stroke
 }
 
 function drawIsoWallSegment(gx, gy, wallH, colorFront, colorSide, hasDoorway = false) {
-  const p = gridToIso(gx, gy);
-  const hw = TILE_W / 2, hh = TILE_H / 2;
-  const h = hasDoorway ? wallH * 0.30 : wallH;
+  const p = gridToIso(gx, gy), hw = TILE_W / 2, hh = TILE_H / 2, h = hasDoorway ? wallH * 0.30 : wallH;
   ctx.beginPath(); ctx.moveTo(p.x - hw, p.y + hh); ctx.lineTo(p.x, p.y + TILE_H); ctx.lineTo(p.x, p.y + TILE_H - h); ctx.lineTo(p.x - hw, p.y + hh - h);
   ctx.closePath(); ctx.fillStyle = colorFront; ctx.fill(); ctx.strokeStyle = '#261810'; ctx.lineWidth = 1; ctx.stroke();
   ctx.beginPath(); ctx.moveTo(p.x, p.y + TILE_H); ctx.lineTo(p.x + hw, p.y + hh); ctx.lineTo(p.x + hw, p.y + hh - h); ctx.lineTo(p.x, p.y + TILE_H - h);
@@ -1176,11 +948,11 @@ let spawnTimer = 0, passerTimer = 0, petHeartTimer = 0, chainTickTimer = 0, tick
 
 function getTimeLighting() {
   const m = state.minuteOfDay;
-  if (m < 660) return { sky: ['#7dd3fc', '#bae6fd'], ambient: 'rgba(255,248,220,0.04)', isNight: false, isSunset: false };
-  if (m < 960) return { sky: ['#38bdf8', '#7dd3fc'], ambient: 'rgba(255,255,255,0)', isNight: false, isSunset: false };
-  if (m < 1050) return { sky: ['#60a5fa', '#93c5fd'], ambient: 'rgba(255,237,213,0.08)', isNight: false, isSunset: false };
-  if (m < 1170) return { sky: ['#f97316', '#fda4af'], ambient: 'rgba(234,88,12,0.22)', isNight: false, isSunset: true };
-  return { sky: ['#0f172a', '#1e1b4b'], ambient: 'rgba(15,23,42,0.45)', isNight: true, isSunset: false };
+  if (m < 660) return { sky: ['#7dd3fc', '#bae6fd'], ambient: 'rgba(255,248,220,0.04)', isNight: false };
+  if (m < 960) return { sky: ['#38bdf8', '#7dd3fc'], ambient: 'rgba(255,255,255,0)', isNight: false };
+  if (m < 1050) return { sky: ['#60a5fa', '#93c5fd'], ambient: 'rgba(255,237,213,0.08)', isNight: false };
+  if (m < 1170) return { sky: ['#f97316', '#fda4af'], ambient: 'rgba(234,88,12,0.22)', isNight: false };
+  return { sky: ['#0f172a', '#1e1b4b'], ambient: 'rgba(15,23,42,0.45)', isNight: true };
 }
 
 function addParticle(gx, gy, text, color = '#fff') {
@@ -1197,8 +969,7 @@ function showKairoToast(title, desc) {
 }
 
 function moveTowards(obj, tx, ty, speed, dt) {
-  const dx = tx - obj.gx, dy = ty - obj.gy;
-  const dist = Math.hypot(dx, dy);
+  const dx = tx - obj.gx, dy = ty - obj.gy, dist = Math.hypot(dx, dy);
   if (dist < 0.08) { obj.gx = tx; obj.gy = ty; return true; }
   obj.gx += (dx / dist) * speed * dt; obj.gy += (dy / dist) * speed * dt;
   return false;
@@ -1231,7 +1002,7 @@ function spawnCustomer(forceVip = false) {
 
   entities.customers.push({
     id: Date.now() + Math.random(), regId: reg.id, name: forceVip ? 'VIP主編' : reg.name,
-    hair: forceVip ? '#fde047' : reg.hair, shirt: forceVip ? '#dc2626' : reg.shirt,
+    hair: forceVip ? '#f7b529' : reg.hair, shirt: forceVip ? '#dc2626' : reg.shirt,
     isVip: forceVip, hasPet,
     petCoat: reg.petType === 'cat' ? '#ff9800' : (reg.petType === 'senior_dog' ? '#d7ccc8' : '#e69d45'),
     isCat: reg.petType === 'cat',
@@ -1242,10 +1013,7 @@ function spawnCustomer(forceVip = false) {
     willUseToilet: Math.random() < 0.45
   });
 
-  if (forceVip) {
-    vipEvent = { timer: 28, score: 0, target: 100 };
-    sfx.combo();
-  }
+  if (forceVip) { vipEvent = { timer: 28, score: 0, target: 100 }; sfx.combo(); }
 }
 
 function triggerKairoInspiration(gx, gy) {
@@ -1254,8 +1022,7 @@ function triggerKairoInspiration(gx, gy) {
     const pick = keys[Math.floor(Math.random() * keys.length)];
     state.menus[pick] += 1;
     const def = MENU_DEFS.find(m => m.id === pick);
-    addParticle(gx, gy, `靈感! ${def?.name || '料理'}Lv.${state.menus[pick]}`, '#fde047');
-    sfx.upgrade();
+    addParticle(gx, gy, `靈感! ${def?.name || '料理'}Lv.${state.menus[pick]}`, '#fde047'); sfx.upgrade();
   }
 }
 
@@ -1289,17 +1056,13 @@ function updateSimulation(dt) {
 
   if (vipEvent) {
     vipEvent.timer -= dt;
-    if (vipEvent.score >= vipEvent.target) {
-      vipEvent = null; feverTimer = 28; state.heart += 30;
-      showKairoToast('🔥 登上雜誌封面！', '28秒 FEVER 狂熱時間：營收小費 2 倍！');
-      sfx.combo();
-    } else if (vipEvent.timer <= 0) vipEvent = null;
+    if (vipEvent.score >= vipEvent.target) { vipEvent = null; feverTimer = 28; state.heart += 30; showKairoToast('🔥 登上雜誌封面！', '28秒 FEVER 狂熱時間：營收小費 2 倍！'); sfx.combo(); }
+    else if (vipEvent.timer <= 0) vipEvent = null;
   }
 
   passerTimer += dt;
   if (passerTimer > 2.3 && entities.passers.length < 4) {
-    passerTimer = 0;
-    const reg = REGULARS_DEF[Math.floor(Math.random() * REGULARS_DEF.length)];
+    passerTimer = 0; const reg = REGULARS_DEF[Math.floor(Math.random() * REGULARS_DEF.length)];
     entities.passers.push({ gx: state.maxGridSize + 2.4, gy: 1.5 + Math.random() * 5.5, hair: reg.hair, shirt: reg.shirt, speed: 0.95 + Math.random() * 0.4 });
   }
   entities.passers.forEach(p => { p.gy += p.speed * dt; });
@@ -1314,30 +1077,25 @@ function updateSimulation(dt) {
 
   petHeartTimer += dt;
   if (petHeartTimer >= 4.2) {
-    petHeartTimer = 0;
-    const activePets = PET_DEFS.filter(p => (state.pets[p.id]?.lv || 0) > 0);
+    petHeartTimer = 0; const activePets = PET_DEFS.filter(p => (state.pets[p.id]?.lv || 0) > 0);
     if (activePets.length > 0) {
       const rp = activePets[Math.floor(Math.random() * activePets.length)];
       const gain = Math.max(1, Math.round(2 * getHeartMultiplier()));
-      state.heart += gain; state.dailyStats.hearts += gain;
-      state.pets[rp.id].bond = (state.pets[rp.id].bond || 0) + 1;
+      state.heart += gain; state.dailyStats.hearts += gain; state.pets[rp.id].bond = (state.pets[rp.id].bond || 0) + 1;
       const turf = getPlacedItems().find(it => it.defId === 'turf_zone') || { gx: 5, gy: 6 };
       addParticle(turf.gx + (Math.random() - 0.5), turf.gy + (Math.random() - 0.5), `♪ +${gain}愛心`, '#ff8aa8');
       if (vipEvent) vipEvent.score += 18;
     }
   }
 
-  const chef = entities.chef;
-  const chefSpeed = getChefSpeedMultiplier();
+  const chef = entities.chef, chefSpeed = getChefSpeedMultiplier();
   if (chef.state === 'idle') {
-    const targetGy = chef.patrolDir > 0 ? 2.1 : 0.8;
-    if (moveTowards(chef, 0.85, targetGy, 1.1 * chefSpeed, dt)) chef.patrolDir *= -1;
+    if (moveTowards(chef, 0.85, chef.patrolDir > 0 ? 2.1 : 0.8, 1.1 * chefSpeed, dt)) chef.patrolDir *= -1;
     if (entities.orders.length > 0) { chef.order = entities.orders.shift(); chef.state = 'walking_stove'; }
   } else if (chef.state === 'walking_stove') {
     if (moveTowards(chef, 0.55, 0.65, 2.4 * chefSpeed, dt)) { chef.state = 'cooking'; chef.timer = 1.7 / chefSpeed; chef.maxTimer = chef.timer; }
   } else if (chef.state === 'cooking') {
-    chef.timer -= dt;
-    if (chef.timer <= 0) chef.state = 'serving_pass';
+    chef.timer -= dt; if (chef.timer <= 0) chef.state = 'serving_pass';
   } else if (chef.state === 'serving_pass') {
     if (moveTowards(chef, 1.65, 1.95, 2.5 * chefSpeed, dt)) {
       entities.readyDishes.push(chef.order); chef.order = null; chef.state = 'idle';
@@ -1346,51 +1104,38 @@ function updateSimulation(dt) {
   }
 
   if ((state.pets.pet_border?.lv || 0) > 0 && entities.readyDishes.length > 0 && Math.random() < 0.09) {
-    const dish = entities.readyDishes.shift();
-    const cust = entities.customers.find(c => c.id === dish.customerId);
-    if (cust && cust.state === 'waiting_food') {
-      cust.state = 'eating'; cust.timer = 2.5; cust.bubble = '小黑送達!';
-      addParticle(cust.gx, cust.gy, '小黑送餐!', '#38bdf8');
-    }
+    const dish = entities.readyDishes.shift(), cust = entities.customers.find(c => c.id === dish.customerId);
+    if (cust && cust.state === 'waiting_food') { cust.state = 'eating'; cust.timer = 2.5; cust.bubble = '小黑送達!'; addParticle(cust.gx, cust.gy, '小黑送餐!', '#38bdf8'); }
   }
 
   ['waiter_1', 'waiter_2'].forEach(wid => {
     if ((state.staff[wid]?.lv || 0) <= 0) return;
-    const w = entities.waiters[wid]; const spd = 2.5 * getWaiterSpeedMultiplier(wid);
+    const w = entities.waiters[wid], spd = 2.5 * getWaiterSpeedMultiplier(wid);
     if (w.state === 'idle') {
       if (entities.readyDishes.length > 0) { w.dish = entities.readyDishes.shift(); w.state = 'to_counter'; }
       else if (entities.dirtyTables.length > 0) { w.cleanTable = entities.dirtyTables.shift(); w.state = 'cleaning'; }
-      else { moveTowards(w, wid === 'waiter_1' ? 3.4 : 4.6, wid === 'waiter_1' ? 2.4 : 4.2, spd * 0.7, dt); }
+      else moveTowards(w, wid === 'waiter_1' ? 3.4 : 4.6, wid === 'waiter_1' ? 2.4 : 4.2, spd * 0.7, dt);
     } else if (w.state === 'to_counter') {
       if (moveTowards(w, 2.55, 2.15, spd, dt)) w.state = 'delivering';
     } else if (w.state === 'delivering') {
       const cust = entities.customers.find(c => c.id === w.dish.customerId);
       if (!cust || cust.state === 'leaving') { w.dish = null; w.state = 'idle'; }
-      else if (moveTowards(w, cust.gx - 0.3, cust.gy + 0.3, spd, dt)) {
-        cust.state = 'eating'; cust.timer = 2.5; cust.bubble = '♪ 好吃!';
-        w.dish = null; w.state = 'idle'; gainStaffExp(wid, 1);
-      }
+      else if (moveTowards(w, cust.gx - 0.3, cust.gy + 0.3, spd, dt)) { cust.state = 'eating'; cust.timer = 2.5; cust.bubble = '♪ 好吃!'; w.dish = null; w.state = 'idle'; gainStaffExp(wid, 1); }
     } else if (w.state === 'cleaning') {
       if (!w.cleanTable) { w.state = 'idle'; return; }
-      if (moveTowards(w, w.cleanTable.gx + 0.4, w.cleanTable.gy + 0.4, spd, dt)) {
-        addParticle(w.cleanTable.gx, w.cleanTable.gy, '擦桌完成!', '#86efac');
-        w.cleanTable = null; w.state = 'idle';
-      }
+      if (moveTowards(w, w.cleanTable.gx + 0.4, w.cleanTable.gy + 0.4, spd, dt)) { addParticle(w.cleanTable.gx, w.cleanTable.gy, '擦桌完成!', '#86efac'); w.cleanTable = null; w.state = 'idle'; }
     }
   });
 
-  const G = state.maxGridSize;
-  const activeRec = getActiveBranchRec();
+  const G = state.maxGridSize, activeRec = getActiveBranchRec();
   entities.customers.forEach(c => {
     if (c.state === 'entering') {
       if (moveTowards(c, c.seatGx, c.seatGy, 2.1, dt)) { c.state = 'ordering'; c.timer = 0.75; c.bubble = '點餐中'; }
     } else if (c.state === 'ordering') {
       c.timer -= dt;
       if (c.timer <= 0) {
-        const menuList = getUnlockedMenuList();
-        const pref = c.hasPet ? menuList.filter(m => m.cat === 'pet') : menuList.filter(m => m.cat === 'human');
-        const pool = pref.length > 0 ? pref : menuList;
-        const chosen = pool[Math.floor(Math.random() * pool.length)];
+        const menuList = getUnlockedMenuList(), pref = c.hasPet ? menuList.filter(m => m.cat === 'pet') : menuList.filter(m => m.cat === 'human');
+        const pool = pref.length > 0 ? pref : menuList, chosen = pool[Math.floor(Math.random() * pool.length)];
         c.orderedMenu = chosen; c.state = 'waiting_food'; c.bubble = `等${chosen.name.slice(0, 4)}`;
         entities.orders.push({ customerId: c.id, menu: chosen });
       }
@@ -1407,13 +1152,11 @@ function updateSimulation(dt) {
         state.gold += price; state.dailyStats.income += price; state.dailyStats.customers += 1;
         if (activeRec) { activeRec.todayIncome += price; activeRec.todayCustomers += 1; }
         addParticle(c.gx, c.gy, `+$${price}`, '#fde047'); sfx.coin();
-
         entities.dirtyTables.push({ tableUid: c.tableUid, gx: c.tableGx, gy: c.tableGy });
         if (Math.random() < 0.14) triggerKairoInspiration(c.gx, c.gy);
 
         if (!c.isVip && state.regulars[c.regId]) {
-          const rObj = state.regulars[c.regId];
-          rObj.exp += 1;
+          const rObj = state.regulars[c.regId]; rObj.exp += 1;
           if (rObj.exp >= rObj.lv * 3 && rObj.lv < 10) { rObj.lv += 1; rObj.exp = 0; applyRegularLevelReward(c.regId, rObj.lv); }
         }
         if (c.isVip && vipEvent) vipEvent.score += 65;
@@ -1428,10 +1171,8 @@ function updateSimulation(dt) {
       if (c.timer <= 0) {
         entities.toiletOccupiedBy = null;
         const hBonus = Math.max(1, Math.round(2 * getHeartMultiplier()));
-        state.heart += hBonus; state.dailyStats.hearts += hBonus;
-        state.dailyStats.toiletUses = (state.dailyStats.toiletUses || 0) + 1;
-        addParticle(1.0, 7.2, `清潔 +${hBonus}愛心`, '#80e5ff');
-        c.state = 'leaving'; c.bubble = '清爽!';
+        state.heart += hBonus; state.dailyStats.hearts += hBonus; state.dailyStats.toiletUses = (state.dailyStats.toiletUses || 0) + 1;
+        addParticle(1.0, 7.2, `清潔 +${hBonus}愛心`, '#80e5ff'); c.state = 'leaving'; c.bubble = '清爽!';
       }
     } else if (c.state === 'leaving') {
       if (moveTowards(c, G - 0.5, G - 0.5, 2.2, dt)) c.done = true;
@@ -1451,16 +1192,13 @@ function updateSimulation(dt) {
 }
 
 function gainStaffExp(wid, amt) {
-  const s = state.staff[wid];
-  if (!s) return;
-  s.exp = (s.exp || 0) + amt;
-  const need = s.lv * 12;
+  const s = state.staff[wid]; if (!s) return;
+  s.exp = (s.exp || 0) + amt; const need = s.lv * 12;
   if (s.exp >= need && s.lv < 10) { s.lv += 1; s.exp = 0; addParticle(2.0, 2.0, `店員Lv.${s.lv}`, '#4ade80'); }
 }
 
 function applyRegularLevelReward(regId, newLv) {
-  const r = REGULARS_DEF.find(x => x.id === regId);
-  if (!r) return;
+  const r = REGULARS_DEF.find(x => x.id === regId); if (!r) return;
   if (regId === 'r_student') state.gold += 350;
   else if (regId === 'r_office') state.heart += 15;
   else if (regId === 'r_grandpa') state.heart += 22;
@@ -1468,17 +1206,14 @@ function applyRegularLevelReward(regId, newLv) {
   else if (regId === 'r_trainer') state.heart += 25;
   else if (regId === 'r_couple') state.gold += 500;
   else if (regId === 'r_kairo') state.heart += 40;
-  showKairoToast(`🎉 常客升級：【${r.name}】Lv.${newLv}`, r.rewardText);
-  sfx.upgrade();
+  showKairoToast(`🎉 常客升級：【${r.name}】Lv.${newLv}`, r.rewardText); sfx.upgrade();
 }
 
 // ==================== 8. 點陣畫布渲染 ====================
 function renderPixelWorld() {
   ctx.clearRect(0, 0, CW, CH);
-  const G = state.maxGridSize;
-  const branch = getBranchInfo();
-  const light = getTimeLighting();
-  const frame = Math.floor(animFrameCounter / 10);
+  const G = state.maxGridSize, branch = getBranchInfo(), light = getTimeLighting();
+  const stepFrame = Math.floor(animFrameCounter / 12) % 2;
 
   const skyGrad = ctx.createLinearGradient(0, 0, 0, CH);
   skyGrad.addColorStop(0, light.sky[0]); skyGrad.addColorStop(1, light.sky[1]);
@@ -1497,17 +1232,14 @@ function renderPixelWorld() {
         const wave = Math.sin(animFrameCounter * 0.08 + gy) > 0 ? '#0284c7' : '#0369a1';
         drawIsoTile(gx, gy, wave, '#075985', '#0c4a6e', 2, null);
       } else if (gx >= G + 1) {
-        const stripe = Math.floor(gy) % 2 === 0 ? '#f8fafc' : '#334155';
-        drawIsoTile(gx, gy, stripe, '#1e293b', '#0f172a', 2, 'rgba(0,0,0,0.2)');
+        drawIsoTile(gx, gy, Math.floor(gy) % 2 === 0 ? '#f8fafc' : '#334155', '#1e293b', '#0f172a', 2, 'rgba(0,0,0,0.2)');
       } else {
-        const sideCol = branch.outdoor === 'boutique' ? '#e2e8f0' : (light.isNight ? '#365314' : '#7cb342');
-        drawIsoTile(gx, gy, sideCol, '#558b2f', '#33691e', 3, null);
+        drawIsoTile(gx, gy, branch.outdoor === 'boutique' ? '#e2e8f0' : (light.isNight ? '#365314' : '#7cb342'), '#558b2f', '#33691e', 3, null);
       }
     }
   }
 
-  const wallH = 38;
-  const topCorner = gridToIso(0, 0), leftCorner = gridToIso(0, G), rightCorner = gridToIso(G, 0);
+  const wallH = 38, topCorner = gridToIso(0, 0), leftCorner = gridToIso(0, G), rightCorner = gridToIso(G, 0);
   ctx.beginPath(); ctx.moveTo(topCorner.x, topCorner.y); ctx.lineTo(leftCorner.x, leftCorner.y + TILE_H / 2); ctx.lineTo(leftCorner.x, leftCorner.y + TILE_H / 2 - wallH); ctx.lineTo(topCorner.x, topCorner.y - wallH);
   ctx.closePath(); ctx.fillStyle = branch.wallTint; ctx.fill(); ctx.strokeStyle = '#261810'; ctx.lineWidth = 2; ctx.stroke();
 
@@ -1519,12 +1251,8 @@ function renderPixelWorld() {
   ctx.fillStyle = '#fde047'; ctx.font = 'bold 7.5px monospace'; ctx.fillText(branch.signText, signPos.x - 32, signPos.y - 24);
 
   if (state.wonContests.length > 0) {
-    const tp = gridToIso(4.5, 0);
-    ctx.fillStyle = '#5d3b24'; ctx.fillRect(tp.x - 18, tp.y - 20, 38, 4);
-    state.wonContests.forEach((cid, idx) => {
-      const c = CONTEST_DEFS.find(x => x.id === cid);
-      if (c) { ctx.fillStyle = c.color; ctx.fillRect(tp.x - 14 + idx * 9, tp.y - 28, 6, 8); }
-    });
+    const tp = gridToIso(4.5, 0); ctx.fillStyle = '#5d3b24'; ctx.fillRect(tp.x - 18, tp.y - 20, 38, 4);
+    state.wonContests.forEach((cid, idx) => { const c = CONTEST_DEFS.find(x => x.id === cid); if (c) { ctx.fillStyle = c.color; ctx.fillRect(tp.x - 14 + idx * 9, tp.y - 28, 6, 8); } });
   }
 
   for (let gx = 0; gx < G; gx++) {
@@ -1535,60 +1263,46 @@ function renderPixelWorld() {
       else if (branch.floorStyle === 'marble') col = (gx + gy) % 2 === 0 ? '#fdf2f8' : '#fce7f3';
       else if (branch.floorStyle === 'resort') col = (gx + gy) % 2 === 0 ? '#d9f99d' : '#fef08a';
       else col = (gx + gy) % 2 === 0 ? '#e5c191' : '#d8b07c';
-
       if (arrangeMode) col = isRestrictedFurnitureCell(gx, gy) ? '#fca5a5' : ((gx + gy) % 2 === 0 ? '#bbf7d0' : '#86efac');
       drawIsoTile(gx, gy, col, '#8d6e63', '#6d4c41', 5);
     }
   }
 
-  // 獨立廚房
   drawIsoWallSegment(2, 0, 26, '#8d5524', '#6d3f19', false);
   drawIsoWallSegment(2, 1, 26, '#8d5524', '#6d3f19', false);
   drawIsoTile(2, 2, '#f59e0b', '#b45309', '#78350f', 13, '#261810');
   drawIsoWallSegment(2, 3, 26, '#a16207', '#713f12', true);
-  const st0 = gridToIso(0, 0);
-  drawIsoBox(st0.x, st0.y + 11, 13, 6.5, 9, '#cbd5e1', '#94a3b8', '#64748b');
-  if (entities.chef.state === 'cooking') { ctx.fillStyle = frame % 2 === 0 ? '#ef4444' : '#facc15'; ctx.fillRect(st0.x - 4, st0.y - 4, 5, 5); }
-  const st1 = gridToIso(0, 1);
-  drawIsoBox(st1.x, st1.y + 11, 13, 6.5, 8, '#f8fafc', '#cbd5e1', '#94a3b8');
+  const st0 = gridToIso(0, 0); drawIsoBox(st0.x, st0.y + 11, 13, 6.5, 9, '#cbd5e1', '#94a3b8', '#64748b');
+  if (entities.chef.state === 'cooking') { ctx.fillStyle = stepFrame === 0 ? '#ef4444' : '#facc15'; ctx.fillRect(st0.x - 4, st0.y - 4, 5, 5); }
+  const st1 = gridToIso(0, 1); drawIsoBox(st1.x, st1.y + 11, 13, 6.5, 8, '#f8fafc', '#cbd5e1', '#94a3b8');
 
-  // 獨立廁所
   drawIsoWallSegment(0, 6, 25, '#38bdf8', '#0284c7', false);
   drawIsoWallSegment(1, 6, 25, '#38bdf8', '#0284c7', false);
   drawIsoWallSegment(2, 6, 25, '#0ea5e9', '#0369a1', true);
   drawIsoWallSegment(2, 7, 25, '#38bdf8', '#0284c7', false);
   drawIsoWallSegment(2, 8, 25, '#38bdf8', '#0284c7', false);
-  const wcPos = gridToIso(0, 8);
-  drawIsoBox(wcPos.x, wcPos.y + 11, 8, 4, 6, '#ffffff', '#e2e8f0', '#cbd5e1');
-  drawIsoBox(wcPos.x - 3, wcPos.y + 6, 4, 2, 6, '#ffffff', '#cbd5e1', '#94a3b8');
-  const snkPos = gridToIso(0, 7);
-  drawIsoBox(snkPos.x, snkPos.y + 11, 8, 4, 7, '#e0f2fe', '#7dd3fc', '#38bdf8');
+  const wcPos = gridToIso(0, 8); drawIsoBox(wcPos.x, wcPos.y + 11, 8, 4, 6, '#ffffff', '#e2e8f0', '#cbd5e1'); drawIsoBox(wcPos.x - 3, wcPos.y + 6, 4, 2, 6, '#ffffff', '#cbd5e1', '#94a3b8');
+  const snkPos = gridToIso(0, 7); drawIsoBox(snkPos.x, snkPos.y + 11, 8, 4, 7, '#e0f2fe', '#7dd3fc', '#38bdf8');
 
-  const drawables = [];
-  const items = getPlacedItems();
+  const drawables = [], items = getPlacedItems();
 
   items.forEach(it => {
     drawables.push({
       depth: it.gx + it.gy,
       render: () => {
-        drawIsoFurnitureSet(it.defId, it.gx, it.gy, frame);
-        const p = gridToIso(it.gx, it.gy);
-        const baseY = p.y + TILE_H * 0.65;
+        drawIsoFurnitureSet(it.defId, it.gx, it.gy, stepFrame);
+        const p = gridToIso(it.gx, it.gy), baseY = p.y + TILE_H * 0.65;
         if (it.defId.startsWith('table')) {
           const eatingCust = entities.customers.find(c => c.tableUid === it.uid && c.state === 'eating');
           const dirtyTbl = entities.dirtyTables.find(d => d.tableUid === it.uid);
           if (eatingCust && eatingCust.orderedMenu) {
             ctx.fillStyle = '#ffffff'; ctx.fillRect(p.x - 4, baseY - 12, 8, 4);
-            ctx.fillStyle = eatingCust.orderedMenu.cat === 'pet' ? '#f59e0b' : '#92400e';
-            ctx.fillRect(p.x - 3, baseY - 14, 6, 3);
+            ctx.fillStyle = eatingCust.orderedMenu.cat === 'pet' ? '#f59e0b' : '#92400e'; ctx.fillRect(p.x - 3, baseY - 14, 6, 3);
           } else if (dirtyTbl) {
             ctx.fillStyle = '#e2e8f0'; ctx.fillRect(p.x - 4, baseY - 12, 8, 4);
           }
         }
-        if (arrangeMode && selectedUid === it.uid) {
-          ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2;
-          ctx.strokeRect(p.x - 15, baseY - 18, 30, 24);
-        }
+        if (arrangeMode && selectedUid === it.uid) { ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2; ctx.strokeRect(p.x - 15, baseY - 18, 30, 24); }
       }
     });
   });
@@ -1596,27 +1310,26 @@ function renderPixelWorld() {
   drawables.push({
     depth: entities.chef.gx + entities.chef.gy,
     render: () => {
-      const c = entities.chef; const p = gridToIso(c.gx, c.gy);
-      const bob = frame % 2 === 1 ? -1 : 0;
-      const sp = getCharacterPixelCanvas('chef', '#261810', '#ffffff', true, state.staff.chef_1.job === 'kairo_king');
-      ctx.drawImage(sp, p.x - 12, p.y - 22 + bob, 24, 28);
+      const c = entities.chef, p = gridToIso(c.gx, c.gy), bob = stepFrame === 1 ? -1 : 0;
+      const sp = getCuteChibiSprite('chef', '#261810', '#ffffff', true, stepFrame, state.staff.chef_1.job === 'kairo_king');
+      ctx.drawImage(sp, p.x - 14, p.y - 26 + bob, 28, 34);
       if (c.state === 'cooking') {
         const pct = Math.max(0, Math.min(1, 1 - c.timer / (c.maxTimer || 1.5)));
-        ctx.fillStyle = '#261810'; ctx.fillRect(p.x - 13, p.y - 27, 26, 4);
-        ctx.fillStyle = '#f7b529'; ctx.fillRect(p.x - 12, p.y - 26, 24 * pct, 2);
+        ctx.fillStyle = '#261810'; ctx.fillRect(p.x - 13, p.y - 31, 26, 4);
+        ctx.fillStyle = '#f7b529'; ctx.fillRect(p.x - 12, p.y - 30, 24 * pct, 2);
       }
     }
   });
 
   ['waiter_1', 'waiter_2'].forEach(wid => {
     if ((state.staff[wid]?.lv || 0) <= 0) return;
-    const def = STAFF_DEFS.find(s => s.id === wid); const w = entities.waiters[wid];
+    const def = STAFF_DEFS.find(s => s.id === wid), w = entities.waiters[wid];
     drawables.push({
       depth: w.gx + w.gy,
       render: () => {
-        const p = gridToIso(w.gx, w.gy); const bob = frame % 2 === 1 ? -1 : 0;
-        const sp = getCharacterPixelCanvas(wid, def.hair, def.shirt, false, state.staff[wid].job === 'kairo_king');
-        ctx.drawImage(sp, p.x - 12, p.y - 22 + bob, 24, 28);
+        const p = gridToIso(w.gx, w.gy), bob = stepFrame === 1 ? -1 : 0;
+        const sp = getCuteChibiSprite(wid, def.hair, def.shirt, false, stepFrame, state.staff[wid].job === 'kairo_king');
+        ctx.drawImage(sp, p.x - 14, p.y - 26 + bob, 28, 34);
       }
     });
   });
@@ -1624,14 +1337,13 @@ function renderPixelWorld() {
   const turfItem = items.find(it => it.defId === 'turf_zone') || { gx: 5, gy: 6 };
   PET_DEFS.forEach((pet, idx) => {
     if ((state.pets[pet.id]?.lv || 0) <= 0) return;
-    const angle = animFrameCounter * 0.025 + idx * 1.8;
-    const px = turfItem.gx + Math.cos(angle) * 0.65, py = turfItem.gy + Math.sin(angle) * 0.65;
+    const angle = animFrameCounter * 0.025 + idx * 1.8, px = turfItem.gx + Math.cos(angle) * 0.65, py = turfItem.gy + Math.sin(angle) * 0.65;
     drawables.push({
       depth: px + py,
       render: () => {
-        const p = gridToIso(px, py); const bob = frame % 2 === 1 ? -1 : 0;
-        const sp = getPetPixelCanvas(pet.coat, pet.id === 'pet_mikan');
-        ctx.drawImage(sp, p.x - 10, p.y - 12 + bob, 20, 16);
+        const p = gridToIso(px, py), bob = stepFrame === 1 ? -1 : 0;
+        const sp = getCutePetSprite(pet.coat, pet.id === 'pet_mikan', stepFrame);
+        ctx.drawImage(sp, p.x - 12, p.y - 14 + bob, 24, 20);
       }
     });
   });
@@ -1640,13 +1352,13 @@ function renderPixelWorld() {
     drawables.push({
       depth: c.gx + c.gy,
       render: () => {
-        const p = gridToIso(c.gx, c.gy); const bob = frame % 2 === 1 ? -1 : 0;
-        const sp = getCharacterPixelCanvas(c.regId, c.hair, c.shirt, false, c.regId === 'r_kairo');
-        ctx.drawImage(sp, p.x - 12, p.y - 22 + bob, 24, 28);
+        const p = gridToIso(c.gx, c.gy), bob = stepFrame === 1 ? -1 : 0;
+        const sp = getCuteChibiSprite(c.regId, c.hair, c.shirt, false, stepFrame, c.regId === 'r_kairo');
+        ctx.drawImage(sp, p.x - 14, p.y - 26 + bob, 28, 34);
         if (c.bubble) {
-          ctx.fillStyle = '#fff6de'; ctx.fillRect(p.x - 18, p.y - 34, 36, 10);
-          ctx.strokeStyle = '#261810'; ctx.lineWidth = 1; ctx.strokeRect(p.x - 18, p.y - 34, 36, 10);
-          ctx.fillStyle = '#261810'; ctx.font = 'bold 8px sans-serif'; ctx.fillText(c.bubble, p.x - 16, p.y - 26);
+          ctx.fillStyle = '#fff6de'; ctx.fillRect(p.x - 18, p.y - 38, 36, 10);
+          ctx.strokeStyle = '#261810'; ctx.lineWidth = 1; ctx.strokeRect(p.x - 18, p.y - 38, 36, 10);
+          ctx.fillStyle = '#261810'; ctx.font = 'bold 8px sans-serif'; ctx.fillText(c.bubble, p.x - 16, p.y - 30);
         }
       }
     });
@@ -1654,9 +1366,9 @@ function renderPixelWorld() {
       drawables.push({
         depth: c.petGx + c.petGy,
         render: () => {
-          const pp = gridToIso(c.petGx, c.petGy); const bob = frame % 2 === 1 ? -1 : 0;
-          const psp = getPetPixelCanvas(c.petCoat, c.isCat);
-          ctx.drawImage(psp, pp.x - 9, pp.y - 10 + bob, 18, 14);
+          const pp = gridToIso(c.petGx, c.petGy), bob = stepFrame === 1 ? -1 : 0;
+          const psp = getCutePetSprite(c.petCoat, c.isCat, stepFrame);
+          ctx.drawImage(psp, pp.x - 11, pp.y - 13 + bob, 22, 18);
         }
       });
     }
@@ -1666,9 +1378,9 @@ function renderPixelWorld() {
     drawables.push({
       depth: ps.gx + ps.gy,
       render: () => {
-        const p = gridToIso(ps.gx, ps.gy); const bob = frame % 2 === 1 ? -1 : 0;
-        const sp = getCharacterPixelCanvas('passer', ps.hair, ps.shirt, false, false);
-        ctx.drawImage(sp, p.x - 11, p.y - 20 + bob, 22, 26);
+        const p = gridToIso(ps.gx, ps.gy), bob = stepFrame === 1 ? -1 : 0;
+        const sp = getCuteChibiSprite('passer', ps.hair, ps.shirt, false, stepFrame, false);
+        ctx.drawImage(sp, p.x - 13, p.y - 24 + bob, 26, 32);
       }
     });
   });
@@ -1682,337 +1394,189 @@ function renderPixelWorld() {
     ctx.fillStyle = pt.color; ctx.fillText(pt.text, pt.x - 14, pt.y);
   });
 
-  if (branchFlashAlpha > 0) {
-    ctx.fillStyle = `rgba(255, 250, 220, ${branchFlashAlpha})`;
-    ctx.fillRect(0, 0, CW, CH); branchFlashAlpha = Math.max(0, branchFlashAlpha - 0.04);
-  }
+  if (branchFlashAlpha > 0) { ctx.fillStyle = `rgba(255, 250, 220, ${branchFlashAlpha})`; ctx.fillRect(0, 0, CW, CH); branchFlashAlpha = Math.max(0, branchFlashAlpha - 0.04); }
 }
 
 // ==================== 9. 單指拖曳巡視、點擊互動與佈置模式 ====================
 function updateArrangeHUD() {
-  const hud = document.getElementById('arrange-hud');
-  const ops = document.getElementById('arrange-ops');
+  const hud = document.getElementById('arrange-hud'), ops = document.getElementById('arrange-ops');
   hud.classList.toggle('show', arrangeMode);
   if (!arrangeMode) { ops.style.display = 'none'; return; }
   const it = getPlacedItems().find(x => x.uid === selectedUid);
-  if (it) {
-    const def = FACILITY_DEFS.find(f => f.id === it.defId);
-    document.getElementById('arrange-text').textContent = `已選：${def?.name || ''} Lv.${it.lv}`;
-    ops.style.display = 'flex';
-  } else {
-    document.getElementById('arrange-text').textContent = `佈置模式：點設施移動，或拖曳畫面`;
-    ops.style.display = 'none';
-  }
+  if (it) { const def = FACILITY_DEFS.find(f => f.id === it.defId); document.getElementById('arrange-text').textContent = `已選：${def?.name || ''} Lv.${it.lv}`; ops.style.display = 'flex'; }
+  else { document.getElementById('arrange-text').textContent = `佈置模式：點設施移動，或拖曳畫面`; ops.style.display = 'none'; }
 }
 
-function toggleArrangeMode() {
-  arrangeMode = !arrangeMode; selectedUid = null;
-  document.getElementById('btn-arrange').classList.toggle('active', arrangeMode);
-  updateArrangeHUD();
-}
+function toggleArrangeMode() { arrangeMode = !arrangeMode; selectedUid = null; document.getElementById('btn-arrange').classList.toggle('active', arrangeMode); updateArrangeHUD(); }
 
 function upgradeSelectedPlaced() {
-  const it = getPlacedItems().find(x => x.uid === selectedUid);
-  const def = it && FACILITY_DEFS.find(f => f.id === it.defId);
+  const it = getPlacedItems().find(x => x.uid === selectedUid), def = it && FACILITY_DEFS.find(f => f.id === it.defId);
   if (!it || !def || it.lv >= def.maxLv) return;
   const cost = Math.round(def.baseCost * 0.65 * Math.pow(1.4, it.lv));
   if (state.gold < cost) return alert(`資金不足，需要 $${cost}`);
-  state.gold -= cost; it.lv += 1; refreshAllBranchStars();
-  sfx.upgrade(); saveGame(); updateArrangeHUD(); if (activeDrawer === 'facility') renderDrawerBody();
+  state.gold -= cost; it.lv += 1; refreshAllBranchStars(); sfx.upgrade(); saveGame(); updateArrangeHUD(); if (activeDrawer === 'facility') renderDrawerBody();
 }
 
 function removeSelectedPlaced() {
-  const items = getPlacedItems();
-  const idx = items.findIndex(x => x.uid === selectedUid);
+  const items = getPlacedItems(), idx = items.findIndex(x => x.uid === selectedUid);
   if (idx === -1) return;
-  const removed = items.splice(idx, 1)[0];
-  const def = FACILITY_DEFS.find(f => f.id === removed.defId);
-  const refund = Math.round((def?.baseCost || 200) * 0.5);
-  state.gold += refund; selectedUid = null; refreshAllBranchStars();
-  addParticle(removed.gx, removed.gy, `+$${refund}`, '#fde047');
+  const removed = items.splice(idx, 1)[0], def = FACILITY_DEFS.find(f => f.id === removed.defId), refund = Math.round((def?.baseCost || 200) * 0.5);
+  state.gold += refund; selectedUid = null; refreshAllBranchStars(); addParticle(removed.gx, removed.gy, `+$${refund}`, '#fde047');
   sfx.coin(); saveGame(); updateArrangeHUD(); if (activeDrawer === 'facility') renderDrawerBody();
 }
 
-canvas.addEventListener('pointerdown', (e) => {
-  sfx.init();
-  isDragging = true; dragMoved = false;
-  dragStartX = e.clientX; dragStartY = e.clientY;
-});
-
+canvas.addEventListener('pointerdown', (e) => { sfx.init(); isDragging = true; dragMoved = false; dragStartX = e.clientX; dragStartY = e.clientY; });
 canvas.addEventListener('pointermove', (e) => {
   if (!isDragging) return;
   const dx = e.clientX - dragStartX, dy = e.clientY - dragStartY;
-  if (Math.hypot(dx, dy) > 6) {
-    dragMoved = true;
-    camPanX += dx; camPanY += dy;
-    dragStartX = e.clientX; dragStartY = e.clientY;
-  }
+  if (Math.hypot(dx, dy) > 6) { dragMoved = true; camPanX += dx; camPanY += dy; dragStartX = e.clientX; dragStartY = e.clientY; }
 });
-
 canvas.addEventListener('pointerup', (e) => {
-  if (!isDragging) return;
-  isDragging = false;
-  if (dragMoved) return;
-
-  const rect = canvas.getBoundingClientRect();
-  const { gx, gy } = isoToGrid(e.clientX - rect.left, e.clientY - rect.top);
-
+  if (!isDragging) return; isDragging = false; if (dragMoved) return;
+  const rect = canvas.getBoundingClientRect(), { gx, gy } = isoToGrid(e.clientX - rect.left, e.clientY - rect.top);
   if (!arrangeMode) {
-    if (gx >= 0 && gx < state.maxGridSize && gy >= 0 && gy < state.maxGridSize) {
-      state.heart += 1; addParticle(gx, gy, '♪ +1愛心', '#ff8aa8'); sfx.heart();
-    }
+    if (gx >= 0 && gx < state.maxGridSize && gy >= 0 && gy < state.maxGridSize) { state.heart += 1; addParticle(gx, gy, '♪ +1愛心', '#ff8aa8'); sfx.heart(); }
     return;
   }
-
   if (gx < 0 || gx >= state.maxGridSize || gy < 0 || gy >= state.maxGridSize) return;
-  const items = getPlacedItems();
-  const clickedItem = items.find(it => it.gx === gx && it.gy === gy);
+  const items = getPlacedItems(), clickedItem = items.find(it => it.gx === gx && it.gy === gy);
   if (clickedItem) { selectedUid = clickedItem.uid; updateArrangeHUD(); return; }
-
   if (selectedUid) {
     if (isRestrictedFurnitureCell(gx, gy)) return;
     const targetItem = items.find(x => x.uid === selectedUid);
-    if (targetItem) {
-      targetItem.gx = gx; targetItem.gy = gy;
-      selectedUid = null; updateArrangeHUD();
-      getActiveCombos(); sfx.upgrade(); saveGame();
-    }
+    if (targetItem) { targetItem.gx = gx; targetItem.gy = gy; selectedUid = null; updateArrangeHUD(); getActiveCombos(); sfx.upgrade(); saveGame(); }
   }
 });
 
 // ==================== 10. 彈出式開羅抽屜選單 ====================
-const DRAWER_TITLES = {
-  facility: '🏠 設施增建與擺設',
-  menu: '🍽️ 雙菜單與食材研發',
-  staff: '🧑‍🍳 店員轉職與駐店毛孩',
-  dex: '📖 設施相性與鎮民常客',
-  event: '🏪 開羅多店連鎖巡迴'
-};
+const DRAWER_TITLES = { facility: '🏠 設施增建與擺設', menu: '🍽️ 雙菜單與食材研發', staff: '🧑‍🍳 店員轉職與駐店毛孩', dex: '📖 設施相性與鎮民常客', event: '🏪 開羅多店連鎖巡迴' };
 
 function toggleDrawer(name) {
   if (activeDrawer === name) { closeDrawer(); return; }
   activeDrawer = name; activeSubTab = 'main';
   document.querySelectorAll('.dock-btn').forEach(b => b.classList.toggle('open', b.dataset.d === name));
   document.getElementById('drawer-title').textContent = DRAWER_TITLES[name] || '管理選單';
-  document.getElementById('drawer-sheet').classList.add('show');
-  renderDrawerBody();
+  document.getElementById('drawer-sheet').classList.add('show'); renderDrawerBody();
 }
-function closeDrawer() {
-  activeDrawer = null;
-  document.querySelectorAll('.dock-btn').forEach(b => b.classList.remove('open'));
-  document.getElementById('drawer-sheet').classList.remove('show');
-}
+function closeDrawer() { activeDrawer = null; document.querySelectorAll('.dock-btn').forEach(b => b.classList.remove('open')); document.getElementById('drawer-sheet').classList.remove('show'); }
 function switchSubTab(sub) { activeSubTab = sub; renderDrawerBody(); }
 
 function renderDrawerBody() {
-  const body = document.getElementById('drawer-body');
-  const season = getCurrentSeason();
-
+  const body = document.getElementById('drawer-body'), season = getCurrentSeason();
   if (activeDrawer === 'facility') {
     const totalTables = getPlacedItems().filter(it => it.defId.startsWith('table')).length;
     let html = `<div style="font-size:10.5px;font-weight:900;">目前桌數：${totalTables} 張 ｜ 場地：${state.maxGridSize}×${state.maxGridSize}</div>`;
     FACILITY_DEFS.forEach(f => {
-      const cnt = countFacility(f.id);
-      const itemsOfType = getPlacedItems().filter(it => it.defId === f.id);
+      const cnt = countFacility(f.id), itemsOfType = getPlacedItems().filter(it => it.defId === f.id);
       const avgLv = cnt > 0 ? Math.round(itemsOfType.reduce((a, b) => a + b.lv, 0) / cnt) : 1;
-      const buyCost = Math.round(f.baseCost * (1 + cnt * 0.25));
-      const upAllCost = Math.round(f.baseCost * 0.65 * Math.pow(1.4, avgLv));
-      html += `
-        <div class="card">
-          <div class="card-info">
-            <div class="card-title">${f.name} <span class="badge badge-lv">${cnt}件 Lv.${avgLv}</span></div>
-            <div class="card-desc">${f.desc}（魅力+${f.appeal}）</div>
-          </div>
-          <div class="card-actions">
-            <button class="btn btn-green" ${state.gold < buyCost ? 'disabled' : ''} onclick="buyNewPlacement('${f.id}')">＋增建 $${buyCost}</button>
-            ${cnt > 0 ? `<button class="btn btn-gold" ${state.gold < upAllCost ? 'disabled' : ''} onclick="upgradeAllOfType('${f.id}')">⬆️升級 $${upAllCost}</button>` : ''}
-          </div>
-        </div>`;
+      const buyCost = Math.round(f.baseCost * (1 + cnt * 0.25)), upAllCost = Math.round(f.baseCost * 0.65 * Math.pow(1.4, avgLv));
+      html += `<div class="card"><div class="card-info"><div class="card-title">${f.name} <span class="badge badge-lv">${cnt}件 Lv.${avgLv}</span></div><div class="card-desc">${f.desc}（魅力+${f.appeal}）</div></div><div class="card-actions"><button class="btn btn-green" ${state.gold < buyCost ? 'disabled' : ''} onclick="buyNewPlacement('${f.id}')">＋增建 $${buyCost}</button>${cnt > 0 ? `<button class="btn btn-gold" ${state.gold < upAllCost ? 'disabled' : ''} onclick="upgradeAllOfType('${f.id}')">⬆️升級 $${upAllCost}</button>` : ''}</div></div>`;
     });
     body.innerHTML = html;
   } else if (activeDrawer === 'menu') {
-    let html = `
-      <div class="sub-tabs">
-        <button class="sub-pill ${activeSubTab === 'main' ? 'active' : ''}" onclick="switchSubTab('main')">🍽️ 招牌菜單 (${season.name})</button>
-        <button class="sub-pill ${activeSubTab === 'lab' ? 'active' : ''}" onclick="switchSubTab('lab')">🧪 食材自由搭配</button>
-      </div>`;
+    let html = `<div class="sub-tabs"><button class="sub-pill ${activeSubTab === 'main' ? 'active' : ''}" onclick="switchSubTab('main')">🍽️ 招牌菜單 (${season.name})</button><button class="sub-pill ${activeSubTab === 'lab' ? 'active' : ''}" onclick="switchSubTab('lab')">🧪 食材自由搭配</button></div>`;
     if (activeSubTab === 'main') {
       html += `<div style="font-size:10px;color:#15803d;font-weight:800;">🔥 ${season.bonusDesc} ｜ ${getBranchInfo().favLabel}</div>`;
       MENU_DEFS.forEach(m => {
-        const lv = state.menus[m.id] || 0;
-        const seasonal = isSeasonalDish(m.name);
-        if (lv === 0) {
-          html += `<div class="card"><div class="card-info"><div class="card-title">${m.name} <span class="badge ${m.cat === 'human' ? 'badge-human' : 'badge-pet'}">${m.cat === 'human' ? '人類' : '毛孩'}</span></div><div class="card-desc">消耗愛心解鎖新菜色</div></div><button class="btn btn-heart" ${state.heart < m.costHeart ? 'disabled' : ''} onclick="unlockMenu('${m.id}')">解鎖 ❤️${m.costHeart}</button></div>`;
-        } else {
-          const upCost = Math.round(180 * Math.pow(1.4, lv));
-          html += `<div class="card"><div class="card-info"><div class="card-title">${m.name} <span class="badge badge-lv">Lv.${lv}</span> ${seasonal ? '<span class="badge badge-season">1.5x</span>' : ''}</div><div class="card-desc">售價：<b>$${getMenuPrice(m)}</b></div></div><button class="btn btn-gold" ${state.gold < upCost ? 'disabled' : ''} onclick="upgradeMenu('${m.id}')">升級 $${upCost}</button></div>`;
-        }
+        const lv = state.menus[m.id] || 0, seasonal = isSeasonalDish(m.name);
+        if (lv === 0) html += `<div class="card"><div class="card-info"><div class="card-title">${m.name} <span class="badge ${m.cat === 'human' ? 'badge-human' : 'badge-pet'}">${m.cat === 'human' ? '人類' : '毛孩'}</span></div><div class="card-desc">消耗愛心解鎖新菜色</div></div><button class="btn btn-heart" ${state.heart < m.costHeart ? 'disabled' : ''} onclick="unlockMenu('${m.id}')">解鎖 ❤️${m.costHeart}</button></div>`;
+        else { const upCost = Math.round(180 * Math.pow(1.4, lv)); html += `<div class="card"><div class="card-info"><div class="card-title">${m.name} <span class="badge badge-lv">Lv.${lv}</span> ${seasonal ? '<span class="badge badge-season">1.5x</span>' : ''}</div><div class="card-desc">售價：<b>$${getMenuPrice(m)}</b></div></div><button class="btn btn-gold" ${state.gold < upCost ? 'disabled' : ''} onclick="upgradeMenu('${m.id}')">升級 $${upCost}</button></div>`; }
       });
-      state.customMenus.forEach((cm, idx) => {
-        const upCost = Math.round(240 * Math.pow(1.45, cm.lv));
-        html += `<div class="card" style="border-color:#d97706;"><div class="card-info"><div class="card-title">★ ${cm.name} <span class="badge badge-combo">Lv.${cm.lv}</span></div><div class="card-desc">售價：<b>$${getCustomDishPrice(cm)}</b></div></div><button class="btn btn-gold" ${state.gold < upCost ? 'disabled' : ''} onclick="upgradeCustomMenu(${idx})">精進 $${upCost}</button></div>`;
-      });
+      state.customMenus.forEach((cm, idx) => { const upCost = Math.round(240 * Math.pow(1.45, cm.lv)); html += `<div class="card" style="border-color:#d97706;"><div class="card-info"><div class="card-title">★ ${cm.name} <span class="badge badge-combo">Lv.${cm.lv}</span></div><div class="card-desc">售價：<b>$${getCustomDishPrice(cm)}</b></div></div><button class="btn btn-gold" ${state.gold < upCost ? 'disabled' : ''} onclick="upgradeCustomMenu(${idx})">精進 $${upCost}</button></div>`; });
     } else {
       const pool = LAB_INGREDIENTS[labState.cat];
-      html += `
-        <div class="lab-box">
-          <div style="display:flex;gap:4px;">
-            <button class="btn ${labState.cat === 'human' ? 'btn-gold' : ''}" style="flex:1;" onclick="setLabCat('human')">人類料理</button>
-            <button class="btn ${labState.cat === 'pet' ? 'btn-heart' : ''}" style="flex:1;" onclick="setLabCat('pet')">毛孩鮮食</button>
-          </div>
-          <div class="lab-grid">
-            <div class="ing-col"><h5>基底</h5>${pool.base.map(i => `<button class="ing-btn ${labState.base === i.id ? 'selected' : ''}" onclick="setLabIng('base','${i.id}')">${i.name}</button>`).join('')}</div>
-            <div class="ing-col"><h5>主料</h5>${pool.top.map(i => `<button class="ing-btn ${labState.top === i.id ? 'selected' : ''}" onclick="setLabIng('top','${i.id}')">${i.name}</button>`).join('')}</div>
-            <div class="ing-col"><h5>風味</h5>${pool.sauce.map(i => `<button class="ing-btn ${labState.sauce === i.id ? 'selected' : ''}" onclick="setLabIng('sauce','${i.id}')">${i.name}</button>`).join('')}</div>
-          </div>
-          <button class="btn btn-purple" style="width:100%;" ${state.heart < 30 ? 'disabled' : ''} onclick="craftCustomDish()">🧪 消耗 ❤️30 研發新菜色</button>
-        </div>`;
+      html += `<div class="lab-box"><div style="display:flex;gap:4px;"><button class="btn ${labState.cat === 'human' ? 'btn-gold' : ''}" style="flex:1;" onclick="setLabCat('human')">人類料理</button><button class="btn ${labState.cat === 'pet' ? 'btn-heart' : ''}" style="flex:1;" onclick="setLabCat('pet')">毛孩鮮食</button></div><div class="lab-grid"><div class="ing-col"><h5>基底</h5>${pool.base.map(i => `<button class="ing-btn ${labState.base === i.id ? 'selected' : ''}" onclick="setLabIng('base','${i.id}')">${i.name}</button>`).join('')}</div><div class="ing-col"><h5>主料</h5>${pool.top.map(i => `<button class="ing-btn ${labState.top === i.id ? 'selected' : ''}" onclick="setLabIng('top','${i.id}')">${i.name}</button>`).join('')}</div><div class="ing-col"><h5>風味</h5>${pool.sauce.map(i => `<button class="ing-btn ${labState.sauce === i.id ? 'selected' : ''}" onclick="setLabIng('sauce','${i.id}')">${i.name}</button>`).join('')}</div></div><button class="btn btn-purple" style="width:100%;" ${state.heart < 30 ? 'disabled' : ''} onclick="craftCustomDish()">🧪 消耗 ❤️30 研發新菜色</button></div>`;
     }
     body.innerHTML = html;
   } else if (activeDrawer === 'staff') {
     let html = '';
     STAFF_DEFS.forEach(s => {
-      const st = state.staff[s.id]; const jobInfo = JOB_TREE[st.job];
-      const cost = Math.round(s.baseCost * Math.pow(1.45, st.lv));
-      const canPromote = st.lv >= 3 && st.job !== 'kairo_king';
-      html += `
-        <div class="card">
-          <div class="card-info">
-            <div class="card-title">${s.name} <span class="badge badge-lv">Lv.${st.lv}</span> <span class="badge badge-job">${jobInfo.name}</span></div>
-            <div class="card-desc">${s.desc}（精通 ${st.mastered.length}/3 職）</div>
-            ${canPromote ? `<div style="margin-top:3px;display:flex;gap:3px;flex-wrap:wrap;">${jobInfo.next.map(nj => `<button class="btn btn-purple" style="font-size:9px;padding:2px 5px;" ${state.heart < 35 ? 'disabled' : ''} onclick="promoteStaff('${s.id}','${nj}')">轉職${JOB_TREE[nj].name}(❤️35)</button>`).join('')}</div>` : ''}
-          </div>
-          <button class="btn btn-gold" ${state.gold < cost ? 'disabled' : ''} onclick="upgradeStaff('${s.id}')">${st.lv === 0 ? '聘請' : '特訓'} $${cost}</button>
-        </div>`;
+      const st = state.staff[s.id], jobInfo = JOB_TREE[st.job], cost = Math.round(s.baseCost * Math.pow(1.45, st.lv)), canPromote = st.lv >= 3 && st.job !== 'kairo_king';
+      html += `<div class="card"><div class="card-info"><div class="card-title">${s.name} <span class="badge badge-lv">Lv.${st.lv}</span> <span class="badge badge-job">${jobInfo.name}</span></div><div class="card-desc">${s.desc}（精通 ${st.mastered.length}/3 職）</div>${canPromote ? `<div style="margin-top:3px;display:flex;gap:3px;flex-wrap:wrap;">${jobInfo.next.map(nj => `<button class="btn btn-purple" style="font-size:9px;padding:2px 5px;" ${state.heart < 35 ? 'disabled' : ''} onclick="promoteStaff('${s.id}','${nj}')">轉職${JOB_TREE[nj].name}(❤️35)</button>`).join('')}</div>` : ''}</div><button class="btn btn-gold" ${state.gold < cost ? 'disabled' : ''} onclick="upgradeStaff('${s.id}')">${st.lv === 0 ? '聘請' : '特訓'} $${cost}</button></div>`;
     });
     PET_DEFS.forEach(p => {
-      const petSt = state.pets[p.id] || { lv: 0, bond: 0 };
-      const cost = Math.round(p.baseCost * Math.pow(1.5, petSt.lv));
+      const petSt = state.pets[p.id] || { lv: 0, bond: 0 }, cost = Math.round(p.baseCost * Math.pow(1.5, petSt.lv));
       html += `<div class="card"><div class="card-info"><div class="card-title">${p.name} <span class="badge badge-pet">${petSt.lv === 0 ? '待領養' : 'Lv.' + petSt.lv}</span></div><div class="card-desc">${p.desc}</div></div><button class="btn btn-heart" ${state.gold < cost ? 'disabled' : ''} onclick="upgradePet('${p.id}')">${petSt.lv === 0 ? '領養' : '加菜'} $${cost}</button></div>`;
     });
     body.innerHTML = html;
   } else if (activeDrawer === 'dex') {
     const activeCombos = getActiveCombos();
-    let html = `
-      <div class="sub-tabs">
-        <button class="sub-pill ${activeSubTab === 'main' ? 'active' : ''}" onclick="switchSubTab('main')">相性字典 (${state.discoveredCombos.length}/${COMBO_DEFS.length})</button>
-        <button class="sub-pill ${activeSubTab === 'reg' ? 'active' : ''}" onclick="switchSubTab('reg')">常客圖鑑</button>
-      </div>`;
+    let html = `<div class="sub-tabs"><button class="sub-pill ${activeSubTab === 'main' ? 'active' : ''}" onclick="switchSubTab('main')">相性字典 (${state.discoveredCombos.length}/${COMBO_DEFS.length})</button><button class="sub-pill ${activeSubTab === 'reg' ? 'active' : ''}" onclick="switchSubTab('reg')">常客圖鑑</button></div>`;
     if (activeSubTab === 'main') {
       COMBO_DEFS.forEach(c => {
-        const isAct = activeCombos.some(x => x.id === c.id);
-        const f1 = FACILITY_DEFS.find(x => x.id === c.req[0])?.name;
-        const f2 = FACILITY_DEFS.find(x => x.id === c.req[1])?.name;
+        const isAct = activeCombos.some(x => x.id === c.id), f1 = FACILITY_DEFS.find(x => x.id === c.req[0])?.name, f2 = FACILITY_DEFS.find(x => x.id === c.req[1])?.name;
         html += `<div class="card"><div class="card-info"><div class="card-title">${c.name} <span class="badge ${isAct ? 'badge-season' : 'badge-combo'}">${isAct ? '發動中' : '未連線'}</span></div><div class="card-desc">${f1} ＋ ${f2} → ${c.bonusText}</div></div></div>`;
       });
     } else {
-      REGULARS_DEF.forEach(r => {
-        const st = state.regulars[r.id] || { lv: 0, exp: 0 };
-        html += `<div class="card"><div class="card-info"><div class="card-title">${r.name} <span class="badge badge-lv">Lv.${st.lv}</span></div><div class="card-desc">${r.rewardText} (${st.exp}/${Math.max(3, st.lv * 3)})</div></div></div>`;
-      });
+      REGULARS_DEF.forEach(r => { const st = state.regulars[r.id] || { lv: 0, exp: 0 }; html += `<div class="card"><div class="card-info"><div class="card-title">${r.name} <span class="badge badge-lv">Lv.${st.lv}</span></div><div class="card-desc">${r.rewardText} (${st.exp}/${Math.max(3, st.lv * 3)})</div></div></div>`; });
     }
     body.innerHTML = html;
   } else if (activeDrawer === 'event') {
     refreshAllBranchStars();
     let html = `<div style="font-size:10.5px;font-weight:900;">今日連鎖分紅：+$${(state.dailyStats.chainDividend || 0).toLocaleString()}</div>`;
     BRANCH_DEFS.forEach(b => {
-      const rec = state.branches[b.id]; const isCur = state.activeBranch === b.id;
-      const supCost = 1200 * ((rec.supportLv || 0) + 1);
-      html += `
-        <div class="card">
-          <div class="card-info">
-            <div class="card-title">${b.name} <span class="badge badge-combo">★${rec.stars.toFixed(1)}</span> <span class="badge badge-season">${b.mult}x</span></div>
-            <div class="card-desc">${b.favLabel}<br>本日營收：<b>$${rec.todayIncome.toLocaleString()}</b> ｜ 分紅：$${rec.todayDividend.toLocaleString()}</div>
-            ${rec.unlocked ? `<button class="btn btn-purple" style="margin-top:3px;font-size:9px;padding:2px 5px;" ${state.gold < supCost ? 'disabled' : ''} onclick="dispatchBranchSupport('${b.id}')">🚀 派遣支援 Lv.${(rec.supportLv || 0) + 1} ($${supCost})</button>` : `<div class="card-desc">${b.desc}</div>`}
-          </div>
-          <button class="btn ${isCur ? 'btn-gold' : 'btn-blue'}" ${isCur || (!rec.unlocked && state.gold < b.unlockCost) ? 'disabled' : ''} onclick="switchOrUnlockBranch('${b.id}')">${isCur ? '視察中' : (rec.unlocked ? '巡迴切換' : '開設 $' + b.unlockCost)}</button>
-        </div>`;
+      const rec = state.branches[b.id], isCur = state.activeBranch === b.id, supCost = 1200 * ((rec.supportLv || 0) + 1);
+      html += `<div class="card"><div class="card-info"><div class="card-title">${b.name} <span class="badge badge-combo">★${rec.stars.toFixed(1)}</span> <span class="badge badge-season">${b.mult}x</span></div><div class="card-desc">${b.favLabel}<br>本日營收：<b>$${rec.todayIncome.toLocaleString()}</b> ｜ 分紅：$${rec.todayDividend.toLocaleString()}</div>${rec.unlocked ? `<button class="btn btn-purple" style="margin-top:3px;font-size:9px;padding:2px 5px;" ${state.gold < supCost ? 'disabled' : ''} onclick="dispatchBranchSupport('${b.id}')">🚀 派遣支援 Lv.${(rec.supportLv || 0) + 1} ($${supCost})</button>` : `<div class="card-desc">${b.desc}</div>`}</div><button class="btn ${isCur ? 'btn-gold' : 'btn-blue'}" ${isCur || (!rec.unlocked && state.gold < b.unlockCost) ? 'disabled' : ''} onclick="switchOrUnlockBranch('${b.id}')">${isCur ? '視察中' : (rec.unlocked ? '巡迴切換' : '開設 $' + b.unlockCost)}</button></div>`;
     });
-
     const expCost = state.maxGridSize === 10 ? 3200 : (state.maxGridSize === 12 ? 7800 : 0);
     html += `<div class="card"><div class="card-info"><div class="card-title">擴建場地 <span class="badge badge-lv">${state.maxGridSize}×${state.maxGridSize}</span></div><div class="card-desc">擴大營業樓地板面積</div></div><button class="btn btn-green" ${expCost === 0 || state.gold < expCost ? 'disabled' : ''} onclick="expandFloor()">${expCost === 0 ? '已最大' : '擴建 $' + expCost}</button></div>`;
-
-    CONTEST_DEFS.forEach(c => {
-      const won = state.wonContests.includes(c.id);
-      html += `<div class="card"><div class="card-info"><div class="card-title">🏆 ${c.name} ${won ? '<span class="badge badge-season">已奪冠</span>' : ''}</div><div class="card-desc">門檻 ${c.reqScore}分 ｜ 獎金 $${c.prizeGold}</div></div><button class="btn btn-purple" ${won || state.heart < c.costHeart ? 'disabled' : ''} onclick="enterContest('${c.id}')">${won ? '完成' : '參賽 ❤️' + c.costHeart}</button></div>`;
-    });
+    CONTEST_DEFS.forEach(c => { const won = state.wonContests.includes(c.id); html += `<div class="card"><div class="card-info"><div class="card-title">🏆 ${c.name} ${won ? '<span class="badge badge-season">已奪冠</span>' : ''}</div><div class="card-desc">門檻 ${c.reqScore}分 ｜ 獎金 $${c.prizeGold}</div></div><button class="btn btn-purple" ${won || state.heart < c.costHeart ? 'disabled' : ''} onclick="enterContest('${c.id}')">${won ? '完成' : '參賽 ❤️' + c.costHeart}</button></div>`; });
     body.innerHTML = html;
   }
 }
 
 // ==================== 11. 玩家操作 ====================
 function buyNewPlacement(defId) {
-  sfx.init();
-  const def = FACILITY_DEFS.find(x => x.id === defId); if (!def) return;
-  const cnt = countFacility(defId);
-  const cost = Math.round(def.baseCost * (1 + cnt * 0.25));
-  if (state.gold < cost) return;
+  sfx.init(); const def = FACILITY_DEFS.find(x => x.id === defId); if (!def) return;
+  const cnt = countFacility(defId), cost = Math.round(def.baseCost * (1 + cnt * 0.25)); if (state.gold < cost) return;
   const free = findFreeTile(def.defaultGx + (cnt % 3), def.defaultGy + Math.floor(cnt / 3));
   if (!free) return alert('店內沒有多餘空地了！請先擴建場地或拆除部分設施。');
-
   state.gold -= cost;
   const newUid = `${state.activeBranch}_item_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-  getPlacedItems().push({ uid: newUid, defId, lv: 1, gx: free.gx, gy: free.gy });
-  refreshAllBranchStars();
-
-  arrangeMode = true; selectedUid = newUid;
-  document.getElementById('btn-arrange').classList.add('active');
-  updateArrangeHUD(); closeDrawer();
-  getActiveCombos(); sfx.upgrade(); saveGame();
+  getPlacedItems().push({ uid: newUid, defId, lv: 1, gx: free.gx, gy: free.gy }); refreshAllBranchStars();
+  arrangeMode = true; selectedUid = newUid; document.getElementById('btn-arrange').classList.add('active');
+  updateArrangeHUD(); closeDrawer(); getActiveCombos(); sfx.upgrade(); saveGame();
 }
-
 function upgradeAllOfType(defId) {
-  sfx.init();
-  const def = FACILITY_DEFS.find(x => x.id === defId);
-  const items = getPlacedItems().filter(it => it.defId === defId);
+  sfx.init(); const def = FACILITY_DEFS.find(x => x.id === defId), items = getPlacedItems().filter(it => it.defId === defId);
   if (!def || items.length === 0) return;
-  const avgLv = Math.round(items.reduce((a, b) => a + b.lv, 0) / items.length);
-  const cost = Math.round(def.baseCost * 0.65 * Math.pow(1.4, avgLv));
-  if (state.gold < cost) return;
-  state.gold -= cost; items.forEach(it => { if (it.lv < def.maxLv) it.lv += 1; });
+  const avgLv = Math.round(items.reduce((a, b) => a + b.lv, 0) / items.length), cost = Math.round(def.baseCost * 0.65 * Math.pow(1.4, avgLv));
+  if (state.gold < cost) return; state.gold -= cost; items.forEach(it => { if (it.lv < def.maxLv) it.lv += 1; });
   refreshAllBranchStars(); sfx.upgrade(); saveGame(); renderDrawerBody();
 }
-
 function dispatchBranchSupport(bid) {
-  sfx.init();
-  const rec = state.branches[bid]; if (!rec || !rec.unlocked) return;
-  const cost = 1200 * ((rec.supportLv || 0) + 1);
-  if (state.gold < cost) return;
+  sfx.init(); const rec = state.branches[bid]; if (!rec || !rec.unlocked) return;
+  const cost = 1200 * ((rec.supportLv || 0) + 1); if (state.gold < cost) return;
   state.gold -= cost; rec.supportLv = (rec.supportLv || 0) + 1; refreshAllBranchStars();
-  showKairoToast('🚀 派遣支援成功！', `${BRANCH_DEFS.find(x => x.id === bid)?.name} 升至 ★${rec.stars.toFixed(1)}！`);
-  sfx.combo(); saveGame(); renderDrawerBody();
+  showKairoToast('🚀 派遣支援成功！', `${BRANCH_DEFS.find(x => x.id === bid)?.name} 升至 ★${rec.stars.toFixed(1)}！`); sfx.combo(); saveGame(); renderDrawerBody();
 }
-
 function unlockMenu(id) { sfx.init(); const m = MENU_DEFS.find(x => x.id === id); if (state.heart < m.costHeart) return; state.heart -= m.costHeart; state.menus[id] = 1; sfx.upgrade(); saveGame(); renderDrawerBody(); }
-function upgradeMenu(id) { sfx.init(); const lv = state.menus[id] || 1; const cost = Math.round(180 * Math.pow(1.4, lv)); if (state.gold < cost) return; state.gold -= cost; state.menus[id] = lv + 1; sfx.upgrade(); saveGame(); renderDrawerBody(); }
-function upgradeCustomMenu(idx) { sfx.init(); const cm = state.customMenus[idx]; const cost = Math.round(240 * Math.pow(1.45, cm.lv)); if (state.gold < cost) return; state.gold -= cost; cm.lv += 1; cm.flavor += 5; cm.health += 4; sfx.upgrade(); saveGame(); renderDrawerBody(); }
+function upgradeMenu(id) { sfx.init(); const lv = state.menus[id] || 1, cost = Math.round(180 * Math.pow(1.4, lv)); if (state.gold < cost) return; state.gold -= cost; state.menus[id] = lv + 1; sfx.upgrade(); saveGame(); renderDrawerBody(); }
+function upgradeCustomMenu(idx) { sfx.init(); const cm = state.customMenus[idx], cost = Math.round(240 * Math.pow(1.45, cm.lv)); if (state.gold < cost) return; state.gold -= cost; cm.lv += 1; cm.flavor += 5; cm.health += 4; sfx.upgrade(); saveGame(); renderDrawerBody(); }
 function setLabCat(cat) { labState.cat = cat; const p = LAB_INGREDIENTS[cat]; labState.base = p.base[0].id; labState.top = p.top[0].id; labState.sauce = p.sauce[0].id; renderDrawerBody(); }
 function setLabIng(slot, id) { labState[slot] = id; renderDrawerBody(); }
 function craftCustomDish() {
   sfx.init(); if (state.heart < 30) return; state.heart -= 30;
-  const p = LAB_INGREDIENTS[labState.cat];
-  const b = p.base.find(x => x.id === labState.base), t = p.top.find(x => x.id === labState.top), s = p.sauce.find(x => x.id === labState.sauce);
+  const p = LAB_INGREDIENTS[labState.cat], b = p.base.find(x => x.id === labState.base), t = p.top.find(x => x.id === labState.top), s = p.sauce.find(x => x.id === labState.sauce);
   const name = `${s.name.slice(0, 2)}${t.name.slice(0, 2)}${b.name.slice(-2)}`;
   state.customMenus.push({ id: 'cm_' + Date.now(), name, cat: labState.cat, basePrice: b.price + t.price + s.price + 45, flavor: b.flavor + t.flavor + s.flavor, health: b.health + t.health + s.health, lv: 1 });
-  showKairoToast(`🧪 研發新菜色：【${name}】`, '已加入店內正式菜單！');
-  sfx.combo(); saveGame(); switchSubTab('main');
+  showKairoToast(`🧪 研發新菜色：【${name}】`, '已加入店內正式菜單！'); sfx.combo(); saveGame(); switchSubTab('main');
 }
-function upgradeStaff(id) { sfx.init(); const def = STAFF_DEFS.find(x => x.id === id); const st = state.staff[id]; const cost = Math.round(def.baseCost * Math.pow(1.45, st.lv)); if (state.gold < cost) return; state.gold -= cost; st.lv += 1; sfx.upgrade(); saveGame(); renderDrawerBody(); }
+function upgradeStaff(id) { sfx.init(); const def = STAFF_DEFS.find(x => x.id === id), st = state.staff[id], cost = Math.round(def.baseCost * Math.pow(1.45, st.lv)); if (state.gold < cost) return; state.gold -= cost; st.lv += 1; sfx.upgrade(); saveGame(); renderDrawerBody(); }
 function promoteStaff(id, newJob) {
   sfx.init(); const st = state.staff[id]; if (state.heart < 35) return; state.heart -= 35; st.job = newJob;
   if (!st.mastered.includes(newJob)) st.mastered.push(newJob);
   if (st.mastered.length >= 3) { st.job = 'kairo_king'; showKairoToast('🤖 傳說覺醒：開羅吉祥物店長！', '全能力與小費暴增！'); sfx.combo(); } else sfx.upgrade();
   saveGame(); renderDrawerBody();
 }
-function upgradePet(id) { sfx.init(); const def = PET_DEFS.find(x => x.id === id); const st = state.pets[id] || { lv: 0, bond: 0 }; const cost = Math.round(def.baseCost * Math.pow(1.5, st.lv)); if (state.gold < cost) return; state.gold -= cost; st.lv += 1; state.pets[id] = st; sfx.heart(); saveGame(); renderDrawerBody(); }
+function upgradePet(id) { sfx.init(); const def = PET_DEFS.find(x => x.id === id), st = state.pets[id] || { lv: 0, bond: 0 }, cost = Math.round(def.baseCost * Math.pow(1.5, st.lv)); if (state.gold < cost) return; state.gold -= cost; st.lv += 1; state.pets[id] = st; sfx.heart(); saveGame(); renderDrawerBody(); }
 function expandFloor() { sfx.init(); const cost = state.maxGridSize === 10 ? 3200 : 7800; if (state.gold < cost || state.maxGridSize >= 14) return; state.gold -= cost; state.maxGridSize += 2; branchFlashAlpha = 0.85; showKairoToast('🏗️ 店面擴建完工！', `地板擴充至 ${state.maxGridSize}×${state.maxGridSize}！`); sfx.combo(); saveGame(); renderDrawerBody(); }
 function switchOrUnlockBranch(bid) {
-  sfx.init(); const b = BRANCH_DEFS.find(x => x.id === bid); const rec = state.branches[bid]; if (!rec) return;
+  sfx.init(); const b = BRANCH_DEFS.find(x => x.id === bid), rec = state.branches[bid]; if (!rec) return;
   if (!rec.unlocked) { if (state.gold < b.unlockCost) return; state.gold -= b.unlockCost; rec.unlocked = true; }
   state.activeBranch = bid; refreshAllBranchStars(); selectedUid = null; updateArrangeHUD();
   entities.customers = []; entities.orders = []; entities.readyDishes = []; entities.dirtyTables = []; entities.toiletOccupiedBy = null;
-  branchFlashAlpha = 1.0; showKairoToast(`🏪 巡迴進駐【${b.name}】★${rec.stars.toFixed(1)}`, b.favLabel);
-  sfx.combo(); saveGame(); renderDrawerBody();
+  branchFlashAlpha = 1.0; showKairoToast(`🏪 巡迴進駐【${b.name}】★${rec.stars.toFixed(1)}`, b.favLabel); sfx.combo(); saveGame(); renderDrawerBody();
 }
 
 // ==================== 12. 競賽、商會、結算與二周目 ====================
@@ -2020,17 +1584,12 @@ function enterContest(cid) {
   sfx.init(); const c = CONTEST_DEFS.find(x => x.id === cid); if (state.heart < c.costHeart) return;
   state.heart -= c.costHeart; isPaused = true;
   document.getElementById('contest-modal-title').textContent = `🏆 ${c.name}`;
-  document.getElementById('contest-result-box').textContent = '';
-  document.getElementById('contest-close-btn').style.display = 'none';
+  document.getElementById('contest-result-box').textContent = ''; document.getElementById('contest-close-btn').style.display = 'none';
   ['j-score-0', 'j-score-1', 'j-score-2'].forEach(id => document.getElementById(id).textContent = '--');
   document.getElementById('contest-modal').classList.add('show');
 
-  const appeal = getTotalAppeal(); const maxMenuLv = Math.max(...Object.values(state.menus), 1);
-  const baseScore = Math.round(appeal * 1.15 + maxMenuLv * 18 + state.customMenus.length * 22);
-  const s1 = Math.min(180, Math.round(baseScore * 0.34 + Math.random() * 14));
-  const s2 = Math.min(180, Math.round(baseScore * 0.33 + Math.random() * 14));
-  const s3 = Math.min(180, Math.round(baseScore * 0.33 + Math.random() * 14));
-  const total = s1 + s2 + s3;
+  const appeal = getTotalAppeal(), maxMenuLv = Math.max(...Object.values(state.menus), 1), baseScore = Math.round(appeal * 1.15 + maxMenuLv * 18 + state.customMenus.length * 22);
+  const s1 = Math.min(180, Math.round(baseScore * 0.34 + Math.random() * 14)), s2 = Math.min(180, Math.round(baseScore * 0.33 + Math.random() * 14)), s3 = Math.min(180, Math.round(baseScore * 0.33 + Math.random() * 14)), total = s1 + s2 + s3;
 
   setTimeout(() => { document.getElementById('j-score-0').textContent = s1; sfx.coin(); }, 450);
   setTimeout(() => { document.getElementById('j-score-1').textContent = s2; sfx.coin(); }, 950);
@@ -2049,8 +1608,7 @@ function openMerchantModal() {
   document.getElementById('merchant-modal').classList.add('show');
 }
 function buyMerchantItem(id) {
-  const it = MERCHANT_ITEMS.find(x => x.id === id); if (!it || state.heart < it.costHeart) return;
-  state.heart -= it.costHeart;
+  const it = MERCHANT_ITEMS.find(x => x.id === id); if (!it || state.heart < it.costHeart) return; state.heart -= it.costHeart;
   if (id === 'm_book') Object.keys(state.menus).forEach(k => { if (state.menus[k] > 0) state.menus[k] += 1; });
   else if (id === 'm_license') state.staff.chef_1.lv = Math.min(10, state.staff.chef_1.lv + 2);
   else if (id === 'm_goldcat') { state.gold += 1800; state.wonContests.push('ct_merchant_' + Date.now()); }
@@ -2059,30 +1617,16 @@ function buyMerchantItem(id) {
 }
 
 function endOfDay() {
-  isPaused = true;
-  if (state.day >= 108) { openNewGamePlusModal(); return; }
-  const isMonthEnd = state.day % 30 === 0;
-  const reqAppeal = Math.floor(state.day / 30) * 65 + 45;
-  let monthHtml = '';
-  if (isMonthEnd) {
-    if (getTotalAppeal() >= reqAppeal) { state.gold += 2000; state.heart += 35; monthHtml = `<div class="report-row" style="color:#16a34a;font-weight:900;"><span>🏅 月底評鑑達標</span><span>+$2,000 / ❤️35</span></div>`; }
-    else monthHtml = `<div class="report-row" style="color:#dc2626;font-weight:900;"><span>📋 月底評鑑未達標 (${getTotalAppeal()}/${reqAppeal})</span><span>繼續加油</span></div>`;
-  }
+  isPaused = true; if (state.day >= 108) { openNewGamePlusModal(); return; }
+  const isMonthEnd = state.day % 30 === 0, reqAppeal = Math.floor(state.day / 30) * 65 + 45;
+  let monthHtml = isMonthEnd ? (getTotalAppeal() >= reqAppeal ? (state.gold += 2000, state.heart += 35, `<div class="report-row" style="color:#16a34a;font-weight:900;"><span>🏅 月底評鑑達標</span><span>+$2,000 / ❤️35</span></div>`) : `<div class="report-row" style="color:#dc2626;font-weight:900;"><span>📋 月底評鑑未達標 (${getTotalAppeal()}/${reqAppeal})</span><span>繼續加油</span></div>`) : '';
   document.getElementById('report-title').textContent = `🌙 第 ${state.day} 天連鎖結算`;
-  document.getElementById('report-body').innerHTML = `
-    <div class="report-row"><span>今日接待客組</span><b>${state.dailyStats.customers} 組</b></div>
-    <div class="report-row"><span>洗手間使用次數</span><b>${state.dailyStats.toiletUses || 0} 次</b></div>
-    <div class="report-row"><span>連鎖分店紅利</span><b style="color:#16a34a;">+$${(state.dailyStats.chainDividend || 0).toLocaleString()}</b></div>
-    <div class="report-row"><span>今日總收入</span><b style="color:#d97706;">$${state.dailyStats.income.toLocaleString()}</b></div>
-    <div class="report-row"><span>今日獲得愛心</span><b style="color:#e11d48;">❤️ ${state.dailyStats.hearts}</b></div>
-    ${monthHtml}
-  `;
+  document.getElementById('report-body').innerHTML = `<div class="report-row"><span>今日接待客組</span><b>${state.dailyStats.customers} 組</b></div><div class="report-row"><span>洗手間使用次數</span><b>${state.dailyStats.toiletUses || 0} 次</b></div><div class="report-row"><span>連鎖分店紅利</span><b style="color:#16a34a;">+$${(state.dailyStats.chainDividend || 0).toLocaleString()}</b></div><div class="report-row"><span>今日總收入</span><b style="color:#d97706;">$${state.dailyStats.income.toLocaleString()}</b></div><div class="report-row"><span>今日獲得愛心</span><b style="color:#e11d48;">❤️ ${state.dailyStats.hearts}</b></div>${monthHtml}`;
   document.getElementById('report-modal').classList.add('show'); saveGame();
 }
 
 function closeReport() {
-  document.getElementById('report-modal').classList.remove('show');
-  state.day += 1; state.minuteOfDay = 540;
+  document.getElementById('report-modal').classList.remove('show'); state.day += 1; state.minuteOfDay = 540;
   state.dailyStats = { income: 0, customers: 0, hearts: 0, toiletUses: 0, chainDividend: 0 };
   BRANCH_DEFS.forEach(b => { if (state.branches[b.id]) { state.branches[b.id].todayIncome = 0; state.branches[b.id].todayCustomers = 0; state.branches[b.id].todayDividend = 0; } });
   entities.customers = []; entities.orders = []; entities.readyDishes = []; entities.dirtyTables = []; entities.toiletOccupiedBy = null;
@@ -2095,10 +1639,7 @@ function closeReport() {
 function openNewGamePlusModal() {
   const score = state.gold + getTotalAppeal() * 50 + state.wonContests.length * 3000;
   document.getElementById('ngplus-summary').innerHTML = `<div>🏆 <b>第 ${state.ngPlusCount} 周目總分：${score.toLocaleString()}</b></div><div>✨ 魅力：${getTotalAppeal()} ｜ 獎盃：${state.wonContests.length} 座</div>`;
-  document.getElementById('ngplus-choices').innerHTML = `
-    <label style="background:#fff;padding:5px;border:1px solid #bcaaa4;font-size:10.5px;font-weight:800;"><input type="radio" name="ngc" value="menu" checked onchange="ngPlusSelection='menu'"> 繼承全部食譜等級與自創料理</label>
-    <label style="background:#fff;padding:5px;border:1px solid #bcaaa4;font-size:10.5px;font-weight:800;"><input type="radio" name="ngc" value="staff" onchange="ngPlusSelection='staff'"> 繼承店員等級與轉職精通進度</label>
-  `;
+  document.getElementById('ngplus-choices').innerHTML = `<label style="background:#fff;padding:5px;border:1px solid #bcaaa4;font-size:10.5px;font-weight:800;"><input type="radio" name="ngc" value="menu" checked onchange="ngPlusSelection='menu'"> 繼承全部食譜等級與自創料理</label><label style="background:#fff;padding:5px;border:1px solid #bcaaa4;font-size:10.5px;font-weight:800;"><input type="radio" name="ngc" value="staff" onchange="ngPlusSelection='staff'"> 繼承店員等級與轉職精通進度</label>`;
   document.getElementById('ngplus-modal').classList.add('show');
 }
 
@@ -2106,51 +1647,27 @@ function startNewGamePlus() {
   const keepCombos = [...state.discoveredCombos], keepRegulars = JSON.parse(JSON.stringify(state.regulars)), keepContests = [...state.wonContests];
   const keepMenus = JSON.parse(JSON.stringify(state.menus)), keepCustom = JSON.parse(JSON.stringify(state.customMenus)), keepStaff = JSON.parse(JSON.stringify(state.staff));
   const nextNg = state.ngPlusCount + 1;
-  state = JSON.parse(JSON.stringify(DEFAULT_STATE));
-  state.ngPlusCount = nextNg; state.legacyBonus = 1 + (nextNg - 1) * 0.25; state.gold = 3500; state.heart = 80;
+  state = JSON.parse(JSON.stringify(DEFAULT_STATE)); state.ngPlusCount = nextNg; state.legacyBonus = 1 + (nextNg - 1) * 0.25; state.gold = 3500; state.heart = 80;
   state.discoveredCombos = keepCombos; state.regulars = keepRegulars; state.wonContests = keepContests;
   if (ngPlusSelection === 'menu') { state.menus = keepMenus; state.customMenus = keepCustom; } else state.staff = keepStaff;
-  document.getElementById('ngplus-modal').classList.remove('show'); document.getElementById('spd-4').style.display = 'inline-block';
-  isPaused = false; saveGame();
+  document.getElementById('ngplus-modal').classList.remove('show'); document.getElementById('spd-4').style.display = 'inline-block'; isPaused = false; saveGame();
 }
 
-function setGameSpeed(spd) {
-  state.gameSpeed = spd;
-  [1, 2, 3, 4].forEach(n => { const b = document.getElementById('spd-' + n); if (b) b.classList.toggle('active', n === spd); });
-}
+function setGameSpeed(spd) { state.gameSpeed = spd; [1, 2, 3, 4].forEach(n => { const b = document.getElementById('spd-' + n); if (b) b.classList.toggle('active', n === spd); }); }
 
 // ==================== 13. 排行榜與存檔碼 ====================
 function openCloudModal() {
   const myScore = Math.round(state.gold * 0.5 + getTotalAppeal() * 40 + state.wonContests.length * 1500);
-  const rivals = [
-    { name: '👑 開羅星光總店', score: 28500 }, { name: '🐕 柴犬珈琲館', score: 16200 },
-    { name: `🐾 你的連鎖 (${getBranchInfo().name})`, score: myScore, isMe: true }, { name: '🐈 貓咪肉球小舖', score: 6800 }
-  ].sort((a, b) => b.score - a.score);
+  const rivals = [{ name: '👑 開羅星光總店', score: 28500 }, { name: '🐕 柴犬珈琲館', score: 16200 }, { name: `🐾 你的連鎖 (${getBranchInfo().name})`, score: myScore, isMe: true }, { name: '🐈 貓咪肉球小舖', score: 6800 }].sort((a, b) => b.score - a.score);
   document.getElementById('leaderboard-list').innerHTML = rivals.map((r, i) => `<div class="report-row" style="${r.isMe ? 'background:#fef08a;font-weight:900;padding:3px 5px;' : ''}"><span>#${i + 1} ${r.name}</span><span>${r.score.toLocaleString()}</span></div>`).join('');
-  document.getElementById('firebase-url-input').value = state.firebaseUrl || '';
-  document.getElementById('cloud-modal').classList.add('show');
+  document.getElementById('firebase-url-input').value = state.firebaseUrl || ''; document.getElementById('cloud-modal').classList.add('show');
 }
-function exportSaveCode() {
-  const code = btoa(unescape(encodeURIComponent(JSON.stringify(state))));
-  document.getElementById('save-code-input').value = code;
-  navigator.clipboard?.writeText(code).catch(() => {});
-  alert('✅ 存檔碼已產生並複製！');
-}
-function importSaveCode() {
-  try {
-    const parsed = JSON.parse(decodeURIComponent(escape(atob(document.getElementById('save-code-input').value.trim()))));
-    state = Object.assign({}, DEFAULT_STATE, parsed); saveGame(); alert('🎉 存檔碼匯入成功！');
-  } catch (e) { alert('❌ 存檔碼格式不正確。'); }
-}
+function exportSaveCode() { const code = btoa(unescape(encodeURIComponent(JSON.stringify(state)))); document.getElementById('save-code-input').value = code; navigator.clipboard?.writeText(code).catch(() => {}); alert('✅ 存檔碼已產生並複製！'); }
+function importSaveCode() { try { const parsed = JSON.parse(decodeURIComponent(escape(atob(document.getElementById('save-code-input').value.trim())))); state = Object.assign({}, DEFAULT_STATE, parsed); saveGame(); alert('🎉 存檔碼匯入成功！'); } catch (e) { alert('❌ 存檔碼格式不正確。'); } }
 async function syncFirebaseLeaderboard() {
-  const url = document.getElementById('firebase-url-input').value.trim().replace(/\/$/, '');
-  if (!url) return alert('請輸入 Firebase 網址');
+  const url = document.getElementById('firebase-url-input').value.trim().replace(/\/$/, ''); if (!url) return alert('請輸入 Firebase 網址');
   state.firebaseUrl = url; saveGame();
-  try {
-    const myScore = Math.round(state.gold * 0.5 + getTotalAppeal() * 40 + state.wonContests.length * 1500);
-    await fetch(`${url}/starlight_pet_cafe_scores.json`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ branch: getBranchInfo().name, score: myScore, day: state.day, ts: Date.now() }) });
-    alert('✅ 已同步至 Firebase 排行榜！');
-  } catch (e) { alert('⚠️ 連線失敗，請檢查網址。'); }
+  try { const myScore = Math.round(state.gold * 0.5 + getTotalAppeal() * 40 + state.wonContests.length * 1500); await fetch(`${url}/starlight_pet_cafe_scores.json`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ branch: getBranchInfo().name, score: myScore, day: state.day, ts: Date.now() }) }); alert('✅ 已同步至 Firebase 排行榜！'); } catch (e) { alert('⚠️ 連線失敗，請檢查網址。'); }
 }
 
 // ==================== 14. HUD 與主迴圈 ====================
@@ -2177,14 +1694,9 @@ function updateHUD() {
   document.getElementById('bar-long').style.width = `${Math.min(100, (state.day / 108) * 100)}%`;
 
   const strip = document.getElementById('vip-strip');
-  if (vipEvent) {
-    strip.className = 'vip-strip show'; document.getElementById('vip-title').textContent = '📸 VIP主編評鑑中!';
-    document.getElementById('vip-meter').style.display = 'block'; document.getElementById('vip-meter-fill').style.width = `${Math.min(100, (vipEvent.score / vipEvent.target) * 100)}%`;
-    document.getElementById('vip-timer').textContent = `${Math.ceil(vipEvent.timer)}s`;
-  } else if (feverTimer > 0) {
-    strip.className = 'vip-strip show fever'; document.getElementById('vip-title').textContent = '🔥 FEVER 狂熱 (2x)';
-    document.getElementById('vip-meter').style.display = 'none'; document.getElementById('vip-timer').textContent = `${Math.ceil(feverTimer)}s`;
-  } else strip.className = 'vip-strip';
+  if (vipEvent) { strip.className = 'vip-strip show'; document.getElementById('vip-title').textContent = '📸 VIP主編評鑑中!'; document.getElementById('vip-meter').style.display = 'block'; document.getElementById('vip-meter-fill').style.width = `${Math.min(100, (vipEvent.score / vipEvent.target) * 100)}%`; document.getElementById('vip-timer').textContent = `${Math.ceil(vipEvent.timer)}s`; }
+  else if (feverTimer > 0) { strip.className = 'vip-strip show fever'; document.getElementById('vip-title').textContent = '🔥 FEVER 狂熱 (2x)'; document.getElementById('vip-meter').style.display = 'none'; document.getElementById('vip-timer').textContent = `${Math.ceil(feverTimer)}s`; }
+  else strip.className = 'vip-strip';
 }
 
 let lastTime = performance.now();
