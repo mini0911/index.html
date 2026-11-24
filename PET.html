@@ -1,0 +1,2285 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>毛孩星光餐廳 - 開羅風經營模擬</title>
+    <!-- 引入繁體中文像素/圓體字型與 Tailwind CSS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --kairo-bg: #f5ebd6;
+            --kairo-panel: #fff9eb;
+            --kairo-border: #5c3a21;
+            --kairo-accent: #e87a3e;
+            --kairo-accent-dark: #b8531e;
+            --kairo-green: #58a65c;
+            --kairo-blue: #4a90e2;
+            --kairo-gold: #f5b82e;
+            --kairo-pink: #f06595;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #3d2817;
+            background-image: radial-gradient(#4f3520 2px, transparent 2px);
+            background-size: 16px 16px;
+            font-family: 'DotGothic16', 'Noto Sans TC', sans-serif;
+            color: #3e2716;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 開羅風經典像素邊框與立體按鈕 */
+        .kairo-box {
+            background-color: var(--kairo-panel);
+            border: 4px solid var(--kairo-border);
+            border-radius: 10px;
+            box-shadow: 0 4px 0 #3b2312, inset 0 2px 0 rgba(255, 255, 255, 0.8);
+        }
+
+        .kairo-header-bar {
+            background: linear-gradient(180deg, #ffcf6e 0%, #f5a623 100%);
+            border-bottom: 4px solid var(--kairo-border);
+            box-shadow: 0 3px 0 rgba(0, 0, 0, 0.25);
+        }
+
+        .kairo-btn {
+            background: linear-gradient(180deg, #ffffff 0%, #f0e2c8 100%);
+            border: 3px solid var(--kairo-border);
+            border-radius: 8px;
+            box-shadow: 0 3px 0 var(--kairo-border);
+            transition: transform 0.06s, box-shadow 0.06s, filter 0.1s;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .kairo-btn:active:not(:disabled) {
+            transform: translateY(3px);
+            box-shadow: 0 0 0 var(--kairo-border);
+        }
+
+        .kairo-btn:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            filter: grayscale(0.6);
+        }
+
+        .kairo-btn-orange {
+            background: linear-gradient(180deg, #ff9b54 0%, #e86f2c 100%);
+            color: #fff;
+            text-shadow: 1px 1px 0 #7a2e08;
+        }
+
+        .kairo-btn-green {
+            background: linear-gradient(180deg, #74c678 0%, #4b9e4f 100%);
+            color: #fff;
+            text-shadow: 1px 1px 0 #1f5422;
+        }
+
+        .kairo-btn-blue {
+            background: linear-gradient(180deg, #6eb5ff 0%, #3d85d6 100%);
+            color: #fff;
+            text-shadow: 1px 1px 0 #184273;
+        }
+
+        .kairo-tab {
+            background-color: #d8c3a0;
+            border: 3px solid var(--kairo-border);
+            border-bottom: none;
+            border-radius: 10px 10px 0 0;
+            color: #5c3a21;
+            transition: all 0.1s;
+        }
+
+        .kairo-tab.active {
+            background-color: var(--kairo-panel);
+            color: #d94e1f;
+            transform: translateY(3px);
+            padding-bottom: 10px;
+            z-index: 10;
+        }
+
+        /* 畫布容器與像素渲染設定 */
+        #canvas-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 10;
+            max-height: 54vh;
+            background-color: #2d4c2b;
+            border: 4px solid var(--kairo-border);
+            border-radius: 12px;
+            box-shadow: 0 6px 0 #2b190d;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        /* 跑馬燈動畫 */
+        .ticker-wrap {
+            background-color: #3e2716;
+            color: #ffe89e;
+            border: 3px solid #754c29;
+            border-radius: 6px;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        /* 自訂捲軸 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e6d5b8;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #9c6f44;
+            border-radius: 4px;
+            border: 1px solid #5c3a21;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.85); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .modal-animate {
+            animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+    </style>
+</head>
+<body class="select-none">
+
+    <!-- 頂部開羅風資訊列 -->
+    <header class="kairo-header-bar px-2 py-1.5 sm:px-4 sm:py-2 sticky top-0 z-30">
+        <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-2">
+            <!-- 店名與星級 -->
+            <div class="flex items-center gap-2">
+                <div class="bg-[#5c3a21] text-[#ffdf73] px-2.5 py-1 rounded-lg border-2 border-[#fff3d1] text-sm sm:text-base font-bold tracking-wider shadow">
+                    🐾 毛孩星光餐廳
+                </div>
+                <div class="bg-white/90 border-2 border-[#5c3a21] px-2 py-0.5 rounded-lg flex items-center gap-1 text-xs sm:text-sm font-bold">
+                    <span class="text-amber-500">★</span>
+                    <span id="ui-rating">1.2</span>
+                    <span class="text-gray-500 hidden sm:inline">評價</span>
+                </div>
+            </div>
+
+            <!-- 時間與營業日 -->
+            <div class="flex items-center gap-1.5 sm:gap-2 bg-[#fff9eb] border-2 border-[#5c3a21] px-2.5 py-1 rounded-lg text-xs sm:text-sm font-bold">
+                <span class="text-[#b8531e]" id="ui-day">第 1 天</span>
+                <span class="text-gray-400">|</span>
+                <span id="ui-clock" class="font-mono text-base text-[#3e2716]">09:00</span>
+                <span id="ui-period-badge" class="bg-amber-200 text-amber-900 px-1.5 py-0.2 rounded text-xs">早午餐</span>
+            </div>
+
+            <!-- 資源顯示：金幣 & 愛心研究點 -->
+            <div class="flex items-center gap-2">
+                <div class="bg-[#3e2716] text-[#ffd447] border-2 border-[#8c5a32] px-2.5 py-1 rounded-lg flex items-center gap-1 text-xs sm:text-sm font-bold shadow-inner">
+                    <span>💰</span>
+                    <span id="ui-gold">1,200</span>
+                </div>
+                <div class="bg-[#3e2716] text-[#ff85b3] border-2 border-[#8c5a32] px-2.5 py-1 rounded-lg flex items-center gap-1 text-xs sm:text-sm font-bold shadow-inner">
+                    <span>💖</span>
+                    <span id="ui-hearts">35</span>
+                </div>
+            </div>
+
+            <!-- 遊戲速度與音效控制 -->
+            <div class="flex items-center gap-1">
+                <button id="btn-speed-0" onclick="setGameSpeed(0)" class="kairo-btn px-2 py-1 text-xs" title="暫停">⏸</button>
+                <button id="btn-speed-1" onclick="setGameSpeed(1)" class="kairo-btn kairo-btn-green px-2 py-1 text-xs" title="正常速度">▶ 1x</button>
+                <button id="btn-speed-2" onclick="setGameSpeed(2)" class="kairo-btn px-2 py-1 text-xs" title="兩倍速">⏩ 2x</button>
+                <button id="btn-sound" onclick="toggleSound()" class="kairo-btn px-2 py-1 text-xs ml-1" title="切換音效與音樂">🔊</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主遊戲區塊 -->
+    <main class="flex-1 max-w-6xl w-full mx-auto p-2 sm:p-3 flex flex-col gap-2.5">
+        
+        <!-- 經營快報跑馬燈 & 快捷狀態 -->
+        <div class="flex items-center gap-2">
+            <div class="ticker-wrap flex-1 px-3 py-1 text-xs sm:text-sm flex items-center gap-2">
+                <span class="bg-[#e87a3e] text-white px-1.5 py-0.5 rounded text-xs font-bold shrink-0">快報</span>
+                <span id="ui-news" class="truncate">歡迎來到毛孩星光餐廳！點擊下方按鈕擴建餐桌、研發寵物鮮食，吸引更多飼主光臨吧！</span>
+            </div>
+            <button onclick="openStatsModal()" class="kairo-btn px-2.5 py-1 text-xs sm:text-sm shrink-0 flex items-center gap-1">
+                📊 <span class="hidden sm:inline">經營數據</span>
+            </button>
+        </div>
+
+        <!-- 像素餐廳主畫布 -->
+        <div id="canvas-wrapper">
+            <canvas id="gameCanvas"></canvas>
+            <!-- 左上角即時營業資訊浮標 -->
+            <div class="absolute top-2 left-2 bg-[#3e2716]/85 text-white px-2.5 py-1 rounded-lg border border-[#a87948] text-xs flex items-center gap-3 pointer-events-none">
+                <span>🪑 座位: <b id="hud-seats" class="text-amber-300">2/2</b></span>
+                <span>👥 客數: <b id="hud-customers" class="text-emerald-300">0</b></span>
+                <span>🐾 魅力: <b id="hud-appeal" class="text-pink-300">25</b></span>
+            </div>
+            <!-- 右下角操作提示 -->
+            <div class="absolute bottom-2 right-2 bg-black/60 text-amber-100 px-2 py-0.5 rounded text-[11px] pointer-events-none">
+                點擊餐廳內毛孩或客人可互動打氣 ✨
+            </div>
+        </div>
+
+        <!-- 下方開羅風經營管理面板 -->
+        <section class="flex-1 flex flex-col min-h-[260px]">
+            <!-- 分頁標籤列 -->
+            <div class="flex items-end gap-1 sm:gap-2 px-1">
+                <button onclick="switchTab('facilities')" id="tab-facilities" class="kairo-tab active px-3 py-2 text-xs sm:text-sm font-bold flex items-center gap-1">
+                    🏠 <span>設施與裝潢</span>
+                </button>
+                <button onclick="switchTab('menu')" id="tab-menu" class="kairo-tab px-3 py-2 text-xs sm:text-sm font-bold flex items-center gap-1">
+                    🍽️ <span>菜單研發</span>
+                </button>
+                <button onclick="switchTab('staff')" id="tab-staff" class="kairo-tab px-3 py-2 text-xs sm:text-sm font-bold flex items-center gap-1">
+                    🐾 <span>員工與毛孩</span>
+                </button>
+                <button onclick="switchTab('system')" id="tab-system" class="kairo-tab px-3 py-2 text-xs sm:text-sm font-bold flex items-center gap-1 ml-auto">
+                    ⚙️ <span>存檔/說明</span>
+                </button>
+            </div>
+
+            <!-- 分頁內容盒 -->
+            <div class="kairo-box p-3 flex-1 overflow-y-auto">
+                <div id="panel-content" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                    <!-- 由 JavaScript 動態渲染卡片 -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 每日營業結算彈窗 (開羅風經典報表) -->
+    <div id="eod-modal" class="fixed inset-0 bg-black/70 z-50 hidden items-center justify-center p-4">
+        <div class="kairo-box max-w-md w-full p-5 modal-animate relative bg-[#fff9eb]">
+            <div class="bg-[#e87a3e] text-white text-center py-2 px-4 rounded-lg border-3 border-[#5c3a21] -mt-9 mb-4 shadow-md">
+                <h2 class="text-lg sm:text-xl font-bold tracking-wider" id="eod-title">🌙 第 1 天 營業結算報告</h2>
+            </div>
+
+            <div class="space-y-2.5 text-sm sm:text-base">
+                <div class="flex justify-between items-center bg-[#f5ebd6] px-3 py-2 rounded-lg border-2 border-[#d4be98]">
+                    <span>👥 接待顧客總數</span>
+                    <span class="font-bold text-[#3e2716]" id="eod-customers">0 組</span>
+                </div>
+                <div class="flex justify-between items-center bg-[#f5ebd6] px-3 py-2 rounded-lg border-2 border-[#d4be98]">
+                    <span>🐶 服務毛孩數量</span>
+                    <span class="font-bold text-[#b8531e]" id="eod-pets">0 隻</span>
+                </div>
+                <div class="flex justify-between items-center bg-[#f5ebd6] px-3 py-2 rounded-lg border-2 border-[#d4be98]">
+                    <span>💰 今日營業收入</span>
+                    <span class="font-bold text-amber-600" id="eod-revenue">+$0</span>
+                </div>
+                <div class="flex justify-between items-center bg-[#f5ebd6] px-3 py-2 rounded-lg border-2 border-[#d4be98]">
+                    <span>💖 獲得愛心研究點</span>
+                    <span class="font-bold text-pink-600" id="eod-hearts">+0</span>
+                </div>
+                <div class="flex justify-between items-center bg-[#fff3cd] px-3 py-2 rounded-lg border-2 border-[#e0b84c]">
+                    <span>★ 餐廳目前星級評價</span>
+                    <span class="font-bold text-amber-600 text-lg" id="eod-rating">★ 1.2</span>
+                </div>
+            </div>
+
+            <div class="mt-4 p-2.5 bg-emerald-50 border-2 border-emerald-300 rounded-lg text-xs text-emerald-900" id="eod-comment">
+                💡 評語：溫馨的小店剛起步，添購更多寵物設施與鮮食能吸引大批毛孩家庭喔！
+            </div>
+
+            <div class="mt-5 flex justify-center">
+                <button onclick="startNextDay()" class="kairo-btn kairo-btn-green w-full py-3 text-base sm:text-lg tracking-wider">
+                    ☀️ 開始新的一天！
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 經營數據與圖鑑彈窗 -->
+    <div id="stats-modal" class="fixed inset-0 bg-black/70 z-50 hidden items-center justify-center p-4">
+        <div class="kairo-box max-w-md w-full p-5 modal-animate">
+            <div class="flex justify-between items-center border-b-2 border-[#5c3a21] pb-2 mb-3">
+                <h3 class="text-lg font-bold">📊 餐廳累計經營數據</h3>
+                <button onclick="closeStatsModal()" class="kairo-btn px-2.5 py-0.5 text-sm">✕</button>
+            </div>
+            <div class="space-y-2 text-sm" id="stats-body"></div>
+            <div class="mt-4 text-right">
+                <button onclick="closeStatsModal()" class="kairo-btn kairo-btn-orange px-4 py-1.5 text-sm">關閉</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 浮動提示訊息框 (替代 alert) -->
+    <div id="toast-container" class="fixed top-16 right-3 z-50 flex flex-col gap-1.5 pointer-events-none"></div>
+
+<script>
+/**
+ * ============================================================================
+ * 1. 遊戲核心狀態與靜態資料庫 (Game Data & State)
+ * ============================================================================
+ */
+const SAVE_KEY = 'starlight_pet_cafe_save_v1';
+
+// 設施定義：會實際繪製在 Canvas 餐廳場景中
+const FACILITIES_DB = [
+    {
+        id: 'table_1',
+        name: '一號原木餐桌',
+        category: 'seat',
+        desc: '溫馨雙人餐桌，可接待一般客人或帶毛孩的飼主。',
+        baseCost: 0,
+        upgradeCost: 250,
+        maxLevel: 5,
+        appeal: 10,
+        x: 340, y: 175
+    },
+    {
+        id: 'table_2',
+        name: '二號靠窗餐桌',
+        category: 'seat',
+        desc: '陽光灑落的靠窗座位，毛孩最喜歡在旁邊打盹。',
+        baseCost: 0,
+        upgradeCost: 300,
+        maxLevel: 5,
+        appeal: 12,
+        x: 500, y: 175
+    },
+    {
+        id: 'table_3',
+        name: '三號花園餐桌',
+        category: 'seat',
+        desc: '緊鄰室內草皮區的高人氣座位，小費加成 +10%。',
+        baseCost: 450,
+        upgradeCost: 400,
+        maxLevel: 5,
+        appeal: 18,
+        x: 340, y: 285
+    },
+    {
+        id: 'table_4',
+        name: '四號星光VIP桌',
+        category: 'seat',
+        desc: '寬敞豪華包廂桌，大幅提升顧客滿意度與評價。',
+        baseCost: 900,
+        upgradeCost: 650,
+        maxLevel: 5,
+        appeal: 25,
+        x: 500, y: 285
+    },
+    {
+        id: 'grass_zone',
+        name: '室內草皮遊戲區',
+        category: 'pet_toy',
+        desc: '鋪設柔軟人工草皮與玩具球，讓毛孩盡情奔跑產生愛心！',
+        baseCost: 350,
+        upgradeCost: 350,
+        maxLevel: 5,
+        appeal: 22,
+        x: 645, y: 215
+    },
+    {
+        id: 'cat_tower',
+        name: '三層豪華貓跳台',
+        category: 'pet_toy',
+        desc: '貓咪最愛的瞭望台，吸引更多愛貓人士造訪。',
+        baseCost: 500,
+        upgradeCost: 420,
+        maxLevel: 5,
+        appeal: 24,
+        x: 650, y: 95
+    },
+    {
+        id: 'espresso_machine',
+        name: '職人義式咖啡機',
+        category: 'kitchen',
+        desc: '縮短主廚烹飪時間，並提高所有飲品與餐點售價。',
+        baseCost: 400,
+        upgradeCost: 450,
+        maxLevel: 5,
+        appeal: 15,
+        x: 155, y: 105
+    },
+    {
+        id: 'pet_fountain',
+        name: '活氧循環寵物飲水機',
+        category: 'pet_toy',
+        desc: '貼心的毛孩補水站，提升全店小費金額與愛心產量。',
+        baseCost: 600,
+        upgradeCost: 500,
+        maxLevel: 5,
+        appeal: 20,
+        x: 245, y: 315
+    }
+];
+
+// 菜單研發定義：分為人類餐點 (human) 與寵物鮮食 (pet)
+const MENU_DB = [
+    {
+        id: 'latte',
+        type: 'human',
+        name: '肉球拉花手沖拿鐵',
+        icon: '☕',
+        desc: '印有可愛貓掌拉花的香醇拿鐵，看板飲品。',
+        unlockGold: 0,
+        unlockHearts: 0,
+        basePrice: 85,
+        upgGold: 160,
+        upgHearts: 12,
+        maxLevel: 10
+    },
+    {
+        id: 'souffle',
+        type: 'human',
+        name: '雲朵舒芙蕾鬆餅',
+        icon: '🥞',
+        desc: '入口即化的蓬鬆厚鬆餅，搭配北海道鮮奶油。',
+        unlockGold: 280,
+        unlockHearts: 15,
+        basePrice: 145,
+        upgGold: 240,
+        upgHearts: 18,
+        maxLevel: 10
+    },
+    {
+        id: 'brunch',
+        type: 'human',
+        name: '星光田園早午餐盤',
+        icon: '🍳',
+        desc: '太陽蛋、手作麵包與新鮮沙拉的豐盛組合。',
+        unlockGold: 650,
+        unlockHearts: 35,
+        basePrice: 220,
+        upgGold: 350,
+        upgHearts: 28,
+        maxLevel: 10
+    },
+    {
+        id: 'chicken_jelly',
+        type: 'pet',
+        name: '無鹽舒肥雞肉凍',
+        icon: '🍗',
+        desc: '低脂高蛋白純雞胸肉凍，狗狗貓咪都瘋狂！',
+        unlockGold: 0,
+        unlockHearts: 0,
+        basePrice: 75,
+        upgGold: 150,
+        upgHearts: 10,
+        maxLevel: 10
+    },
+    {
+        id: 'pumpkin_puree',
+        type: 'pet',
+        name: '黃金南瓜鮮蔬泥',
+        icon: '🎃',
+        desc: '蒸熟栗子南瓜搭配花椰菜，營養滿分又顧腸胃。',
+        unlockGold: 240,
+        unlockHearts: 15,
+        basePrice: 125,
+        upgGold: 220,
+        upgHearts: 16,
+        maxLevel: 10
+    },
+    {
+        id: 'honey_bone',
+        type: 'pet',
+        name: '手作燕麥潔牙餅乾',
+        icon: '🦴',
+        desc: '酥脆香甜的手工烘焙寵物點心，吃完心情大好。',
+        unlockGold: 550,
+        unlockHearts: 30,
+        basePrice: 185,
+        upgGold: 320,
+        upgHearts: 25,
+        maxLevel: 10
+    }
+];
+
+// 員工與駐店毛孩定義
+const STAFF_PETS_DB = [
+    {
+        id: 'chef_leo',
+        kind: 'staff',
+        role: '主廚',
+        name: '阿哲主廚',
+        avatar: '👨‍🍳',
+        desc: '精通人類料理與寵物營養學，升級可加快出餐速度。',
+        unlockGold: 0,
+        upgGold: 300,
+        maxLevel: 8
+    },
+    {
+        id: 'waiter_mia',
+        kind: 'staff',
+        role: '店員',
+        name: '小美店員',
+        avatar: '👩‍💼',
+        desc: '笑容滿面的外場夥伴，升級可大幅提升移動與收桌速度。',
+        unlockGold: 0,
+        upgGold: 260,
+        maxLevel: 8
+    },
+    {
+        id: 'waiter_ken',
+        kind: 'staff',
+        role: '店員',
+        name: '阿凱實習生',
+        avatar: '🧑‍🍳',
+        desc: '活力十足的二號外場店員，人手充足就不會讓客人久等！',
+        unlockGold: 750,
+        upgGold: 420,
+        maxLevel: 8
+    },
+    {
+        id: 'pet_niuniu',
+        kind: 'mascot',
+        role: '駐店店長',
+        name: '溫柔老狗「妞妞」',
+        avatar: '🐕',
+        species: 'golden',
+        desc: '沉穩親切的黃金獵犬店長，在店內巡邏會散發治癒愛心。',
+        unlockGold: 0,
+        upgGold: 280,
+        maxLevel: 8
+    },
+    {
+        id: 'pet_doudou',
+        kind: 'mascot',
+        role: '活力公關',
+        name: '活潑柴犬「豆豆」',
+        avatar: '🐕‍🦺',
+        species: 'shiba',
+        desc: '招牌微笑柴犬！每級提升全店小費加成與愛心產生頻率。',
+        unlockGold: 480,
+        upgGold: 380,
+        maxLevel: 8
+    },
+    {
+        id: 'pet_juzi',
+        kind: 'mascot',
+        role: '招財貓咪',
+        name: '胖胖橘貓「橘子」',
+        avatar: '🐈',
+        species: 'orange_cat',
+        desc: '喜歡在草皮與餐桌間蹭客人褲管，大幅提升餐廳魅力值！',
+        unlockGold: 880,
+        upgGold: 520,
+        maxLevel: 8
+    }
+];
+
+// 預設存檔結構
+function createDefaultState() {
+    return {
+        day: 1,
+        timeMinutes: 9 * 60, // 09:00 = 540 分鐘，營業至 21:00 = 1260 分鐘
+        gold: 1200,
+        hearts: 35,
+        rating: 1.2,
+        totalRevenue: 0,
+        totalCustomers: 0,
+        totalPetsServed: 0,
+        dailyStats: {
+            revenue: 0,
+            customers: 0,
+            pets: 0,
+            hearts: 0
+        },
+        facilities: {
+            table_1: 1,
+            table_2: 1,
+            table_3: 0,
+            table_4: 0,
+            grass_zone: 0,
+            cat_tower: 0,
+            espresso_machine: 0,
+            pet_fountain: 0
+        },
+        menu: {
+            latte: 1,
+            souffle: 0,
+            brunch: 0,
+            chicken_jelly: 1,
+            pumpkin_puree: 0,
+            honey_bone: 0
+        },
+        staffPets: {
+            chef_leo: 1,
+            waiter_mia: 1,
+            waiter_ken: 0,
+            pet_niuniu: 1,
+            pet_doudou: 0,
+            pet_juzi: 0
+        }
+    };
+}
+
+let gameState = loadGame();
+let gameSpeed = 1; // 0 = 暫停, 1 = 正常, 2 = 2倍速
+let currentTab = 'facilities';
+let isEndOfDayModalOpen = false;
+
+/**
+ * ============================================================================
+ * 2. Web Audio API 8-Bit 溫馨背景音樂與音效合成器
+ * ============================================================================
+ */
+class RetroAudio {
+    constructor() {
+        this.ctx = null;
+        this.muted = false;
+        this.bgmTimer = null;
+        this.noteIndex = 0;
+        // 輕快治癒的 C 大調開羅風旋律 (頻率 Hz)
+        this.melody = [
+            523.25, 659.25, 783.99, 659.25, 587.33, 698.46, 880.00, 698.46,
+            523.25, 659.25, 783.99, 1046.50, 987.77, 783.99, 659.25, 587.33
+        ];
+    }
+
+    init() {
+        if (!this.ctx) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (AudioCtx) {
+                this.ctx = new AudioCtx();
+            }
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume();
+        }
+    }
+
+    startBGM() {
+        if (this.bgmTimer) return;
+        this.bgmTimer = setInterval(() => {
+            if (this.muted || gameSpeed === 0 || isEndOfDayModalOpen) return;
+            this.init();
+            if (!this.ctx) return;
+
+            const freq = this.melody[this.noteIndex % this.melody.length];
+            this.noteIndex++;
+            this.playTone(freq, 'triangle', 0.14, 0.035);
+        }, 420);
+    }
+
+    playTone(freq, type = 'sine', duration = 0.12, volume = 0.08, slideTo = null) {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+
+        try {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+            if (slideTo) {
+                osc.frequency.exponentialRampToValueAtTime(slideTo, this.ctx.currentTime + duration);
+            }
+
+            gain.gain.setValueAtTime(volume, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + duration);
+        } catch (e) {}
+    }
+
+    playCoin() {
+        this.playTone(987.77, 'square', 0.08, 0.06);
+        setTimeout(() => this.playTone(1318.51, 'square', 0.18, 0.06), 70);
+    }
+
+    playHeart() {
+        this.playTone(659.25, 'sine', 0.1, 0.07, 880);
+    }
+
+    playUpgrade() {
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((n, idx) => {
+            setTimeout(() => this.playTone(n, 'triangle', 0.12, 0.08), idx * 65);
+        });
+    }
+
+    playPetSound() {
+        // 可愛的汪/喵高音滑音
+        this.playTone(520, 'triangle', 0.12, 0.07, 780);
+    }
+}
+
+const audio = new RetroAudio();
+
+function toggleSound() {
+    audio.muted = !audio.muted;
+    const btn = document.getElementById('btn-sound');
+    btn.textContent = audio.muted ? '🔇' : '🔊';
+    if (!audio.muted) {
+        audio.init();
+        audio.startBGM();
+        audio.playHeart();
+    }
+}
+
+/**
+ * ============================================================================
+ * 3. 存檔管理與工具函式
+ * ============================================================================
+ */
+function loadGame() {
+    try {
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            const def = createDefaultState();
+            return {
+                ...def,
+                ...parsed,
+                dailyStats: { ...def.dailyStats, ...(parsed.dailyStats || {}) },
+                facilities: { ...def.facilities, ...(parsed.facilities || {}) },
+                menu: { ...def.menu, ...(parsed.menu || {}) },
+                staffPets: { ...def.staffPets, ...(parsed.staffPets || {}) }
+            };
+        }
+    } catch (e) {
+        console.warn('讀取存檔失敗，使用預設進度', e);
+    }
+    return createDefaultState();
+}
+
+function saveGame(showMsg = false) {
+    try {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(gameState));
+        if (showMsg) showToast('💾 遊戲進度已儲存！', 'bg-emerald-600');
+    } catch (e) {}
+}
+
+function resetGameProgress() {
+    // 使用自訂確認狀態避免 window.confirm
+    const btn = document.getElementById('btn-reset-confirm');
+    if (btn && btn.dataset.armed !== 'true') {
+        btn.dataset.armed = 'true';
+        btn.textContent = '⚠️ 再點一次確定重置所有進度';
+        btn.classList.add('kairo-btn-orange');
+        setTimeout(() => {
+            if (btn) {
+                btn.dataset.armed = 'false';
+                btn.textContent = '🗑️ 重置存檔（重新開始）';
+                btn.classList.remove('kairo-btn-orange');
+            }
+        }, 4000);
+        return;
+    }
+    localStorage.removeItem(SAVE_KEY);
+    gameState = createDefaultState();
+    initEntities();
+    renderPanel();
+    updateTopHUD();
+    showToast('🔄 已重置為第 1 天全新開始！', 'bg-amber-600');
+}
+
+function showToast(msg, colorClass = 'bg-[#5c3a21]') {
+    const container = document.getElementById('toast-container');
+    const el = document.createElement('div');
+    el.className = `${colorClass} text-white px-3 py-1.5 rounded-lg border-2 border-[#fff3d1] shadow-lg text-xs sm:text-sm font-bold modal-animate`;
+    el.textContent = msg;
+    container.appendChild(el);
+    setTimeout(() => {
+        el.style.opacity = '0';
+        el.style.transition = 'opacity 0.3s';
+        setTimeout(() => el.remove(), 300);
+    }, 2200);
+}
+
+function setNews(text) {
+    const el = document.getElementById('ui-news');
+    if (el) el.textContent = text;
+}
+
+// 計算餐廳目前總魅力值
+function getTotalAppeal() {
+    let appeal = 15;
+    FACILITIES_DB.forEach(f => {
+        const lv = gameState.facilities[f.id] || 0;
+        if (lv > 0) appeal += f.appeal + (lv - 1) * 6;
+    });
+    STAFF_PETS_DB.forEach(sp => {
+        const lv = gameState.staffPets[sp.id] || 0;
+        if (lv > 0 && sp.kind === 'mascot') {
+            appeal += lv * 8;
+        }
+    });
+    return appeal;
+}
+
+// 計算已解鎖座位清單
+function getActiveTables() {
+    return FACILITIES_DB.filter(f => f.category === 'seat' && (gameState.facilities[f.id] || 0) > 0);
+}
+
+// 計算菜單單品目前售價
+function getDishPrice(dish) {
+    const lv = gameState.menu[dish.id] || 0;
+    if (lv <= 0) return dish.basePrice;
+    const machineLv = gameState.facilities.espresso_machine || 0;
+    const machineBonus = 1 + machineLv * 0.06;
+    return Math.round((dish.basePrice * (1 + (lv - 1) * 0.25)) * machineBonus);
+}
+
+/**
+ * ============================================================================
+ * 4. 餐廳模擬實體與 AI 邏輯 (Canvas 邏輯座標 800 x 500)
+ * ============================================================================
+ */
+const WORLD_W = 800;
+const WORLD_H = 500;
+
+// 關鍵座標節點
+const POS = {
+    door: { x: 110, y: 445 },
+    waitSpot: { x: 185, y: 395 },
+    kitchenStove: { x: 115, y: 125 },
+    counterPickup: { x: 225, y: 155 },
+    staffIdle: { x: 245, y: 215 },
+    grassCenter: { x: 645, y: 225 }
+};
+
+let tablesState = [];      // 每張桌子的佔用狀態
+let kitchenOrders = [];    // 待烹飪訂單
+let readyDishes = [];      // 櫃檯上已做好待送餐的料理
+let customers = [];        // 顧客群 (含隨行毛孩)
+let staffEntities = [];    // 員工實體
+let mascotEntities = [];   // 駐店毛孩實體
+let floatingTexts = [];    // 飄浮文字 (+$150, +💖)
+let particles = [];        // 油煙、愛心、閃光粒子
+
+let spawnTimer = 2.0;
+
+function initEntities() {
+    // 1. 初始化餐桌狀態
+    tablesState = FACILITIES_DB.filter(f => f.category === 'seat').map(f => ({
+        id: f.id,
+        x: f.x,
+        y: f.y,
+        occupiedBy: null,
+        dirty: false,
+        cleanProgress: 0
+    }));
+
+    kitchenOrders = [];
+    readyDishes = [];
+    customers = [];
+    floatingTexts = [];
+    particles = [];
+
+    // 2. 初始化員工
+    staffEntities = [];
+    // 主廚
+    staffEntities.push({
+        id: 'chef_leo',
+        role: 'chef',
+        x: POS.kitchenStove.x,
+        y: POS.kitchenStove.y,
+        targetX: POS.kitchenStove.x,
+        targetY: POS.kitchenStove.y,
+        cookingOrder: null,
+        cookTimer: 0,
+        animPhase: 0
+    });
+
+    // 外場店員
+    ['waiter_mia', 'waiter_ken'].forEach((wid, idx) => {
+        if ((gameState.staffPets[wid] || 0) > 0) {
+            staffEntities.push({
+                id: wid,
+                role: 'waiter',
+                x: POS.staffIdle.x + idx * 32,
+                y: POS.staffIdle.y,
+                targetX: POS.staffIdle.x + idx * 32,
+                targetY: POS.staffIdle.y,
+                state: 'idle', // idle, to_counter, to_table_deliver, to_table_clean
+                carryingDish: null,
+                targetTableId: null,
+                animPhase: idx * 1.5
+            });
+        }
+    });
+
+    // 3. 初始化駐店毛孩
+    mascotEntities = [];
+    STAFF_PETS_DB.filter(p => p.kind === 'mascot').forEach((pet, idx) => {
+        if ((gameState.staffPets[pet.id] || 0) > 0) {
+            mascotEntities.push({
+                id: pet.id,
+                name: pet.name,
+                species: pet.species,
+                x: 420 + idx * 75,
+                y: 230 + (idx % 2) * 50,
+                targetX: 620,
+                targetY: 220,
+                waitTimer: 1 + idx,
+                heartTimer: 5 + idx * 2,
+                animPhase: idx
+            });
+        }
+    });
+}
+
+// 確保新解鎖的員工或毛孩即時加入場景
+function syncDynamicEntities() {
+    // 檢查二號店員
+    if ((gameState.staffPets.waiter_ken || 0) > 0 && !staffEntities.some(s => s.id === 'waiter_ken')) {
+        staffEntities.push({
+            id: 'waiter_ken',
+            role: 'waiter',
+            x: POS.door.x,
+            y: POS.door.y,
+            targetX: POS.staffIdle.x + 32,
+            targetY: POS.staffIdle.y,
+            state: 'idle',
+            carryingDish: null,
+            targetTableId: null,
+            animPhase: 0
+        });
+    }
+    // 檢查駐店毛孩
+    STAFF_PETS_DB.filter(p => p.kind === 'mascot').forEach((pet, idx) => {
+        if ((gameState.staffPets[pet.id] || 0) > 0 && !mascotEntities.some(m => m.id === pet.id)) {
+            mascotEntities.push({
+                id: pet.id,
+                name: pet.name,
+                species: pet.species,
+                x: POS.door.x + 20,
+                y: POS.door.y - 20,
+                targetX: POS.grassCenter.x,
+                targetY: POS.grassCenter.y,
+                waitTimer: 0.5,
+                heartTimer: 3,
+                animPhase: idx
+            });
+        }
+    });
+}
+
+function addFloatingText(x, y, text, color = '#ffd447') {
+    floatingTexts.push({
+        x, y, text, color,
+        life: 1.4,
+        maxLife: 1.4
+    });
+}
+
+function spawnHeartParticle(x, y) {
+    particles.push({
+        type: 'heart',
+        x: x + (Math.random() - 0.5) * 16,
+        y: y - 10,
+        vx: (Math.random() - 0.5) * 12,
+        vy: -22 - Math.random() * 12,
+        life: 1.1,
+        maxLife: 1.1
+    });
+}
+
+function spawnSmokeParticle(x, y) {
+    particles.push({
+        type: 'smoke',
+        x: x + (Math.random() - 0.5) * 12,
+        y: y - 8,
+        vx: (Math.random() - 0.5) * 8,
+        vy: -18 - Math.random() * 10,
+        life: 0.8,
+        maxLife: 0.8
+    });
+}
+
+// 生成新顧客 (可能是單人或帶毛孩的飼主)
+function spawnCustomer() {
+    // 晚上 20:15 後停止進新客，準備打烊
+    if (gameState.timeMinutes >= 20 * 60 + 15) return;
+
+    const activeTables = getActiveTables();
+    const freeTable = tablesState.find(t =>
+        activeTables.some(at => at.id === t.id) && !t.occupiedBy && !t.dirty
+    );
+
+    // 場上排隊過多則暫緩
+    const waitingCount = customers.filter(c => c.state === 'entering' || c.state === 'waiting').length;
+    if (!freeTable && waitingCount >= 2) return;
+
+    const hasPet = Math.random() < 0.72; // 72% 機率是帶毛孩的飼主！
+    const petTypes = ['corgi', 'poodle', 'calico', 'husky'];
+    const humanColors = ['#e06c75', '#61afef', '#98c379', '#c678dd', '#e5c07b', '#56b6c2'];
+
+    const id = 'cust_' + Date.now() + '_' + Math.floor(Math.random() * 999);
+    const cust = {
+        id,
+        x: POS.door.x,
+        y: POS.door.y,
+        targetX: POS.waitSpot.x + waitingCount * 28,
+        targetY: POS.waitSpot.y,
+        color: humanColors[Math.floor(Math.random() * humanColors.length)],
+        hasPet,
+        petType: petTypes[Math.floor(Math.random() * petTypes.length)],
+        petX: POS.door.x - 16,
+        petY: POS.door.y + 8,
+        state: 'entering', // entering, waiting, to_seat, ordering, waiting_food, eating, leaving
+        tableId: null,
+        thinkTimer: 0,
+        eatTimer: 0,
+        humanDish: null,
+        petDish: null,
+        totalBill: 0,
+        animPhase: Math.random() * 5
+    };
+
+    customers.push(cust);
+}
+
+// 輔助移動函式
+function moveTowards(entity, tx, ty, speed, dt) {
+    const dx = tx - entity.x;
+    const dy = ty - entity.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist <= speed * dt || dist < 1.5) {
+        entity.x = tx;
+        entity.y = ty;
+        return true;
+    }
+    entity.x += (dx / dist) * speed * dt;
+    entity.y += (dy / dist) * speed * dt;
+    entity.animPhase += dt * 10;
+    return false;
+}
+
+/**
+ * ============================================================================
+ * 5. 主遊戲模擬更新迴圈 (Simulation Update)
+ * ============================================================================
+ */
+function updateSimulation(dt) {
+    if (gameSpeed === 0 || isEndOfDayModalOpen) return;
+
+    const scaledDt = dt * gameSpeed;
+
+    // 1. 推進遊戲時鐘 (1 現實秒 = 8 遊戲分鐘 -> 12 小時營業約 90 秒)
+    gameState.timeMinutes += scaledDt * 8;
+    if (gameState.timeMinutes >= 21 * 60) {
+        gameState.timeMinutes = 21 * 60;
+        triggerEndOfDay();
+        return;
+    }
+
+    // 2. 根據魅力值與餐桌數量自動生成客人
+    const appeal = getTotalAppeal();
+    const spawnInterval = Math.max(2.6, 7.5 - appeal * 0.035);
+    spawnTimer -= scaledDt;
+    if (spawnTimer <= 0) {
+        spawnCustomer();
+        spawnTimer = spawnInterval;
+    }
+
+    // 3. 更新主廚烹飪邏輯
+    const chef = staffEntities.find(s => s.role === 'chef');
+    if (chef) {
+        const chefLv = gameState.staffPets.chef_leo || 1;
+        const machineLv = gameState.facilities.espresso_machine || 0;
+        const cookDuration = Math.max(0.9, 2.6 - chefLv * 0.16 - machineLv * 0.12);
+
+        if (!chef.cookingOrder && kitchenOrders.length > 0) {
+            chef.cookingOrder = kitchenOrders.shift();
+            chef.cookTimer = cookDuration;
+        }
+
+        if (chef.cookingOrder) {
+            chef.animPhase += scaledDt * 12;
+            chef.cookTimer -= scaledDt;
+            if (Math.random() < scaledDt * 4) {
+                spawnSmokeParticle(chef.x, chef.y - 16);
+            }
+            if (chef.cookTimer <= 0) {
+                readyDishes.push(chef.cookingOrder);
+                chef.cookingOrder = null;
+            }
+        }
+    }
+
+    // 4. 更新外場店員 AI (送餐 > 收桌 > 待機)
+    staffEntities.filter(s => s.role === 'waiter').forEach((waiter, idx) => {
+        const lv = gameState.staffPets[waiter.id] || 1;
+        const moveSpeed = 95 + lv * 14;
+
+        if (waiter.state === 'idle') {
+            // 優先檢查櫃檯是否有做好的餐點
+            if (readyDishes.length > 0) {
+                waiter.state = 'to_counter';
+                waiter.targetX = POS.counterPickup.x;
+                waiter.targetY = POS.counterPickup.y;
+                return;
+            }
+            // 其次檢查是否有髒桌子需要清理
+            const dirtyTable = tablesState.find(t =>
+                t.dirty && !staffEntities.some(other => other !== waiter && other.targetTableId === t.id)
+            );
+            if (dirtyTable) {
+                waiter.state = 'to_table_clean';
+                waiter.targetTableId = dirtyTable.id;
+                waiter.targetX = dirtyTable.x;
+                waiter.targetY = dirtyTable.y - 24;
+                return;
+            }
+            // 回到待機點
+            moveTowards(waiter, POS.staffIdle.x + idx * 34, POS.staffIdle.y, moveSpeed * 0.7, scaledDt);
+        } else if (waiter.state === 'to_counter') {
+            if (moveTowards(waiter, waiter.targetX, waiter.targetY, moveSpeed, scaledDt)) {
+                if (readyDishes.length > 0) {
+                    const dishOrder = readyDishes.shift();
+                    const table = tablesState.find(t => t.id === dishOrder.tableId);
+                    if (table && table.occupiedBy) {
+                        waiter.carryingDish = dishOrder;
+                        waiter.targetTableId = table.id;
+                        waiter.state = 'to_table_deliver';
+                        waiter.targetX = table.x;
+                        waiter.targetY = table.y - 24;
+                    } else {
+                        waiter.state = 'idle';
+                    }
+                } else {
+                    waiter.state = 'idle';
+                }
+            }
+        } else if (waiter.state === 'to_table_deliver') {
+            if (moveTowards(waiter, waiter.targetX, waiter.targetY, moveSpeed, scaledDt)) {
+                const cust = customers.find(c => c.tableId === waiter.targetTableId && c.state === 'waiting_food');
+                if (cust) {
+                    cust.state = 'eating';
+                    cust.eatTimer = 4.2;
+                    spawnHeartParticle(cust.x, cust.y - 16);
+                }
+                waiter.carryingDish = null;
+                waiter.targetTableId = null;
+                waiter.state = 'idle';
+            }
+        } else if (waiter.state === 'to_table_clean') {
+            if (moveTowards(waiter, waiter.targetX, waiter.targetY, moveSpeed, scaledDt)) {
+                const table = tablesState.find(t => t.id === waiter.targetTableId);
+                if (table && table.dirty) {
+                    table.cleanProgress += scaledDt * (1.2 + lv * 0.25);
+                    waiter.animPhase += scaledDt * 15;
+                    if (table.cleanProgress >= 1.0) {
+                        table.dirty = false;
+                        table.cleanProgress = 0;
+                        waiter.targetTableId = null;
+                        waiter.state = 'idle';
+                    }
+                } else {
+                    waiter.targetTableId = null;
+                    waiter.state = 'idle';
+                }
+            }
+        }
+    });
+
+    // 5. 更新顧客與隨行毛孩 AI
+    const activeTables = getActiveTables();
+    for (let i = customers.length - 1; i >= 0; i--) {
+        const c = customers[i];
+        const custSpeed = 82;
+
+        if (c.state === 'entering' || c.state === 'waiting') {
+            moveTowards(c, c.targetX, c.targetY, custSpeed, scaledDt);
+            // 尋找空桌
+            const freeTable = tablesState.find(t =>
+                activeTables.some(at => at.id === t.id) && !t.occupiedBy && !t.dirty
+            );
+            if (freeTable) {
+                freeTable.occupiedBy = c.id;
+                c.tableId = freeTable.id;
+                c.state = 'to_seat';
+                c.targetX = freeTable.x - 22;
+                c.targetY = freeTable.y;
+            } else {
+                c.state = 'waiting';
+            }
+        } else if (c.state === 'to_seat') {
+            if (moveTowards(c, c.targetX, c.targetY, custSpeed, scaledDt)) {
+                c.state = 'ordering';
+                c.thinkTimer = 1.4;
+            }
+        } else if (c.state === 'ordering') {
+            c.thinkTimer -= scaledDt;
+            if (c.thinkTimer <= 0) {
+                // 挑選已解鎖的人類餐點與寵物鮮食
+                const unlockedHuman = MENU_DB.filter(m => m.type === 'human' && (gameState.menu[m.id] || 0) > 0);
+                const unlockedPet = MENU_DB.filter(m => m.type === 'pet' && (gameState.menu[m.id] || 0) > 0);
+
+                c.humanDish = unlockedHuman[Math.floor(Math.random() * unlockedHuman.length)];
+                let bill = getDishPrice(c.humanDish);
+
+                if (c.hasPet && unlockedPet.length > 0) {
+                    c.petDish = unlockedPet[Math.floor(Math.random() * unlockedPet.length)];
+                    bill += getDishPrice(c.petDish);
+                }
+
+                // 設施與毛孩小費加成
+                let tipMultiplier = 1.0;
+                if (c.tableId === 'table_3') tipMultiplier += 0.10;
+                if (c.tableId === 'table_4') tipMultiplier += 0.20;
+                if ((gameState.facilities.pet_fountain || 0) > 0) tipMultiplier += 0.08 * gameState.facilities.pet_fountain;
+                const shibaLv = gameState.staffPets.pet_doudou || 0;
+                if (shibaLv > 0) tipMultiplier += shibaLv * 0.05;
+
+                c.totalBill = Math.round(bill * tipMultiplier);
+                c.state = 'waiting_food';
+                kitchenOrders.push({
+                    tableId: c.tableId,
+                    humanDish: c.humanDish,
+                    petDish: c.petDish
+                });
+            }
+        } else if (c.state === 'eating') {
+            c.eatTimer -= scaledDt;
+            if (Math.random() < scaledDt * 1.5) {
+                spawnHeartParticle(c.x + 12, c.y - 12);
+            }
+            if (c.eatTimer <= 0) {
+                // 結帳離開！
+                gameState.gold += c.totalBill;
+                gameState.totalRevenue += c.totalBill;
+                gameState.dailyStats.revenue += c.totalBill;
+                gameState.totalCustomers += 1;
+                gameState.dailyStats.customers += 1;
+
+                let heartGain = c.hasPet ? 3 : 1;
+                if ((gameState.facilities.grass_zone || 0) > 0 && c.hasPet) heartGain += 1;
+                gameState.hearts += heartGain;
+                gameState.dailyStats.hearts += heartGain;
+
+                if (c.hasPet) {
+                    gameState.totalPetsServed += 1;
+                    gameState.dailyStats.pets += 1;
+                }
+
+                // 評價微幅上升
+                gameState.rating = Math.min(5.0, +(gameState.rating + 0.025).toFixed(2));
+
+                addFloatingText(c.x, c.y - 26, `+$${c.totalBill}`, '#ffd447');
+                addFloatingText(c.x + 18, c.y - 42, `+${heartGain}💖`, '#ff85b3');
+                audio.playCoin();
+
+                const table = tablesState.find(t => t.id === c.tableId);
+                if (table) {
+                    table.occupiedBy = null;
+                    table.dirty = true;
+                    table.cleanProgress = 0;
+                }
+                c.state = 'leaving';
+                c.targetX = POS.door.x;
+                c.targetY = POS.door.y;
+            }
+        } else if (c.state === 'leaving') {
+            if (moveTowards(c, c.targetX, c.targetY, custSpeed * 1.1, scaledDt)) {
+                customers.splice(i, 1);
+                continue;
+            }
+        }
+
+        // 更新隨行毛孩跟隨位置
+        if (c.hasPet) {
+            let ptx = c.x - 18;
+            let pty = c.y + 10;
+            if (c.state === 'ordering' || c.state === 'waiting_food' || c.state === 'eating') {
+                // 坐下時毛孩乖乖待在餐桌右側地面
+                ptx = c.x + 42;
+                pty = c.y + 6;
+            }
+            c.petX += (ptx - c.petX) * Math.min(1, scaledDt * 6);
+            c.petY += (pty - c.petY) * Math.min(1, scaledDt * 6);
+        }
+    }
+
+    // 6. 更新駐店毛孩巡邏與治癒愛心光環
+    mascotEntities.forEach(m => {
+        const lv = gameState.staffPets[m.id] || 1;
+        m.waitTimer -= scaledDt;
+        if (m.waitTimer <= 0) {
+            if (moveTowards(m, m.targetX, m.targetY, 42 + lv * 4, scaledDt)) {
+                // 抵達後休息一下並重新挑選草皮區或餐桌走道目標
+                m.waitTimer = 1.5 + Math.random() * 2;
+                const goGrass = (gameState.facilities.grass_zone || 0) > 0 && Math.random() < 0.65;
+                if (goGrass) {
+                    m.targetX = 595 + Math.random() * 110;
+                    m.targetY = 175 + Math.random() * 115;
+                } else {
+                    m.targetX = 280 + Math.random() * 280;
+                    m.targetY = 155 + Math.random() * 190;
+                }
+            }
+        }
+
+        // 定期產生愛心研究點
+        m.heartTimer -= scaledDt;
+        if (m.heartTimer <= 0) {
+            m.heartTimer = Math.max(3.5, 8.5 - lv * 0.6);
+            const bonusHearts = 1 + Math.floor(lv / 3);
+            gameState.hearts += bonusHearts;
+            gameState.dailyStats.hearts += bonusHearts;
+            spawnHeartParticle(m.x, m.y - 12);
+            addFloatingText(m.x, m.y - 20, `+${bonusHearts}💖`, '#ff9ec4');
+        }
+    });
+
+    // 7. 更新飄浮文字與粒子
+    for (let i = floatingTexts.length - 1; i >= 0; i--) {
+        const ft = floatingTexts[i];
+        ft.y -= 24 * scaledDt;
+        ft.life -= scaledDt;
+        if (ft.life <= 0) floatingTexts.splice(i, 1);
+    }
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx * scaledDt;
+        p.y += p.vy * scaledDt;
+        p.life -= scaledDt;
+        if (p.life <= 0) particles.splice(i, 1);
+    }
+}
+
+/**
+ * ============================================================================
+ * 6. 開羅風高精緻像素繪圖引擎 (HTML5 Canvas Renderer)
+ * ============================================================================
+ */
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+function resizeCanvas() {
+    const wrapper = document.getElementById('canvas-wrapper');
+    if (!wrapper) return;
+    const rect = wrapper.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.floor(rect.width * dpr);
+    canvas.height = Math.floor(rect.height * dpr);
+}
+window.addEventListener('resize', resizeCanvas);
+
+// 繪製圓角氣泡框
+function drawSpeechBubble(x, y, iconText, bgColor = '#ffffff', borderColor = '#5c3a21') {
+    ctx.save();
+    ctx.fillStyle = bgColor;
+    ctx.strokeStyle = borderColor;
+    ctx.lineWidth = 2.5;
+
+    const w = 34;
+    const h = 24;
+    const bx = x - w / 2;
+    const by = y - h - 18;
+
+    ctx.beginPath();
+    ctx.roundRect(bx, by, w, h, 6);
+    ctx.fill();
+    ctx.stroke();
+
+    // 氣泡小尾巴
+    ctx.beginPath();
+    ctx.moveTo(x - 4, by + h);
+    ctx.lineTo(x, by + h + 5);
+    ctx.lineTo(x + 4, by + h);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(iconText, x, by + h / 2 + 1);
+    ctx.restore();
+}
+
+// 繪製可愛像素小人 (主廚、店員、客人)
+function drawPixelPerson(x, y, options = {}) {
+    const {
+        shirtColor = '#4a90e2',
+        hairColor = '#3e2716',
+        isChef = false,
+        isWaiter = false,
+        animPhase = 0,
+        carrying = false
+    } = options;
+
+    const bob = Math.abs(Math.sin(animPhase)) * 2.5;
+    ctx.save();
+    ctx.translate(Math.round(x), Math.round(y));
+
+    // 腳底陰影
+    ctx.fillStyle = 'rgba(0,0,0,0.22)';
+    ctx.beginPath();
+    ctx.ellipse(0, 12, 10, 4.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 身體
+    ctx.fillStyle = isChef ? '#ffffff' : (isWaiter ? '#e87a3e' : shirtColor);
+    ctx.fillRect(-7, -4 - bob, 14, 14);
+    ctx.strokeStyle = '#2b190d';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(-7, -4 - bob, 14, 14);
+
+    // 圍裙細節
+    if (isWaiter) {
+        ctx.fillStyle = '#fff9eb';
+        ctx.fillRect(-5, 1 - bob, 10, 8);
+    }
+
+    // 頭部
+    ctx.fillStyle = '#ffdfc4';
+    ctx.fillRect(-7, -18 - bob, 14, 14);
+    ctx.strokeRect(-7, -18 - bob, 14, 14);
+
+    // 頭髮或廚師帽
+    if (isChef) {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(-8, -27 - bob, 16, 10);
+        ctx.strokeRect(-8, -27 - bob, 16, 10);
+    } else {
+        ctx.fillStyle = hairColor;
+        ctx.fillRect(-7, -19 - bob, 14, 5);
+    }
+
+    // 開羅風豆豆眼
+    ctx.fillStyle = '#2b190d';
+    ctx.fillRect(-4, -12 - bob, 2, 3);
+    ctx.fillRect(2, -12 - bob, 2, 3);
+
+    // 端盤子
+    if (carrying) {
+        ctx.fillStyle = '#d9a05b';
+        ctx.fillRect(-10, -4 - bob, 20, 3);
+        ctx.fillStyle = '#ff6b6b';
+        ctx.beginPath();
+        ctx.arc(0, -7 - bob, 4, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    ctx.restore();
+}
+
+// 繪製可愛像素狗狗 / 貓咪
+function drawPixelPet(x, y, species = 'shiba', animPhase = 0, nameTag = null) {
+    const bob = Math.abs(Math.sin(animPhase * 1.2)) * 2;
+    ctx.save();
+    ctx.translate(Math.round(x), Math.round(y));
+
+    // 陰影
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.beginPath();
+    ctx.ellipse(0, 7, 9, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    let bodyColor = '#e69d45';
+    let bellyColor = '#fff6e5';
+    let isCat = false;
+
+    if (species === 'golden') { bodyColor = '#f2c166'; bellyColor = '#fff3d6'; }
+    else if (species === 'shiba') { bodyColor = '#e07a35'; bellyColor = '#ffffff'; }
+    else if (species === 'corgi') { bodyColor = '#d97b38'; bellyColor = '#ffffff'; }
+    else if (species === 'poodle') { bodyColor = '#8c5332'; bellyColor = '#a66844'; }
+    else if (species === 'husky') { bodyColor = '#6c7a89'; bellyColor = '#ffffff'; }
+    else if (species === 'orange_cat') { bodyColor = '#f59b42'; bellyColor = '#fff0d4'; isCat = true; }
+    else if (species === 'calico') { bodyColor = '#ffffff'; bellyColor = '#f08a3c'; isCat = true; }
+
+    ctx.strokeStyle = '#2b190d';
+    ctx.lineWidth = 1.5;
+
+    // 尾巴
+    const tailWag = Math.sin(animPhase * 3) * 3;
+    ctx.fillStyle = bodyColor;
+    ctx.fillRect(-11, -3 - bob + tailWag * 0.4, 4, 5);
+
+    // 身體
+    ctx.fillRect(-8, -4 - bob, 15, 10);
+    ctx.strokeRect(-8, -4 - bob, 15, 10);
+
+    // 頭部
+    ctx.fillRect(1, -11 - bob, 11, 10);
+    ctx.strokeRect(1, -11 - bob, 11, 10);
+
+    // 臉頰/吻部
+    ctx.fillStyle = bellyColor;
+    ctx.fillRect(5, -6 - bob, 6, 4);
+
+    // 耳朵
+    ctx.fillStyle = isCat ? '#d96b27' : '#5c3a21';
+    if (isCat) {
+        // 尖貓耳
+        ctx.beginPath();
+        ctx.moveTo(2, -11 - bob); ctx.lineTo(4, -16 - bob); ctx.lineTo(6, -11 - bob);
+        ctx.moveTo(7, -11 - bob); ctx.lineTo(9, -16 - bob); ctx.lineTo(11, -11 - bob);
+        ctx.fill();
+    } else {
+        ctx.fillRect(2, -14 - bob, 3, 4);
+        ctx.fillRect(8, -14 - bob, 3, 4);
+    }
+
+    // 眼睛與鼻子
+    ctx.fillStyle = '#1f1209';
+    ctx.fillRect(4, -8 - bob, 2, 2);
+    ctx.fillRect(9, -8 - bob, 2, 2);
+    ctx.fillRect(10, -5 - bob, 2, 2);
+
+    // 駐店毛孩名牌
+    if (nameTag) {
+        ctx.font = 'bold 10px "Noto Sans TC", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = 'rgba(62, 39, 22, 0.85)';
+        ctx.fillRect(-22, -28 - bob, 48, 13);
+        ctx.fillStyle = '#ffdf73';
+        ctx.fillText(nameTag, 2, -18 - bob);
+    }
+
+    ctx.restore();
+}
+
+// 繪製整個餐廳場景
+function renderScene() {
+    if (!ctx) return;
+    const scaleX = canvas.width / WORLD_W;
+    const scaleY = canvas.height / WORLD_H;
+
+    ctx.save();
+    ctx.scale(scaleX, scaleY);
+
+    // 1. 外部草地與木頭地板底色
+    ctx.fillStyle = '#73a857';
+    ctx.fillRect(0, 0, WORLD_W, WORLD_H);
+
+    // 餐廳室內主木地板 (x: 40~760, y: 40~455)
+    ctx.fillStyle = '#e6c391';
+    ctx.fillRect(40, 40, 720, 415);
+
+    // 繪製木地板拼花紋路
+    ctx.strokeStyle = '#cfa772';
+    ctx.lineWidth = 1;
+    for (let y = 40; y < 455; y += 22) {
+        ctx.beginPath();
+        ctx.moveTo(40, y);
+        ctx.lineTo(760, y);
+        ctx.stroke();
+        const offset = (y / 22) % 2 === 0 ? 0 : 30;
+        for (let x = 40 + offset; x < 760; x += 60) {
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x, y + 22);
+            ctx.stroke();
+        }
+    }
+
+    // 廚房黑白棋盤格地板 (x: 45~255, y: 45~245)
+    const tileSize = 18;
+    for (let gx = 45; gx < 252; gx += tileSize) {
+        for (let gy = 45; gy < 243; gy += tileSize) {
+            const isEven = (Math.floor(gx / tileSize) + Math.floor(gy / tileSize)) % 2 === 0;
+            ctx.fillStyle = isEven ? '#f7f3eb' : '#d6cfc2';
+            ctx.fillRect(gx, gy, tileSize, tileSize);
+        }
+    }
+
+    // 2. 餐廳外牆與大門入口
+    ctx.strokeStyle = '#5c3a21';
+    ctx.lineWidth = 8;
+    ctx.strokeRect(40, 40, 720, 415);
+
+    // 上方玻璃窗裝飾
+    [320, 440, 560].forEach(wx => {
+        ctx.fillStyle = '#a8e4ff';
+        ctx.fillRect(wx, 34, 70, 12);
+        ctx.strokeStyle = '#5c3a21';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(wx, 34, 70, 12);
+    });
+
+    // 入口迎賓地毯 (左下角)
+    ctx.fillStyle = '#d9534f';
+    ctx.fillRect(75, 435, 70, 24);
+    ctx.strokeStyle = '#ffd447';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(78, 438, 64, 18);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('WELCOME', 110, 450);
+
+    // 3. 廚房流理台、爐灶與出餐吧台
+    // 爐灶區
+    ctx.fillStyle = '#7f8c8d';
+    ctx.fillRect(55, 65, 130, 42);
+    ctx.strokeStyle = '#2c3e50';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(55, 65, 130, 42);
+    // 兩個爐火口
+    ctx.fillStyle = '#2c3e50';
+    ctx.beginPath(); ctx.arc(88, 86, 11, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(130, 86, 11, 0, Math.PI * 2); ctx.fill();
+
+    // 義式咖啡機 (若已解鎖)
+    if ((gameState.facilities.espresso_machine || 0) > 0) {
+        ctx.fillStyle = '#c0392b';
+        ctx.fillRect(150, 68, 28, 32);
+        ctx.strokeStyle = '#2b190d';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(150, 68, 28, 32);
+        ctx.fillStyle = '#ecf0f1';
+        ctx.fillRect(155, 74, 18, 10);
+    }
+
+    // L型出餐吧台
+    ctx.fillStyle = '#8c5327';
+    ctx.fillRect(240, 45, 22, 180);
+    ctx.fillRect(45, 225, 217, 22);
+    ctx.strokeStyle = '#4a2810';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(240, 45, 22, 180);
+    ctx.strokeRect(45, 225, 217, 22);
+
+    // 吧台上的待送餐點盤子
+    readyDishes.slice(0, 4).forEach((d, idx) => {
+        const py = 120 + idx * 24;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(251, py, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#e87a3e';
+        ctx.beginPath();
+        ctx.arc(251, py, 4, 0, Math.PI * 2);
+        ctx.fill();
+    });
+
+    // 4. 繪製已解鎖的寵物設施 (草皮區、貓跳台、寵物飲水機)
+    if ((gameState.facilities.grass_zone || 0) > 0) {
+        ctx.fillStyle = '#68b849';
+        ctx.beginPath();
+        ctx.roundRect(575, 155, 150, 155, 14);
+        ctx.fill();
+        ctx.strokeStyle = '#3f7d29';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // 草皮上的玩具球與小骨頭
+        ctx.fillStyle = '#ff6b6b';
+        ctx.beginPath(); ctx.arc(620, 260, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffd447';
+        ctx.beginPath(); ctx.arc(690, 195, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.75)';
+        ctx.font = 'bold 11px "Noto Sans TC", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('🌿 毛孩遊戲區', 650, 173);
+    }
+
+    if ((gameState.facilities.cat_tower || 0) > 0) {
+        const tx = 650, ty = 95;
+        ctx.fillStyle = '#d4a373';
+        ctx.strokeStyle = '#5c3a21';
+        ctx.lineWidth = 2.5;
+        // 底座與柱子
+        ctx.fillRect(tx - 24, ty + 14, 48, 12);
+        ctx.strokeRect(tx - 24, ty + 14, 48, 12);
+        ctx.fillRect(tx - 6, ty - 28, 12, 42);
+        ctx.strokeRect(tx - 6, ty - 28, 12, 42);
+        // 貓窩平台
+        ctx.fillStyle = '#faedcd';
+        ctx.fillRect(tx - 20, ty - 34, 40, 10);
+        ctx.strokeRect(tx - 20, ty - 34, 40, 10);
+    }
+
+    if ((gameState.facilities.pet_fountain || 0) > 0) {
+        const fx = 245, fy = 315;
+        ctx.fillStyle = '#4ea8de';
+        ctx.strokeStyle = '#1d4e89';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(fx, fy, 15, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#caf0f8';
+        ctx.beginPath();
+        ctx.arc(fx, fy, 7, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // 5. 繪製餐桌與椅子
+    const activeTables = getActiveTables();
+    tablesState.forEach(t => {
+        const isUnlocked = activeTables.some(at => at.id === t.id);
+        if (!isUnlocked) {
+            // 未解鎖空地虛線框
+            ctx.save();
+            ctx.strokeStyle = 'rgba(92, 58, 33, 0.35)';
+            ctx.setLineDash([5, 5]);
+            ctx.lineWidth = 2;
+            ctx.strokeRect(t.x - 26, t.y - 20, 52, 40);
+            ctx.fillStyle = 'rgba(92, 58, 33, 0.45)';
+            ctx.font = '11px "Noto Sans TC", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('可擴建座位', t.x, t.y + 4);
+            ctx.restore();
+            return;
+        }
+
+        // 左右兩張椅子
+        ctx.fillStyle = '#a86432';
+        ctx.strokeStyle = '#4a2810';
+        ctx.lineWidth = 2;
+        ctx.fillRect(t.x - 32, t.y - 10, 12, 20);
+        ctx.strokeRect(t.x - 32, t.y - 10, 12, 20);
+        ctx.fillRect(t.x + 20, t.y - 10, 12, 20);
+        ctx.strokeRect(t.x + 20, t.y - 10, 12, 20);
+
+        // 桌面
+        ctx.fillStyle = t.id === 'table_4' ? '#f7d08a' : '#c97e42';
+        ctx.beginPath();
+        ctx.roundRect(t.x - 20, t.y - 18, 40, 36, 6);
+        ctx.fill();
+        ctx.stroke();
+
+        // 桌布紋飾
+        ctx.fillStyle = '#fff9eb';
+        ctx.fillRect(t.x - 14, t.y - 12, 28, 24);
+
+        // 桌上的食物或待清理餐盤
+        const cust = customers.find(c => c.tableId === t.id);
+        if (cust && cust.state === 'eating') {
+            ctx.font = '14px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(cust.humanDish ? cust.humanDish.icon : '🍽️', t.x - 4, t.y + 4);
+            if (cust.petDish) {
+                // 寵物鮮食碗放在桌旁地面
+                ctx.fillStyle = '#ff85b3';
+                ctx.beginPath();
+                ctx.arc(t.x + 32, t.y + 14, 6, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        } else if (t.dirty) {
+            ctx.font = '13px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('🧹', t.x, t.y + 4);
+        }
+    });
+
+    // 6. 依 Y 軸深度排序並繪製所有動態角色 (員工、駐店毛孩、顧客與顧客毛孩)
+    const renderList = [];
+
+    staffEntities.forEach(s => {
+        renderList.push({
+            y: s.y,
+            draw: () => {
+                drawPixelPerson(s.x, s.y, {
+                    isChef: s.role === 'chef',
+                    isWaiter: s.role === 'waiter',
+                    animPhase: s.animPhase,
+                    carrying: !!s.carryingDish
+                });
+                if (s.role === 'chef' && s.cookingOrder) {
+                    drawSpeechBubble(s.x, s.y - 12, '🍳', '#fff3cd');
+                }
+            }
+        });
+    });
+
+    mascotEntities.forEach(m => {
+        const shortName = m.name.split('「')[1]?.replace('」', '') || m.name;
+        renderList.push({
+            y: m.y,
+            draw: () => drawPixelPet(m.x, m.y, m.species, m.animPhase, shortName)
+        });
+    });
+
+    customers.forEach(c => {
+        renderList.push({
+            y: c.y,
+            draw: () => {
+                drawPixelPerson(c.x, c.y, {
+                    shirtColor: c.color,
+                    animPhase: c.animPhase
+                });
+                // 頭頂氣泡提示狀態
+                if (c.state === 'waiting') {
+                    drawSpeechBubble(c.x, c.y - 6, '⏳', '#ffe8e8');
+                } else if (c.state === 'ordering') {
+                    drawSpeechBubble(c.x, c.y - 6, '💭', '#ffffff');
+                } else if (c.state === 'waiting_food' && c.humanDish) {
+                    drawSpeechBubble(c.x, c.y - 6, c.humanDish.icon, '#fff9eb');
+                } else if (c.state === 'eating') {
+                    drawSpeechBubble(c.x, c.y - 6, '😋', '#e8ffe8');
+                }
+            }
+        });
+        if (c.hasPet) {
+            renderList.push({
+                y: c.petY,
+                draw: () => drawPixelPet(c.petX, c.petY, c.petType, c.animPhase)
+            });
+        }
+    });
+
+    renderList.sort((a, b) => a.y - b.y);
+    renderList.forEach(item => item.draw());
+
+    // 7. 繪製粒子與飄浮文字
+    particles.forEach(p => {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, p.life / p.maxLife);
+        if (p.type === 'heart') {
+            ctx.font = '14px sans-serif';
+            ctx.fillText('💖', p.x, p.y);
+        } else {
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.restore();
+    });
+
+    floatingTexts.forEach(ft => {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, ft.life / ft.maxLife);
+        ctx.font = 'bold 14px "DotGothic16", "Noto Sans TC", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.strokeStyle = '#2b190d';
+        ctx.lineWidth = 3;
+        ctx.strokeText(ft.text, ft.x, ft.y);
+        ctx.fillStyle = ft.color;
+        ctx.fillText(ft.text, ft.x, ft.y);
+        ctx.restore();
+    });
+
+    ctx.restore();
+}
+
+// 點擊畫布互動：撫摸毛孩或給客人打氣獲得愛心
+canvas.addEventListener('click', (e) => {
+    audio.init();
+    audio.startBGM();
+    const rect = canvas.getBoundingClientRect();
+    const clickX = ((e.clientX - rect.left) / rect.width) * WORLD_W;
+    const clickY = ((e.clientY - rect.top) / rect.height) * WORLD_H;
+
+    // 檢查是否點到駐店毛孩
+    for (const m of mascotEntities) {
+        if (Math.hypot(clickX - m.x, clickY - m.y) < 32) {
+            gameState.hearts += 1;
+            gameState.dailyStats.hearts += 1;
+            spawnHeartParticle(m.x, m.y - 12);
+            addFloatingText(m.x, m.y - 24, '+1💖 撫摸打氣!', '#ff85b3');
+            audio.playPetSound();
+            updateTopHUD();
+            return;
+        }
+    }
+
+    // 檢查是否點到顧客的毛孩
+    for (const c of customers) {
+        if (c.hasPet && Math.hypot(clickX - c.petX, clickY - c.petY) < 28) {
+            gameState.hearts += 1;
+            gameState.dailyStats.hearts += 1;
+            spawnHeartParticle(c.petX, c.petY - 10);
+            addFloatingText(c.petX, c.petY - 22, '+1💖 好乖!', '#ff85b3');
+            audio.playPetSound();
+            updateTopHUD();
+            return;
+        }
+    }
+});
+
+/**
+ * ============================================================================
+ * 7. UI 介面更新與分頁渲染 (開羅風經營面板)
+ * ============================================================================
+ */
+function updateTopHUD() {
+    document.getElementById('ui-rating').textContent = gameState.rating.toFixed(1);
+    document.getElementById('ui-day').textContent = `第 ${gameState.day} 天`;
+
+    const hrs = Math.floor(gameState.timeMinutes / 60);
+    const mins = Math.floor(gameState.timeMinutes % 60);
+    document.getElementById('ui-clock').textContent =
+        `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+
+    const badge = document.getElementById('ui-period-badge');
+    if (hrs < 11) { badge.textContent = '早午餐'; badge.className = 'bg-amber-200 text-amber-900 px-1.5 rounded text-xs'; }
+    else if (hrs < 14) { badge.textContent = '午餐尖峰'; badge.className = 'bg-orange-200 text-orange-900 px-1.5 rounded text-xs'; }
+    else if (hrs < 17) { badge.textContent = '下午茶'; badge.className = 'bg-pink-200 text-pink-900 px-1.5 rounded text-xs'; }
+    else { badge.textContent = '星光晚餐'; badge.className = 'bg-indigo-200 text-indigo-900 px-1.5 rounded text-xs'; }
+
+    document.getElementById('ui-gold').textContent = gameState.gold.toLocaleString();
+    document.getElementById('ui-hearts').textContent = gameState.hearts.toLocaleString();
+
+    const activeTables = getActiveTables();
+    const occupiedCount = tablesState.filter(t => t.occupiedBy).length;
+    document.getElementById('hud-seats').textContent = `${occupiedCount}/${activeTables.length}`;
+    document.getElementById('hud-customers').textContent = customers.length;
+    document.getElementById('hud-appeal').textContent = getTotalAppeal();
+}
+
+function setGameSpeed(speed) {
+    audio.init();
+    audio.startBGM();
+    gameSpeed = speed;
+    [0, 1, 2].forEach(s => {
+        const btn = document.getElementById(`btn-speed-${s}`);
+        if (!btn) return;
+        if (s === speed) {
+            btn.classList.add('kairo-btn-green');
+        } else {
+            btn.classList.remove('kairo-btn-green');
+        }
+    });
+}
+
+function switchTab(tabName) {
+    currentTab = tabName;
+    ['facilities', 'menu', 'staff', 'system'].forEach(t => {
+        const el = document.getElementById(`tab-${t}`);
+        if (el) el.classList.toggle('active', t === tabName);
+    });
+    renderPanel();
+}
+
+function renderPanel() {
+    const container = document.getElementById('panel-content');
+    if (!container) return;
+    container.innerHTML = '';
+
+    if (currentTab === 'facilities') {
+        FACILITIES_DB.forEach(item => {
+            const lv = gameState.facilities[item.id] || 0;
+            const isMax = lv >= item.maxLevel;
+            const cost = lv === 0 ? item.baseCost : Math.round(item.upgradeCost * Math.pow(1.35, lv - 1));
+            const canAfford = gameState.gold >= cost;
+
+            const card = document.createElement('div');
+            card.className = 'bg-[#fffdf7] border-2 border-[#8c5a32] rounded-lg p-2.5 flex flex-col justify-between shadow-sm';
+            card.innerHTML = `
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-bold text-sm sm:text-base text-[#3e2716]">${item.name}</span>
+                        <span class="px-2 py-0.5 rounded text-xs font-bold ${lv > 0 ? 'bg-amber-200 text-amber-900' : 'bg-gray-200 text-gray-600'}">
+                            ${lv > 0 ? `Lv.${lv}/${item.maxLevel}` : '未設置'}
+                        </span>
+                    </div>
+                    <p class="text-xs text-[#6e4b32] leading-relaxed mb-2">${item.desc}</p>
+                </div>
+                <div class="flex items-center justify-between pt-1.5 border-t border-[#e6d5b8]">
+                    <span class="text-xs font-bold text-pink-600">✨ 魅力 +${item.appeal + (lv > 0 ? (lv - 1) * 6 : 0)}</span>
+                    <button onclick="buyOrUpgradeFacility('${item.id}')" ${isMax || !canAfford ? 'disabled' : ''}
+                        class="kairo-btn ${lv === 0 ? 'kairo-btn-green' : 'kairo-btn-orange'} px-3 py-1 text-xs">
+                        ${isMax ? '已達最高級' : `${lv === 0 ? '設置' : '升級'} 💰${cost}`}
+                    </button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    } else if (currentTab === 'menu') {
+        MENU_DB.forEach(dish => {
+            const lv = gameState.menu[dish.id] || 0;
+            const isMax = lv >= dish.maxLevel;
+            const goldCost = lv === 0 ? dish.unlockGold : Math.round(dish.upgGold * Math.pow(1.3, lv - 1));
+            const heartCost = lv === 0 ? dish.unlockHearts : Math.round(dish.upgHearts * Math.pow(1.25, lv - 1));
+            const canAfford = gameState.gold >= goldCost && gameState.hearts >= heartCost;
+            const currentPrice = getDishPrice(dish);
+
+            const tagHtml = dish.type === 'pet'
+                ? '<span class="bg-pink-100 text-pink-800 border border-pink-300 px-1.5 rounded text-[11px]">🐾 寵物鮮食</span>'
+                : '<span class="bg-sky-100 text-sky-800 border border-sky-300 px-1.5 rounded text-[11px]">👤 人類餐點</span>';
+
+            const card = document.createElement('div');
+            card.className = 'bg-[#fffdf7] border-2 border-[#8c5a32] rounded-lg p-2.5 flex flex-col justify-between shadow-sm';
+            card.innerHTML = `
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-lg">${dish.icon}</span>
+                            <span class="font-bold text-sm text-[#3e2716]">${dish.name}</span>
+                        </div>
+                        ${tagHtml}
+                    </div>
+                    <p class="text-xs text-[#6e4b32] mb-2">${dish.desc}</p>
+                </div>
+                <div class="flex items-center justify-between pt-1.5 border-t border-[#e6d5b8]">
+                    <div class="text-xs font-bold">
+                        <span class="text-amber-700">售價 $${currentPrice}</span>
+                        <span class="text-gray-500 ml-1">${lv > 0 ? `(Lv.${lv})` : '(未研發)'}</span>
+                    </div>
+                    <button onclick="researchMenu('${dish.id}')" ${isMax || !canAfford ? 'disabled' : ''}
+                        class="kairo-btn ${lv === 0 ? 'kairo-btn-blue' : 'kairo-btn-orange'} px-2.5 py-1 text-xs">
+                        ${isMax ? '大師級' : `${lv === 0 ? '研發' : '改良'} 💰${goldCost} 💖${heartCost}`}
+                    </button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    } else if (currentTab === 'staff') {
+        STAFF_PETS_DB.forEach(sp => {
+            const lv = gameState.staffPets[sp.id] || 0;
+            const isMax = lv >= sp.maxLevel;
+            const cost = lv === 0 ? sp.unlockGold : Math.round(sp.upgGold * Math.pow(1.35, lv - 1));
+            const canAfford = gameState.gold >= cost;
+
+            const badgeClass = sp.kind === 'mascot'
+                ? 'bg-amber-100 text-amber-900 border-amber-300'
+                : 'bg-emerald-100 text-emerald-900 border-emerald-300';
+
+            const card = document.createElement('div');
+            card.className = 'bg-[#fffdf7] border-2 border-[#8c5a32] rounded-lg p-2.5 flex flex-col justify-between shadow-sm';
+            card.innerHTML = `
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-xl">${sp.avatar}</span>
+                            <span class="font-bold text-sm text-[#3e2716]">${sp.name}</span>
+                        </div>
+                        <span class="border px-1.5 rounded text-[11px] font-bold ${badgeClass}">${sp.role}</span>
+                    </div>
+                    <p class="text-xs text-[#6e4b32] mb-2">${sp.desc}</p>
+                </div>
+                <div class="flex items-center justify-between pt-1.5 border-t border-[#e6d5b8]">
+                    <span class="text-xs font-bold text-[#5c3a21]">${lv > 0 ? `等級 Lv.${lv}/${sp.maxLevel}` : '尚未加入'}</span>
+                    <button onclick="hireOrTrainStaffPet('${sp.id}')" ${isMax || !canAfford ? 'disabled' : ''}
+                        class="kairo-btn ${lv === 0 ? 'kairo-btn-green' : 'kairo-btn-orange'} px-3 py-1 text-xs">
+                        ${isMax ? '已滿級' : `${lv === 0 ? (sp.kind === 'mascot' ? '領養駐店' : '招募') : '特訓升級'} 💰${cost}`}
+                    </button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    } else if (currentTab === 'system') {
+        container.className = 'grid grid-cols-1 md:grid-cols-2 gap-3';
+        container.innerHTML = `
+            <div class="bg-[#fffdf7] border-2 border-[#8c5a32] rounded-lg p-3 space-y-2">
+                <h4 class="font-bold text-sm text-[#3e2716] border-b border-[#e6d5b8] pb-1">📖 開羅經營小秘訣</h4>
+                <ul class="text-xs text-[#5c3a21] space-y-1.5 list-disc pl-4">
+                    <li><b>雙軌菜單</b>：帶毛孩的飼主會同時點「人類餐點」與「寵物鮮食」，雙倍營收！</li>
+                    <li><b>駐店毛孩</b>：領養「豆豆」與「橘子」在店內巡邏，會自動產生 💖 愛心研究點並增加小費。</li>
+                    <li><b>互動打氣</b>：直接點擊餐廳畫面中的狗狗或貓咪，可以撫摸牠們獲得額外愛心喔！</li>
+                </ul>
+            </div>
+            <div class="bg-[#fffdf7] border-2 border-[#8c5a32] rounded-lg p-3 flex flex-col justify-between space-y-3">
+                <div>
+                    <h4 class="font-bold text-sm text-[#3e2716] border-b border-[#e6d5b8] pb-1 mb-2">💾 遊戲存檔管理</h4>
+                    <p class="text-xs text-[#6e4b32]">系統會在每天營業結束時自動存檔，你也可以隨時手動儲存。</p>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <button onclick="saveGame(true)" class="kairo-btn kairo-btn-green flex-1 py-2 text-xs">
+                        💾 立即手動存檔
+                    </button>
+                    <button id="btn-reset-confirm" onclick="resetGameProgress()" class="kairo-btn flex-1 py-2 text-xs text-red-700">
+                        🗑️ 重置存檔（重新開始）
+                    </button>
+                </div>
+            </div>
+        `;
+        return;
+    }
+
+    container.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5';
+}
+
+/**
+ * ============================================================================
+ * 8. 購買、研發與每日結算操作邏輯
+ * ============================================================================
+ */
+function buyOrUpgradeFacility(id) {
+    const item = FACILITIES_DB.find(f => f.id === id);
+    if (!item) return;
+    const lv = gameState.facilities[id] || 0;
+    if (lv >= item.maxLevel) return;
+
+    const cost = lv === 0 ? item.baseCost : Math.round(item.upgradeCost * Math.pow(1.35, lv - 1));
+    if (gameState.gold < cost) return;
+
+    gameState.gold -= cost;
+    gameState.facilities[id] = lv + 1;
+    gameState.rating = Math.min(5.0, +(gameState.rating + 0.08).toFixed(2));
+
+    audio.playUpgrade();
+    showToast(`✨ ${item.name} 升至 Lv.${lv + 1}！`);
+    setNews(`店內新裝修！「${item.name}」等級提升，餐廳魅力大幅上升！`);
+    saveGame(false);
+    updateTopHUD();
+    renderPanel();
+}
+
+function researchMenu(id) {
+    const dish = MENU_DB.find(m => m.id === id);
+    if (!dish) return;
+    const lv = gameState.menu[id] || 0;
+    if (lv >= dish.maxLevel) return;
+
+    const goldCost = lv === 0 ? dish.unlockGold : Math.round(dish.upgGold * Math.pow(1.3, lv - 1));
+    const heartCost = lv === 0 ? dish.unlockHearts : Math.round(dish.upgHearts * Math.pow(1.25, lv - 1));
+
+    if (gameState.gold < goldCost || gameState.hearts < heartCost) return;
+
+    gameState.gold -= goldCost;
+    gameState.hearts -= heartCost;
+    gameState.menu[id] = lv + 1;
+    gameState.rating = Math.min(5.0, +(gameState.rating + 0.06).toFixed(2));
+
+    audio.playUpgrade();
+    showToast(`🍽️ 「${dish.name}」研發成功 (Lv.${lv + 1})！`);
+    setNews(`新菜單好評如潮！「${dish.name}」現在售價 $${getDishPrice(dish)}！`);
+    saveGame(false);
+    updateTopHUD();
+    renderPanel();
+}
+
+function hireOrTrainStaffPet(id) {
+    const sp = STAFF_PETS_DB.find(s => s.id === id);
+    if (!sp) return;
+    const lv = gameState.staffPets[id] || 0;
+    if (lv >= sp.maxLevel) return;
+
+    const cost = lv === 0 ? sp.unlockGold : Math.round(sp.upgGold * Math.pow(1.35, lv - 1));
+    if (gameState.gold < cost) return;
+
+    gameState.gold -= cost;
+    gameState.staffPets[id] = lv + 1;
+
+    syncDynamicEntities();
+    if (sp.kind === 'mascot') audio.playPetSound();
+    else audio.playUpgrade();
+
+    showToast(`${sp.avatar} ${sp.name} 達到 Lv.${lv + 1}！`);
+    setNews(`${sp.name} 幹勁十足，毛孩星光餐廳的服務品質更上一層樓！`);
+    saveGame(false);
+    updateTopHUD();
+    renderPanel();
+}
+
+function triggerEndOfDay() {
+    isEndOfDayModalOpen = true;
+    saveGame(false);
+
+    document.getElementById('eod-title').textContent = `🌙 第 ${gameState.day} 天 營業結算報告`;
+    document.getElementById('eod-customers').textContent = `${gameState.dailyStats.customers} 組`;
+    document.getElementById('eod-pets').textContent = `${gameState.dailyStats.pets} 隻`;
+    document.getElementById('eod-revenue').textContent = `+$${gameState.dailyStats.revenue.toLocaleString()}`;
+    document.getElementById('eod-hearts').textContent = `+${gameState.dailyStats.hearts} 💖`;
+    document.getElementById('eod-rating').textContent = `★ ${gameState.rating.toFixed(1)}`;
+
+    const commentEl = document.getElementById('eod-comment');
+    if (gameState.dailyStats.revenue >= 1500) {
+        commentEl.textContent = '🌟 評語：高朋滿座的奇蹟！整條街的飼主都在討論這家超棒的毛孩餐廳！';
+    } else if (gameState.dailyStats.revenue >= 600) {
+        commentEl.textContent = '✨ 評語：營運非常穩健！試著多研發幾道寵物鮮食來提高客單價吧！';
+    } else {
+        commentEl.textContent = '💡 評語：溫馨的小店正穩步成長，擴建座位與草皮遊戲區能吸引更多客人喔！';
+    }
+
+    const modal = document.getElementById('eod-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+function startNextDay() {
+    gameState.day += 1;
+    gameState.timeMinutes = 9 * 60;
+    gameState.dailyStats = { revenue: 0, customers: 0, pets: 0, hearts: 0 };
+
+    // 清空殘留客人與重置桌子狀態
+    customers = [];
+    kitchenOrders = [];
+    readyDishes = [];
+    tablesState.forEach(t => {
+        t.occupiedBy = null;
+        t.dirty = false;
+        t.cleanProgress = 0;
+    });
+
+    isEndOfDayModalOpen = false;
+    const modal = document.getElementById('eod-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+
+    audio.playUpgrade();
+    setNews(`☀️ 第 ${gameState.day} 天開始營業囉！祝今天也客似雲來！`);
+    saveGame(false);
+    updateTopHUD();
+    renderPanel();
+}
+
+function openStatsModal() {
+    const body = document.getElementById('stats-body');
+    const unlockedMenuCount = Object.values(gameState.menu).filter(v => v > 0).length;
+    const unlockedFacCount = Object.values(gameState.facilities).filter(v => v > 0).length;
+
+    body.innerHTML = `
+        <div class="flex justify-between py-1 border-b border-[#e6d5b8]"><span>📅 累計營業天數</span><b>${gameState.day} 天</b></div>
+        <div class="flex justify-between py-1 border-b border-[#e6d5b8]"><span>💰 累計總營業額</span><b class="text-amber-700">$${gameState.totalRevenue.toLocaleString()}</b></div>
+        <div class="flex justify-between py-1 border-b border-[#e6d5b8]"><span>👥 累計接待顧客</span><b>${gameState.totalCustomers} 組</b></div>
+        <div class="flex justify-between py-1 border-b border-[#e6d5b8]"><span>🐶 累計服務毛孩</span><b class="text-orange-700">${gameState.totalPetsServed} 隻</b></div>
+        <div class="flex justify-between py-1 border-b border-[#e6d5b8]"><span>🍽️ 已研發菜單數</span><b>${unlockedMenuCount} / ${MENU_DB.length} 道</b></div>
+        <div class="flex justify-between py-1"><span>🏠 已設置設施數</span><b>${unlockedFacCount} / ${FACILITIES_DB.length} 項</b></div>
+    `;
+    const modal = document.getElementById('stats-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+function closeStatsModal() {
+    const modal = document.getElementById('stats-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
+/**
+ * ============================================================================
+ * 9. 遊戲主動畫迴圈與啟動入口
+ * ============================================================================
+ */
+let lastFrameTime = performance.now();
+let uiSyncTimer = 0;
+
+function gameLoop(now) {
+    const dt = Math.min(0.1, (now - lastFrameTime) / 1000);
+    lastFrameTime = now;
+
+    updateSimulation(dt);
+    renderScene();
+
+    uiSyncTimer += dt;
+    if (uiSyncTimer >= 0.25) {
+        uiSyncTimer = 0;
+        updateTopHUD();
+    }
+
+    requestAnimationFrame(gameLoop);
+}
+
+window.onload = function () {
+    resizeCanvas();
+    initEntities();
+    updateTopHUD();
+    renderPanel();
+    requestAnimationFrame(gameLoop);
+};
+</script>
+</body>
+</html>
