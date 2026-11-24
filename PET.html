@@ -3,24 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>毛孩星光餐廳 - 正統開羅多店連鎖版</title>
+<title>毛孩星光餐廳 - 全螢幕掌機點陣開羅重構版</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
   :root {
-    --kairo-brown: #4a3020;
-    --kairo-dark: #2c1e16;
-    --kairo-cream: #fff8e7;
-    --kairo-panel: #f4e6c8;
-    --kairo-gold: #f5a623;
-    --kairo-orange: #e86f2c;
-    --kairo-green: #4caf50;
-    --kairo-pink: #ff6b8b;
-    --kairo-blue: #3b82f6;
-    --kairo-purple: #8b5cf6;
+    --kairo-dark: #261810;
+    --kairo-brown: #4e311e;
+    --kairo-cream: #fff6de;
+    --kairo-cream-2: #f4e2b8;
+    --kairo-gold: #f7b529;
+    --kairo-orange: #e66722;
+    --kairo-green: #3ca34b;
+    --kairo-pink: #f25c84;
+    --kairo-blue: #2f7ae5;
+    --kairo-purple: #7d4cdb;
   }
   body {
-    font-family: "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
-    background: #1b130e;
+    font-family: "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", monospace;
+    background: #140c08;
     color: var(--kairo-dark);
     display: flex;
     justify-content: center;
@@ -32,292 +32,316 @@
     width: 100%;
     max-width: 520px;
     height: 100dvh;
-    background: var(--kairo-cream);
-    display: flex;
-    flex-direction: column;
-    border: 3px solid var(--kairo-dark);
-    box-shadow: 0 0 30px rgba(0,0,0,0.85);
     position: relative;
+    background: #58b8e0;
+    border: 3px solid var(--kairo-dark);
+    box-shadow: 0 0 36px rgba(0,0,0,0.9);
+    overflow: hidden;
   }
   #app.fullscreen-mode { max-width: 100vw; border: none; }
 
-  .top-hud {
-    background: linear-gradient(180deg, #5d3b24 0%, #3d2415 100%);
-    color: #fff;
-    padding: 5px 7px;
-    border-bottom: 3px solid var(--kairo-dark);
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    z-index: 10;
-  }
-  .hud-row { display: flex; justify-content: space-between; align-items: center; gap: 4px; flex-wrap: wrap; }
-  .shop-badge {
-    background: var(--kairo-gold);
-    color: var(--kairo-dark);
-    font-weight: 900;
-    font-size: 11px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    border: 2px solid var(--kairo-dark);
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-  .season-badge {
-    font-size: 10px;
-    font-weight: 900;
-    padding: 2px 6px;
-    border-radius: 4px;
-    border: 1.5px solid var(--kairo-dark);
-    color: #fff;
-    text-shadow: 1px 1px 0 #000;
-  }
-  .stat-pill {
-    background: rgba(0,0,0,0.48);
-    border: 1.5px solid #9c6f44;
-    border-radius: 4px;
-    padding: 2px 6px;
-    font-size: 11px;
-    font-weight: 800;
-    display: flex;
-    align-items: center;
-    gap: 3px;
-  }
-  .stat-gold { color: #ffd54f; }
-  .stat-heart { color: #ff85a2; }
-  .stat-star { color: #80e5ff; }
-  .day-time {
-    font-size: 10px;
-    background: #2c1e16;
-    padding: 2px 6px;
-    border-radius: 4px;
-    border: 1px solid #8c6239;
-    color: #ffe082;
-    font-weight: 700;
-  }
-  .speed-group {
-    display: flex;
-    background: #2c1e16;
-    border-radius: 4px;
-    border: 1.5px solid #9c6f44;
-    overflow: hidden;
-  }
-  .spd-btn {
-    border: none;
-    background: transparent;
-    color: #ccc;
-    font-size: 10px;
-    font-weight: 900;
-    padding: 2px 5px;
-    cursor: pointer;
-  }
-  .spd-btn.active { background: var(--kairo-gold); color: var(--kairo-dark); }
-  .hud-icon-btn {
-    background: #6d472c;
-    color: #fff;
-    border: 1.5px solid #b5835a;
-    border-radius: 4px;
-    font-size: 10px;
-    font-weight: 800;
-    padding: 2px 5px;
-    cursor: pointer;
-  }
-
-  .goal-tracker {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 4px;
-    background: rgba(20, 12, 8, 0.78);
-    border: 1.5px solid #7c5434;
-    border-radius: 4px;
-    padding: 3px 5px;
-    font-size: 9.5px;
-  }
-  .goal-item { display: flex; flex-direction: column; gap: 1px; }
-  .goal-label { color: #ffd54f; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .goal-bar-bg { height: 4px; background: #1a110b; border-radius: 2px; overflow: hidden; }
-  .goal-bar-fill { height: 100%; background: linear-gradient(90deg, #4ade80, #facc15); transition: width 0.25s; }
-
-  .event-banner {
-    display: none;
-    background: linear-gradient(90deg, #e11d48, #c026d3);
-    color: #fff;
-    padding: 4px 8px;
-    font-size: 11px;
-    font-weight: 900;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 2px solid var(--kairo-dark);
-    gap: 6px;
-  }
-  .event-banner.active { display: flex; }
-  .event-banner.fever { background: linear-gradient(90deg, #f59e0b, #ef4444, #ec4899); animation: pulseBg 0.7s infinite alternate; }
-  @keyframes pulseBg { from { filter: brightness(1); } to { filter: brightness(1.18); } }
-  .vip-bar-wrap { flex: 1; height: 8px; background: rgba(0,0,0,0.4); border-radius: 3px; overflow: hidden; border: 1px solid #fff; }
-  .vip-bar-fill { height: 100%; background: #fde047; width: 0%; transition: width 0.2s; }
-
-  .canvas-wrapper {
-    position: relative;
-    width: 100%;
-    height: 45%;
-    min-height: 260px;
-    background: #6ec3e8;
-    border-bottom: 3px solid var(--kairo-dark);
-    overflow: hidden;
-    touch-action: none;
-  }
-  canvas {
+  /* 全螢幕點陣畫布 */
+  #pixelCanvas {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     display: block;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
+    touch-action: none;
   }
-  .canvas-controls {
+
+  /* 浮動頂部開羅狀態條 */
+  .float-top {
     position: absolute;
-    top: 7px;
-    right: 7px;
+    top: 6px;
+    left: 6px;
+    right: 6px;
+    z-index: 12;
     display: flex;
     flex-direction: column;
     gap: 4px;
-    z-index: 6;
-  }
-  .map-btn {
-    background: rgba(44, 30, 22, 0.92);
-    color: #fff;
-    border: 2px solid #f5a623;
-    border-radius: 4px;
-    padding: 4px 8px;
-    font-size: 11px;
-    font-weight: 800;
-    cursor: pointer;
-    box-shadow: 0 2px 0 #000;
-  }
-  .map-btn.active { background: #e86f2c; border-color: #fff; color: #fff; }
-  .map-btn.merchant { background: linear-gradient(180deg, #9333ea, #6b21a8); border-color: #fde047; animation: bounceSlight 1s infinite alternate; }
-  @keyframes bounceSlight { from { transform: translateY(0); } to { transform: translateY(-2px); } }
-
-  .edit-bar {
-    position: absolute;
-    top: 7px;
-    left: 7px;
-    background: rgba(44, 30, 22, 0.95);
-    color: #fff;
-    padding: 5px 8px;
-    border-radius: 5px;
-    font-size: 10.5px;
-    font-weight: 800;
-    border: 2px solid #f5a623;
-    display: none;
-    z-index: 7;
-    max-width: 72%;
-  }
-  .edit-bar.show { display: flex; flex-direction: column; gap: 4px; }
-
-  .ticker-bar {
-    position: absolute;
-    bottom: 5px;
-    left: 6px;
-    right: 6px;
-    background: rgba(32, 20, 14, 0.9);
-    color: #fff8e7;
-    font-size: 11px;
-    padding: 3px 8px;
-    border-radius: 4px;
-    border: 2px solid #a67c52;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
     pointer-events: none;
   }
+  .float-top > * { pointer-events: auto; }
+  .kairo-hud-bar {
+    background: rgba(38, 24, 16, 0.92);
+    border: 2px solid #f7b529;
+    box-shadow: 0 2px 0 #120a06;
+    border-radius: 4px;
+    padding: 4px 6px;
+    color: #fff6de;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+    font-size: 10.5px;
+    font-weight: 800;
+  }
+  .hud-tag {
+    background: #f7b529;
+    color: #261810;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-weight: 900;
+  }
+  .hud-val-gold { color: #ffd95a; }
+  .hud-val-heart { color: #ff8aa8; }
+  .hud-val-star { color: #8be9fd; }
+  .spd-mini {
+    display: inline-flex;
+    background: #170e09;
+    border: 1px solid #8c6239;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .spd-mini button {
+    border: none;
+    background: transparent;
+    color: #ccc;
+    font-size: 9.5px;
+    font-weight: 900;
+    padding: 1px 4px;
+    cursor: pointer;
+  }
+  .spd-mini button.active { background: #f7b529; color: #261810; }
+  .mini-icon-btn {
+    background: #5b3923;
+    color: #fff6de;
+    border: 1px solid #b5835a;
+    border-radius: 3px;
+    font-size: 9.5px;
+    font-weight: 800;
+    padding: 1px 5px;
+    cursor: pointer;
+  }
 
-  .combo-toast {
+  /* 精簡三層目標條 */
+  .mini-goals {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    background: rgba(24, 14, 9, 0.84);
+    border: 1.5px solid #7d5333;
+    border-radius: 3px;
+    padding: 2px 5px;
+    font-size: 9px;
+    color: #ffe599;
+  }
+  .g-bar { height: 3px; background: #120a06; margin-top: 1px; }
+  .g-fill { height: 100%; background: #4ade80; transition: width 0.2s; }
+
+  /* VIP / FEVER 橫幅 */
+  .vip-strip {
+    display: none;
+    background: #d91b5c;
+    color: #fff;
+    border: 2px solid #261810;
+    border-radius: 4px;
+    padding: 3px 7px;
+    font-size: 10.5px;
+    font-weight: 900;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .vip-strip.show { display: flex; }
+  .vip-strip.fever { background: #e66722; }
+  .vip-meter { flex: 1; height: 7px; background: rgba(0,0,0,0.4); border: 1px solid #fff; }
+  .vip-meter-fill { height: 100%; background: #fde047; width: 0%; }
+
+  /* 右側浮動地圖按鈕 */
+  .side-actions {
     position: absolute;
-    top: 42px;
+    right: 6px;
+    top: 96px;
+    z-index: 12;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .px-float-btn {
+    background: #fff6de;
+    color: #261810;
+    border: 2px solid #261810;
+    box-shadow: inset 0 0 0 1.5px #d9b882, 0 2px 0 #261810;
+    border-radius: 4px;
+    padding: 4px 7px;
+    font-size: 10.5px;
+    font-weight: 900;
+    cursor: pointer;
+  }
+  .px-float-btn.active { background: #e66722; color: #fff; }
+  .px-float-btn.merchant { background: #7d4cdb; color: #fff; border-color: #fde047; }
+
+  /* 佈置操作列 */
+  .arrange-hud {
+    position: absolute;
+    top: 96px;
+    left: 6px;
+    z-index: 13;
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    background: #fff6de;
+    border: 2px solid #261810;
+    box-shadow: inset 0 0 0 1.5px #d9b882, 0 3px 0 #261810;
+    border-radius: 4px;
+    padding: 5px 7px;
+    font-size: 10.5px;
+    font-weight: 900;
+    max-width: 68%;
+  }
+  .arrange-hud.show { display: flex; }
+
+  /* 開羅相性 / 靈感彈出卡 */
+  .kairo-toast {
+    position: absolute;
+    top: 105px;
     left: 50%;
-    transform: translateX(-50%) scale(0.92);
-    background: linear-gradient(180deg, #fffbeb, #fef08a);
-    border: 3px solid var(--kairo-dark);
-    border-radius: 6px;
-    padding: 7px 14px;
-    box-shadow: 0 4px 0 var(--kairo-dark);
+    transform: translateX(-50%);
+    width: 84%;
+    background: #fff6de;
+    border: 3px solid #261810;
+    box-shadow: inset 0 0 0 2px #f7b529, 0 4px 0 #261810;
+    border-radius: 4px;
+    padding: 6px 10px;
     text-align: center;
     z-index: 25;
     opacity: 0;
     pointer-events: none;
-    transition: all 0.22s;
-    width: 86%;
+    transition: opacity 0.2s;
   }
-  .combo-toast.show { opacity: 1; transform: translateX(-50%) scale(1); }
-  .combo-toast h4 { font-size: 13px; color: #b45309; font-weight: 900; }
-  .combo-toast p { font-size: 11px; color: var(--kairo-dark); font-weight: 700; margin-top: 2px; }
+  .kairo-toast.show { opacity: 1; }
+  .kairo-toast h4 { font-size: 12.5px; color: #b45309; font-weight: 900; }
+  .kairo-toast p { font-size: 10.5px; color: #261810; font-weight: 700; margin-top: 2px; }
 
-  .panel-area {
+  /* 底部精簡開羅 5 鍵工具列 */
+  .kairo-dock {
+    position: absolute;
+    bottom: 6px;
+    left: 6px;
+    right: 6px;
+    z-index: 15;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    background: rgba(38, 24, 16, 0.94);
+    border: 2px solid #261810;
+    box-shadow: 0 3px 0 #120a06;
+    border-radius: 5px;
+    padding: 4px;
+  }
+  .dock-btn {
+    background: #fff6de;
+    color: #261810;
+    border: 2px solid #261810;
+    box-shadow: inset 0 0 0 1.5px #dfc291;
+    border-radius: 3px;
+    padding: 4px 2px;
+    font-size: 10.5px;
+    font-weight: 900;
+    cursor: pointer;
+    text-align: center;
+  }
+  .dock-btn.open { background: #f7b529; }
+
+  /* 彈出式開羅雙線框抽屜視窗 */
+  .drawer-sheet {
+    position: absolute;
+    left: 6px;
+    right: 6px;
+    bottom: 50px;
+    max-height: 58dvh;
+    z-index: 20;
+    display: none;
+    flex-direction: column;
+    background: var(--kairo-cream);
+    border: 3px solid var(--kairo-dark);
+    box-shadow: inset 0 0 0 2px #d8be92, 0 5px 0 var(--kairo-dark);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .drawer-sheet.show { display: flex; }
+  .drawer-header {
+    background: #5d3b24;
+    color: #fff6de;
+    padding: 5px 8px;
+    font-size: 12px;
+    font-weight: 900;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--kairo-dark);
+  }
+  .drawer-close {
+    background: #e66722;
+    color: #fff;
+    border: 1.5px solid #261810;
+    border-radius: 3px;
+    padding: 1px 7px;
+    font-size: 11px;
+    font-weight: 900;
+    cursor: pointer;
+  }
+  .drawer-body {
     flex: 1;
     overflow-y: auto;
-    padding: 7px;
+    padding: 6px;
     background: var(--kairo-panel);
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 5px;
   }
-  .sub-tabs { display: flex; gap: 4px; margin-bottom: 2px; flex-wrap: wrap; }
+
+  .sub-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
   .sub-pill {
     flex: 1;
     min-width: 72px;
-    padding: 5px 4px;
+    padding: 4px;
     border: 2px solid var(--kairo-dark);
-    border-radius: 4px;
+    border-radius: 3px;
     background: #e6d3ad;
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 800;
     cursor: pointer;
     text-align: center;
   }
   .sub-pill.active { background: var(--kairo-orange); color: #fff; }
 
-  .section-title {
-    font-size: 12px;
-    font-weight: 900;
-    color: var(--kairo-brown);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 2px 3px;
-  }
   .card {
     background: #fffdf8;
     border: 2px solid var(--kairo-dark);
-    border-radius: 5px;
-    padding: 7px 9px;
-    box-shadow: inset 0 0 0 1px #ead8b7, 0 2px 0 rgba(44,30,22,0.25);
+    box-shadow: inset 0 0 0 1px #ead8b7;
+    border-radius: 4px;
+    padding: 6px 8px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 6px;
   }
   .card-info { flex: 1; }
-  .card-title { font-size: 12.5px; font-weight: 900; color: var(--kairo-dark); display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
-  .badge { font-size: 9.5px; padding: 1px 5px; border-radius: 3px; font-weight: 800; }
+  .card-title { font-size: 12px; font-weight: 900; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+  .badge { font-size: 9px; padding: 1px 4px; border-radius: 2px; font-weight: 800; }
+  .badge-lv { background: #dcedc8; color: #33691e; }
   .badge-human { background: #ffe0b2; color: #e65100; }
   .badge-pet { background: #f8bbd0; color: #ad1457; }
-  .badge-lv { background: #dcedc8; color: #33691e; }
   .badge-combo { background: #fef08a; color: #854d0e; border: 1px solid #ca8a04; }
   .badge-season { background: #dcfce7; color: #15803d; border: 1px solid #16a34a; }
   .badge-job { background: #e0e7ff; color: #3730a3; border: 1px solid #6366f1; }
-  .card-desc { font-size: 10.5px; color: #5d4037; margin-top: 2px; line-height: 1.35; }
-  .card-actions { display: flex; flex-direction: column; gap: 4px; }
+  .card-desc { font-size: 10px; color: #5d4037; margin-top: 2px; line-height: 1.3; }
+  .card-actions { display: flex; flex-direction: column; gap: 3px; }
 
   .btn {
     border: 2px solid var(--kairo-dark);
-    border-radius: 4px;
+    border-radius: 3px;
     padding: 4px 7px;
-    font-size: 10.5px;
+    font-size: 10px;
     font-weight: 900;
     cursor: pointer;
     box-shadow: 0 2px 0 var(--kairo-dark);
-    transition: transform 0.08s;
     white-space: nowrap;
     text-align: center;
   }
@@ -330,56 +354,14 @@
   .btn-purple { background: var(--kairo-purple); color: #fff; }
   .btn-red { background: #ef4444; color: #fff; }
 
-  .lab-box {
-    background: #fffdf8;
-    border: 2px solid var(--kairo-dark);
-    border-radius: 5px;
-    padding: 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .lab-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
-  .ing-col { background: #f7eedc; border: 1.5px solid #bcaaa4; border-radius: 4px; padding: 4px; }
-  .ing-col h5 { font-size: 10px; text-align: center; color: #5d4037; margin-bottom: 3px; }
-  .ing-btn {
-    width: 100%;
-    text-align: left;
-    font-size: 10px;
-    padding: 4px 5px;
-    margin-bottom: 3px;
-    border-radius: 3px;
-    border: 1.5px solid #a1887f;
-    background: #fff;
-    cursor: pointer;
-    font-weight: 700;
-  }
+  .lab-box { background: #fffdf8; border: 2px solid var(--kairo-dark); border-radius: 4px; padding: 6px; display: flex; flex-direction: column; gap: 5px; }
+  .lab-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+  .ing-col { background: #f7eedc; border: 1px solid #bcaaa4; border-radius: 3px; padding: 3px; }
+  .ing-col h5 { font-size: 9.5px; text-align: center; margin-bottom: 2px; }
+  .ing-btn { width: 100%; text-align: left; font-size: 9.5px; padding: 3px 4px; margin-bottom: 2px; border: 1px solid #a1887f; background: #fff; cursor: pointer; font-weight: 700; }
   .ing-btn.selected { background: #fef08a; border-color: #d97706; color: #92400e; font-weight: 900; }
 
-  .bottom-nav {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    background: var(--kairo-brown);
-    border-top: 3px solid var(--kairo-dark);
-    padding: 3px;
-    gap: 3px;
-  }
-  .nav-btn {
-    background: #6d472c;
-    color: #f5e6d3;
-    border: 2px solid var(--kairo-dark);
-    border-radius: 4px;
-    padding: 5px 2px;
-    font-size: 10.5px;
-    font-weight: 900;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1px;
-  }
-  .nav-btn.active { background: var(--kairo-gold); color: var(--kairo-dark); transform: translateY(-2px); }
-
+  /* 模態彈窗 */
   .modal-overlay {
     position: absolute;
     inset: 0;
@@ -395,201 +377,179 @@
     background: var(--kairo-cream);
     border: 3px solid var(--kairo-dark);
     box-shadow: inset 0 0 0 2px #d8be92, 0 6px 0 var(--kairo-dark);
-    border-radius: 6px;
+    border-radius: 5px;
     padding: 12px;
     width: 100%;
-    max-width: 410px;
-    max-height: 86dvh;
+    max-width: 400px;
+    max-height: 85dvh;
     overflow-y: auto;
     text-align: center;
   }
-  .modal-title {
-    font-size: 15px;
-    font-weight: 900;
-    color: var(--kairo-orange);
-    margin-bottom: 6px;
-    border-bottom: 2px dashed #bcaaa4;
-    padding-bottom: 4px;
-  }
-  .report-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-    padding: 4px 0;
-    border-bottom: 1px solid #e0d2b8;
-  }
-  .judge-row { display: flex; justify-content: space-around; margin: 10px 0; }
-  .judge-card {
-    background: #fff;
-    border: 2px solid var(--kairo-dark);
-    border-radius: 4px;
-    padding: 6px 8px;
-    width: 30%;
-  }
-  .judge-score { font-size: 18px; font-weight: 900; color: #e86f2c; margin-top: 2px; }
-  .input-box {
-    width: 100%;
-    padding: 6px 8px;
-    border: 2px solid var(--kairo-dark);
-    border-radius: 4px;
-    font-size: 11px;
-    margin: 5px 0;
-    background: #fff;
-  }
+  .modal-title { font-size: 14.5px; font-weight: 900; color: var(--kairo-orange); margin-bottom: 6px; border-bottom: 2px dashed #bcaaa4; padding-bottom: 4px; }
+  .report-row { display: flex; justify-content: space-between; font-size: 11.5px; padding: 4px 0; border-bottom: 1px solid #e0d2b8; }
+  .judge-row { display: flex; justify-content: space-around; margin: 8px 0; }
+  .judge-card { background: #fff; border: 2px solid var(--kairo-dark); border-radius: 4px; padding: 5px; width: 30%; }
+  .judge-score { font-size: 17px; font-weight: 900; color: #e86f2c; margin-top: 2px; }
+  .input-box { width: 100%; padding: 5px 7px; border: 2px solid var(--kairo-dark); border-radius: 3px; font-size: 10.5px; margin: 4px 0; background: #fff; }
 </style>
 </head>
 <body>
 <div id="app">
-  <div class="top-hud">
-    <div class="hud-row">
-      <div class="shop-badge">
-        <span id="hud-branch">🐾 南港溫馨店</span>
-        <span id="hud-stars" style="font-size:9.5px;background:#2c1e16;color:#fde047;padding:0 4px;border-radius:3px;">★1.0</span>
+  <!-- 全螢幕點陣畫布 -->
+  <canvas id="pixelCanvas"></canvas>
+
+  <!-- 浮動頂部 HUD -->
+  <div class="float-top">
+    <div class="kairo-hud-bar">
+      <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
+        <span class="hud-tag" id="hud-branch">南港溫馨店 ★1.0</span>
+        <span class="season-badge" id="hud-season" style="background:#ec4899;">春・草莓季</span>
+        <span id="hud-time">Y1 D1 09:00</span>
       </div>
-      <div id="hud-season" class="season-badge" style="background:#ec4899;">🌸春・草莓季</div>
-      <div class="day-time" id="hud-time">Y1 D1 09:00</div>
-      <div class="speed-group">
-        <button class="spd-btn active" id="spd-1" onclick="setGameSpeed(1)">1x</button>
-        <button class="spd-btn" id="spd-2" onclick="setGameSpeed(2)">2x</button>
-        <button class="spd-btn" id="spd-3" onclick="setGameSpeed(3)">3x</button>
-        <button class="spd-btn" id="spd-4" onclick="setGameSpeed(4)" style="display:none;">🚀4x</button>
-      </div>
-    </div>
-    <div class="hud-row">
-      <div class="stat-pill stat-gold">💰 <span id="hud-gold">2,000</span></div>
-      <div class="stat-pill stat-heart">❤️ <span id="hud-heart">45</span></div>
-      <div class="stat-pill stat-star">✨魅力 <span id="hud-appeal">35</span></div>
-      <div style="display:flex;gap:3px;">
-        <button class="hud-icon-btn" onclick="openCloudModal()">🏆 排行</button>
-        <button class="hud-icon-btn" id="btn-sound" onclick="toggleSound()">🔊</button>
-        <button class="hud-icon-btn" onclick="toggleFullscreen()">⛶</button>
+      <div style="display:flex;align-items:center;gap:4px;">
+        <div class="spd-mini">
+          <button class="active" id="spd-1" onclick="setGameSpeed(1)">1x</button>
+          <button id="spd-2" onclick="setGameSpeed(2)">2x</button>
+          <button id="spd-3" onclick="setGameSpeed(3)">3x</button>
+          <button id="spd-4" onclick="setGameSpeed(4)" style="display:none;">4x</button>
+        </div>
+        <button class="mini-icon-btn" id="btn-sound" onclick="toggleSound()">🔊</button>
+        <button class="mini-icon-btn" onclick="toggleFullscreen()">⛶</button>
       </div>
     </div>
-    <div class="goal-tracker">
-      <div class="goal-item">
-        <div class="goal-label" id="goal-short">短期: 常客好感</div>
-        <div class="goal-bar-bg"><div class="goal-bar-fill" id="bar-short" style="width:30%"></div></div>
-      </div>
-      <div class="goal-item">
-        <div class="goal-label" id="goal-mid">月底評鑑: 魅力65</div>
-        <div class="goal-bar-bg"><div class="goal-bar-fill" id="bar-mid" style="width:60%"></div></div>
-      </div>
-      <div class="goal-item">
-        <div class="goal-label" id="goal-long">終極: 第1/108天</div>
-        <div class="goal-bar-bg"><div class="goal-bar-fill" id="bar-long" style="width:2%"></div></div>
-      </div>
+
+    <div class="kairo-hud-bar" style="padding:3px 6px;">
+      <span>💰 <b class="hud-val-gold" id="hud-gold">2,000</b></span>
+      <span>❤️ <b class="hud-val-heart" id="hud-heart">45</b></span>
+      <span>✨魅力 <b class="hud-val-star" id="hud-appeal">35</b></span>
+      <button class="mini-icon-btn" onclick="openCloudModal()">🏆 排行/存檔</button>
+    </div>
+
+    <div class="mini-goals">
+      <div><span id="goal-short">短期: 常客好感</span><div class="g-bar"><div class="g-fill" id="bar-short" style="width:20%"></div></div></div>
+      <div><span id="goal-mid">月底評鑑: 魅力65</span><div class="g-bar"><div class="g-fill" id="bar-mid" style="width:50%"></div></div></div>
+      <div><span id="goal-long">終極: 1/108天</span><div class="g-bar"><div class="g-fill" id="bar-long" style="width:2%"></div></div></div>
+    </div>
+
+    <div class="vip-strip" id="vip-strip">
+      <span id="vip-title">VIP主編評鑑中!</span>
+      <div class="vip-meter" id="vip-meter"><div class="vip-meter-fill" id="vip-meter-fill"></div></div>
+      <span id="vip-timer">28s</span>
     </div>
   </div>
 
-  <div class="event-banner" id="event-banner">
-    <span id="event-title">📸 VIP 寵物雜誌主編來訪！</span>
-    <div class="vip-bar-wrap" id="vip-bar-wrap"><div class="vip-bar-fill" id="vip-bar-fill"></div></div>
-    <span id="event-timer">28s</span>
+  <!-- 佈置工具列 -->
+  <div class="arrange-hud" id="arrange-hud">
+    <div id="arrange-text">佈置模式：點設施移動，或拖曳畫面巡視</div>
+    <div id="arrange-ops" style="display:none;gap:4px;flex-wrap:wrap;">
+      <button class="btn btn-gold" style="font-size:9.5px;padding:2px 5px;" onclick="upgradeSelectedPlaced()">⬆️升級</button>
+      <button class="btn btn-red" style="font-size:9.5px;padding:2px 5px;" onclick="removeSelectedPlaced()">📦拆除</button>
+    </div>
   </div>
 
-  <div class="canvas-wrapper" id="canvas-wrap">
-    <canvas id="gameCanvas"></canvas>
-    <div class="edit-bar" id="edit-bar">
-      <div id="edit-status-text">✥ 佈置模式：點選設施移動，或點綠色空地放置</div>
-      <div id="selected-item-ops" style="display:none;gap:4px;flex-wrap:wrap;">
-        <button class="btn btn-gold" style="font-size:10px;padding:2px 6px;" onclick="upgradeSelectedPlaced()">⬆️升級此件</button>
-        <button class="btn btn-red" style="font-size:10px;padding:2px 6px;" onclick="removeSelectedPlaced()">📦拆除收納</button>
-      </div>
-    </div>
-    <div class="canvas-controls">
-      <button class="map-btn" id="btn-edit-mode" onclick="toggleEditMode()">✥ 佈置模式</button>
-      <button class="map-btn merchant" id="btn-merchant" style="display:none;" onclick="openMerchantModal()">🎃 南瓜商會!</button>
-    </div>
-    <div class="combo-toast" id="combo-toast">
-      <h4 id="combo-toast-title">✨ 發現設施相性！</h4>
-      <p id="combo-toast-desc">午茶療癒角：飲品售價 +25%！</p>
-    </div>
-    <div class="ticker-bar" id="ticker">🐾 正統開羅連鎖分店系統啟動！各分店獨立記帳、分店星級與地區客群偏好已上線！</div>
+  <!-- 右側浮動按鈕 -->
+  <div class="side-actions">
+    <button class="px-float-btn" id="btn-arrange" onclick="toggleArrangeMode()">✥ 佈置</button>
+    <button class="px-float-btn" onclick="resetCamera()">🎯 置中</button>
+    <button class="px-float-btn merchant" id="btn-merchant" style="display:none;" onclick="openMerchantModal()">🎃 商會</button>
   </div>
 
-  <div class="panel-area" id="panel-area"></div>
-
-  <div class="bottom-nav">
-    <button class="nav-btn active" data-tab="facility" onclick="switchTab('facility')"><span>🏠</span>設施佈置</button>
-    <button class="nav-btn" data-tab="menu" onclick="switchTab('menu')"><span>🍽️</span>菜單研發</button>
-    <button class="nav-btn" data-tab="staff" onclick="switchTab('staff')"><span>🧑‍🍳</span>店員毛孩</button>
-    <button class="nav-btn" data-tab="dex" onclick="switchTab('dex')"><span>📖</span>相性常客</button>
-    <button class="nav-btn" data-tab="event" onclick="switchTab('event')"><span>🏪</span>連鎖分店</button>
+  <!-- 開羅相性 / 靈感卡片 -->
+  <div class="kairo-toast" id="kairo-toast">
+    <h4 id="kairo-toast-title">💡 開羅靈感爆發！</h4>
+    <p id="kairo-toast-desc">食譜等級提升！</p>
   </div>
 
+  <!-- 彈出式開羅雙線框管理抽屜 -->
+  <div class="drawer-sheet" id="drawer-sheet">
+    <div class="drawer-header">
+      <span id="drawer-title">🏠 設施與佈置</span>
+      <button class="drawer-close" onclick="closeDrawer()">✕</button>
+    </div>
+    <div class="drawer-body" id="drawer-body"></div>
+  </div>
+
+  <!-- 底部開羅 5 鍵選單 -->
+  <div class="kairo-dock">
+    <button class="dock-btn" data-d="facility" onclick="toggleDrawer('facility')">🏠 建造</button>
+    <button class="dock-btn" data-d="menu" onclick="toggleDrawer('menu')">🍽️ 菜單</button>
+    <button class="dock-btn" data-d="staff" onclick="toggleDrawer('staff')">🧑‍🍳 經營</button>
+    <button class="dock-btn" data-d="dex" onclick="toggleDrawer('dex')">📖 情報</button>
+    <button class="dock-btn" data-d="event" onclick="toggleDrawer('event')">🏪 連鎖</button>
+  </div>
+
+  <!-- 每日結算彈窗 -->
   <div class="modal-overlay" id="report-modal">
     <div class="modal-box">
-      <div class="modal-title" id="report-title">🌙 第 1 天營業結算</div>
+      <div class="modal-title" id="report-title">🌙 第 1 天連鎖結算</div>
       <div id="report-body"></div>
-      <button class="btn btn-gold" style="width:100%; margin-top:10px; padding:8px;" onclick="closeReport()">繼續營業 ▶</button>
+      <button class="btn btn-gold" style="width:100%; margin-top:10px; padding:7px;" onclick="closeReport()">繼續營業 ▶</button>
     </div>
   </div>
 
+  <!-- 競賽評審彈窗 -->
   <div class="modal-overlay" id="contest-modal">
     <div class="modal-box">
       <div class="modal-title" id="contest-modal-title">🏆 評審團現場試吃評分</div>
-      <div style="font-size:11px; color:#5d4037;">評審正在品嚐招牌餐點並觀察店內毛孩氛圍...</div>
+      <div style="font-size:10.5px; color:#5d4037;">評審正在品嚐料理並觀察店內毛孩氛圍...</div>
       <div class="judge-row">
-        <div class="judge-card"><div style="font-size:18px;font-weight:900;">👨‍🍳</div><div style="font-size:10px;font-weight:800;">美食主廚</div><div class="judge-score" id="j-score-0">--</div></div>
-        <div class="judge-card"><div style="font-size:18px;font-weight:900;">👩‍⚕️</div><div style="font-size:10px;font-weight:800;">寵物營養師</div><div class="judge-score" id="j-score-1">--</div></div>
-        <div class="judge-card"><div style="font-size:18px;font-weight:900;">📸</div><div style="font-size:10px;font-weight:800;">雜誌總編輯</div><div class="judge-score" id="j-score-2">--</div></div>
+        <div class="judge-card"><div style="font-size:11px;font-weight:900;">美食主廚</div><div class="judge-score" id="j-score-0">--</div></div>
+        <div class="judge-card"><div style="font-size:11px;font-weight:900;">寵物營養師</div><div class="judge-score" id="j-score-1">--</div></div>
+        <div class="judge-card"><div style="font-size:11px;font-weight:900;">雜誌總編輯</div><div class="judge-score" id="j-score-2">--</div></div>
       </div>
-      <div id="contest-result-box" style="font-size:12px; font-weight:800; margin:6px 0;"></div>
-      <button class="btn btn-gold" id="contest-close-btn" style="width:100%; display:none;" onclick="closeContestModal()">領取獎勵並返回 ▶</button>
+      <div id="contest-result-box" style="font-size:11.5px; font-weight:800; margin:6px 0;"></div>
+      <button class="btn btn-gold" id="contest-close-btn" style="width:100%; display:none;" onclick="closeContestModal()">領取獎勵 ▶</button>
     </div>
   </div>
 
+  <!-- 南瓜商會彈窗 -->
   <div class="modal-overlay" id="merchant-modal">
     <div class="modal-box">
-      <div class="modal-title" style="color:#7e22ce;">🎃 神秘南瓜寵物商會（限時快閃）</div>
-      <div style="font-size:11px;color:#5d4037;margin-bottom:6px;">商會馬車只停留到打烊前！只收 ❤️ 愛心點數！</div>
-      <div id="merchant-body" style="display:flex;flex-direction:column;gap:6px;text-align:left;"></div>
-      <button class="btn btn-gold" style="width:100%;margin-top:8px;" onclick="document.getElementById('merchant-modal').classList.remove('show')">離開商會馬車 ▶</button>
+      <div class="modal-title" style="color:#7d4cdb;">🎃 神秘南瓜寵物商會</div>
+      <div style="font-size:10.5px;color:#5d4037;margin-bottom:6px;">限時快閃！消耗 ❤️ 愛心點數兌換秘寶！</div>
+      <div id="merchant-body" style="display:flex;flex-direction:column;gap:5px;text-align:left;"></div>
+      <button class="btn btn-gold" style="width:100%;margin-top:8px;" onclick="document.getElementById('merchant-modal').classList.remove('show')">關閉 ▶</button>
     </div>
   </div>
 
+  <!-- 三年總決賽 & 二周目繼承彈窗 -->
   <div class="modal-overlay" id="ngplus-modal">
     <div class="modal-box">
-      <div class="modal-title" style="color:#b45309;font-size:16px;">👑 三年經營榮譽總結算！</div>
-      <div id="ngplus-summary" style="font-size:11.5px;text-align:left;background:#fff;padding:8px;border-radius:6px;border:1.5px solid #bcaaa4;margin-bottom:8px;"></div>
-      <div style="font-size:11px;font-weight:900;color:#4a3020;text-align:left;margin-bottom:4px;">🎁 選擇二周目（New Game+）繼承項目：</div>
-      <div id="ngplus-choices" style="display:flex;flex-direction:column;gap:5px;text-align:left;"></div>
-      <button class="btn btn-purple" style="width:100%;margin-top:10px;padding:8px;" onclick="startNewGamePlus()">🚀 開啟高速二周目（解鎖4倍速＋繼承加成）</button>
+      <div class="modal-title" style="color:#b45309;">👑 三年經營榮譽總結算！</div>
+      <div id="ngplus-summary" style="font-size:11px;text-align:left;background:#fff;padding:7px;border:1.5px solid #bcaaa4;margin-bottom:7px;"></div>
+      <div style="font-size:11px;font-weight:900;text-align:left;margin-bottom:4px;">🎁 選擇二周目繼承項目：</div>
+      <div id="ngplus-choices" style="display:flex;flex-direction:column;gap:4px;text-align:left;"></div>
+      <button class="btn btn-purple" style="width:100%;margin-top:8px;padding:7px;" onclick="startNewGamePlus()">🚀 開啟高速二周目（4x倍速＋繼承加成）</button>
     </div>
   </div>
 
+  <!-- 排行與存檔彈窗 -->
   <div class="modal-overlay" id="cloud-modal">
     <div class="modal-box">
-      <div class="modal-title">🏆 星光餐廳評比榜 & 存檔管理</div>
-      <div id="leaderboard-list" style="text-align:left; margin-bottom:8px;"></div>
-      <div style="font-size:11px; font-weight:800; text-align:left; color:#4a3020;">📋 備份／匯入進度存檔碼：</div>
-      <input class="input-box" id="save-code-input" placeholder="貼上存檔碼或按匯出產生代碼" />
-      <div style="display:flex; gap:5px; margin-bottom:8px;">
+      <div class="modal-title">🏆 連鎖評比榜 & 存檔管理</div>
+      <div id="leaderboard-list" style="text-align:left; margin-bottom:7px;"></div>
+      <div style="font-size:10.5px; font-weight:800; text-align:left;">📋 存檔碼備份／匯入：</div>
+      <input class="input-box" id="save-code-input" placeholder="貼上存檔碼或按匯出" />
+      <div style="display:flex; gap:4px; margin-bottom:7px;">
         <button class="btn btn-gold" style="flex:1;" onclick="exportSaveCode()">匯出存檔碼</button>
         <button class="btn btn-green" style="flex:1;" onclick="importSaveCode()">匯入存檔碼</button>
       </div>
-      <div style="font-size:10.5px; text-align:left; color:#5d4037;">🔗 Firebase Realtime DB URL（選填）：</div>
-      <div style="display:flex; gap:5px;">
+      <div style="font-size:10px; text-align:left; color:#5d4037;">🔗 Firebase Realtime DB URL（選填）：</div>
+      <div style="display:flex; gap:4px;">
         <input class="input-box" id="firebase-url-input" placeholder="https://xxx-default-rtdb.firebaseio.com" style="margin:2px 0;" />
         <button class="btn btn-blue" onclick="syncFirebaseLeaderboard()">同步</button>
       </div>
-      <button class="btn btn-purple" style="width:100%; margin-top:8px;" onclick="document.getElementById('cloud-modal').classList.remove('show')">關閉視窗</button>
+      <button class="btn btn-purple" style="width:100%; margin-top:8px;" onclick="document.getElementById('cloud-modal').classList.remove('show')">關閉</button>
     </div>
   </div>
 </div>
 
 <script>
-// ==================== 1. 複音復古音效引擎 ====================
+// ==================== 1. 掌機復古音效引擎 ====================
 class RetroAudio {
   constructor() {
-    this.ctx = null;
-    this.enabled = true;
-    this.bgmTimer = null;
-    this.step = 0;
-    this.melody = [
-      523.25, 659.25, 783.99, 659.25, 880.00, 783.99, 659.25, 587.33,
-      523.25, 587.33, 659.25, 783.99, 659.25, 587.33, 523.25, 0
-    ];
+    this.ctx = null; this.enabled = true; this.bgmTimer = null; this.step = 0;
+    this.melody = [523.25, 659.25, 783.99, 659.25, 880.00, 783.99, 659.25, 587.33, 523.25, 587.33, 659.25, 783.99, 659.25, 587.33, 523.25, 0];
   }
   init() {
     if (!this.ctx) {
@@ -602,70 +562,59 @@ class RetroAudio {
         if (!this.enabled || !this.ctx) return;
         const f = this.melody[this.step % this.melody.length];
         this.step++;
-        if (f > 0) this.tone(f, 0.13, 'triangle', 0.02);
+        if (f > 0) this.tone(f, 0.12, 'triangle', 0.02);
       }, 330);
     }
   }
   tone(freq, dur, type = 'square', vol = 0.04) {
     if (!this.enabled || !this.ctx) return;
     try {
-      const o = this.ctx.createOscillator();
-      const g = this.ctx.createGain();
-      o.type = type;
-      o.frequency.setValueAtTime(freq, this.ctx.currentTime);
+      const o = this.ctx.createOscillator(); const g = this.ctx.createGain();
+      o.type = type; o.frequency.setValueAtTime(freq, this.ctx.currentTime);
       g.gain.setValueAtTime(vol, this.ctx.currentTime);
       g.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + dur);
       o.connect(g); g.connect(this.ctx.destination);
       o.start(); o.stop(this.ctx.currentTime + dur);
     } catch (e) {}
   }
-  coin() { this.tone(987.77, 0.07, 'square', 0.05); setTimeout(() => this.tone(1318.5, 0.13, 'square', 0.05), 65); }
-  heart() { this.tone(659.25, 0.08, 'triangle', 0.05); setTimeout(() => this.tone(880, 0.12, 'triangle', 0.05), 75); }
-  upgrade() { [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => this.tone(f, 0.09, 'square', 0.05), i * 65)); }
-  combo() { [587, 740, 880, 1174, 1480].forEach((f, i) => setTimeout(() => this.tone(f, 0.11, 'triangle', 0.06), i * 75)); }
+  coin() { this.tone(987.77, 0.07, 'square', 0.05); setTimeout(() => this.tone(1318.5, 0.12, 'square', 0.05), 65); }
+  heart() { this.tone(659.25, 0.08, 'triangle', 0.05); setTimeout(() => this.tone(880, 0.11, 'triangle', 0.05), 75); }
+  upgrade() { [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => this.tone(f, 0.08, 'square', 0.05), i * 60)); }
+  combo() { [587, 740, 880, 1174, 1480].forEach((f, i) => setTimeout(() => this.tone(f, 0.1, 'triangle', 0.06), i * 70)); }
 }
 const sfx = new RetroAudio();
-function toggleSound() {
-  sfx.enabled = !sfx.enabled;
-  if (sfx.enabled) sfx.init();
-  document.getElementById('btn-sound').textContent = sfx.enabled ? '🔊' : '🔇';
-}
+function toggleSound() { sfx.enabled = !sfx.enabled; if (sfx.enabled) sfx.init(); document.getElementById('btn-sound').textContent = sfx.enabled ? '🔊' : '🔇'; }
 function toggleFullscreen() {
   const app = document.getElementById('app');
-  if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen?.().catch(() => {});
-    app.classList.add('fullscreen-mode');
-  } else {
-    document.exitFullscreen?.().catch(() => {});
-    app.classList.remove('fullscreen-mode');
-  }
+  if (!document.fullscreenElement) { document.documentElement.requestFullscreen?.().catch(() => {}); app.classList.add('fullscreen-mode'); }
+  else { document.exitFullscreen?.().catch(() => {}); app.classList.remove('fullscreen-mode'); }
 }
 
-// ==================== 2. 遊戲靜態資料庫（含商圈客群偏好） ====================
+// ==================== 2. 遊戲靜態資料庫 ====================
 const SEASONS = [
-  { id: 'spring', name: '🌸春・草莓季', color: '#ec4899', keywords: ['草莓', '鬆餅', '拿鐵', '吐司'], bonusDesc: '草莓/甜點/咖啡類 1.5x' },
-  { id: 'summer', name: '🌻夏・冰涼季', color: '#0284c7', keywords: ['咖啡', '冰', '雞肉凍', '飲'], bonusDesc: '咖啡/冷飲/雞肉凍 1.5x' },
-  { id: 'autumn', name: '🍁秋・南瓜季', color: '#d97706', keywords: ['南瓜', '拼盤', '鮮蔬', '秋'], bonusDesc: '南瓜/早午餐拼盤 1.5x' },
-  { id: 'winter', name: '❄️冬・暖心季', color: '#4f46e5', keywords: ['濃湯', '舒肥', '潔牙骨', '暖'], bonusDesc: '熱食/舒肥/潔牙骨 1.5x' }
+  { id: 'spring', name: '春・草莓季', color: '#ec4899', keywords: ['草莓', '鬆餅', '拿鐵', '吐司'], bonusDesc: '草莓/甜點/咖啡 1.5x' },
+  { id: 'summer', name: '夏・冰涼季', color: '#0284c7', keywords: ['咖啡', '冰', '雞肉凍', '飲'], bonusDesc: '咖啡/冷飲/雞肉凍 1.5x' },
+  { id: 'autumn', name: '秋・南瓜季', color: '#d97706', keywords: ['南瓜', '拼盤', '鮮蔬', '秋'], bonusDesc: '南瓜/早午餐拼盤 1.5x' },
+  { id: 'winter', name: '冬・暖心季', color: '#4f46e5', keywords: ['濃湯', '舒肥', '潔牙骨', '暖'], bonusDesc: '熱食/舒肥/潔牙骨 1.5x' }
 ];
 
 const JOB_TREE = {
-  trainee: { name: '見習生', icon: '🔰', next: ['barista', 'chef_master', 'pet_trainer'], speedMul: 1.0, tipMul: 1.0, heartMul: 1.0 },
-  barista: { name: '拉花咖啡師', icon: '☕', next: ['chef_master', 'pet_trainer'], speedMul: 1.25, tipMul: 1.35, heartMul: 1.1 },
-  chef_master: { name: '五星主廚', icon: '👨‍🍳', next: ['barista', 'pet_trainer'], speedMul: 1.45, tipMul: 1.25, heartMul: 1.1 },
-  pet_trainer: { name: '寵物訓練師', icon: '🐾', next: ['barista', 'chef_master'], speedMul: 1.2, tipMul: 1.15, heartMul: 1.6 },
-  kairo_king: { name: '開羅吉祥物店長', icon: '🤖', next: [], speedMul: 1.85, tipMul: 1.8, heartMul: 2.0 }
+  trainee: { name: '見習生', next: ['barista', 'chef_master', 'pet_trainer'], speedMul: 1.0, tipMul: 1.0, heartMul: 1.0 },
+  barista: { name: '拉花咖啡師', next: ['chef_master', 'pet_trainer'], speedMul: 1.25, tipMul: 1.35, heartMul: 1.1 },
+  chef_master: { name: '五星主廚', next: ['barista', 'pet_trainer'], speedMul: 1.45, tipMul: 1.25, heartMul: 1.1 },
+  pet_trainer: { name: '寵物訓練師', next: ['barista', 'chef_master'], speedMul: 1.2, tipMul: 1.15, heartMul: 1.6 },
+  kairo_king: { name: '開羅吉祥物店長', next: [], speedMul: 1.85, tipMul: 1.8, heartMul: 2.0 }
 };
 
 const FACILITY_DEFS = [
-  { id: 'table_1', name: '原木雙人桌椅組', type: 'table', icon: '🪑', desc: '含雙側木椅＋立體原木餐桌', baseCost: 250, appeal: 6, maxLv: 5, defaultGx: 5, defaultGy: 3 },
-  { id: 'table_2', name: '靠窗沙發雅座組', type: 'table', icon: '🛋️', desc: '含雙側絨布沙發＋桌布，小費 +20%', baseCost: 520, appeal: 12, maxLv: 5, defaultGx: 7, defaultGy: 3 },
-  { id: 'turf_zone', name: '室內草皮圍欄區', type: 'decor', icon: '🌿', desc: '木欄草皮與玩具球，愛心 +35%', baseCost: 650, appeal: 16, maxLv: 5, defaultGx: 5, defaultGy: 6 },
-  { id: 'cat_tower', name: '三層原木貓跳台', type: 'decor', icon: '🐈', desc: '立體跳板、貓窩與紅毛線球', baseCost: 850, appeal: 20, maxLv: 5, defaultGx: 8, defaultGy: 2 },
-  { id: 'coffee_bar', name: '義式咖啡吧台櫃', type: 'machine', icon: '☕', desc: '立體木櫃＋雙頭義式機，飲品 +15%', baseCost: 1100, appeal: 22, maxLv: 5, defaultGx: 4, defaultGy: 1 },
-  { id: 'water_fountain', name: '循環活水飲水機', type: 'decor', icon: '⛲', desc: '立體水柱飲水台，寵物健康加成', baseCost: 950, appeal: 18, maxLv: 5, defaultGx: 8, defaultGy: 6 },
-  { id: 'table_3', name: '露天花園圓桌椅組', type: 'table', icon: '☂️', desc: '含雙側圓凳＋遮陽傘圓桌', baseCost: 1650, appeal: 25, maxLv: 5, defaultGx: 7, defaultGy: 7 },
-  { id: 'bakery_case', name: '手工點心玻璃櫃', type: 'machine', icon: '🧁', desc: '斜角玻璃櫃與彩色蛋糕，單價加成', baseCost: 2200, appeal: 30, maxLv: 5, defaultGx: 6, defaultGy: 1 }
+  { id: 'table_1', name: '原木雙人桌椅組', type: 'table', desc: '含雙側木椅＋立體原木桌', baseCost: 250, appeal: 6, maxLv: 5, defaultGx: 5, defaultGy: 3 },
+  { id: 'table_2', name: '靠窗沙發雅座組', type: 'table', desc: '絨布卡座＋桌布，小費 +20%', baseCost: 520, appeal: 12, maxLv: 5, defaultGx: 7, defaultGy: 3 },
+  { id: 'turf_zone', name: '室內草皮圍欄區', type: 'decor', desc: '木欄草皮與玩具球，愛心 +35%', baseCost: 650, appeal: 16, maxLv: 5, defaultGx: 5, defaultGy: 6 },
+  { id: 'cat_tower', name: '三層原木貓跳台', type: 'decor', desc: '跳板、貓窩與紅毛線球', baseCost: 850, appeal: 20, maxLv: 5, defaultGx: 8, defaultGy: 2 },
+  { id: 'coffee_bar', name: '義式咖啡吧台櫃', type: 'machine', desc: '木櫃＋義式機，飲品 +15%', baseCost: 1100, appeal: 22, maxLv: 5, defaultGx: 4, defaultGy: 1 },
+  { id: 'water_fountain', name: '循環活水飲水機', type: 'decor', desc: '水柱飲水台，寵物健康加成', baseCost: 950, appeal: 18, maxLv: 5, defaultGx: 8, defaultGy: 6 },
+  { id: 'table_3', name: '露天花園圓桌椅組', type: 'table', desc: '圓凳＋遮陽傘圓桌', baseCost: 1650, appeal: 25, maxLv: 5, defaultGx: 7, defaultGy: 7 },
+  { id: 'bakery_case', name: '手工點心玻璃櫃', type: 'machine', desc: '玻璃櫃與點心，單價加成', baseCost: 2200, appeal: 30, maxLv: 5, defaultGx: 6, defaultGy: 1 }
 ];
 
 const COMBO_DEFS = [
@@ -678,12 +627,12 @@ const COMBO_DEFS = [
 ];
 
 const MENU_DEFS = [
-  { id: 'latte', name: '肉球拉花拿鐵', cat: 'human', icon: '☕', basePrice: 130, costHeart: 0, unlocked: true, flavor: 60, health: 55 },
-  { id: 'chicken_jelly', name: '無鹽南瓜雞肉凍', cat: 'pet', icon: '🍗', basePrice: 150, costHeart: 0, unlocked: true, flavor: 65, health: 80 },
-  { id: 'brunch', name: '太陽蛋早午餐拼盤', cat: 'human', icon: '🍳', basePrice: 220, costHeart: 25, unlocked: false, flavor: 75, health: 70 },
-  { id: 'dental_chew', name: '蜂巢潔牙骨拼盤', cat: 'pet', icon: '🦴', basePrice: 195, costHeart: 30, unlocked: false, flavor: 72, health: 88 },
-  { id: 'pancake', name: '雲朵草莓舒芙蕾', cat: 'human', icon: '🥞', basePrice: 290, costHeart: 55, unlocked: false, flavor: 88, health: 65 },
-  { id: 'lutein_bowl', name: '葉黃素鮮蔬活力餐', cat: 'pet', icon: '🥗', basePrice: 270, costHeart: 65, unlocked: false, flavor: 82, health: 96 }
+  { id: 'latte', name: '肉球拉花拿鐵', cat: 'human', basePrice: 130, costHeart: 0, unlocked: true, flavor: 60, health: 55 },
+  { id: 'chicken_jelly', name: '無鹽南瓜雞肉凍', cat: 'pet', basePrice: 150, costHeart: 0, unlocked: true, flavor: 65, health: 80 },
+  { id: 'brunch', name: '太陽蛋早午餐拼盤', cat: 'human', basePrice: 220, costHeart: 25, unlocked: false, flavor: 75, health: 70 },
+  { id: 'dental_chew', name: '蜂巢潔牙骨拼盤', cat: 'pet', basePrice: 195, costHeart: 30, unlocked: false, flavor: 72, health: 88 },
+  { id: 'pancake', name: '雲朵草莓舒芙蕾', cat: 'human', basePrice: 290, costHeart: 55, unlocked: false, flavor: 88, health: 65 },
+  { id: 'lutein_bowl', name: '葉黃素鮮蔬活力餐', cat: 'pet', basePrice: 270, costHeart: 65, unlocked: false, flavor: 82, health: 96 }
 ];
 
 const LAB_INGREDIENTS = {
@@ -724,77 +673,40 @@ const LAB_INGREDIENTS = {
 };
 
 const REGULARS_DEF = [
-  { id: 'r_student', name: '高中學生', icon: '🎒', hair: '#2c1e16', shirt: '#3b82f6', petType: null, rewardText: '每升1級贈送 💰$350' },
-  { id: 'r_office', name: '上班粉領族', icon: '💼', hair: '#5d3b24', shirt: '#ec4899', petType: 'cat', rewardText: '每升1級贈送 ❤️15 愛心' },
-  { id: 'r_grandpa', name: '帶老狗散步的阿公', icon: '👴', hair: '#cbd5e1', shirt: '#64748b', petType: 'senior_dog', rewardText: '每升1級贈送 ❤️22 愛心' },
-  { id: 'r_lady', name: '精品貴婦名媛', icon: '👒', hair: '#b45309', shirt: '#a855f7', petType: 'poodle', rewardText: '每升1級贈送 💰$750' },
-  { id: 'r_blogger', name: '人氣美食部落客', icon: '📷', hair: '#1e293b', shirt: '#f59e0b', petType: null, rewardText: '每升1級全店魅力 +3' },
-  { id: 'r_trainer', name: '寵物行為訓練師', icon: '🐾', hair: '#3f2e21', shirt: '#10b981', petType: 'shiba', rewardText: '每升1級贈送 ❤️25 愛心' },
-  { id: 'r_couple', name: '週末約會情侶', icon: '💑', hair: '#78350f', shirt: '#f43f5e', petType: 'cat', rewardText: '每升1級贈送 💰$500' },
-  { id: 'r_kairo', name: '神秘開羅君', icon: '🤖', hair: '#eab308', shirt: '#facc15', petType: 'shiba', rewardText: '傳說常客！每升1級贈送 ❤️40' }
+  { id: 'r_student', name: '高中學生', hair: '#261810', shirt: '#2f7ae5', petType: null, rewardText: '每升1級贈送 $350' },
+  { id: 'r_office', name: '上班粉領族', hair: '#5d3b24', shirt: '#f25c84', petType: 'cat', rewardText: '每升1級贈送 15愛心' },
+  { id: 'r_grandpa', name: '帶老狗的阿公', hair: '#cbd5e1', shirt: '#64748b', petType: 'senior_dog', rewardText: '每升1級贈送 22愛心' },
+  { id: 'r_lady', name: '精品貴婦名媛', hair: '#b45309', shirt: '#a855f7', petType: 'poodle', rewardText: '每升1級贈送 $750' },
+  { id: 'r_blogger', name: '美食部落客', hair: '#1e293b', shirt: '#f7b529', petType: null, rewardText: '每升1級全店魅力 +3' },
+  { id: 'r_trainer', name: '寵物訓練師', hair: '#3f2e21', shirt: '#3ca34b', petType: 'shiba', rewardText: '每升1級贈送 25愛心' },
+  { id: 'r_couple', name: '週末約會情侶', hair: '#78350f', shirt: '#e11d48', petType: 'cat', rewardText: '每升1級贈送 $500' },
+  { id: 'r_kairo', name: '神秘開羅君', hair: '#f7b529', shirt: '#f7b529', petType: 'shiba', rewardText: '傳說常客！每升1級贈送 40愛心' }
 ];
 
 const STAFF_DEFS = [
-  { id: 'chef_1', name: '阿明主廚', role: 'chef', icon: '👨‍🍳', desc: '獨立廚房內負責烹飪與備料', baseCost: 450, shirt: '#ffffff', hair: '#2c1e16' },
-  { id: 'waiter_1', name: '小美店員', role: 'waiter', icon: '🧑‍💼', desc: '負責端菜送餐與收盤擦桌', baseCost: 400, shirt: '#ff7043', hair: '#5d3b24' },
-  { id: 'waiter_2', name: '阿凱副店長', role: 'waiter', icon: '🤵', desc: '第二名外場，尖峰時刻必備', baseCost: 1450, shirt: '#29b6f6', hair: '#1e293b' }
+  { id: 'chef_1', name: '阿明主廚', role: 'chef', desc: '獨立廚房內負責烹飪與備料', baseCost: 450, shirt: '#ffffff', hair: '#261810' },
+  { id: 'waiter_1', name: '小美店員', role: 'waiter', desc: '負責端菜送餐與收盤擦桌', baseCost: 400, shirt: '#e66722', hair: '#5d3b24' },
+  { id: 'waiter_2', name: '阿凱副店長', role: 'waiter', desc: '第二名外場，尖峰時刻必備', baseCost: 1450, shirt: '#2f7ae5', hair: '#1e293b' }
 ];
 
 const PET_DEFS = [
-  { id: 'pet_niuniu', name: '妞妞 (貼心老狗)', icon: '🐕', coat: '#d7ccc8', desc: '治癒呼嚕：客人在店消費金額 +15%', baseCost: 300, skill: '消費 +15%' },
-  { id: 'pet_doudou', name: '豆豆 (元氣柴犬)', icon: '🦊', coat: '#e69d45', desc: '迎賓搖尾：路人進店機率大幅提升', baseCost: 650, skill: '進店率UP' },
-  { id: 'pet_mikan', name: '橘子 (撒嬌橘貓)', icon: '🐈', coat: '#ff9800', desc: '愛心磁鐵：定時噴發愛心點數', baseCost: 1100, skill: '愛心加成' },
-  { id: 'pet_border', name: '小黑 (天才邊牧)', icon: '🐕‍🦺', coat: '#1e293b', desc: '傳說牧羊犬：會自動幫忙端盤送餐！', baseCost: 2600, skill: '自動送餐' }
+  { id: 'pet_niuniu', name: '妞妞 (貼心老狗)', coat: '#d7ccc8', desc: '治癒呼嚕：客人在店消費金額 +15%', baseCost: 300 },
+  { id: 'pet_doudou', name: '豆豆 (元氣柴犬)', coat: '#e69d45', desc: '迎賓搖尾：路人進店機率大幅提升', baseCost: 650 },
+  { id: 'pet_mikan', name: '橘子 (撒嬌橘貓)', coat: '#ff9800', desc: '愛心磁鐵：定時噴發愛心點數', baseCost: 1100 },
+  { id: 'pet_border', name: '小黑 (天才邊牧)', coat: '#1e293b', desc: '傳說牧羊犬：會自動幫忙端盤送餐！', baseCost: 2600 }
 ];
 
 const CONTEST_DEFS = [
   { id: 'ct_1', name: '社區毛孩同樂盃', costHeart: 35, reqScore: 155, prizeGold: 1500, prizeAppeal: 15, trophyName: '社區銅獎盃', color: '#cd7f32' },
   { id: 'ct_2', name: '都市寵物友善金賞', costHeart: 85, reqScore: 245, prizeGold: 3800, prizeAppeal: 30, trophyName: '都市銀獎盃', color: '#e2e8f0' },
-  { id: 'ct_3', name: '全國鮮食與咖啡大師賽', costHeart: 165, reqScore: 345, prizeGold: 8500, prizeAppeal: 50, trophyName: '全國金獎盃', color: '#facc15' },
+  { id: 'ct_3', name: '全國鮮食與咖啡大師賽', costHeart: 165, reqScore: 345, prizeGold: 8500, prizeAppeal: 50, trophyName: '全國金獎盃', color: '#f7b529' },
   { id: 'ct_4', name: '開羅星光殿堂總冠軍', costHeart: 300, reqScore: 455, prizeGold: 20000, prizeAppeal: 85, trophyName: '開羅皇冠盃', color: '#38bdf8' }
 ];
 
-// 商圈地段與客群偏好設定
 const BRANCH_DEFS = [
-  {
-    id: 'b_nangang',
-    name: '南港住宅溫馨店',
-    signText: 'NANGANG PET CAFE',
-    unlockCost: 0,
-    mult: 1.0,
-    floorStyle: 'wood',
-    wallTint: '#f3e5c8',
-    outdoor: 'street',
-    favCat: 'pet',
-    favLabel: '🐾 偏愛：寵物鮮食 (+30%)',
-    desc: '鄰里家庭與老狗散步客聚集，寵物鮮食單價高'
-  },
-  {
-    id: 'b_xinyi',
-    name: '信義精品寵物沙龍',
-    signText: 'XINYI PET SALON',
-    unlockCost: 5000,
-    mult: 1.4,
-    floorStyle: 'marble',
-    wallTint: '#fce7f3',
-    outdoor: 'boutique',
-    favCat: 'human',
-    favLabel: '☕ 偏愛：人類餐點/咖啡 (+30%)',
-    desc: '時尚白領與貴婦名媛商圈，人類料理與小費極高'
-  },
-  {
-    id: 'b_riverside',
-    name: '河濱公園景觀旗艦店',
-    signText: 'RIVER PARK CAFE',
-    unlockCost: 15000,
-    mult: 1.85,
-    floorStyle: 'resort',
-    wallTint: '#dcfce7',
-    outdoor: 'river',
-    favCat: 'both',
-    favLabel: '🌿 偏愛：雙軌毛孩互動 (愛心+35%)',
-    desc: '河畔遛狗與假日人潮爆滿，營收與愛心雙豐收'
-  }
+  { id: 'b_nangang', name: '南港溫馨店', signText: 'NANGANG CAFE', unlockCost: 0, mult: 1.0, floorStyle: 'wood', wallTint: '#f3e5c8', outdoor: 'street', favCat: 'pet', favLabel: '偏愛：寵物鮮食 (+30%)', desc: '鄰里家庭與老狗聚集，寵物鮮食單價高' },
+  { id: 'b_xinyi', name: '信義精品沙龍', signText: 'XINYI SALON', unlockCost: 5000, mult: 1.4, floorStyle: 'marble', wallTint: '#fce7f3', outdoor: 'boutique', favCat: 'human', favLabel: '偏愛：人類餐點/咖啡 (+30%)', desc: '時尚白領與貴婦商圈，人類料理與小費高' },
+  { id: 'b_riverside', name: '河濱景觀旗艦店', signText: 'RIVER CAFE', unlockCost: 15000, mult: 1.85, floorStyle: 'resort', wallTint: '#dcfce7', outdoor: 'river', favCat: 'both', favLabel: '偏愛：雙軌毛孩互動 (愛心+35%)', desc: '河畔遛狗與假日人潮爆滿，營收與愛心雙豐收' }
 ];
 
 const MERCHANT_ITEMS = [
@@ -804,15 +716,10 @@ const MERCHANT_ITEMS = [
   { id: 'm_border', name: '邊境牧羊犬領養券', costHeart: 120, desc: '直接招募傳說幫手「小黑」加入店內！' }
 ];
 
-// ==================== 3. 遊戲狀態管理（多店獨立營運資料） ====================
+// ==================== 3. 遊戲狀態管理 ====================
 function makeDefaultBranchRecord(bid, unlocked) {
   return {
-    unlocked,
-    stars: 1.0,
-    supportLv: 0,
-    todayIncome: 0,
-    todayCustomers: 0,
-    todayDividend: 0,
+    unlocked, stars: 1.0, supportLv: 0, todayIncome: 0, todayCustomers: 0, todayDividend: 0,
     placedItems: [
       { uid: `${bid}_t1`, defId: 'table_1', lv: 1, gx: 5, gy: 3 },
       { uid: `${bid}_turf`, defId: 'turf_zone', lv: 1, gx: 5, gy: 6 }
@@ -821,15 +728,8 @@ function makeDefaultBranchRecord(bid, unlocked) {
 }
 
 const DEFAULT_STATE = {
-  gold: 2000,
-  heart: 45,
-  day: 1,
-  minuteOfDay: 540,
-  gameSpeed: 1,
-  ngPlusCount: 1,
-  legacyBonus: 1.0,
-  maxGridSize: 10,
-  activeBranch: 'b_nangang',
+  gold: 2000, heart: 45, day: 1, minuteOfDay: 540, gameSpeed: 1,
+  ngPlusCount: 1, legacyBonus: 1.0, maxGridSize: 10, activeBranch: 'b_nangang',
   branches: {
     b_nangang: makeDefaultBranchRecord('b_nangang', true),
     b_xinyi: makeDefaultBranchRecord('b_xinyi', false),
@@ -844,20 +744,13 @@ const DEFAULT_STATE = {
     waiter_2: { lv: 0, job: 'trainee', mastered: ['trainee'], exp: 0 }
   },
   pets: {
-    pet_niuniu: { lv: 1, bond: 0 },
-    pet_doudou: { lv: 0, bond: 0 },
-    pet_mikan: { lv: 0, bond: 0 },
-    pet_border: { lv: 0, bond: 0 }
+    pet_niuniu: { lv: 1, bond: 0 }, pet_doudou: { lv: 0, bond: 0 },
+    pet_mikan: { lv: 0, bond: 0 }, pet_border: { lv: 0, bond: 0 }
   },
   regulars: {
-    r_student: { lv: 1, exp: 0 },
-    r_office: { lv: 1, exp: 0 },
-    r_grandpa: { lv: 1, exp: 0 },
-    r_lady: { lv: 0, exp: 0 },
-    r_blogger: { lv: 0, exp: 0 },
-    r_trainer: { lv: 0, exp: 0 },
-    r_couple: { lv: 0, exp: 0 },
-    r_kairo: { lv: 0, exp: 0 }
+    r_student: { lv: 1, exp: 0 }, r_office: { lv: 1, exp: 0 }, r_grandpa: { lv: 1, exp: 0 },
+    r_lady: { lv: 0, exp: 0 }, r_blogger: { lv: 0, exp: 0 }, r_trainer: { lv: 0, exp: 0 },
+    r_couple: { lv: 0, exp: 0 }, r_kairo: { lv: 0, exp: 0 }
   },
   wonContests: [],
   dailyStats: { income: 0, customers: 0, hearts: 0, toiletUses: 0, chainDividend: 0 },
@@ -866,16 +759,14 @@ const DEFAULT_STATE = {
 
 let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
 try {
-  const saved = localStorage.getItem('kairo_pet_cafe_chain_v1');
+  const saved = localStorage.getItem('kairo_pet_cafe_ascii_v1');
   if (saved) {
     const p = JSON.parse(saved);
     state = Object.assign({}, JSON.parse(JSON.stringify(DEFAULT_STATE)), p);
     state.branches = Object.assign({}, JSON.parse(JSON.stringify(DEFAULT_STATE.branches)), p.branches);
     BRANCH_DEFS.forEach(b => {
       if (!state.branches[b.id]) state.branches[b.id] = makeDefaultBranchRecord(b.id, b.id === 'b_nangang');
-      if (!Array.isArray(state.branches[b.id].placedItems)) {
-        state.branches[b.id].placedItems = makeDefaultBranchRecord(b.id, true).placedItems;
-      }
+      if (!Array.isArray(state.branches[b.id].placedItems)) state.branches[b.id].placedItems = makeDefaultBranchRecord(b.id, true).placedItems;
     });
     state.menus = Object.assign({}, DEFAULT_STATE.menus, p.menus);
     state.staff = Object.assign({}, DEFAULT_STATE.staff, p.staff);
@@ -884,23 +775,20 @@ try {
   }
 } catch (e) {}
 
-function saveGame() {
-  try { localStorage.setItem('kairo_pet_cafe_chain_v1', JSON.stringify(state)); } catch (e) {}
-}
+function saveGame() { try { localStorage.setItem('kairo_pet_cafe_ascii_v1', JSON.stringify(state)); } catch (e) {} }
+function getActiveBranchRec() { return state.branches[state.activeBranch] || state.branches.b_nangang; }
+function getPlacedItems() { return getActiveBranchRec().placedItems; }
 
-function getActiveBranchRec() {
-  return state.branches[state.activeBranch] || state.branches.b_nangang;
-}
-function getPlacedItems() {
-  return getActiveBranchRec().placedItems;
-}
-
-let activeTab = 'facility';
+let activeDrawer = null;
 let activeSubTab = 'main';
 let isPaused = false;
-let editMode = false;
+let arrangeMode = false;
 let selectedUid = null;
 let branchFlashAlpha = 0;
+
+// 單指拖曳巡視相機偏移
+let camPanX = 0, camPanY = 0;
+let isDragging = false, dragStartX = 0, dragStartY = 0, dragMoved = false;
 
 let labState = { cat: 'human', base: 'hb1', top: 'ht1', sauce: 'hs1' };
 let vipEvent = null;
@@ -908,7 +796,120 @@ let feverTimer = 0;
 let merchantTimer = 0;
 let ngPlusSelection = 'menu';
 
-// ==================== 4. 空間建築配置：獨立廚房 & 獨立廁所 ====================
+// ==================== 4. 點陣字元矩陣（ASCII Pixel Art）手繪圖庫 ====================
+// 色碼對照：O=#261810(外框), W=#ffffff, S=#ffdbac(膚色), R=#e66722, G=#3ca34b, B=#2f7ae5, Y=#f7b529, P=#f25c84, T=#8d5524, L=#d97706, C=#38bdf8
+const ASCII_SPRITES = {
+  // 12x14 像素豆豆眼人物（一般／廚師高帽／開羅君）
+  human_0: [
+    '..OOOOOO....',
+    '.OSSSSSSO...',
+    '.OSWSSWSO...',
+    '.OSSSSSSO...',
+    '..OSSSSO....',
+    '.OORRRROO...',
+    'OOSRRRRSOO..',
+    'OOSRRRRSOO..',
+    '..OOOOOO....',
+    '...OOBBOO...',
+    '...OO..OO...',
+    '..OO....OO..'
+  ],
+  chef_0: [
+    '..OOOOOO....',
+    '..OWWWWO....',
+    '.OOOOOOOO...',
+    '.OSSSSSSO...',
+    '.OSWSSWSO...',
+    '..OSSSSO....',
+    '.OOWWWWOO...',
+    'OOSWWWWWSO..',
+    'OOSWWWWWSO..',
+    '..OOOOOO....',
+    '...OOCCOO...',
+    '..OO....OO..'
+  ],
+  kairo_0: [
+    '..OOOOOOOO..',
+    '.OYYYYYYYYO.',
+    '.OYYOOOOYYO.',
+    '.OYYOCCOYYO.',
+    '.OYYOOOOYYO.',
+    '..OOOOOOOO..',
+    '.OYYYYYYYYO.',
+    '.OYYRRRRYYO.',
+    '..OOOOOOOO..',
+    '...OO..OO...',
+    '..OO....OO..'
+  ],
+  // 10x9 像素毛孩（狗／貓）
+  dog_0: [
+    'OO........',
+    'OYOOOOOO..',
+    'OYWYYWYYO.',
+    'OYYYYYYYYO',
+    '.OOYYYYYYO',
+    '..OYYYYYYO',
+    '..OO..OO..',
+    '..OO..OO..'
+  ],
+  cat_0: [
+    '.OY....YO.',
+    '.OYYYYYYO.',
+    '.OYWYYWYO.',
+    '.OYYYYYYO.',
+    '..OYYYYYYO',
+    '..OO..OO..',
+    '..OO..OO..'
+  ]
+};
+
+function renderAsciiMatrix(lines, palette, scale = 2) {
+  const h = lines.length;
+  const w = lines[0].length;
+  const c = document.createElement('canvas');
+  c.width = w * scale;
+  c.height = h * scale;
+  const x = c.getContext('2d');
+  x.imageSmoothingEnabled = false;
+  for (let y = 0; y < h; y++) {
+    for (let xi = 0; xi < w; xi++) {
+      const ch = lines[y][xi];
+      if (ch === '.') continue;
+      x.fillStyle = palette[ch] || '#261810';
+      x.fillRect(xi * scale, y * scale, scale, scale);
+    }
+  }
+  return c;
+}
+
+const spriteBank = {};
+function getCharacterPixelCanvas(key, hairCol, shirtCol, isChef, isKairo) {
+  const id = `${key}_${hairCol}_${shirtCol}_${isChef}_${isKairo}`;
+  if (spriteBank[id]) return spriteBank[id];
+  const tpl = isKairo ? ASCII_SPRITES.kairo_0 : (isChef ? ASCII_SPRITES.chef_0 : ASCII_SPRITES.human_0);
+  const pal = {
+    O: '#261810',
+    W: '#ffffff',
+    S: '#ffdbac',
+    R: shirtCol,
+    B: '#2f7ae5',
+    C: '#38bdf8',
+    Y: hairCol
+  };
+  spriteBank[id] = renderAsciiMatrix(tpl, pal, 2);
+  return spriteBank[id];
+}
+
+function getPetPixelCanvas(coatCol, isCat) {
+  const id = `pet_${coatCol}_${isCat}`;
+  if (spriteBank[id]) return spriteBank[id];
+  const tpl = isCat ? ASCII_SPRITES.cat_0 : ASCII_SPRITES.dog_0;
+  const pal = { O: '#261810', W: '#ffffff', Y: coatCol };
+  spriteBank[id] = renderAsciiMatrix(tpl, pal, 2);
+  return spriteBank[id];
+}
+
+// ==================== 5. 空間與數值計算 ====================
 function isKitchenCell(gx, gy) { return gx >= 0 && gx <= 2 && gy >= 0 && gy <= 3; }
 function isToiletCell(gx, gy) { return gx >= 0 && gx <= 2 && gy >= 6 && gy <= 8; }
 function isRestrictedFurnitureCell(gx, gy) {
@@ -934,35 +935,21 @@ function findFreeTile(prefGx, prefGy) {
   return candidates[0] || null;
 }
 
-// ==================== 5. 數值計算與連鎖分店營收 ====================
-function getCurrentSeason() {
-  const idx = Math.floor(((state.day - 1) % 36) / 9);
-  return SEASONS[idx] || SEASONS[0];
-}
-function isSeasonalDish(name) {
-  return getCurrentSeason().keywords.some(k => name.includes(k));
-}
-function getBranchInfo() {
-  return BRANCH_DEFS.find(b => b.id === state.activeBranch) || BRANCH_DEFS[0];
-}
+function getCurrentSeason() { return SEASONS[Math.floor(((state.day - 1) % 36) / 9)] || SEASONS[0]; }
+function isSeasonalDish(name) { return getCurrentSeason().keywords.some(k => name.includes(k)); }
+function getBranchInfo() { return BRANCH_DEFS.find(b => b.id === state.activeBranch) || BRANCH_DEFS[0]; }
 function computeBranchStars(bid) {
   const rec = state.branches[bid];
   if (!rec || !rec.unlocked) return 1.0;
   const itemScore = rec.placedItems.reduce((acc, it) => acc + it.lv, 0);
-  const raw = 1.0 + itemScore * 0.12 + (rec.supportLv || 0) * 0.45;
-  return Math.min(5.0, Number(raw.toFixed(1)));
+  return Math.min(5.0, Number((1.0 + itemScore * 0.12 + (rec.supportLv || 0) * 0.45).toFixed(1)));
 }
 function refreshAllBranchStars() {
-  BRANCH_DEFS.forEach(b => {
-    if (state.branches[b.id]) state.branches[b.id].stars = computeBranchStars(b.id);
-  });
+  BRANCH_DEFS.forEach(b => { if (state.branches[b.id]) state.branches[b.id].stars = computeBranchStars(b.id); });
 }
-function hasFacility(defId) {
-  return getPlacedItems().some(it => it.defId === defId);
-}
-function countFacility(defId) {
-  return getPlacedItems().filter(it => it.defId === defId).length;
-}
+function hasFacility(defId) { return getPlacedItems().some(it => it.defId === defId); }
+function countFacility(defId) { return getPlacedItems().filter(it => it.defId === defId).length; }
+
 function getActiveCombos() {
   const active = [];
   const items = getPlacedItems();
@@ -981,31 +968,24 @@ function getActiveCombos() {
       active.push(c);
       if (!state.discoveredCombos.includes(c.id)) {
         state.discoveredCombos.push(c.id);
-        showComboToast(`✨ 發現設施相性：【${c.name}】`, c.bonusText);
+        showKairoToast(`✨ 設施相性發見：【${c.name}】`, c.bonusText);
         sfx.combo();
       }
     }
   });
   return active;
 }
+
 function getTotalAppeal() {
   let total = 15 + (state.ngPlusCount - 1) * 20;
-  getPlacedItems().forEach(it => {
-    const def = FACILITY_DEFS.find(f => f.id === it.defId);
-    if (def) total += def.appeal * it.lv;
-  });
-  PET_DEFS.forEach(p => {
-    const lv = state.pets[p.id]?.lv || 0;
-    if (lv > 0) total += 10 + lv * 6;
-  });
+  getPlacedItems().forEach(it => { const def = FACILITY_DEFS.find(f => f.id === it.defId); if (def) total += def.appeal * it.lv; });
+  PET_DEFS.forEach(p => { const lv = state.pets[p.id]?.lv || 0; if (lv > 0) total += 10 + lv * 6; });
   Object.values(state.regulars).forEach(r => { if (r.lv > 1) total += (r.lv - 1) * 2; });
-  state.wonContests.forEach(cid => {
-    const c = CONTEST_DEFS.find(x => x.id === cid);
-    if (c) total += c.prizeAppeal;
-  });
+  state.wonContests.forEach(cid => { const c = CONTEST_DEFS.find(x => x.id === cid); if (c) total += c.prizeAppeal; });
   getActiveCombos().forEach(c => { if (c.type === 'appeal') total += c.val; });
   return total;
 }
+
 function getMenuPrice(m) {
   const lv = state.menus[m.id] || 1;
   const branchInfo = getBranchInfo();
@@ -1013,12 +993,9 @@ function getMenuPrice(m) {
   let mul = 1 + (lv - 1) * 0.25;
   if (m.cat === 'human' && hasFacility('coffee_bar')) mul += 0.15;
   if (hasFacility('bakery_case')) mul += 0.18;
-  // 地區客群偏好加成
   if (branchInfo.favCat === m.cat) mul += 0.30;
   if (branchInfo.favCat === 'both') mul += 0.15;
-  // 分店星級加成
   mul += ((branchRec?.stars || 1) - 1) * 0.12;
-
   getActiveCombos().forEach(c => {
     if (c.type === 'human_price' && m.cat === 'human') mul += c.val;
     if (c.type === 'pet_price' && m.cat === 'pet') mul += c.val;
@@ -1029,6 +1006,7 @@ function getMenuPrice(m) {
   mul *= branchInfo.mult * state.legacyBonus;
   return Math.round(m.basePrice * mul);
 }
+
 function getCustomDishPrice(cm) {
   const branchInfo = getBranchInfo();
   const branchRec = getActiveBranchRec();
@@ -1041,14 +1019,13 @@ function getCustomDishPrice(cm) {
   mul *= branchInfo.mult * state.legacyBonus;
   return Math.round(cm.basePrice * mul);
 }
+
 function getHeartMultiplier() {
   let mul = 1 + countFacility('turf_zone') * 0.25;
   if (getBranchInfo().favCat === 'both') mul += 0.35;
   if ((state.pets.pet_mikan?.lv || 0) > 0) mul *= 1.5;
   getActiveCombos().forEach(c => { if (c.type === 'heart') mul += c.val; });
-  Object.values(state.staff).forEach(s => {
-    if (s.lv > 0) mul *= (JOB_TREE[s.job]?.heartMul || 1);
-  });
+  Object.values(state.staff).forEach(s => { if (s.lv > 0) mul *= (JOB_TREE[s.job]?.heartMul || 1); });
   return mul;
 }
 function getChefSpeedMultiplier() {
@@ -1062,36 +1039,37 @@ function getWaiterSpeedMultiplier(id) {
   return (1 + (s.lv - 1) * 0.2 + sup) * (JOB_TREE[s.job]?.speedMul || 1);
 }
 
-// ==================== 6. 2:1 等角立體像素精靈圖與立體家具繪製 ====================
-const canvas = document.getElementById('gameCanvas');
+// ==================== 6. 全螢幕點陣 2.5D 渲染 ====================
+const canvas = document.getElementById('pixelCanvas');
 const ctx = canvas.getContext('2d');
-let CW = 480, CH = 300;
-const TILE_W = 34;
-const TILE_H = 17;
+let CW = 480, CH = 720;
+const TILE_W = 36;
+const TILE_H = 18;
 
 function resizeCanvas() {
-  const wrap = document.getElementById('canvas-wrap');
+  const app = document.getElementById('app');
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  CW = wrap.clientWidth;
-  CH = wrap.clientHeight;
+  CW = app.clientWidth;
+  CH = app.clientHeight;
   canvas.width = CW * dpr;
   canvas.height = CH * dpr;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.imageSmoothingEnabled = false;
 }
 window.addEventListener('resize', resizeCanvas);
+function resetCamera() { camPanX = 0; camPanY = 0; }
 
 function gridToIso(gx, gy) {
-  const originX = CW * 0.50;
-  const originY = CH * 0.24 - (state.maxGridSize - 10) * 6;
+  const originX = CW * 0.50 + camPanX;
+  const originY = CH * 0.34 + camPanY;
   return {
     x: originX + (gx - gy) * (TILE_W / 2),
     y: originY + (gx + gy) * (TILE_H / 2)
   };
 }
 function isoToGrid(sx, sy) {
-  const originX = CW * 0.50;
-  const originY = CH * 0.24 - (state.maxGridSize - 10) * 6;
+  const originX = CW * 0.50 + camPanX;
+  const originY = CH * 0.34 + camPanY;
   const dx = sx - originX;
   const dy = sy - originY;
   const gx = Math.floor((dx / (TILE_W / 2) + dy / (TILE_H / 2)) / 2);
@@ -1099,43 +1077,23 @@ function isoToGrid(sx, sy) {
   return { gx, gy };
 }
 
-function drawIsoBox(cx, baseY, rx, ry, h, topCol, leftCol, rightCol, outline = '#2c1e16') {
+function drawIsoBox(cx, baseY, rx, ry, h, topCol, leftCol, rightCol, outline = '#261810') {
   ctx.beginPath();
-  ctx.moveTo(cx - rx, baseY - h);
-  ctx.lineTo(cx, baseY + ry - h);
-  ctx.lineTo(cx, baseY + ry);
-  ctx.lineTo(cx - rx, baseY);
-  ctx.closePath();
-  ctx.fillStyle = leftCol;
-  ctx.fill();
-  ctx.strokeStyle = outline; ctx.lineWidth = 1; ctx.stroke();
+  ctx.moveTo(cx - rx, baseY - h); ctx.lineTo(cx, baseY + ry - h); ctx.lineTo(cx, baseY + ry); ctx.lineTo(cx - rx, baseY);
+  ctx.closePath(); ctx.fillStyle = leftCol; ctx.fill(); ctx.strokeStyle = outline; ctx.lineWidth = 1; ctx.stroke();
 
   ctx.beginPath();
-  ctx.moveTo(cx, baseY + ry - h);
-  ctx.lineTo(cx + rx, baseY - h);
-  ctx.lineTo(cx + rx, baseY);
-  ctx.lineTo(cx, baseY + ry);
-  ctx.closePath();
-  ctx.fillStyle = rightCol;
-  ctx.fill();
-  ctx.stroke();
+  ctx.moveTo(cx, baseY + ry - h); ctx.lineTo(cx + rx, baseY - h); ctx.lineTo(cx + rx, baseY); ctx.lineTo(cx, baseY + ry);
+  ctx.closePath(); ctx.fillStyle = rightCol; ctx.fill(); ctx.stroke();
 
   ctx.beginPath();
-  ctx.moveTo(cx, baseY - ry - h);
-  ctx.lineTo(cx + rx, baseY - h);
-  ctx.lineTo(cx, baseY + ry - h);
-  ctx.lineTo(cx - rx, baseY - h);
-  ctx.closePath();
-  ctx.fillStyle = topCol;
-  ctx.fill();
-  ctx.stroke();
+  ctx.moveTo(cx, baseY - ry - h); ctx.lineTo(cx + rx, baseY - h); ctx.lineTo(cx, baseY + ry - h); ctx.lineTo(cx - rx, baseY - h);
+  ctx.closePath(); ctx.fillStyle = topCol; ctx.fill(); ctx.stroke();
 }
 
 function drawIsoFurnitureSet(defId, gx, gy, frame) {
   const p = gridToIso(gx, gy);
-  const cx = p.x;
-  const baseY = p.y + TILE_H * 0.65;
-
+  const cx = p.x, baseY = p.y + TILE_H * 0.65;
   if (defId === 'table_1') {
     drawIsoBox(cx - 10, baseY - 2, 4, 2, 5, '#b45309', '#92400e', '#78350f');
     drawIsoBox(cx + 10, baseY + 2, 4, 2, 5, '#b45309', '#92400e', '#78350f');
@@ -1164,7 +1122,7 @@ function drawIsoFurnitureSet(defId, gx, gy, frame) {
   } else if (defId === 'coffee_bar') {
     drawIsoBox(cx, baseY, 13, 6.5, 8, '#b45309', '#92400e', '#78350f');
     drawIsoBox(cx - 2, baseY - 8, 7, 3.5, 7, '#f1f5f9', '#cbd5e1', '#94a3b8');
-    ctx.fillStyle = '#2c1e16'; ctx.fillRect(cx - 4, baseY - 11, 4, 3);
+    ctx.fillStyle = '#261810'; ctx.fillRect(cx - 4, baseY - 11, 4, 3);
   } else if (defId === 'water_fountain') {
     drawIsoBox(cx, baseY, 9, 4.5, 6, '#e0f2fe', '#7dd3fc', '#0284c7');
     drawIsoBox(cx, baseY - 6, 5, 2.5, 4, '#38bdf8', '#0ea5e9', '#0369a1');
@@ -1179,35 +1137,18 @@ function drawIsoFurnitureSet(defId, gx, gy, frame) {
   }
 }
 
-function drawIsoTile(gx, gy, topColor, leftColor, rightColor, height = 4, stroke = 'rgba(44,30,22,0.25)') {
+function drawIsoTile(gx, gy, topColor, leftColor, rightColor, height = 4, stroke = 'rgba(38,24,16,0.24)') {
   const p = gridToIso(gx, gy);
   const hw = TILE_W / 2, hh = TILE_H / 2;
   ctx.beginPath();
-  ctx.moveTo(p.x, p.y);
-  ctx.lineTo(p.x + hw, p.y + hh);
-  ctx.lineTo(p.x, p.y + TILE_H);
-  ctx.lineTo(p.x - hw, p.y + hh);
-  ctx.closePath();
-  ctx.fillStyle = topColor;
-  ctx.fill();
+  ctx.moveTo(p.x, p.y); ctx.lineTo(p.x + hw, p.y + hh); ctx.lineTo(p.x, p.y + TILE_H); ctx.lineTo(p.x - hw, p.y + hh);
+  ctx.closePath(); ctx.fillStyle = topColor; ctx.fill();
   if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke(); }
-
   if (height > 0) {
-    ctx.beginPath();
-    ctx.moveTo(p.x - hw, p.y + hh);
-    ctx.lineTo(p.x, p.y + TILE_H);
-    ctx.lineTo(p.x, p.y + TILE_H + height);
-    ctx.lineTo(p.x - hw, p.y + hh + height);
-    ctx.closePath();
-    ctx.fillStyle = leftColor; ctx.fill();
-
-    ctx.beginPath();
-    ctx.moveTo(p.x + hw, p.y + hh);
-    ctx.lineTo(p.x, p.y + TILE_H);
-    ctx.lineTo(p.x, p.y + TILE_H + height);
-    ctx.lineTo(p.x + hw, p.y + hh + height);
-    ctx.closePath();
-    ctx.fillStyle = rightColor; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(p.x - hw, p.y + hh); ctx.lineTo(p.x, p.y + TILE_H); ctx.lineTo(p.x, p.y + TILE_H + height); ctx.lineTo(p.x - hw, p.y + hh + height);
+    ctx.closePath(); ctx.fillStyle = leftColor; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(p.x + hw, p.y + hh); ctx.lineTo(p.x, p.y + TILE_H); ctx.lineTo(p.x, p.y + TILE_H + height); ctx.lineTo(p.x + hw, p.y + hh + height);
+    ctx.closePath(); ctx.fillStyle = rightColor; ctx.fill();
   }
 }
 
@@ -1215,124 +1156,31 @@ function drawIsoWallSegment(gx, gy, wallH, colorFront, colorSide, hasDoorway = f
   const p = gridToIso(gx, gy);
   const hw = TILE_W / 2, hh = TILE_H / 2;
   const h = hasDoorway ? wallH * 0.30 : wallH;
-  ctx.beginPath();
-  ctx.moveTo(p.x - hw, p.y + hh);
-  ctx.lineTo(p.x, p.y + TILE_H);
-  ctx.lineTo(p.x, p.y + TILE_H - h);
-  ctx.lineTo(p.x - hw, p.y + hh - h);
-  ctx.closePath();
-  ctx.fillStyle = colorFront; ctx.fill();
-  ctx.strokeStyle = '#2c1e16'; ctx.lineWidth = 1; ctx.stroke();
-
-  ctx.beginPath();
-  ctx.moveTo(p.x, p.y + TILE_H);
-  ctx.lineTo(p.x + hw, p.y + hh);
-  ctx.lineTo(p.x + hw, p.y + hh - h);
-  ctx.lineTo(p.x, p.y + TILE_H - h);
-  ctx.closePath();
-  ctx.fillStyle = colorSide; ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(p.x - hw, p.y + hh); ctx.lineTo(p.x, p.y + TILE_H); ctx.lineTo(p.x, p.y + TILE_H - h); ctx.lineTo(p.x - hw, p.y + hh - h);
+  ctx.closePath(); ctx.fillStyle = colorFront; ctx.fill(); ctx.strokeStyle = '#261810'; ctx.lineWidth = 1; ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(p.x, p.y + TILE_H); ctx.lineTo(p.x + hw, p.y + hh); ctx.lineTo(p.x + hw, p.y + hh - h); ctx.lineTo(p.x, p.y + TILE_H - h);
+  ctx.closePath(); ctx.fillStyle = colorSide; ctx.fill(); ctx.stroke();
 }
 
-const pixelCache = {};
-function bakePixelSprite(key, w, h, drawFn) {
-  if (pixelCache[key]) return pixelCache[key];
-  const c = document.createElement('canvas');
-  c.width = w; c.height = h;
-  const x = c.getContext('2d');
-  x.imageSmoothingEnabled = false;
-  const px = (ix, iy, pw, ph, col) => { x.fillStyle = col; x.fillRect(ix, iy, pw, ph); };
-  drawFn(px);
-  pixelCache[key] = c;
-  return c;
-}
-
-function getChibiSprite(key, hairColor, shirtColor, isChef, frame, isKairo = false) {
-  return bakePixelSprite(`hum_${key}_${hairColor}_${shirtColor}_${isChef}_${frame}_${isKairo}`, 16, 20, (px) => {
-    const bob = frame % 2 === 1 ? -1 : 0;
-    const ol = '#2c1e16';
-    if (isKairo) {
-      px(3, 0 + bob, 10, 10, ol); px(4, 1 + bob, 8, 8, '#facc15');
-      px(5, 3 + bob, 6, 4, '#2c1e16'); px(6, 4 + bob, 1, 2, '#38bdf8'); px(9, 4 + bob, 1, 2, '#38bdf8');
-      px(3, 10 + bob, 10, 6, ol); px(4, 10 + bob, 8, 5, '#facc15'); px(5, 11 + bob, 6, 3, '#ef4444');
-      px(4, 16, 3, 3, ol); px(9, 16, 3, 3, ol);
-      px(5, 16, 1, 2, '#facc15'); px(10, 16, 1, 2, '#facc15');
-      return;
-    }
-    if (isChef) {
-      px(4, 0 + bob, 8, 4, ol); px(5, 1 + bob, 6, 2, '#ffffff'); px(4, 3 + bob, 8, 1, '#e2e8f0');
-    } else {
-      px(3, 2 + bob, 10, 4, ol); px(4, 2 + bob, 8, 3, hairColor);
-    }
-    px(4, 4 + bob, 8, 6, ol); px(5, 5 + bob, 6, 4, '#ffdbac');
-    px(5, 6 + bob, 1, 2, ol); px(10, 6 + bob, 1, 2, ol);
-    px(4, 7 + bob, 1, 1, '#ff8a80'); px(11, 7 + bob, 1, 1, '#ff8a80');
-    px(3, 10 + bob, 10, 6, ol); px(4, 10 + bob, 8, 5, shirtColor);
-    if (isChef) px(6, 11 + bob, 4, 4, '#ffffff');
-    px(2, 11 + bob, 2, 4, '#ffdbac'); px(12, 11 + bob, 2, 4, '#ffdbac');
-    if (frame % 2 === 0) { px(4, 16, 3, 3, '#2c1e16'); px(9, 16, 3, 3, '#2c1e16'); }
-    else { px(3, 15, 3, 3, '#2c1e16'); px(10, 16, 3, 3, '#2c1e16'); }
-  });
-}
-
-function getPetSprite(coatColor, isCat, frame) {
-  return bakePixelSprite(`pet_${coatColor}_${isCat}_${frame}`, 14, 12, (px) => {
-    const bob = frame % 2 === 1 ? -1 : 0;
-    const ol = '#2c1e16';
-    if (isCat) {
-      px(2, 0 + bob, 2, 2, ol); px(6, 0 + bob, 2, 2, ol);
-      px(2, 1 + bob, 2, 1, coatColor); px(6, 1 + bob, 2, 1, coatColor);
-    } else {
-      px(1, 2 + bob, 2, 3, ol); px(7, 2 + bob, 2, 3, ol);
-    }
-    px(2, 2 + bob, 6, 5, ol); px(3, 3 + bob, 4, 3, coatColor);
-    px(3, 4 + bob, 1, 1, ol); px(6, 4 + bob, 1, 1, ol);
-    px(4, 5 + bob, 8, 4, ol); px(5, 6 + bob, 6, 2, coatColor);
-    px(12, 4 + bob, 2, 2, coatColor);
-    px(4, 9, 2, 2, ol); px(9, 9, 2, 2, ol);
-  });
-}
-
-function getFoodPixelSprite(isEmptyPlate, isPetFood) {
-  return bakePixelSprite(`food_${isEmptyPlate}_${isPetFood}`, 10, 8, (px) => {
-    const ol = '#2c1e16';
-    px(1, 3, 8, 4, ol); px(2, 4, 6, 2, '#f8fafc');
-    if (!isEmptyPlate) {
-      if (isPetFood) { px(3, 2, 4, 2, '#f59e0b'); px(4, 1, 2, 1, '#4ade80'); }
-      else { px(3, 1, 4, 3, '#92400e'); px(4, 1, 2, 1, '#fde047'); }
-    }
-  });
-}
-
-// ==================== 7. 模擬實體與多店營收累計 ====================
+// ==================== 7. 模擬實體與多店營收 ====================
 let entities = {
   chef: { gx: 1.0, gy: 1.5, state: 'idle', timer: 0, order: null, patrolDir: 1 },
   waiters: {
     waiter_1: { gx: 3.5, gy: 2.5, state: 'idle', dish: null, cleanTable: null },
     waiter_2: { gx: 4.5, gy: 4.5, state: 'idle', dish: null, cleanTable: null }
   },
-  customers: [],
-  passers: [],
-  particles: [],
-  orders: [],
-  readyDishes: [],
-  dirtyTables: [],
-  toiletOccupiedBy: null
+  customers: [], passers: [], particles: [], orders: [], readyDishes: [], dirtyTables: [], toiletOccupiedBy: null
 };
 
-let spawnTimer = 0;
-let passerTimer = 0;
-let petHeartTimer = 0;
-let chainTickTimer = 0;
-let tickAccumulator = 0;
-let animFrameCounter = 0;
+let spawnTimer = 0, passerTimer = 0, petHeartTimer = 0, chainTickTimer = 0, tickAccumulator = 0, animFrameCounter = 0;
 
 function getTimeLighting() {
   const m = state.minuteOfDay;
-  if (m < 660) return { phase: '🌅早午餐', sky: ['#7dd3fc', '#bae6fd'], ambient: 'rgba(255,248,220,0.04)', isNight: false, isSunset: false };
-  if (m < 960) return { phase: '☀️午餐尖峰', sky: ['#38bdf8', '#7dd3fc'], ambient: 'rgba(255,255,255,0)', isNight: false, isSunset: false };
-  if (m < 1050) return { phase: '🌤️下午茶', sky: ['#60a5fa', '#93c5fd'], ambient: 'rgba(255,237,213,0.08)', isNight: false, isSunset: false };
-  if (m < 1170) return { phase: '🌇黃昏晚餐', sky: ['#f97316', '#fda4af'], ambient: 'rgba(234,88,12,0.22)', isNight: false, isSunset: true };
-  return { phase: '🌙星光夜場', sky: ['#0f172a', '#1e1b4b'], ambient: 'rgba(15,23,42,0.45)', isNight: true, isSunset: false };
+  if (m < 660) return { sky: ['#7dd3fc', '#bae6fd'], ambient: 'rgba(255,248,220,0.04)', isNight: false, isSunset: false };
+  if (m < 960) return { sky: ['#38bdf8', '#7dd3fc'], ambient: 'rgba(255,255,255,0)', isNight: false, isSunset: false };
+  if (m < 1050) return { sky: ['#60a5fa', '#93c5fd'], ambient: 'rgba(255,237,213,0.08)', isNight: false, isSunset: false };
+  if (m < 1170) return { sky: ['#f97316', '#fda4af'], ambient: 'rgba(234,88,12,0.22)', isNight: false, isSunset: true };
+  return { sky: ['#0f172a', '#1e1b4b'], ambient: 'rgba(15,23,42,0.45)', isNight: true, isSunset: false };
 }
 
 function addParticle(gx, gy, text, color = '#fff') {
@@ -1340,21 +1188,19 @@ function addParticle(gx, gy, text, color = '#fff') {
   entities.particles.push({ x: p.x, y: p.y - 14, text, color, life: 1.35 });
 }
 
-function showComboToast(title, desc) {
-  const el = document.getElementById('combo-toast');
-  document.getElementById('combo-toast-title').textContent = title;
-  document.getElementById('combo-toast-desc').textContent = desc;
+function showKairoToast(title, desc) {
+  const el = document.getElementById('kairo-toast');
+  document.getElementById('kairo-toast-title').textContent = title;
+  document.getElementById('kairo-toast-desc').textContent = desc;
   el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 3200);
 }
 
 function moveTowards(obj, tx, ty, speed, dt) {
-  const dx = tx - obj.gx;
-  const dy = ty - obj.gy;
+  const dx = tx - obj.gx, dy = ty - obj.gy;
   const dist = Math.hypot(dx, dy);
   if (dist < 0.08) { obj.gx = tx; obj.gy = ty; return true; }
-  obj.gx += (dx / dist) * speed * dt;
-  obj.gy += (dy / dist) * speed * dt;
+  obj.gx += (dx / dist) * speed * dt; obj.gy += (dy / dist) * speed * dt;
   return false;
 }
 
@@ -1384,19 +1230,13 @@ function spawnCustomer(forceVip = false) {
   const G = state.maxGridSize;
 
   entities.customers.push({
-    id: Date.now() + Math.random(),
-    regId: reg.id,
-    name: forceVip ? 'VIP主編' : reg.name,
-    hair: forceVip ? '#fde047' : reg.hair,
-    shirt: forceVip ? '#dc2626' : reg.shirt,
-    isVip: forceVip,
-    hasPet,
+    id: Date.now() + Math.random(), regId: reg.id, name: forceVip ? 'VIP主編' : reg.name,
+    hair: forceVip ? '#fde047' : reg.hair, shirt: forceVip ? '#dc2626' : reg.shirt,
+    isVip: forceVip, hasPet,
     petCoat: reg.petType === 'cat' ? '#ff9800' : (reg.petType === 'senior_dog' ? '#d7ccc8' : '#e69d45'),
     isCat: reg.petType === 'cat',
-    gx: G - 1.2, gy: G - 1.2,
-    tableUid: tbl.uid, tableDefId: tbl.defId, tableGx: tbl.gx, tableGy: tbl.gy,
-    seatGx: tbl.gx + 0.45, seatGy: tbl.gy + 0.45,
-    petGx: G - 0.8, petGy: G - 0.8,
+    gx: G - 1.2, gy: G - 1.2, tableUid: tbl.uid, tableDefId: tbl.defId, tableGx: tbl.gx, tableGy: tbl.gy,
+    seatGx: tbl.gx + 0.45, seatGy: tbl.gy + 0.45, petGx: G - 0.8, petGy: G - 0.8,
     state: 'entering', timer: 0, orderedMenu: null,
     bubble: forceVip ? 'VIP!' : (hasPet ? '♪ 期待' : '找位'),
     willUseToilet: Math.random() < 0.45
@@ -1404,7 +1244,6 @@ function spawnCustomer(forceVip = false) {
 
   if (forceVip) {
     vipEvent = { timer: 28, score: 0, target: 100 };
-    document.getElementById('ticker').textContent = '🚨 【突發事件】VIP 寵物雜誌主編進店！快端出招牌菜並讓毛孩互動！';
     sfx.combo();
   }
 }
@@ -1415,7 +1254,7 @@ function triggerKairoInspiration(gx, gy) {
     const pick = keys[Math.floor(Math.random() * keys.length)];
     state.menus[pick] += 1;
     const def = MENU_DEFS.find(m => m.id === pick);
-    addParticle(gx, gy, `💡靈感! ${def?.name || '料理'}Lv.${state.menus[pick]}`, '#fde047');
+    addParticle(gx, gy, `靈感! ${def?.name || '料理'}Lv.${state.menus[pick]}`, '#fde047');
     sfx.upgrade();
   }
 }
@@ -1423,11 +1262,9 @@ function triggerKairoInspiration(gx, gy) {
 function updateSimulation(dt) {
   if (isPaused) return;
   animFrameCounter++;
-
   state.minuteOfDay += dt * 7.2;
   if (state.minuteOfDay >= 1380) { endOfDay(); return; }
 
-  // 其他已解鎖分店同步獨立營運與產生連鎖分紅
   chainTickTimer += dt;
   if (chainTickTimer >= 4.0) {
     chainTickTimer = 0;
@@ -1436,11 +1273,9 @@ function updateSimulation(dt) {
       const rec = state.branches[b.id];
       if (rec && rec.unlocked) {
         const earned = Math.round((45 + rec.stars * 38) * b.mult * state.legacyBonus);
-        rec.todayIncome += earned;
-        rec.todayCustomers += 1;
+        rec.todayIncome += earned; rec.todayCustomers += 1;
         const div = Math.max(10, Math.round(earned * 0.25));
-        rec.todayDividend += div;
-        state.gold += div;
+        rec.todayDividend += div; state.gold += div;
         state.dailyStats.chainDividend = (state.dailyStats.chainDividend || 0) + div;
       }
     });
@@ -1456,24 +1291,16 @@ function updateSimulation(dt) {
     vipEvent.timer -= dt;
     if (vipEvent.score >= vipEvent.target) {
       vipEvent = null; feverTimer = 28; state.heart += 30;
-      showComboToast('🔥 登上寵物雜誌封面！', '開啟 28 秒 FEVER 狂熱時間：客流與小費翻倍！');
+      showKairoToast('🔥 登上雜誌封面！', '28秒 FEVER 狂熱時間：營收小費 2 倍！');
       sfx.combo();
-    } else if (vipEvent.timer <= 0) {
-      vipEvent = null;
-      document.getElementById('ticker').textContent = '📸 VIP 主編離開了，下次再準備更豐盛的料理迎戰！';
-    }
+    } else if (vipEvent.timer <= 0) vipEvent = null;
   }
 
   passerTimer += dt;
   if (passerTimer > 2.3 && entities.passers.length < 4) {
     passerTimer = 0;
     const reg = REGULARS_DEF[Math.floor(Math.random() * REGULARS_DEF.length)];
-    entities.passers.push({
-      gx: state.maxGridSize + 2.4,
-      gy: 1.5 + Math.random() * 5.5,
-      hair: reg.hair, shirt: reg.shirt,
-      speed: 0.95 + Math.random() * 0.4
-    });
+    entities.passers.push({ gx: state.maxGridSize + 2.4, gy: 1.5 + Math.random() * 5.5, hair: reg.hair, shirt: reg.shirt, speed: 0.95 + Math.random() * 0.4 });
   }
   entities.passers.forEach(p => { p.gy += p.speed * dt; });
   entities.passers = entities.passers.filter(p => p.gy < state.maxGridSize + 1.5);
@@ -1483,10 +1310,7 @@ function updateSimulation(dt) {
   const nightMul = light.isNight ? 0.82 : 1.0;
   const spawnInterval = Math.max(1.0, (4.8 - getTotalAppeal() * 0.022) * petAppealBonus * nightMul / (feverTimer > 0 ? 2.2 : 1));
   spawnTimer += dt;
-  if (spawnTimer >= spawnInterval) {
-    spawnTimer = 0;
-    spawnCustomer(false);
-  }
+  if (spawnTimer >= spawnInterval) { spawnTimer = 0; spawnCustomer(false); }
 
   petHeartTimer += dt;
   if (petHeartTimer >= 4.2) {
@@ -1495,11 +1319,10 @@ function updateSimulation(dt) {
     if (activePets.length > 0) {
       const rp = activePets[Math.floor(Math.random() * activePets.length)];
       const gain = Math.max(1, Math.round(2 * getHeartMultiplier()));
-      state.heart += gain;
-      state.dailyStats.hearts += gain;
+      state.heart += gain; state.dailyStats.hearts += gain;
       state.pets[rp.id].bond = (state.pets[rp.id].bond || 0) + 1;
       const turf = getPlacedItems().find(it => it.defId === 'turf_zone') || { gx: 5, gy: 6 };
-      addParticle(turf.gx + (Math.random() - 0.5), turf.gy + (Math.random() - 0.5), `♪ +${gain}愛心`, '#ff85a2');
+      addParticle(turf.gx + (Math.random() - 0.5), turf.gy + (Math.random() - 0.5), `♪ +${gain}愛心`, '#ff8aa8');
       if (vipEvent) vipEvent.score += 18;
     }
   }
@@ -1533,8 +1356,7 @@ function updateSimulation(dt) {
 
   ['waiter_1', 'waiter_2'].forEach(wid => {
     if ((state.staff[wid]?.lv || 0) <= 0) return;
-    const w = entities.waiters[wid];
-    const spd = 2.5 * getWaiterSpeedMultiplier(wid);
+    const w = entities.waiters[wid]; const spd = 2.5 * getWaiterSpeedMultiplier(wid);
     if (w.state === 'idle') {
       if (entities.readyDishes.length > 0) { w.dish = entities.readyDishes.shift(); w.state = 'to_counter'; }
       else if (entities.dirtyTables.length > 0) { w.cleanTable = entities.dirtyTables.shift(); w.state = 'cleaning'; }
@@ -1582,12 +1404,9 @@ function updateSimulation(dt) {
         if (c.tableDefId === 'table_2') price = Math.round(price * 1.2);
         getActiveCombos().forEach(cb => { if (cb.type === 'tip') price = Math.round(price * (1 + cb.val)); });
 
-        state.gold += price;
-        state.dailyStats.income += price;
-        state.dailyStats.customers += 1;
+        state.gold += price; state.dailyStats.income += price; state.dailyStats.customers += 1;
         if (activeRec) { activeRec.todayIncome += price; activeRec.todayCustomers += 1; }
-        addParticle(c.gx, c.gy, `+$${price}`, '#fde047');
-        sfx.coin();
+        addParticle(c.gx, c.gy, `+$${price}`, '#fde047'); sfx.coin();
 
         entities.dirtyTables.push({ tableUid: c.tableUid, gx: c.tableGx, gy: c.tableGy });
         if (Math.random() < 0.14) triggerKairoInspiration(c.gx, c.gy);
@@ -1599,9 +1418,8 @@ function updateSimulation(dt) {
         }
         if (c.isVip && vipEvent) vipEvent.score += 65;
 
-        if (c.willUseToilet && !entities.toiletOccupiedBy) {
-          entities.toiletOccupiedBy = c.id; c.state = 'to_toilet'; c.bubble = '去洗手間';
-        } else { c.state = 'leaving'; c.bubble = '太讚啦!'; }
+        if (c.willUseToilet && !entities.toiletOccupiedBy) { entities.toiletOccupiedBy = c.id; c.state = 'to_toilet'; c.bubble = '去洗手間'; }
+        else { c.state = 'leaving'; c.bubble = '太讚啦!'; }
       }
     } else if (c.state === 'to_toilet') {
       if (moveTowards(c, 0.9, 7.3, 2.1, dt)) { c.state = 'using_toilet'; c.timer = 1.5; c.bubble = '洗手間中'; }
@@ -1650,12 +1468,12 @@ function applyRegularLevelReward(regId, newLv) {
   else if (regId === 'r_trainer') state.heart += 25;
   else if (regId === 'r_couple') state.gold += 500;
   else if (regId === 'r_kairo') state.heart += 40;
-  showComboToast(`🎉 常客升級：【${r.name}】Lv.${newLv}`, r.rewardText);
+  showKairoToast(`🎉 常客升級：【${r.name}】Lv.${newLv}`, r.rewardText);
   sfx.upgrade();
 }
 
-// ==================== 8. 2.5D 等角畫面渲染 ====================
-function renderScene() {
+// ==================== 8. 點陣畫布渲染 ====================
+function renderPixelWorld() {
   ctx.clearRect(0, 0, CW, CH);
   const G = state.maxGridSize;
   const branch = getBranchInfo();
@@ -1663,16 +1481,13 @@ function renderScene() {
   const frame = Math.floor(animFrameCounter / 10);
 
   const skyGrad = ctx.createLinearGradient(0, 0, 0, CH);
-  skyGrad.addColorStop(0, light.sky[0]);
-  skyGrad.addColorStop(1, light.sky[1]);
-  ctx.fillStyle = skyGrad;
-  ctx.fillRect(0, 0, CW, CH);
+  skyGrad.addColorStop(0, light.sky[0]); skyGrad.addColorStop(1, light.sky[1]);
+  ctx.fillStyle = skyGrad; ctx.fillRect(0, 0, CW, CH);
 
   if (light.isNight) {
-    ctx.fillStyle = '#fef08a'; ctx.fillRect(CW - 44, 24, 10, 10);
-    ctx.fillStyle = light.sky[0]; ctx.fillRect(CW - 40, 22, 8, 8);
+    ctx.fillStyle = '#fef08a'; ctx.fillRect(CW - 44, 106, 10, 10);
     ctx.fillStyle = '#ffffff';
-    [[35, 22], [95, 38], [165, 18], [260, 28], [340, 20]].forEach(([sx, sy]) => ctx.fillRect(sx, sy, 2, 2));
+    [[35, 108], [95, 124], [165, 104], [260, 114], [340, 106]].forEach(([sx, sy]) => ctx.fillRect(sx, sy, 2, 2));
   }
 
   for (let gx = -1; gx <= G + 3; gx++) {
@@ -1692,36 +1507,16 @@ function renderScene() {
   }
 
   const wallH = 38;
-  const topCorner = gridToIso(0, 0);
-  const leftCorner = gridToIso(0, G);
-  const rightCorner = gridToIso(G, 0);
+  const topCorner = gridToIso(0, 0), leftCorner = gridToIso(0, G), rightCorner = gridToIso(G, 0);
+  ctx.beginPath(); ctx.moveTo(topCorner.x, topCorner.y); ctx.lineTo(leftCorner.x, leftCorner.y + TILE_H / 2); ctx.lineTo(leftCorner.x, leftCorner.y + TILE_H / 2 - wallH); ctx.lineTo(topCorner.x, topCorner.y - wallH);
+  ctx.closePath(); ctx.fillStyle = branch.wallTint; ctx.fill(); ctx.strokeStyle = '#261810'; ctx.lineWidth = 2; ctx.stroke();
 
-  ctx.beginPath();
-  ctx.moveTo(topCorner.x, topCorner.y); ctx.lineTo(leftCorner.x, leftCorner.y + TILE_H / 2);
-  ctx.lineTo(leftCorner.x, leftCorner.y + TILE_H / 2 - wallH); ctx.lineTo(topCorner.x, topCorner.y - wallH);
-  ctx.closePath();
-  ctx.fillStyle = branch.wallTint; ctx.fill(); ctx.strokeStyle = '#2c1e16'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(topCorner.x, topCorner.y); ctx.lineTo(rightCorner.x, rightCorner.y + TILE_H / 2); ctx.lineTo(rightCorner.x, rightCorner.y + TILE_H / 2 - wallH); ctx.lineTo(topCorner.x, topCorner.y - wallH);
+  ctx.closePath(); ctx.fillStyle = '#e6d2b5'; ctx.fill(); ctx.stroke();
 
-  ctx.beginPath();
-  ctx.moveTo(topCorner.x, topCorner.y); ctx.lineTo(rightCorner.x, rightCorner.y + TILE_H / 2);
-  ctx.lineTo(rightCorner.x, rightCorner.y + TILE_H / 2 - wallH); ctx.lineTo(topCorner.x, topCorner.y - wallH);
-  ctx.closePath();
-  ctx.fillStyle = '#e6d2b5'; ctx.fill(); ctx.stroke();
-
-  // 右牆分店專屬店招牌
   const signPos = gridToIso(G * 0.65, 0);
-  ctx.fillStyle = '#2c1e16'; ctx.fillRect(signPos.x - 36, signPos.y - 33, 72, 12);
-  ctx.fillStyle = '#fde047'; ctx.font = 'bold 7.5px sans-serif';
-  ctx.fillText(branch.signText, signPos.x - 32, signPos.y - 24);
-
-  [2, 5, 7].forEach(wy => {
-    if (wy >= G - 1) return;
-    const wp = gridToIso(0, wy);
-    ctx.fillStyle = light.isNight ? '#fef08a' : (light.isSunset ? '#fdba74' : '#bae6fd');
-    ctx.fillRect(wp.x - 10, wp.y - 24, 10, 13);
-    ctx.strokeStyle = '#5d3b24'; ctx.lineWidth = 1.5;
-    ctx.strokeRect(wp.x - 10, wp.y - 24, 10, 13);
-  });
+  ctx.fillStyle = '#261810'; ctx.fillRect(signPos.x - 36, signPos.y - 33, 72, 12);
+  ctx.fillStyle = '#fde047'; ctx.font = 'bold 7.5px monospace'; ctx.fillText(branch.signText, signPos.x - 32, signPos.y - 24);
 
   if (state.wonContests.length > 0) {
     const tp = gridToIso(4.5, 0);
@@ -1741,69 +1536,56 @@ function renderScene() {
       else if (branch.floorStyle === 'resort') col = (gx + gy) % 2 === 0 ? '#d9f99d' : '#fef08a';
       else col = (gx + gy) % 2 === 0 ? '#e5c191' : '#d8b07c';
 
-      if (editMode) col = isRestrictedFurnitureCell(gx, gy) ? '#fca5a5' : ((gx + gy) % 2 === 0 ? '#bbf7d0' : '#86efac');
+      if (arrangeMode) col = isRestrictedFurnitureCell(gx, gy) ? '#fca5a5' : ((gx + gy) % 2 === 0 ? '#bbf7d0' : '#86efac');
       drawIsoTile(gx, gy, col, '#8d6e63', '#6d4c41', 5);
     }
   }
 
+  // 獨立廚房
   drawIsoWallSegment(2, 0, 26, '#8d5524', '#6d3f19', false);
   drawIsoWallSegment(2, 1, 26, '#8d5524', '#6d3f19', false);
-  drawIsoTile(2, 2, '#f59e0b', '#b45309', '#78350f', 13, '#2c1e16');
+  drawIsoTile(2, 2, '#f59e0b', '#b45309', '#78350f', 13, '#261810');
   drawIsoWallSegment(2, 3, 26, '#a16207', '#713f12', true);
-
   const st0 = gridToIso(0, 0);
   drawIsoBox(st0.x, st0.y + 11, 13, 6.5, 9, '#cbd5e1', '#94a3b8', '#64748b');
-  if (entities.chef.state === 'cooking') {
-    ctx.fillStyle = frame % 2 === 0 ? '#ef4444' : '#facc15';
-    ctx.fillRect(st0.x - 4, st0.y - 4, 5, 5);
-  }
+  if (entities.chef.state === 'cooking') { ctx.fillStyle = frame % 2 === 0 ? '#ef4444' : '#facc15'; ctx.fillRect(st0.x - 4, st0.y - 4, 5, 5); }
   const st1 = gridToIso(0, 1);
   drawIsoBox(st1.x, st1.y + 11, 13, 6.5, 8, '#f8fafc', '#cbd5e1', '#94a3b8');
-  const kLabel = gridToIso(0.5, 0.2);
-  ctx.fillStyle = '#2c1e16'; ctx.font = 'bold 9px sans-serif';
-  ctx.fillText('廚房', kLabel.x - 8, kLabel.y - 16);
 
+  // 獨立廁所
   drawIsoWallSegment(0, 6, 25, '#38bdf8', '#0284c7', false);
   drawIsoWallSegment(1, 6, 25, '#38bdf8', '#0284c7', false);
   drawIsoWallSegment(2, 6, 25, '#0ea5e9', '#0369a1', true);
   drawIsoWallSegment(2, 7, 25, '#38bdf8', '#0284c7', false);
   drawIsoWallSegment(2, 8, 25, '#38bdf8', '#0284c7', false);
-
   const wcPos = gridToIso(0, 8);
   drawIsoBox(wcPos.x, wcPos.y + 11, 8, 4, 6, '#ffffff', '#e2e8f0', '#cbd5e1');
   drawIsoBox(wcPos.x - 3, wcPos.y + 6, 4, 2, 6, '#ffffff', '#cbd5e1', '#94a3b8');
   const snkPos = gridToIso(0, 7);
   drawIsoBox(snkPos.x, snkPos.y + 11, 8, 4, 7, '#e0f2fe', '#7dd3fc', '#38bdf8');
-  const tLabel = gridToIso(1.2, 6.2);
-  ctx.fillStyle = entities.toiletOccupiedBy ? '#dc2626' : '#0369a1';
-  ctx.font = 'bold 9px sans-serif';
-  ctx.fillText(entities.toiletOccupiedBy ? '使用中' : '洗手間', tLabel.x - 10, tLabel.y - 24);
 
   const drawables = [];
   const items = getPlacedItems();
 
   items.forEach(it => {
-    const def = FACILITY_DEFS.find(f => f.id === it.defId);
-    if (!def) return;
     drawables.push({
       depth: it.gx + it.gy,
       render: () => {
         drawIsoFurnitureSet(it.defId, it.gx, it.gy, frame);
         const p = gridToIso(it.gx, it.gy);
         const baseY = p.y + TILE_H * 0.65;
-
         if (it.defId.startsWith('table')) {
           const eatingCust = entities.customers.find(c => c.tableUid === it.uid && c.state === 'eating');
           const dirtyTbl = entities.dirtyTables.find(d => d.tableUid === it.uid);
           if (eatingCust && eatingCust.orderedMenu) {
-            const foodSp = getFoodPixelSprite(false, eatingCust.orderedMenu.cat === 'pet');
-            ctx.drawImage(foodSp, p.x - 5, baseY - 14, 10, 8);
+            ctx.fillStyle = '#ffffff'; ctx.fillRect(p.x - 4, baseY - 12, 8, 4);
+            ctx.fillStyle = eatingCust.orderedMenu.cat === 'pet' ? '#f59e0b' : '#92400e';
+            ctx.fillRect(p.x - 3, baseY - 14, 6, 3);
           } else if (dirtyTbl) {
-            const emptySp = getFoodPixelSprite(true, false);
-            ctx.drawImage(emptySp, p.x - 5, baseY - 14, 10, 8);
+            ctx.fillStyle = '#e2e8f0'; ctx.fillRect(p.x - 4, baseY - 12, 8, 4);
           }
         }
-        if (editMode && selectedUid === it.uid) {
+        if (arrangeMode && selectedUid === it.uid) {
           ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2;
           ctx.strokeRect(p.x - 15, baseY - 18, 30, 24);
         }
@@ -1815,12 +1597,13 @@ function renderScene() {
     depth: entities.chef.gx + entities.chef.gy,
     render: () => {
       const c = entities.chef; const p = gridToIso(c.gx, c.gy);
-      const sp = getChibiSprite('chef', '#2c1e16', '#ffffff', true, frame, state.staff.chef_1.job === 'kairo_king');
-      ctx.drawImage(sp, p.x - 11, p.y - 20, 22, 27);
+      const bob = frame % 2 === 1 ? -1 : 0;
+      const sp = getCharacterPixelCanvas('chef', '#261810', '#ffffff', true, state.staff.chef_1.job === 'kairo_king');
+      ctx.drawImage(sp, p.x - 12, p.y - 22 + bob, 24, 28);
       if (c.state === 'cooking') {
         const pct = Math.max(0, Math.min(1, 1 - c.timer / (c.maxTimer || 1.5)));
-        ctx.fillStyle = '#2c1e16'; ctx.fillRect(p.x - 13, p.y - 27, 26, 5);
-        ctx.fillStyle = '#facc15'; ctx.fillRect(p.x - 12, p.y - 26, 24 * pct, 3);
+        ctx.fillStyle = '#261810'; ctx.fillRect(p.x - 13, p.y - 27, 26, 4);
+        ctx.fillStyle = '#f7b529'; ctx.fillRect(p.x - 12, p.y - 26, 24 * pct, 2);
       }
     }
   });
@@ -1831,13 +1614,9 @@ function renderScene() {
     drawables.push({
       depth: w.gx + w.gy,
       render: () => {
-        const p = gridToIso(w.gx, w.gy);
-        const sp = getChibiSprite(wid, def.hair, def.shirt, false, frame, state.staff[wid].job === 'kairo_king');
-        ctx.drawImage(sp, p.x - 11, p.y - 20, 22, 27);
-        if (w.dish) {
-          const dSp = getFoodPixelSprite(false, w.dish.menu.cat === 'pet');
-          ctx.drawImage(dSp, p.x - 6, p.y - 25, 12, 9);
-        }
+        const p = gridToIso(w.gx, w.gy); const bob = frame % 2 === 1 ? -1 : 0;
+        const sp = getCharacterPixelCanvas(wid, def.hair, def.shirt, false, state.staff[wid].job === 'kairo_king');
+        ctx.drawImage(sp, p.x - 12, p.y - 22 + bob, 24, 28);
       }
     });
   });
@@ -1846,14 +1625,13 @@ function renderScene() {
   PET_DEFS.forEach((pet, idx) => {
     if ((state.pets[pet.id]?.lv || 0) <= 0) return;
     const angle = animFrameCounter * 0.025 + idx * 1.8;
-    const px = turfItem.gx + Math.cos(angle) * 0.65;
-    const py = turfItem.gy + Math.sin(angle) * 0.65;
+    const px = turfItem.gx + Math.cos(angle) * 0.65, py = turfItem.gy + Math.sin(angle) * 0.65;
     drawables.push({
       depth: px + py,
       render: () => {
-        const p = gridToIso(px, py);
-        const sp = getPetSprite(pet.coat, pet.id === 'pet_mikan', frame);
-        ctx.drawImage(sp, p.x - 9, p.y - 10, 18, 15);
+        const p = gridToIso(px, py); const bob = frame % 2 === 1 ? -1 : 0;
+        const sp = getPetPixelCanvas(pet.coat, pet.id === 'pet_mikan');
+        ctx.drawImage(sp, p.x - 10, p.y - 12 + bob, 20, 16);
       }
     });
   });
@@ -1862,13 +1640,13 @@ function renderScene() {
     drawables.push({
       depth: c.gx + c.gy,
       render: () => {
-        const p = gridToIso(c.gx, c.gy);
-        const sp = getChibiSprite(c.regId, c.hair, c.shirt, false, frame, c.regId === 'r_kairo');
-        ctx.drawImage(sp, p.x - 11, p.y - 20, 22, 27);
+        const p = gridToIso(c.gx, c.gy); const bob = frame % 2 === 1 ? -1 : 0;
+        const sp = getCharacterPixelCanvas(c.regId, c.hair, c.shirt, false, c.regId === 'r_kairo');
+        ctx.drawImage(sp, p.x - 12, p.y - 22 + bob, 24, 28);
         if (c.bubble) {
-          ctx.fillStyle = '#fffdf8'; ctx.fillRect(p.x - 18, p.y - 33, 36, 11);
-          ctx.strokeStyle = '#2c1e16'; ctx.lineWidth = 1; ctx.strokeRect(p.x - 18, p.y - 33, 36, 11);
-          ctx.fillStyle = '#2c1e16'; ctx.font = 'bold 8px sans-serif'; ctx.fillText(c.bubble, p.x - 16, p.y - 25);
+          ctx.fillStyle = '#fff6de'; ctx.fillRect(p.x - 18, p.y - 34, 36, 10);
+          ctx.strokeStyle = '#261810'; ctx.lineWidth = 1; ctx.strokeRect(p.x - 18, p.y - 34, 36, 10);
+          ctx.fillStyle = '#261810'; ctx.font = 'bold 8px sans-serif'; ctx.fillText(c.bubble, p.x - 16, p.y - 26);
         }
       }
     });
@@ -1876,9 +1654,9 @@ function renderScene() {
       drawables.push({
         depth: c.petGx + c.petGy,
         render: () => {
-          const pp = gridToIso(c.petGx, c.petGy);
-          const psp = getPetSprite(c.petCoat, c.isCat, frame);
-          ctx.drawImage(psp, pp.x - 8, pp.y - 9, 16, 13);
+          const pp = gridToIso(c.petGx, c.petGy); const bob = frame % 2 === 1 ? -1 : 0;
+          const psp = getPetPixelCanvas(c.petCoat, c.isCat);
+          ctx.drawImage(psp, pp.x - 9, pp.y - 10 + bob, 18, 14);
         }
       });
     }
@@ -1888,9 +1666,9 @@ function renderScene() {
     drawables.push({
       depth: ps.gx + ps.gy,
       render: () => {
-        const p = gridToIso(ps.gx, ps.gy);
-        const sp = getChibiSprite('passer', ps.hair, ps.shirt, false, frame, false);
-        ctx.drawImage(sp, p.x - 10, p.y - 18, 20, 24);
+        const p = gridToIso(ps.gx, ps.gy); const bob = frame % 2 === 1 ? -1 : 0;
+        const sp = getCharacterPixelCanvas('passer', ps.hair, ps.shirt, false, false);
+        ctx.drawImage(sp, p.x - 11, p.y - 20 + bob, 22, 26);
       }
     });
   });
@@ -1899,40 +1677,38 @@ function renderScene() {
 
   if (light.ambient !== 'rgba(255,255,255,0)') { ctx.fillStyle = light.ambient; ctx.fillRect(0, 0, CW, CH); }
   entities.particles.forEach(pt => {
-    ctx.font = 'bold 11px sans-serif';
-    ctx.fillStyle = '#2c1e16'; ctx.fillText(pt.text, pt.x - 13, pt.y + 1);
+    ctx.font = 'bold 11px monospace';
+    ctx.fillStyle = '#261810'; ctx.fillText(pt.text, pt.x - 13, pt.y + 1);
     ctx.fillStyle = pt.color; ctx.fillText(pt.text, pt.x - 14, pt.y);
   });
 
   if (branchFlashAlpha > 0) {
     ctx.fillStyle = `rgba(255, 250, 220, ${branchFlashAlpha})`;
-    ctx.fillRect(0, 0, CW, CH);
-    branchFlashAlpha = Math.max(0, branchFlashAlpha - 0.04);
+    ctx.fillRect(0, 0, CW, CH); branchFlashAlpha = Math.max(0, branchFlashAlpha - 0.04);
   }
 }
 
-// ==================== 9. 佈置模式點擊互動 ====================
-function updateEditBarUI() {
-  const bar = document.getElementById('edit-bar');
-  const ops = document.getElementById('selected-item-ops');
-  bar.classList.toggle('show', editMode);
-  if (!editMode) { ops.style.display = 'none'; return; }
-
+// ==================== 9. 單指拖曳巡視、點擊互動與佈置模式 ====================
+function updateArrangeHUD() {
+  const hud = document.getElementById('arrange-hud');
+  const ops = document.getElementById('arrange-ops');
+  hud.classList.toggle('show', arrangeMode);
+  if (!arrangeMode) { ops.style.display = 'none'; return; }
   const it = getPlacedItems().find(x => x.uid === selectedUid);
   if (it) {
     const def = FACILITY_DEFS.find(f => f.id === it.defId);
-    document.getElementById('edit-status-text').textContent = `已選：${def?.name || ''} (Lv.${it.lv}) → 點空地移動`;
+    document.getElementById('arrange-text').textContent = `已選：${def?.name || ''} Lv.${it.lv}`;
     ops.style.display = 'flex';
   } else {
-    document.getElementById('edit-status-text').textContent = `✥ 佈置模式：點選場上設施移動/升級/拆除`;
+    document.getElementById('arrange-text').textContent = `佈置模式：點設施移動，或拖曳畫面`;
     ops.style.display = 'none';
   }
 }
 
-function toggleEditMode() {
-  editMode = !editMode; selectedUid = null;
-  document.getElementById('btn-edit-mode').classList.toggle('active', editMode);
-  updateEditBarUI();
+function toggleArrangeMode() {
+  arrangeMode = !arrangeMode; selectedUid = null;
+  document.getElementById('btn-arrange').classList.toggle('active', arrangeMode);
+  updateArrangeHUD();
 }
 
 function upgradeSelectedPlaced() {
@@ -1940,9 +1716,9 @@ function upgradeSelectedPlaced() {
   const def = it && FACILITY_DEFS.find(f => f.id === it.defId);
   if (!it || !def || it.lv >= def.maxLv) return;
   const cost = Math.round(def.baseCost * 0.65 * Math.pow(1.4, it.lv));
-  if (state.gold < cost) return alert(`資金不足，升級此件需要 $${cost}`);
+  if (state.gold < cost) return alert(`資金不足，需要 $${cost}`);
   state.gold -= cost; it.lv += 1; refreshAllBranchStars();
-  sfx.upgrade(); saveGame(); updateEditBarUI(); renderPanel();
+  sfx.upgrade(); saveGame(); updateArrangeHUD(); if (activeDrawer === 'facility') renderDrawerBody();
 }
 
 function removeSelectedPlaced() {
@@ -1953,22 +1729,37 @@ function removeSelectedPlaced() {
   const def = FACILITY_DEFS.find(f => f.id === removed.defId);
   const refund = Math.round((def?.baseCost || 200) * 0.5);
   state.gold += refund; selectedUid = null; refreshAllBranchStars();
-  addParticle(removed.gx, removed.gy, `拆除退+$${refund}`, '#fde047');
-  sfx.coin(); saveGame(); updateEditBarUI(); renderPanel();
+  addParticle(removed.gx, removed.gy, `+$${refund}`, '#fde047');
+  sfx.coin(); saveGame(); updateArrangeHUD(); if (activeDrawer === 'facility') renderDrawerBody();
 }
 
 canvas.addEventListener('pointerdown', (e) => {
   sfx.init();
-  const rect = canvas.getBoundingClientRect();
-  const sx = e.clientX - rect.left;
-  const sy = e.clientY - rect.top;
-  const { gx, gy } = isoToGrid(sx, sy);
+  isDragging = true; dragMoved = false;
+  dragStartX = e.clientX; dragStartY = e.clientY;
+});
 
-  if (!editMode) {
+canvas.addEventListener('pointermove', (e) => {
+  if (!isDragging) return;
+  const dx = e.clientX - dragStartX, dy = e.clientY - dragStartY;
+  if (Math.hypot(dx, dy) > 6) {
+    dragMoved = true;
+    camPanX += dx; camPanY += dy;
+    dragStartX = e.clientX; dragStartY = e.clientY;
+  }
+});
+
+canvas.addEventListener('pointerup', (e) => {
+  if (!isDragging) return;
+  isDragging = false;
+  if (dragMoved) return;
+
+  const rect = canvas.getBoundingClientRect();
+  const { gx, gy } = isoToGrid(e.clientX - rect.left, e.clientY - rect.top);
+
+  if (!arrangeMode) {
     if (gx >= 0 && gx < state.maxGridSize && gy >= 0 && gy < state.maxGridSize) {
-      state.heart += 1;
-      addParticle(gx, gy, '♪ +1愛心', '#ff85a2');
-      sfx.heart();
+      state.heart += 1; addParticle(gx, gy, '♪ +1愛心', '#ff8aa8'); sfx.heart();
     }
     return;
   }
@@ -1976,38 +1767,50 @@ canvas.addEventListener('pointerdown', (e) => {
   if (gx < 0 || gx >= state.maxGridSize || gy < 0 || gy >= state.maxGridSize) return;
   const items = getPlacedItems();
   const clickedItem = items.find(it => it.gx === gx && it.gy === gy);
-  if (clickedItem) { selectedUid = clickedItem.uid; updateEditBarUI(); return; }
+  if (clickedItem) { selectedUid = clickedItem.uid; updateArrangeHUD(); return; }
 
   if (selectedUid) {
-    if (isRestrictedFurnitureCell(gx, gy)) {
-      document.getElementById('ticker').textContent = '⚠️ 獨立廚房、廁所隔間與大門走道不可放置客用設施！';
-      return;
-    }
+    if (isRestrictedFurnitureCell(gx, gy)) return;
     const targetItem = items.find(x => x.uid === selectedUid);
     if (targetItem) {
       targetItem.gx = gx; targetItem.gy = gy;
-      selectedUid = null; updateEditBarUI();
+      selectedUid = null; updateArrangeHUD();
       getActiveCombos(); sfx.upgrade(); saveGame();
-      document.getElementById('ticker').textContent = '✅ 擺設位置已更新！';
     }
   }
 });
 
-// ==================== 10. 下方管理面板 ====================
-function switchTab(tab) {
-  activeTab = tab; activeSubTab = 'main';
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
-  renderPanel();
-}
-function switchSubTab(sub) { activeSubTab = sub; renderPanel(); }
+// ==================== 10. 彈出式開羅抽屜選單 ====================
+const DRAWER_TITLES = {
+  facility: '🏠 設施增建與擺設',
+  menu: '🍽️ 雙菜單與食材研發',
+  staff: '🧑‍🍳 店員轉職與駐店毛孩',
+  dex: '📖 設施相性與鎮民常客',
+  event: '🏪 開羅多店連鎖巡迴'
+};
 
-function renderPanel() {
-  const area = document.getElementById('panel-area');
+function toggleDrawer(name) {
+  if (activeDrawer === name) { closeDrawer(); return; }
+  activeDrawer = name; activeSubTab = 'main';
+  document.querySelectorAll('.dock-btn').forEach(b => b.classList.toggle('open', b.dataset.d === name));
+  document.getElementById('drawer-title').textContent = DRAWER_TITLES[name] || '管理選單';
+  document.getElementById('drawer-sheet').classList.add('show');
+  renderDrawerBody();
+}
+function closeDrawer() {
+  activeDrawer = null;
+  document.querySelectorAll('.dock-btn').forEach(b => b.classList.remove('open'));
+  document.getElementById('drawer-sheet').classList.remove('show');
+}
+function switchSubTab(sub) { activeSubTab = sub; renderDrawerBody(); }
+
+function renderDrawerBody() {
+  const body = document.getElementById('drawer-body');
   const season = getCurrentSeason();
 
-  if (activeTab === 'facility') {
+  if (activeDrawer === 'facility') {
     const totalTables = getPlacedItems().filter(it => it.defId.startsWith('table')).length;
-    let html = `<div class="section-title"><span>🏠 設施增建與擺設（目前桌數：${totalTables} 張）</span><span>場地 ${state.maxGridSize}×${state.maxGridSize}</span></div>`;
+    let html = `<div style="font-size:10.5px;font-weight:900;">目前桌數：${totalTables} 張 ｜ 場地：${state.maxGridSize}×${state.maxGridSize}</div>`;
     FACILITY_DEFS.forEach(f => {
       const cnt = countFacility(f.id);
       const itemsOfType = getPlacedItems().filter(it => it.defId === f.id);
@@ -2017,217 +1820,145 @@ function renderPanel() {
       html += `
         <div class="card">
           <div class="card-info">
-            <div class="card-title">${f.icon} ${f.name} <span class="badge badge-lv">場上 ${cnt} 件 (約Lv.${avgLv})</span></div>
-            <div class="card-desc">${f.desc}（魅力 +${f.appeal}/件級）</div>
+            <div class="card-title">${f.name} <span class="badge badge-lv">${cnt}件 Lv.${avgLv}</span></div>
+            <div class="card-desc">${f.desc}（魅力+${f.appeal}）</div>
           </div>
           <div class="card-actions">
-            <button class="btn btn-green" ${state.gold < buyCost ? 'disabled' : ''} onclick="buyNewPlacement('${f.id}')">＋買新擺放<br>$${buyCost}</button>
-            ${cnt > 0 ? `<button class="btn btn-gold" ${state.gold < upAllCost ? 'disabled' : ''} onclick="upgradeAllOfType('${f.id}')">⬆️全件升級<br>$${upAllCost}</button>` : ''}
+            <button class="btn btn-green" ${state.gold < buyCost ? 'disabled' : ''} onclick="buyNewPlacement('${f.id}')">＋增建 $${buyCost}</button>
+            ${cnt > 0 ? `<button class="btn btn-gold" ${state.gold < upAllCost ? 'disabled' : ''} onclick="upgradeAllOfType('${f.id}')">⬆️升級 $${upAllCost}</button>` : ''}
           </div>
         </div>`;
     });
-    area.innerHTML = html;
-  } else if (activeTab === 'menu') {
+    body.innerHTML = html;
+  } else if (activeDrawer === 'menu') {
     let html = `
       <div class="sub-tabs">
         <button class="sub-pill ${activeSubTab === 'main' ? 'active' : ''}" onclick="switchSubTab('main')">🍽️ 招牌菜單 (${season.name})</button>
-        <button class="sub-pill ${activeSubTab === 'lab' ? 'active' : ''}" onclick="switchSubTab('lab')">🧪 食材自由搭配研發</button>
+        <button class="sub-pill ${activeSubTab === 'lab' ? 'active' : ''}" onclick="switchSubTab('lab')">🧪 食材自由搭配</button>
       </div>`;
     if (activeSubTab === 'main') {
-      html += `<div style="font-size:10.5px;color:#15803d;font-weight:800;padding:0 3px;">🔥 當季（${season.bonusDesc}）1.5x ｜ ${getBranchInfo().favLabel}</div>`;
+      html += `<div style="font-size:10px;color:#15803d;font-weight:800;">🔥 ${season.bonusDesc} ｜ ${getBranchInfo().favLabel}</div>`;
       MENU_DEFS.forEach(m => {
         const lv = state.menus[m.id] || 0;
         const seasonal = isSeasonalDish(m.name);
         if (lv === 0) {
-          html += `
-            <div class="card">
-              <div class="card-info">
-                <div class="card-title">${m.icon} ${m.name} <span class="badge ${m.cat === 'human' ? 'badge-human' : 'badge-pet'}">${m.cat === 'human' ? '人類料理' : '寵物鮮食'}</span></div>
-                <div class="card-desc">消耗愛心解鎖新食譜，豐富雙菜單！</div>
-              </div>
-              <button class="btn btn-heart" ${state.heart < m.costHeart ? 'disabled' : ''} onclick="unlockMenu('${m.id}')">研發解鎖<br>❤️${m.costHeart}</button>
-            </div>`;
+          html += `<div class="card"><div class="card-info"><div class="card-title">${m.name} <span class="badge ${m.cat === 'human' ? 'badge-human' : 'badge-pet'}">${m.cat === 'human' ? '人類' : '毛孩'}</span></div><div class="card-desc">消耗愛心解鎖新菜色</div></div><button class="btn btn-heart" ${state.heart < m.costHeart ? 'disabled' : ''} onclick="unlockMenu('${m.id}')">解鎖 ❤️${m.costHeart}</button></div>`;
         } else {
           const upCost = Math.round(180 * Math.pow(1.4, lv));
-          html += `
-            <div class="card">
-              <div class="card-info">
-                <div class="card-title">${m.icon} ${m.name} <span class="badge badge-lv">Lv.${lv}</span> ${seasonal ? '<span class="badge badge-season">🔥當季1.5x</span>' : ''}</div>
-                <div class="card-desc">目前售價：<b>$${getMenuPrice(m)}</b> ｜ 美味 ${m.flavor + lv * 4} / 健康 ${m.health + lv * 3}</div>
-              </div>
-              <button class="btn btn-gold" ${state.gold < upCost ? 'disabled' : ''} onclick="upgradeMenu('${m.id}')">改良升級<br>$${upCost}</button>
-            </div>`;
+          html += `<div class="card"><div class="card-info"><div class="card-title">${m.name} <span class="badge badge-lv">Lv.${lv}</span> ${seasonal ? '<span class="badge badge-season">1.5x</span>' : ''}</div><div class="card-desc">售價：<b>$${getMenuPrice(m)}</b></div></div><button class="btn btn-gold" ${state.gold < upCost ? 'disabled' : ''} onclick="upgradeMenu('${m.id}')">升級 $${upCost}</button></div>`;
         }
       });
       state.customMenus.forEach((cm, idx) => {
         const upCost = Math.round(240 * Math.pow(1.45, cm.lv));
-        const seasonal = isSeasonalDish(cm.name);
-        html += `
-          <div class="card" style="border-color:#d97706;">
-            <div class="card-info">
-              <div class="card-title">✨ ${cm.name} <span class="badge badge-combo">自創Lv.${cm.lv}</span> ${seasonal ? '<span class="badge badge-season">🔥當季1.5x</span>' : ''}</div>
-              <div class="card-desc">目前售價：<b>$${getCustomDishPrice(cm)}</b> ｜ 美味 ${cm.flavor} / 健康 ${cm.health}</div>
-            </div>
-            <button class="btn btn-gold" ${state.gold < upCost ? 'disabled' : ''} onclick="upgradeCustomMenu(${idx})">精進<br>$${upCost}</button>
-          </div>`;
+        html += `<div class="card" style="border-color:#d97706;"><div class="card-info"><div class="card-title">★ ${cm.name} <span class="badge badge-combo">Lv.${cm.lv}</span></div><div class="card-desc">售價：<b>$${getCustomDishPrice(cm)}</b></div></div><button class="btn btn-gold" ${state.gold < upCost ? 'disabled' : ''} onclick="upgradeCustomMenu(${idx})">精進 $${upCost}</button></div>`;
       });
     } else {
       const pool = LAB_INGREDIENTS[labState.cat];
       html += `
         <div class="lab-box">
-          <div style="display:flex;gap:5px;">
-            <button class="btn ${labState.cat === 'human' ? 'btn-gold' : ''}" style="flex:1;" onclick="setLabCat('human')">☕ 人類特調料理</button>
-            <button class="btn ${labState.cat === 'pet' ? 'btn-heart' : ''}" style="flex:1;" onclick="setLabCat('pet')">🐾 毛孩機能鮮食</button>
+          <div style="display:flex;gap:4px;">
+            <button class="btn ${labState.cat === 'human' ? 'btn-gold' : ''}" style="flex:1;" onclick="setLabCat('human')">人類料理</button>
+            <button class="btn ${labState.cat === 'pet' ? 'btn-heart' : ''}" style="flex:1;" onclick="setLabCat('pet')">毛孩鮮食</button>
           </div>
           <div class="lab-grid">
-            <div class="ing-col"><h5>1. 基底食材</h5>${pool.base.map(i => `<button class="ing-btn ${labState.base === i.id ? 'selected' : ''}" onclick="setLabIng('base','${i.id}')">${i.name}</button>`).join('')}</div>
-            <div class="ing-col"><h5>2. 核心主料</h5>${pool.top.map(i => `<button class="ing-btn ${labState.top === i.id ? 'selected' : ''}" onclick="setLabIng('top','${i.id}')">${i.name}</button>`).join('')}</div>
-            <div class="ing-col"><h5>3. 風味／保健</h5>${pool.sauce.map(i => `<button class="ing-btn ${labState.sauce === i.id ? 'selected' : ''}" onclick="setLabIng('sauce','${i.id}')">${i.name}</button>`).join('')}</div>
+            <div class="ing-col"><h5>基底</h5>${pool.base.map(i => `<button class="ing-btn ${labState.base === i.id ? 'selected' : ''}" onclick="setLabIng('base','${i.id}')">${i.name}</button>`).join('')}</div>
+            <div class="ing-col"><h5>主料</h5>${pool.top.map(i => `<button class="ing-btn ${labState.top === i.id ? 'selected' : ''}" onclick="setLabIng('top','${i.id}')">${i.name}</button>`).join('')}</div>
+            <div class="ing-col"><h5>風味</h5>${pool.sauce.map(i => `<button class="ing-btn ${labState.sauce === i.id ? 'selected' : ''}" onclick="setLabIng('sauce','${i.id}')">${i.name}</button>`).join('')}</div>
           </div>
-          <button class="btn btn-purple" style="width:100%;padding:7px;" ${state.heart < 30 ? 'disabled' : ''} onclick="craftCustomDish()">🧪 消耗 ❤️30 愛心研發專屬招牌菜</button>
+          <button class="btn btn-purple" style="width:100%;" ${state.heart < 30 ? 'disabled' : ''} onclick="craftCustomDish()">🧪 消耗 ❤️30 研發新菜色</button>
         </div>`;
     }
-    area.innerHTML = html;
-  } else if (activeTab === 'staff') {
-    let html = `<div class="section-title"><span>🧑‍🍳 店員培訓與開羅轉職樹</span><span>練滿3職覺醒吉祥物</span></div>`;
+    body.innerHTML = html;
+  } else if (activeDrawer === 'staff') {
+    let html = '';
     STAFF_DEFS.forEach(s => {
-      const st = state.staff[s.id];
-      const jobInfo = JOB_TREE[st.job];
+      const st = state.staff[s.id]; const jobInfo = JOB_TREE[st.job];
       const cost = Math.round(s.baseCost * Math.pow(1.45, st.lv));
       const canPromote = st.lv >= 3 && st.job !== 'kairo_king';
       html += `
         <div class="card">
           <div class="card-info">
-            <div class="card-title">${s.icon} ${s.name} <span class="badge badge-lv">${st.lv === 0 ? '未招募' : 'Lv.' + st.lv}</span> <span class="badge badge-job">${jobInfo.icon}${jobInfo.name}</span></div>
-            <div class="card-desc">${s.desc}（已精通 ${st.mastered.length}/3 職）</div>
-            ${canPromote ? `<div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap;">${jobInfo.next.map(nj => `<button class="btn btn-purple" style="font-size:10px;padding:2px 6px;" ${state.heart < 35 ? 'disabled' : ''} onclick="promoteStaff('${s.id}','${nj}')">轉職 ${JOB_TREE[nj].name}(❤️35)</button>`).join('')}</div>` : ''}
+            <div class="card-title">${s.name} <span class="badge badge-lv">Lv.${st.lv}</span> <span class="badge badge-job">${jobInfo.name}</span></div>
+            <div class="card-desc">${s.desc}（精通 ${st.mastered.length}/3 職）</div>
+            ${canPromote ? `<div style="margin-top:3px;display:flex;gap:3px;flex-wrap:wrap;">${jobInfo.next.map(nj => `<button class="btn btn-purple" style="font-size:9px;padding:2px 5px;" ${state.heart < 35 ? 'disabled' : ''} onclick="promoteStaff('${s.id}','${nj}')">轉職${JOB_TREE[nj].name}(❤️35)</button>`).join('')}</div>` : ''}
           </div>
-          <button class="btn btn-gold" ${state.gold < cost ? 'disabled' : ''} onclick="upgradeStaff('${s.id}')">${st.lv === 0 ? '聘請' : '特訓'}<br>$${cost}</button>
+          <button class="btn btn-gold" ${state.gold < cost ? 'disabled' : ''} onclick="upgradeStaff('${s.id}')">${st.lv === 0 ? '聘請' : '特訓'} $${cost}</button>
         </div>`;
     });
-
-    html += `<div class="section-title" style="margin-top:4px;"><span>🐾 駐店毛孩與羈絆技能</span><span>愛心倍率 ${getHeartMultiplier().toFixed(2)}x</span></div>`;
     PET_DEFS.forEach(p => {
       const petSt = state.pets[p.id] || { lv: 0, bond: 0 };
       const cost = Math.round(p.baseCost * Math.pow(1.5, petSt.lv));
-      html += `
-        <div class="card">
-          <div class="card-info">
-            <div class="card-title">${p.icon} ${p.name} <span class="badge badge-pet">${petSt.lv === 0 ? '待領養' : 'Lv.' + petSt.lv + ' 羈絆' + petSt.bond}</span></div>
-            <div class="card-desc">${p.desc}</div>
-          </div>
-          <button class="btn btn-heart" ${state.gold < cost ? 'disabled' : ''} onclick="upgradePet('${p.id}')">${petSt.lv === 0 ? '領養' : '加菜'}<br>$${cost}</button>
-        </div>`;
+      html += `<div class="card"><div class="card-info"><div class="card-title">${p.name} <span class="badge badge-pet">${petSt.lv === 0 ? '待領養' : 'Lv.' + petSt.lv}</span></div><div class="card-desc">${p.desc}</div></div><button class="btn btn-heart" ${state.gold < cost ? 'disabled' : ''} onclick="upgradePet('${p.id}')">${petSt.lv === 0 ? '領養' : '加菜'} $${cost}</button></div>`;
     });
-    area.innerHTML = html;
-  } else if (activeTab === 'dex') {
+    body.innerHTML = html;
+  } else if (activeDrawer === 'dex') {
     const activeCombos = getActiveCombos();
     let html = `
       <div class="sub-tabs">
-        <button class="sub-pill ${activeSubTab === 'main' ? 'active' : ''}" onclick="switchSubTab('main')">✨ 設施相性字典 (${state.discoveredCombos.length}/${COMBO_DEFS.length})</button>
-        <button class="sub-pill ${activeSubTab === 'reg' ? 'active' : ''}" onclick="switchSubTab('reg')">📖 鎮民常客圖鑑</button>
+        <button class="sub-pill ${activeSubTab === 'main' ? 'active' : ''}" onclick="switchSubTab('main')">相性字典 (${state.discoveredCombos.length}/${COMBO_DEFS.length})</button>
+        <button class="sub-pill ${activeSubTab === 'reg' ? 'active' : ''}" onclick="switchSubTab('reg')">常客圖鑑</button>
       </div>`;
     if (activeSubTab === 'main') {
-      html += `<div style="font-size:10.5px;color:#5d4037;padding:0 3px;">💡 開啟右上角「佈置模式」，將兩項指定設施擺在相鄰 2 格內即可發動永久相性加成！</div>`;
       COMBO_DEFS.forEach(c => {
         const isAct = activeCombos.some(x => x.id === c.id);
         const f1 = FACILITY_DEFS.find(x => x.id === c.req[0])?.name;
         const f2 = FACILITY_DEFS.find(x => x.id === c.req[1])?.name;
-        html += `
-          <div class="card" style="${isAct ? 'border-color:#16a34a;background:#f0fdf4;' : ''}">
-            <div class="card-info">
-              <div class="card-title">✨ ${c.name} <span class="badge ${isAct ? 'badge-season' : 'badge-combo'}">${isAct ? '✅發動中' : '未連線'}</span></div>
-              <div class="card-desc">組合條件：<b>${f1}</b> ＋ <b>${f2}</b><br>相性效果：${c.bonusText}</div>
-            </div>
-          </div>`;
+        html += `<div class="card"><div class="card-info"><div class="card-title">${c.name} <span class="badge ${isAct ? 'badge-season' : 'badge-combo'}">${isAct ? '發動中' : '未連線'}</span></div><div class="card-desc">${f1} ＋ ${f2} → ${c.bonusText}</div></div></div>`;
       });
     } else {
       REGULARS_DEF.forEach(r => {
         const st = state.regulars[r.id] || { lv: 0, exp: 0 };
-        html += `
-          <div class="card">
-            <div class="card-info">
-              <div class="card-title">${r.icon} ${r.name} <span class="badge badge-lv">${st.lv === 0 ? '尚未熟識' : '好感 Lv.' + st.lv}</span></div>
-              <div class="card-desc">${r.rewardText}（升級進度 ${st.exp}/${Math.max(3, st.lv * 3)}）</div>
-            </div>
-          </div>`;
+        html += `<div class="card"><div class="card-info"><div class="card-title">${r.name} <span class="badge badge-lv">Lv.${st.lv}</span></div><div class="card-desc">${r.rewardText} (${st.exp}/${Math.max(3, st.lv * 3)})</div></div></div>`;
       });
     }
-    area.innerHTML = html;
-  } else if (activeTab === 'event') {
+    body.innerHTML = html;
+  } else if (activeDrawer === 'event') {
     refreshAllBranchStars();
-    let html = `<div class="section-title"><span>🏪 開羅多店連鎖巡迴總覽</span><span>今日連鎖分紅 +$${(state.dailyStats.chainDividend || 0).toLocaleString()}</span></div>`;
-
+    let html = `<div style="font-size:10.5px;font-weight:900;">今日連鎖分紅：+$${(state.dailyStats.chainDividend || 0).toLocaleString()}</div>`;
     BRANCH_DEFS.forEach(b => {
-      const rec = state.branches[b.id];
-      const isCur = state.activeBranch === b.id;
+      const rec = state.branches[b.id]; const isCur = state.activeBranch === b.id;
       const supCost = 1200 * ((rec.supportLv || 0) + 1);
       html += `
-        <div class="card" style="${isCur ? 'border-color:#e86f2c;background:#fffaf0;' : ''}">
+        <div class="card">
           <div class="card-info">
-            <div class="card-title">🏪 ${b.name} <span class="badge badge-combo">★${rec.stars.toFixed(1)}</span> <span class="badge badge-season">${b.mult}x</span></div>
-            <div class="card-desc">${b.favLabel}<br>本日獨立營收：<b>$${rec.todayIncome.toLocaleString()}</b>（${rec.todayCustomers}組）｜分紅貢獻：$${rec.todayDividend.toLocaleString()}</div>
-            ${rec.unlocked ? `<div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap;">
-              <button class="btn btn-purple" style="font-size:10px;padding:2px 6px;" ${state.gold < supCost ? 'disabled' : ''} onclick="dispatchBranchSupport('${b.id}')">🚀 派遣王牌支援 Lv.${(rec.supportLv || 0) + 1} ($${supCost})</button>
-            </div>` : `<div class="card-desc">${b.desc}</div>`}
+            <div class="card-title">${b.name} <span class="badge badge-combo">★${rec.stars.toFixed(1)}</span> <span class="badge badge-season">${b.mult}x</span></div>
+            <div class="card-desc">${b.favLabel}<br>本日營收：<b>$${rec.todayIncome.toLocaleString()}</b> ｜ 分紅：$${rec.todayDividend.toLocaleString()}</div>
+            ${rec.unlocked ? `<button class="btn btn-purple" style="margin-top:3px;font-size:9px;padding:2px 5px;" ${state.gold < supCost ? 'disabled' : ''} onclick="dispatchBranchSupport('${b.id}')">🚀 派遣支援 Lv.${(rec.supportLv || 0) + 1} ($${supCost})</button>` : `<div class="card-desc">${b.desc}</div>`}
           </div>
-          <div class="card-actions">
-            <button class="btn ${isCur ? 'btn-gold' : 'btn-blue'}" ${isCur || (!rec.unlocked && state.gold < b.unlockCost) ? 'disabled' : ''} onclick="switchOrUnlockBranch('${b.id}')">
-              ${isCur ? '視察中' : (rec.unlocked ? '巡迴切換' : '開設分店<br>$' + b.unlockCost)}
-            </button>
-          </div>
+          <button class="btn ${isCur ? 'btn-gold' : 'btn-blue'}" ${isCur || (!rec.unlocked && state.gold < b.unlockCost) ? 'disabled' : ''} onclick="switchOrUnlockBranch('${b.id}')">${isCur ? '視察中' : (rec.unlocked ? '巡迴切換' : '開設 $' + b.unlockCost)}</button>
         </div>`;
     });
 
     const expCost = state.maxGridSize === 10 ? 3200 : (state.maxGridSize === 12 ? 7800 : 0);
-    html += `
-      <div class="section-title" style="margin-top:4px;"><span>📐 樓地板擴建 & 🏆 廚藝大賽</span></div>
-      <div class="card">
-        <div class="card-info">
-          <div class="card-title">📐 擴建營業樓地板面積 <span class="badge badge-lv">${state.maxGridSize}×${state.maxGridSize}</span></div>
-          <div class="card-desc">擴大餐廳大廳空間，擺放更多桌椅與設施相性組合</div>
-        </div>
-        <button class="btn btn-green" ${expCost === 0 || state.gold < expCost ? 'disabled' : ''} onclick="expandFloor()">${expCost === 0 ? '最大規模' : '擴建場地<br>$' + expCost}</button>
-      </div>`;
+    html += `<div class="card"><div class="card-info"><div class="card-title">擴建場地 <span class="badge badge-lv">${state.maxGridSize}×${state.maxGridSize}</span></div><div class="card-desc">擴大營業樓地板面積</div></div><button class="btn btn-green" ${expCost === 0 || state.gold < expCost ? 'disabled' : ''} onclick="expandFloor()">${expCost === 0 ? '已最大' : '擴建 $' + expCost}</button></div>`;
 
     CONTEST_DEFS.forEach(c => {
       const won = state.wonContests.includes(c.id);
-      html += `
-        <div class="card">
-          <div class="card-info">
-            <div class="card-title">🏆 ${c.name} ${won ? '<span class="badge badge-season">👑已奪冠</span>' : ''}</div>
-            <div class="card-desc">目標總分 ${c.reqScore} ｜ 冠軍獎勵：$${c.prizeGold} ＋ 魅力+${c.prizeAppeal}</div>
-          </div>
-          <button class="btn btn-purple" ${won || state.heart < c.costHeart ? 'disabled' : ''} onclick="enterContest('${c.id}')">${won ? '榮耀達成' : '報名參賽<br>❤️' + c.costHeart}</button>
-        </div>`;
+      html += `<div class="card"><div class="card-info"><div class="card-title">🏆 ${c.name} ${won ? '<span class="badge badge-season">已奪冠</span>' : ''}</div><div class="card-desc">門檻 ${c.reqScore}分 ｜ 獎金 $${c.prizeGold}</div></div><button class="btn btn-purple" ${won || state.heart < c.costHeart ? 'disabled' : ''} onclick="enterContest('${c.id}')">${won ? '完成' : '參賽 ❤️' + c.costHeart}</button></div>`;
     });
-    area.innerHTML = html;
+    body.innerHTML = html;
   }
 }
 
-// ==================== 11. 多件購買擺設、連鎖派遣與玩家操作 ====================
+// ==================== 11. 玩家操作 ====================
 function buyNewPlacement(defId) {
   sfx.init();
-  const def = FACILITY_DEFS.find(x => x.id === defId);
-  if (!def) return;
+  const def = FACILITY_DEFS.find(x => x.id === defId); if (!def) return;
   const cnt = countFacility(defId);
   const cost = Math.round(def.baseCost * (1 + cnt * 0.25));
   if (state.gold < cost) return;
-
   const free = findFreeTile(def.defaultGx + (cnt % 3), def.defaultGy + Math.floor(cnt / 3));
-  if (!free) return alert('店內目前沒有多餘空地了！請先到「連鎖分店」擴建場地或拆除部分舊擺設。');
+  if (!free) return alert('店內沒有多餘空地了！請先擴建場地或拆除部分設施。');
 
   state.gold -= cost;
   const newUid = `${state.activeBranch}_item_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
   getPlacedItems().push({ uid: newUid, defId, lv: 1, gx: free.gx, gy: free.gy });
   refreshAllBranchStars();
 
-  editMode = true; selectedUid = newUid;
-  document.getElementById('btn-edit-mode').classList.add('active');
-  updateEditBarUI();
-
-  getActiveCombos(); sfx.upgrade(); saveGame(); renderPanel();
-  document.getElementById('ticker').textContent = `✅ 已在【${getBranchInfo().name}】新增【${def.name}】！`;
+  arrangeMode = true; selectedUid = newUid;
+  document.getElementById('btn-arrange').classList.add('active');
+  updateArrangeHUD(); closeDrawer();
+  getActiveCombos(); sfx.upgrade(); saveGame();
 }
 
 function upgradeAllOfType(defId) {
@@ -2238,138 +1969,55 @@ function upgradeAllOfType(defId) {
   const avgLv = Math.round(items.reduce((a, b) => a + b.lv, 0) / items.length);
   const cost = Math.round(def.baseCost * 0.65 * Math.pow(1.4, avgLv));
   if (state.gold < cost) return;
-  state.gold -= cost;
-  items.forEach(it => { if (it.lv < def.maxLv) it.lv += 1; });
-  refreshAllBranchStars();
-  sfx.upgrade(); saveGame(); renderPanel();
+  state.gold -= cost; items.forEach(it => { if (it.lv < def.maxLv) it.lv += 1; });
+  refreshAllBranchStars(); sfx.upgrade(); saveGame(); renderDrawerBody();
 }
 
 function dispatchBranchSupport(bid) {
   sfx.init();
-  const rec = state.branches[bid];
-  if (!rec || !rec.unlocked) return;
+  const rec = state.branches[bid]; if (!rec || !rec.unlocked) return;
   const cost = 1200 * ((rec.supportLv || 0) + 1);
   if (state.gold < cost) return;
-  state.gold -= cost;
-  rec.supportLv = (rec.supportLv || 0) + 1;
-  refreshAllBranchStars();
-  showComboToast(`🚀 派遣王牌支援成功！`, `${BRANCH_DEFS.find(x => x.id === bid)?.name} 升至 ★${rec.stars.toFixed(1)}！`);
-  sfx.combo(); saveGame(); renderPanel();
+  state.gold -= cost; rec.supportLv = (rec.supportLv || 0) + 1; refreshAllBranchStars();
+  showKairoToast('🚀 派遣支援成功！', `${BRANCH_DEFS.find(x => x.id === bid)?.name} 升至 ★${rec.stars.toFixed(1)}！`);
+  sfx.combo(); saveGame(); renderDrawerBody();
 }
 
-function unlockMenu(id) {
-  sfx.init();
-  const m = MENU_DEFS.find(x => x.id === id);
-  if (state.heart < m.costHeart) return;
-  state.heart -= m.costHeart; state.menus[id] = 1;
-  sfx.upgrade(); saveGame(); renderPanel();
-}
-function upgradeMenu(id) {
-  sfx.init();
-  const lv = state.menus[id] || 1;
-  const cost = Math.round(180 * Math.pow(1.4, lv));
-  if (state.gold < cost) return;
-  state.gold -= cost; state.menus[id] = lv + 1;
-  sfx.upgrade(); saveGame(); renderPanel();
-}
-function upgradeCustomMenu(idx) {
-  sfx.init();
-  const cm = state.customMenus[idx];
-  const cost = Math.round(240 * Math.pow(1.45, cm.lv));
-  if (state.gold < cost) return;
-  state.gold -= cost; cm.lv += 1; cm.flavor += 5; cm.health += 4;
-  sfx.upgrade(); saveGame(); renderPanel();
-}
-function setLabCat(cat) {
-  labState.cat = cat;
-  const p = LAB_INGREDIENTS[cat];
-  labState.base = p.base[0].id; labState.top = p.top[0].id; labState.sauce = p.sauce[0].id;
-  renderPanel();
-}
-function setLabIng(slot, id) { labState[slot] = id; renderPanel(); }
+function unlockMenu(id) { sfx.init(); const m = MENU_DEFS.find(x => x.id === id); if (state.heart < m.costHeart) return; state.heart -= m.costHeart; state.menus[id] = 1; sfx.upgrade(); saveGame(); renderDrawerBody(); }
+function upgradeMenu(id) { sfx.init(); const lv = state.menus[id] || 1; const cost = Math.round(180 * Math.pow(1.4, lv)); if (state.gold < cost) return; state.gold -= cost; state.menus[id] = lv + 1; sfx.upgrade(); saveGame(); renderDrawerBody(); }
+function upgradeCustomMenu(idx) { sfx.init(); const cm = state.customMenus[idx]; const cost = Math.round(240 * Math.pow(1.45, cm.lv)); if (state.gold < cost) return; state.gold -= cost; cm.lv += 1; cm.flavor += 5; cm.health += 4; sfx.upgrade(); saveGame(); renderDrawerBody(); }
+function setLabCat(cat) { labState.cat = cat; const p = LAB_INGREDIENTS[cat]; labState.base = p.base[0].id; labState.top = p.top[0].id; labState.sauce = p.sauce[0].id; renderDrawerBody(); }
+function setLabIng(slot, id) { labState[slot] = id; renderDrawerBody(); }
 function craftCustomDish() {
-  sfx.init();
-  if (state.heart < 30) return;
-  state.heart -= 30;
+  sfx.init(); if (state.heart < 30) return; state.heart -= 30;
   const p = LAB_INGREDIENTS[labState.cat];
-  const b = p.base.find(x => x.id === labState.base);
-  const t = p.top.find(x => x.id === labState.top);
-  const s = p.sauce.find(x => x.id === labState.sauce);
+  const b = p.base.find(x => x.id === labState.base), t = p.top.find(x => x.id === labState.top), s = p.sauce.find(x => x.id === labState.sauce);
   const name = `${s.name.slice(0, 2)}${t.name.slice(0, 2)}${b.name.slice(-2)}`;
-  const newDish = {
-    id: 'cm_' + Date.now(), name, cat: labState.cat,
-    icon: labState.cat === 'human' ? '🍽️' : '🍲',
-    basePrice: b.price + t.price + s.price + 45,
-    flavor: b.flavor + t.flavor + s.flavor,
-    health: b.health + t.health + s.health, lv: 1
-  };
-  state.customMenus.push(newDish);
-  showComboToast(`🧪 研發出全新料理：【${name}】`, `基礎售價 $${newDish.basePrice}！已加入店內菜單！`);
+  state.customMenus.push({ id: 'cm_' + Date.now(), name, cat: labState.cat, basePrice: b.price + t.price + s.price + 45, flavor: b.flavor + t.flavor + s.flavor, health: b.health + t.health + s.health, lv: 1 });
+  showKairoToast(`🧪 研發新菜色：【${name}】`, '已加入店內正式菜單！');
   sfx.combo(); saveGame(); switchSubTab('main');
 }
-function upgradeStaff(id) {
-  sfx.init();
-  const def = STAFF_DEFS.find(x => x.id === id);
-  const st = state.staff[id];
-  const cost = Math.round(def.baseCost * Math.pow(1.45, st.lv));
-  if (state.gold < cost) return;
-  state.gold -= cost; st.lv += 1;
-  sfx.upgrade(); saveGame(); renderPanel();
-}
+function upgradeStaff(id) { sfx.init(); const def = STAFF_DEFS.find(x => x.id === id); const st = state.staff[id]; const cost = Math.round(def.baseCost * Math.pow(1.45, st.lv)); if (state.gold < cost) return; state.gold -= cost; st.lv += 1; sfx.upgrade(); saveGame(); renderDrawerBody(); }
 function promoteStaff(id, newJob) {
-  sfx.init();
-  const st = state.staff[id];
-  if (state.heart < 35) return;
-  state.heart -= 35; st.job = newJob;
+  sfx.init(); const st = state.staff[id]; if (state.heart < 35) return; state.heart -= 35; st.job = newJob;
   if (!st.mastered.includes(newJob)) st.mastered.push(newJob);
-  if (st.mastered.length >= 3) {
-    st.job = 'kairo_king';
-    showComboToast('🤖 傳說覺醒：開羅吉祥物店長！', '全能力與小費產出大幅暴增！');
-    sfx.combo();
-  } else { sfx.upgrade(); }
-  saveGame(); renderPanel();
+  if (st.mastered.length >= 3) { st.job = 'kairo_king'; showKairoToast('🤖 傳說覺醒：開羅吉祥物店長！', '全能力與小費暴增！'); sfx.combo(); } else sfx.upgrade();
+  saveGame(); renderDrawerBody();
 }
-function upgradePet(id) {
-  sfx.init();
-  const def = PET_DEFS.find(x => x.id === id);
-  const st = state.pets[id] || { lv: 0, bond: 0 };
-  const cost = Math.round(def.baseCost * Math.pow(1.5, st.lv));
-  if (state.gold < cost) return;
-  state.gold -= cost; st.lv += 1; state.pets[id] = st;
-  sfx.heart(); saveGame(); renderPanel();
-}
-function expandFloor() {
-  sfx.init();
-  const cost = state.maxGridSize === 10 ? 3200 : 7800;
-  if (state.gold < cost || state.maxGridSize >= 14) return;
-  state.gold -= cost; state.maxGridSize += 2; branchFlashAlpha = 0.85;
-  showComboToast('🏗️ 店面擴建完工！', `營業樓地板擴充至 ${state.maxGridSize}×${state.maxGridSize}！`);
-  sfx.combo(); saveGame(); renderPanel();
-}
+function upgradePet(id) { sfx.init(); const def = PET_DEFS.find(x => x.id === id); const st = state.pets[id] || { lv: 0, bond: 0 }; const cost = Math.round(def.baseCost * Math.pow(1.5, st.lv)); if (state.gold < cost) return; state.gold -= cost; st.lv += 1; state.pets[id] = st; sfx.heart(); saveGame(); renderDrawerBody(); }
+function expandFloor() { sfx.init(); const cost = state.maxGridSize === 10 ? 3200 : 7800; if (state.gold < cost || state.maxGridSize >= 14) return; state.gold -= cost; state.maxGridSize += 2; branchFlashAlpha = 0.85; showKairoToast('🏗️ 店面擴建完工！', `地板擴充至 ${state.maxGridSize}×${state.maxGridSize}！`); sfx.combo(); saveGame(); renderDrawerBody(); }
 function switchOrUnlockBranch(bid) {
-  sfx.init();
-  const b = BRANCH_DEFS.find(x => x.id === bid);
-  const rec = state.branches[bid];
-  if (!rec) return;
-  if (!rec.unlocked) {
-    if (state.gold < b.unlockCost) return;
-    state.gold -= b.unlockCost;
-    rec.unlocked = true;
-  }
-  state.activeBranch = bid;
-  refreshAllBranchStars();
-  selectedUid = null; updateEditBarUI();
+  sfx.init(); const b = BRANCH_DEFS.find(x => x.id === bid); const rec = state.branches[bid]; if (!rec) return;
+  if (!rec.unlocked) { if (state.gold < b.unlockCost) return; state.gold -= b.unlockCost; rec.unlocked = true; }
+  state.activeBranch = bid; refreshAllBranchStars(); selectedUid = null; updateArrangeHUD();
   entities.customers = []; entities.orders = []; entities.readyDishes = []; entities.dirtyTables = []; entities.toiletOccupiedBy = null;
-  branchFlashAlpha = 1.0;
-  showComboToast(`🏪 巡迴進駐【${b.name}】★${rec.stars.toFixed(1)}`, b.favLabel);
-  sfx.combo(); saveGame(); renderPanel();
+  branchFlashAlpha = 1.0; showKairoToast(`🏪 巡迴進駐【${b.name}】★${rec.stars.toFixed(1)}`, b.favLabel);
+  sfx.combo(); saveGame(); renderDrawerBody();
 }
 
-// ==================== 12. 競賽、南瓜商會、結算與二周目繼承 ====================
+// ==================== 12. 競賽、商會、結算與二周目 ====================
 function enterContest(cid) {
-  sfx.init();
-  const c = CONTEST_DEFS.find(x => x.id === cid);
-  if (state.heart < c.costHeart) return;
+  sfx.init(); const c = CONTEST_DEFS.find(x => x.id === cid); if (state.heart < c.costHeart) return;
   state.heart -= c.costHeart; isPaused = true;
   document.getElementById('contest-modal-title').textContent = `🏆 ${c.name}`;
   document.getElementById('contest-result-box').textContent = '';
@@ -2377,8 +2025,7 @@ function enterContest(cid) {
   ['j-score-0', 'j-score-1', 'j-score-2'].forEach(id => document.getElementById(id).textContent = '--');
   document.getElementById('contest-modal').classList.add('show');
 
-  const appeal = getTotalAppeal();
-  const maxMenuLv = Math.max(...Object.values(state.menus), 1);
+  const appeal = getTotalAppeal(); const maxMenuLv = Math.max(...Object.values(state.menus), 1);
   const baseScore = Math.round(appeal * 1.15 + maxMenuLv * 18 + state.customMenus.length * 22);
   const s1 = Math.min(180, Math.round(baseScore * 0.34 + Math.random() * 14));
   const s2 = Math.min(180, Math.round(baseScore * 0.33 + Math.random() * 14));
@@ -2390,43 +2037,25 @@ function enterContest(cid) {
   setTimeout(() => {
     document.getElementById('j-score-2').textContent = s3;
     const win = total >= c.reqScore;
-    if (win) {
-      state.wonContests.push(c.id); state.gold += c.prizeGold;
-      document.getElementById('contest-result-box').innerHTML = `<span style="color:#16a34a;">🎉 總分 ${total} 分（門檻 ${c.reqScore}）奪得冠軍！<br>獲得 $${c.prizeGold} 與【${c.trophyName}】擺上陳列架！</span>`;
-      sfx.combo();
-    } else {
-      document.getElementById('contest-result-box').innerHTML = `<span style="color:#dc2626;">💦 總分 ${total} 分（差 ${c.reqScore - total} 分），升級設施與菜單後再挑戰！</span>`;
-    }
-    document.getElementById('contest-close-btn').style.display = 'block';
-    saveGame();
+    if (win) { state.wonContests.push(c.id); state.gold += c.prizeGold; document.getElementById('contest-result-box').innerHTML = `<span style="color:#16a34a;">🎉 總分 ${total} 奪冠！獲得 $${c.prizeGold} 與【${c.trophyName}】！</span>`; sfx.combo(); }
+    else document.getElementById('contest-result-box').innerHTML = `<span style="color:#dc2626;">💦 總分 ${total}（門檻 ${c.reqScore}），再接再厲！</span>`;
+    document.getElementById('contest-close-btn').style.display = 'block'; saveGame();
   }, 1500);
 }
-function closeContestModal() {
-  document.getElementById('contest-modal').classList.remove('show');
-  isPaused = false; renderPanel();
-}
+function closeContestModal() { document.getElementById('contest-modal').classList.remove('show'); isPaused = false; if (activeDrawer === 'event') renderDrawerBody(); }
 
 function openMerchantModal() {
-  document.getElementById('merchant-body').innerHTML = MERCHANT_ITEMS.map(it => `
-    <div class="card">
-      <div class="card-info">
-        <div class="card-title">🎃 ${it.name}</div>
-        <div class="card-desc">${it.desc}</div>
-      </div>
-      <button class="btn btn-purple" ${state.heart < it.costHeart ? 'disabled' : ''} onclick="buyMerchantItem('${it.id}')">❤️${it.costHeart}</button>
-    </div>
-  `).join('');
+  document.getElementById('merchant-body').innerHTML = MERCHANT_ITEMS.map(it => `<div class="card"><div class="card-info"><div class="card-title">${it.name}</div><div class="card-desc">${it.desc}</div></div><button class="btn btn-purple" ${state.heart < it.costHeart ? 'disabled' : ''} onclick="buyMerchantItem('${it.id}')">❤️${it.costHeart}</button></div>`).join('');
   document.getElementById('merchant-modal').classList.add('show');
 }
 function buyMerchantItem(id) {
-  const it = MERCHANT_ITEMS.find(x => x.id === id);
-  if (!it || state.heart < it.costHeart) return;
+  const it = MERCHANT_ITEMS.find(x => x.id === id); if (!it || state.heart < it.costHeart) return;
   state.heart -= it.costHeart;
   if (id === 'm_book') Object.keys(state.menus).forEach(k => { if (state.menus[k] > 0) state.menus[k] += 1; });
   else if (id === 'm_license') state.staff.chef_1.lv = Math.min(10, state.staff.chef_1.lv + 2);
   else if (id === 'm_goldcat') { state.gold += 1800; state.wonContests.push('ct_merchant_' + Date.now()); }
   else if (id === 'm_border') state.pets.pet_border.lv = Math.max(1, (state.pets.pet_border.lv || 0) + 1);
-  sfx.combo(); saveGame(); openMerchantModal(); renderPanel();
+  sfx.combo(); saveGame(); openMerchantModal();
 }
 
 function endOfDay() {
@@ -2434,111 +2063,70 @@ function endOfDay() {
   if (state.day >= 108) { openNewGamePlusModal(); return; }
   const isMonthEnd = state.day % 30 === 0;
   const reqAppeal = Math.floor(state.day / 30) * 65 + 45;
-  let monthBonusHtml = '';
+  let monthHtml = '';
   if (isMonthEnd) {
-    if (getTotalAppeal() >= reqAppeal) {
-      state.gold += 2000; state.heart += 35;
-      monthBonusHtml = `<div class="report-row" style="color:#16a34a;font-weight:900;"><span>🏅 月底評鑑達標（魅力 ${getTotalAppeal()}/${reqAppeal}）</span><span>+$2,000 / ❤️35</span></div>`;
-    } else {
-      monthBonusHtml = `<div class="report-row" style="color:#dc2626;font-weight:900;"><span>📋 月底評鑑未達標（魅力 ${getTotalAppeal()}/${reqAppeal}）</span><span>繼續加油</span></div>`;
-    }
+    if (getTotalAppeal() >= reqAppeal) { state.gold += 2000; state.heart += 35; monthHtml = `<div class="report-row" style="color:#16a34a;font-weight:900;"><span>🏅 月底評鑑達標</span><span>+$2,000 / ❤️35</span></div>`; }
+    else monthHtml = `<div class="report-row" style="color:#dc2626;font-weight:900;"><span>📋 月底評鑑未達標 (${getTotalAppeal()}/${reqAppeal})</span><span>繼續加油</span></div>`;
   }
   document.getElementById('report-title').textContent = `🌙 第 ${state.day} 天連鎖結算`;
   document.getElementById('report-body').innerHTML = `
     <div class="report-row"><span>今日接待客組</span><b>${state.dailyStats.customers} 組</b></div>
-    <div class="report-row"><span>獨立廁所使用次數</span><b>${state.dailyStats.toiletUses || 0} 次</b></div>
-    <div class="report-row"><span>分店連鎖分紅收入</span><b style="color:#16a34a;">+$${(state.dailyStats.chainDividend || 0).toLocaleString()}</b></div>
-    <div class="report-row"><span>今日總營業收入</span><b style="color:#d97706;">$${state.dailyStats.income.toLocaleString()}</b></div>
+    <div class="report-row"><span>洗手間使用次數</span><b>${state.dailyStats.toiletUses || 0} 次</b></div>
+    <div class="report-row"><span>連鎖分店紅利</span><b style="color:#16a34a;">+$${(state.dailyStats.chainDividend || 0).toLocaleString()}</b></div>
+    <div class="report-row"><span>今日總收入</span><b style="color:#d97706;">$${state.dailyStats.income.toLocaleString()}</b></div>
     <div class="report-row"><span>今日獲得愛心</span><b style="color:#e11d48;">❤️ ${state.dailyStats.hearts}</b></div>
-    ${monthBonusHtml}
+    ${monthHtml}
   `;
-  document.getElementById('report-modal').classList.add('show');
-  saveGame();
+  document.getElementById('report-modal').classList.add('show'); saveGame();
 }
 
 function closeReport() {
   document.getElementById('report-modal').classList.remove('show');
   state.day += 1; state.minuteOfDay = 540;
   state.dailyStats = { income: 0, customers: 0, hearts: 0, toiletUses: 0, chainDividend: 0 };
-  BRANCH_DEFS.forEach(b => {
-    if (state.branches[b.id]) {
-      state.branches[b.id].todayIncome = 0;
-      state.branches[b.id].todayCustomers = 0;
-      state.branches[b.id].todayDividend = 0;
-    }
-  });
+  BRANCH_DEFS.forEach(b => { if (state.branches[b.id]) { state.branches[b.id].todayIncome = 0; state.branches[b.id].todayCustomers = 0; state.branches[b.id].todayDividend = 0; } });
   entities.customers = []; entities.orders = []; entities.readyDishes = []; entities.dirtyTables = []; entities.toiletOccupiedBy = null;
   isPaused = false;
   if (state.day % 4 === 0) setTimeout(() => spawnCustomer(true), 2500);
-  if (state.day % 5 === 0) {
-    merchantTimer = 45;
-    document.getElementById('btn-merchant').style.display = 'block';
-    document.getElementById('ticker').textContent = '🎃 神秘南瓜寵物商會來到店門口了！點擊右上角按鈕選購限定寶物！';
-  }
+  if (state.day % 5 === 0) { merchantTimer = 45; document.getElementById('btn-merchant').style.display = 'block'; }
   saveGame();
 }
 
 function openNewGamePlusModal() {
   const score = state.gold + getTotalAppeal() * 50 + state.wonContests.length * 3000;
-  document.getElementById('ngplus-summary').innerHTML = `
-    <div>🏆 <b>第 ${state.ngPlusCount} 周目最終評價總分：${score.toLocaleString()} 分</b></div>
-    <div>✨ 最終店鋪魅力：${getTotalAppeal()} ｜ 奪冠獎盃：${state.wonContests.length} 座</div>
-    <div>📖 已發現相性：${state.discoveredCombos.length}/${COMBO_DEFS.length} 種</div>
-  `;
+  document.getElementById('ngplus-summary').innerHTML = `<div>🏆 <b>第 ${state.ngPlusCount} 周目總分：${score.toLocaleString()}</b></div><div>✨ 魅力：${getTotalAppeal()} ｜ 獎盃：${state.wonContests.length} 座</div>`;
   document.getElementById('ngplus-choices').innerHTML = `
-    <label style="background:#fff;padding:6px;border-radius:4px;border:1.5px solid #bcaaa4;font-size:11px;font-weight:800;">
-      <input type="radio" name="ngc" value="menu" checked onchange="ngPlusSelection='menu'"> 🍽️ 繼承全部已解鎖食譜等級與自創料理
-    </label>
-    <label style="background:#fff;padding:6px;border-radius:4px;border:1.5px solid #bcaaa4;font-size:11px;font-weight:800;">
-      <input type="radio" name="ngc" value="staff" onchange="ngPlusSelection='staff'"> 🧑‍🍳 繼承店員等級與轉職精通進度
-    </label>
+    <label style="background:#fff;padding:5px;border:1px solid #bcaaa4;font-size:10.5px;font-weight:800;"><input type="radio" name="ngc" value="menu" checked onchange="ngPlusSelection='menu'"> 繼承全部食譜等級與自創料理</label>
+    <label style="background:#fff;padding:5px;border:1px solid #bcaaa4;font-size:10.5px;font-weight:800;"><input type="radio" name="ngc" value="staff" onchange="ngPlusSelection='staff'"> 繼承店員等級與轉職精通進度</label>
   `;
   document.getElementById('ngplus-modal').classList.add('show');
 }
 
 function startNewGamePlus() {
-  const keepCombos = [...state.discoveredCombos];
-  const keepRegulars = JSON.parse(JSON.stringify(state.regulars));
-  const keepContests = [...state.wonContests];
-  const keepMenus = JSON.parse(JSON.stringify(state.menus));
-  const keepCustom = JSON.parse(JSON.stringify(state.customMenus));
-  const keepStaff = JSON.parse(JSON.stringify(state.staff));
+  const keepCombos = [...state.discoveredCombos], keepRegulars = JSON.parse(JSON.stringify(state.regulars)), keepContests = [...state.wonContests];
+  const keepMenus = JSON.parse(JSON.stringify(state.menus)), keepCustom = JSON.parse(JSON.stringify(state.customMenus)), keepStaff = JSON.parse(JSON.stringify(state.staff));
   const nextNg = state.ngPlusCount + 1;
-
   state = JSON.parse(JSON.stringify(DEFAULT_STATE));
-  state.ngPlusCount = nextNg; state.legacyBonus = 1 + (nextNg - 1) * 0.25;
-  state.gold = 3500; state.heart = 80;
+  state.ngPlusCount = nextNg; state.legacyBonus = 1 + (nextNg - 1) * 0.25; state.gold = 3500; state.heart = 80;
   state.discoveredCombos = keepCombos; state.regulars = keepRegulars; state.wonContests = keepContests;
-  if (ngPlusSelection === 'menu') { state.menus = keepMenus; state.customMenus = keepCustom; }
-  else { state.staff = keepStaff; }
-  document.getElementById('ngplus-modal').classList.remove('show');
-  document.getElementById('spd-4').style.display = 'inline-block';
-  isPaused = false; saveGame(); renderPanel();
+  if (ngPlusSelection === 'menu') { state.menus = keepMenus; state.customMenus = keepCustom; } else state.staff = keepStaff;
+  document.getElementById('ngplus-modal').classList.remove('show'); document.getElementById('spd-4').style.display = 'inline-block';
+  isPaused = false; saveGame();
 }
 
 function setGameSpeed(spd) {
   state.gameSpeed = spd;
-  [1, 2, 3, 4].forEach(n => {
-    const btn = document.getElementById('spd-' + n);
-    if (btn) btn.classList.toggle('active', n === spd);
-  });
+  [1, 2, 3, 4].forEach(n => { const b = document.getElementById('spd-' + n); if (b) b.classList.toggle('active', n === spd); });
 }
 
 // ==================== 13. 排行榜與存檔碼 ====================
 function openCloudModal() {
   const myScore = Math.round(state.gold * 0.5 + getTotalAppeal() * 40 + state.wonContests.length * 1500);
   const rivals = [
-    { name: '👑 開羅星光總店', score: 28500 },
-    { name: '🐕 柴犬珈琲館', score: 16200 },
-    { name: `🐾 你的連鎖 (${getBranchInfo().name})`, score: myScore, isMe: true },
-    { name: '🐈 貓咪肉球小舖', score: 6800 }
+    { name: '👑 開羅星光總店', score: 28500 }, { name: '🐕 柴犬珈琲館', score: 16200 },
+    { name: `🐾 你的連鎖 (${getBranchInfo().name})`, score: myScore, isMe: true }, { name: '🐈 貓咪肉球小舖', score: 6800 }
   ].sort((a, b) => b.score - a.score);
-
-  document.getElementById('leaderboard-list').innerHTML = rivals.map((r, i) => `
-    <div class="report-row" style="${r.isMe ? 'background:#fef08a;font-weight:900;padding:4px 6px;border-radius:4px;' : ''}">
-      <span>#${i + 1} ${r.name}</span><span>${r.score.toLocaleString()} pts</span>
-    </div>
-  `).join('');
+  document.getElementById('leaderboard-list').innerHTML = rivals.map((r, i) => `<div class="report-row" style="${r.isMe ? 'background:#fef08a;font-weight:900;padding:3px 5px;' : ''}"><span>#${i + 1} ${r.name}</span><span>${r.score.toLocaleString()}</span></div>`).join('');
   document.getElementById('firebase-url-input').value = state.firebaseUrl || '';
   document.getElementById('cloud-modal').classList.add('show');
 }
@@ -2546,94 +2134,71 @@ function exportSaveCode() {
   const code = btoa(unescape(encodeURIComponent(JSON.stringify(state))));
   document.getElementById('save-code-input').value = code;
   navigator.clipboard?.writeText(code).catch(() => {});
-  alert('✅ 存檔碼已產生並複製到剪貼簿！');
+  alert('✅ 存檔碼已產生並複製！');
 }
 function importSaveCode() {
   try {
-    const raw = document.getElementById('save-code-input').value.trim();
-    const parsed = JSON.parse(decodeURIComponent(escape(atob(raw))));
-    state = Object.assign({}, DEFAULT_STATE, parsed);
-    saveGame(); renderPanel();
-    alert('🎉 存檔碼匯入成功！');
-  } catch (e) { alert('❌ 存檔碼格式不正確，請確認是否完整複製。'); }
+    const parsed = JSON.parse(decodeURIComponent(escape(atob(document.getElementById('save-code-input').value.trim()))));
+    state = Object.assign({}, DEFAULT_STATE, parsed); saveGame(); alert('🎉 存檔碼匯入成功！');
+  } catch (e) { alert('❌ 存檔碼格式不正確。'); }
 }
 async function syncFirebaseLeaderboard() {
   const url = document.getElementById('firebase-url-input').value.trim().replace(/\/$/, '');
-  if (!url) return alert('請輸入 Firebase Realtime Database 網址');
+  if (!url) return alert('請輸入 Firebase 網址');
   state.firebaseUrl = url; saveGame();
   try {
     const myScore = Math.round(state.gold * 0.5 + getTotalAppeal() * 40 + state.wonContests.length * 1500);
-    await fetch(`${url}/starlight_pet_cafe_scores.json`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ branch: getBranchInfo().name, score: myScore, day: state.day, ts: Date.now() })
-    });
-    alert('✅ 已成功同步分數至你的 Firebase 排行榜！');
-  } catch (e) { alert('⚠️ 連線失敗，請檢查 Firebase 網址或讀寫權限。'); }
+    await fetch(`${url}/starlight_pet_cafe_scores.json`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ branch: getBranchInfo().name, score: myScore, day: state.day, ts: Date.now() }) });
+    alert('✅ 已同步至 Firebase 排行榜！');
+  } catch (e) { alert('⚠️ 連線失敗，請檢查網址。'); }
 }
 
-// ==================== 14. HUD 更新與主迴圈 ====================
+// ==================== 14. HUD 與主迴圈 ====================
 function updateHUD() {
   refreshAllBranchStars();
-  const yr = Math.floor((state.day - 1) / 36) + 1;
-  const dInYr = ((state.day - 1) % 36) + 1;
-  const hh = String(Math.floor(state.minuteOfDay / 60)).padStart(2, '0');
-  const mm = String(Math.floor(state.minuteOfDay % 60)).padStart(2, '0');
-  const season = getCurrentSeason();
-  const activeRec = getActiveBranchRec();
+  const yr = Math.floor((state.day - 1) / 36) + 1, dInYr = ((state.day - 1) % 36) + 1;
+  const hh = String(Math.floor(state.minuteOfDay / 60)).padStart(2, '0'), mm = String(Math.floor(state.minuteOfDay % 60)).padStart(2, '0');
+  const season = getCurrentSeason(), activeRec = getActiveBranchRec();
 
-  document.getElementById('hud-branch').textContent = `🐾 ${getBranchInfo().name}`;
-  document.getElementById('hud-stars').textContent = `★${(activeRec?.stars || 1).toFixed(1)}`;
-  const sb = document.getElementById('hud-season');
-  sb.textContent = season.name; sb.style.background = season.color;
+  document.getElementById('hud-branch').textContent = `${getBranchInfo().name} ★${(activeRec?.stars || 1).toFixed(1)}`;
+  const sb = document.getElementById('hud-season'); sb.textContent = season.name; sb.style.background = season.color;
   document.getElementById('hud-time').textContent = `Y${yr} D${dInYr} ${hh}:${mm}`;
   document.getElementById('hud-gold').textContent = state.gold.toLocaleString();
   document.getElementById('hud-heart').textContent = state.heart.toLocaleString();
   document.getElementById('hud-appeal').textContent = getTotalAppeal();
-
   if (state.ngPlusCount > 1) document.getElementById('spd-4').style.display = 'inline-block';
 
   const nextReg = REGULARS_DEF.map(r => state.regulars[r.id]).find(x => x && x.lv > 0 && x.lv < 10) || { lv: 1, exp: 0 };
   document.getElementById('bar-short').style.width = `${Math.min(100, (nextReg.exp / (nextReg.lv * 3)) * 100)}%`;
-
   const reqAppeal = (Math.floor((state.day - 1) / 30) + 1) * 65;
-  document.getElementById('goal-mid').textContent = `月底評鑑: 魅力${reqAppeal}`;
+  document.getElementById('goal-mid').textContent = `月底: 魅力${reqAppeal}`;
   document.getElementById('bar-mid').style.width = `${Math.min(100, (getTotalAppeal() / reqAppeal) * 100)}%`;
-
-  document.getElementById('goal-long').textContent = `終極: 第${state.day}/108天`;
+  document.getElementById('goal-long').textContent = `終極: ${state.day}/108天`;
   document.getElementById('bar-long').style.width = `${Math.min(100, (state.day / 108) * 100)}%`;
 
-  const banner = document.getElementById('event-banner');
+  const strip = document.getElementById('vip-strip');
   if (vipEvent) {
-    banner.className = 'event-banner active';
-    document.getElementById('event-title').textContent = '📸 VIP主編評鑑中！';
-    document.getElementById('vip-bar-wrap').style.display = 'block';
-    document.getElementById('vip-bar-fill').style.width = `${Math.min(100, (vipEvent.score / vipEvent.target) * 100)}%`;
-    document.getElementById('event-timer').textContent = `${Math.ceil(vipEvent.timer)}s`;
+    strip.className = 'vip-strip show'; document.getElementById('vip-title').textContent = '📸 VIP主編評鑑中!';
+    document.getElementById('vip-meter').style.display = 'block'; document.getElementById('vip-meter-fill').style.width = `${Math.min(100, (vipEvent.score / vipEvent.target) * 100)}%`;
+    document.getElementById('vip-timer').textContent = `${Math.ceil(vipEvent.timer)}s`;
   } else if (feverTimer > 0) {
-    banner.className = 'event-banner active fever';
-    document.getElementById('event-title').textContent = '🔥 FEVER 雜誌封面狂熱（營收小費 2x）';
-    document.getElementById('vip-bar-wrap').style.display = 'none';
-    document.getElementById('event-timer').textContent = `${Math.ceil(feverTimer)}s`;
-  } else {
-    banner.className = 'event-banner';
-  }
+    strip.className = 'vip-strip show fever'; document.getElementById('vip-title').textContent = '🔥 FEVER 狂熱 (2x)';
+    document.getElementById('vip-meter').style.display = 'none'; document.getElementById('vip-timer').textContent = `${Math.ceil(feverTimer)}s`;
+  } else strip.className = 'vip-strip';
 }
 
 let lastTime = performance.now();
 function gameLoop(now) {
-  const rawDt = Math.min(0.08, (now - lastTime) / 1000);
-  lastTime = now;
+  const rawDt = Math.min(0.08, (now - lastTime) / 1000); lastTime = now;
   const steps = state.gameSpeed || 1;
   for (let i = 0; i < steps; i++) updateSimulation(rawDt);
-  renderScene();
+  renderPixelWorld();
   tickAccumulator += rawDt;
   if (tickAccumulator >= 0.25) { tickAccumulator = 0; updateHUD(); }
   requestAnimationFrame(gameLoop);
 }
 
 resizeCanvas();
-renderPanel();
 updateHUD();
 requestAnimationFrame(gameLoop);
 </script>
