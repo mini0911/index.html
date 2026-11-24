@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>毛孩星光餐廳 - 開羅風經營模擬</title>
+    <title>毛孩星光餐廳 - 開羅風2.5D像素經營模擬</title>
     <!-- 引入繁體中文像素/圓體字型與 Tailwind CSS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
         :root {
             --kairo-bg: #f5ebd6;
             --kairo-panel: #fff9eb;
-            --kairo-border: #5c3a21;
+            --kairo-border: #4a2c16;
             --kairo-accent: #e87a3e;
             --kairo-accent-dark: #b8531e;
             --kairo-green: #58a65c;
@@ -31,9 +31,14 @@
         body {
             margin: 0;
             padding: 0;
-            background-color: #3d2817;
-            background-image: radial-gradient(#4f3520 2px, transparent 2px);
-            background-size: 16px 16px;
+            background-color: #352213;
+            background-image:
+                linear-gradient(45deg, #3e2817 25%, transparent 25%),
+                linear-gradient(-45deg, #3e2817 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #3e2817 75%),
+                linear-gradient(-45deg, transparent 75%, #3e2817 75%);
+            background-size: 24px 24px;
+            background-position: 0 0, 0 12px, 12px -12px, -12px 0;
             font-family: 'DotGothic16', 'Noto Sans TC', sans-serif;
             color: #3e2716;
             overflow-x: hidden;
@@ -46,22 +51,22 @@
         .kairo-box {
             background-color: var(--kairo-panel);
             border: 4px solid var(--kairo-border);
-            border-radius: 10px;
-            box-shadow: 0 4px 0 #3b2312, inset 0 2px 0 rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            box-shadow: 0 4px 0 #2b180a, inset 0 2px 0 rgba(255, 255, 255, 0.85);
         }
 
         .kairo-header-bar {
-            background: linear-gradient(180deg, #ffcf6e 0%, #f5a623 100%);
+            background: linear-gradient(180deg, #ffd670 0%, #f5a623 100%);
             border-bottom: 4px solid var(--kairo-border);
-            box-shadow: 0 3px 0 rgba(0, 0, 0, 0.25);
+            box-shadow: 0 3px 0 rgba(0, 0, 0, 0.3);
         }
 
         .kairo-btn {
-            background: linear-gradient(180deg, #ffffff 0%, #f0e2c8 100%);
+            background: linear-gradient(180deg, #ffffff 0%, #efe0c4 100%);
             border: 3px solid var(--kairo-border);
-            border-radius: 8px;
+            border-radius: 6px;
             box-shadow: 0 3px 0 var(--kairo-border);
-            transition: transform 0.06s, box-shadow 0.06s, filter 0.1s;
+            transition: transform 0.05s, box-shadow 0.05s, filter 0.1s;
             cursor: pointer;
             font-weight: 700;
         }
@@ -74,7 +79,7 @@
         .kairo-btn:disabled {
             opacity: 0.55;
             cursor: not-allowed;
-            filter: grayscale(0.6);
+            filter: grayscale(0.65);
         }
 
         .kairo-btn-orange {
@@ -96,12 +101,12 @@
         }
 
         .kairo-tab {
-            background-color: #d8c3a0;
+            background-color: #d6be96;
             border: 3px solid var(--kairo-border);
             border-bottom: none;
-            border-radius: 10px 10px 0 0;
-            color: #5c3a21;
-            transition: all 0.1s;
+            border-radius: 8px 8px 0 0;
+            color: #4a2c16;
+            transition: all 0.08s;
         }
 
         .kairo-tab.active {
@@ -112,16 +117,16 @@
             z-index: 10;
         }
 
-        /* 畫布容器與像素渲染設定 */
+        /* 2.5D 像素畫布容器 */
         #canvas-wrapper {
             position: relative;
             width: 100%;
             aspect-ratio: 16 / 10;
-            max-height: 54vh;
-            background-color: #2d4c2b;
+            max-height: 55vh;
+            background-color: #6ab04c;
             border: 4px solid var(--kairo-border);
-            border-radius: 12px;
-            box-shadow: 0 6px 0 #2b190d;
+            border-radius: 10px;
+            box-shadow: 0 6px 0 #261408;
             overflow: hidden;
         }
 
@@ -129,13 +134,15 @@
             display: block;
             width: 100%;
             height: 100%;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-crisp-edges;
             image-rendering: pixelated;
             image-rendering: crisp-edges;
         }
 
         /* 跑馬燈動畫 */
         .ticker-wrap {
-            background-color: #3e2716;
+            background-color: #362011;
             color: #ffe89e;
             border: 3px solid #754c29;
             border-radius: 6px;
@@ -155,7 +162,7 @@
         ::-webkit-scrollbar-thumb {
             background: #9c6f44;
             border-radius: 4px;
-            border: 1px solid #5c3a21;
+            border: 1px solid #4a2c16;
         }
 
         @keyframes popIn {
@@ -163,7 +170,7 @@
             100% { transform: scale(1); opacity: 1; }
         }
         .modal-animate {
-            animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            animation: popIn 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
     </style>
 </head>
@@ -174,32 +181,33 @@
         <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-2">
             <!-- 店名與星級 -->
             <div class="flex items-center gap-2">
-                <div class="bg-[#5c3a21] text-[#ffdf73] px-2.5 py-1 rounded-lg border-2 border-[#fff3d1] text-sm sm:text-base font-bold tracking-wider shadow">
+                <div class="bg-[#4a2c16] text-[#ffdf73] px-2.5 py-1 rounded border-2 border-[#fff3d1] text-sm sm:text-base font-bold tracking-wider shadow">
                     🐾 毛孩星光餐廳
                 </div>
-                <div class="bg-white/90 border-2 border-[#5c3a21] px-2 py-0.5 rounded-lg flex items-center gap-1 text-xs sm:text-sm font-bold">
+                <div class="bg-white/95 border-2 border-[#4a2c16] px-2 py-0.5 rounded flex items-center gap-1 text-xs sm:text-sm font-bold">
                     <span class="text-amber-500">★</span>
                     <span id="ui-rating">1.2</span>
                     <span class="text-gray-500 hidden sm:inline">評價</span>
                 </div>
             </div>
 
-            <!-- 時間與營業日 -->
-            <div class="flex items-center gap-1.5 sm:gap-2 bg-[#fff9eb] border-2 border-[#5c3a21] px-2.5 py-1 rounded-lg text-xs sm:text-sm font-bold">
+            <!-- 時間與營業日進度 -->
+            <div class="flex items-center gap-1.5 sm:gap-2 bg-[#fff9eb] border-2 border-[#4a2c16] px-2.5 py-1 rounded text-xs sm:text-sm font-bold">
                 <span class="text-[#b8531e]" id="ui-day">第 1 天</span>
                 <span class="text-gray-400">|</span>
                 <span id="ui-clock" class="font-mono text-base text-[#3e2716]">09:00</span>
                 <span id="ui-period-badge" class="bg-amber-200 text-amber-900 px-1.5 py-0.2 rounded text-xs">早午餐</span>
             </div>
 
-            <!-- 資源顯示：金幣 & 愛心研究點 -->
+            <!-- 資源顯示：金幣 G & 愛心研究點 ♥ -->
             <div class="flex items-center gap-2">
-                <div class="bg-[#3e2716] text-[#ffd447] border-2 border-[#8c5a32] px-2.5 py-1 rounded-lg flex items-center gap-1 text-xs sm:text-sm font-bold shadow-inner">
+                <div class="bg-[#362011] text-[#ffd447] border-2 border-[#8c5a32] px-2.5 py-1 rounded flex items-center gap-1 text-xs sm:text-sm font-bold shadow-inner">
                     <span>💰</span>
                     <span id="ui-gold">1,200</span>
+                    <span class="text-[11px] text-amber-200">G</span>
                 </div>
-                <div class="bg-[#3e2716] text-[#ff85b3] border-2 border-[#8c5a32] px-2.5 py-1 rounded-lg flex items-center gap-1 text-xs sm:text-sm font-bold shadow-inner">
-                    <span>💖</span>
+                <div class="bg-[#362011] text-[#ff85b3] border-2 border-[#8c5a32] px-2.5 py-1 rounded flex items-center gap-1 text-xs sm:text-sm font-bold shadow-inner">
+                    <span>♥</span>
                     <span id="ui-hearts">35</span>
                 </div>
             </div>
@@ -221,43 +229,43 @@
         <div class="flex items-center gap-2">
             <div class="ticker-wrap flex-1 px-3 py-1 text-xs sm:text-sm flex items-center gap-2">
                 <span class="bg-[#e87a3e] text-white px-1.5 py-0.5 rounded text-xs font-bold shrink-0">快報</span>
-                <span id="ui-news" class="truncate">歡迎來到毛孩星光餐廳！點擊下方按鈕擴建餐桌、研發寵物鮮食，吸引更多飼主光臨吧！</span>
+                <span id="ui-news" class="truncate">歡迎來到毛孩星光餐廳！點擊下方按鈕擴建餐桌、研發寵物鮮食，吸引街上行人進店吧！</span>
             </div>
             <button onclick="openStatsModal()" class="kairo-btn px-2.5 py-1 text-xs sm:text-sm shrink-0 flex items-center gap-1">
                 📊 <span class="hidden sm:inline">經營數據</span>
             </button>
         </div>
 
-        <!-- 像素餐廳主畫布 -->
+        <!-- 2.5D 開羅風斜視角餐廳主畫布 -->
         <div id="canvas-wrapper">
             <canvas id="gameCanvas"></canvas>
             <!-- 左上角即時營業資訊浮標 -->
-            <div class="absolute top-2 left-2 bg-[#3e2716]/85 text-white px-2.5 py-1 rounded-lg border border-[#a87948] text-xs flex items-center gap-3 pointer-events-none">
+            <div class="absolute top-2 left-2 bg-[#362011]/90 text-white px-2.5 py-1 rounded border-2 border-[#a87948] text-xs flex items-center gap-3 pointer-events-none shadow">
                 <span>🪑 座位: <b id="hud-seats" class="text-amber-300">2/2</b></span>
                 <span>👥 客數: <b id="hud-customers" class="text-emerald-300">0</b></span>
-                <span>🐾 魅力: <b id="hud-appeal" class="text-pink-300">25</b></span>
+                <span>🐾 人氣: <b id="hud-appeal" class="text-pink-300">25</b></span>
             </div>
             <!-- 右下角操作提示 -->
-            <div class="absolute bottom-2 right-2 bg-black/60 text-amber-100 px-2 py-0.5 rounded text-[11px] pointer-events-none">
-                點擊餐廳內毛孩或客人可互動打氣 ✨
+            <div class="absolute bottom-2 right-2 bg-[#362011]/85 text-amber-100 border border-[#8c5a32] px-2.5 py-0.5 rounded text-[11px] pointer-events-none">
+                點擊店內毛孩或客人可互動打氣獲得 ♥
             </div>
         </div>
 
         <!-- 下方開羅風經營管理面板 -->
-        <section class="flex-1 flex flex-col min-h-[260px]">
+        <section class="flex-1 flex flex-col min-h-[255px]">
             <!-- 分頁標籤列 -->
             <div class="flex items-end gap-1 sm:gap-2 px-1">
                 <button onclick="switchTab('facilities')" id="tab-facilities" class="kairo-tab active px-3 py-2 text-xs sm:text-sm font-bold flex items-center gap-1">
-                    🏠 <span>設施與裝潢</span>
+                    🏠 <span>設施裝潢</span>
                 </button>
                 <button onclick="switchTab('menu')" id="tab-menu" class="kairo-tab px-3 py-2 text-xs sm:text-sm font-bold flex items-center gap-1">
-                    🍽️ <span>菜單研發</span>
+                    🍽️ <span>食譜研發</span>
                 </button>
                 <button onclick="switchTab('staff')" id="tab-staff" class="kairo-tab px-3 py-2 text-xs sm:text-sm font-bold flex items-center gap-1">
                     🐾 <span>員工與毛孩</span>
                 </button>
                 <button onclick="switchTab('system')" id="tab-system" class="kairo-tab px-3 py-2 text-xs sm:text-sm font-bold flex items-center gap-1 ml-auto">
-                    ⚙️ <span>存檔/說明</span>
+                    ⚙️ <span>存檔/秘訣</span>
                 </button>
             </div>
 
@@ -273,34 +281,34 @@
     <!-- 每日營業結算彈窗 (開羅風經典報表) -->
     <div id="eod-modal" class="fixed inset-0 bg-black/70 z-50 hidden items-center justify-center p-4">
         <div class="kairo-box max-w-md w-full p-5 modal-animate relative bg-[#fff9eb]">
-            <div class="bg-[#e87a3e] text-white text-center py-2 px-4 rounded-lg border-3 border-[#5c3a21] -mt-9 mb-4 shadow-md">
+            <div class="bg-[#e87a3e] text-white text-center py-2 px-4 rounded border-3 border-[#4a2c16] -mt-9 mb-4 shadow-md">
                 <h2 class="text-lg sm:text-xl font-bold tracking-wider" id="eod-title">🌙 第 1 天 營業結算報告</h2>
             </div>
 
-            <div class="space-y-2.5 text-sm sm:text-base">
-                <div class="flex justify-between items-center bg-[#f5ebd6] px-3 py-2 rounded-lg border-2 border-[#d4be98]">
+            <div class="space-y-2 text-sm sm:text-base">
+                <div class="flex justify-between items-center bg-[#f5ebd6] px-3 py-2 rounded border-2 border-[#d4be98]">
                     <span>👥 接待顧客總數</span>
                     <span class="font-bold text-[#3e2716]" id="eod-customers">0 組</span>
                 </div>
-                <div class="flex justify-between items-center bg-[#f5ebd6] px-3 py-2 rounded-lg border-2 border-[#d4be98]">
+                <div class="flex justify-between items-center bg-[#f5ebd6] px-3 py-2 rounded border-2 border-[#d4be98]">
                     <span>🐶 服務毛孩數量</span>
                     <span class="font-bold text-[#b8531e]" id="eod-pets">0 隻</span>
                 </div>
-                <div class="flex justify-between items-center bg-[#f5ebd6] px-3 py-2 rounded-lg border-2 border-[#d4be98]">
+                <div class="flex justify-between items-center bg-[#f5ebd6] px-3 py-2 rounded border-2 border-[#d4be98]">
                     <span>💰 今日營業收入</span>
-                    <span class="font-bold text-amber-600" id="eod-revenue">+$0</span>
+                    <span class="font-bold text-amber-600" id="eod-revenue">+0G</span>
                 </div>
-                <div class="flex justify-between items-center bg-[#f5ebd6] px-3 py-2 rounded-lg border-2 border-[#d4be98]">
-                    <span>💖 獲得愛心研究點</span>
-                    <span class="font-bold text-pink-600" id="eod-hearts">+0</span>
+                <div class="flex justify-between items-center bg-[#f5ebd6] px-3 py-2 rounded border-2 border-[#d4be98]">
+                    <span>♥ 獲得愛心研究點</span>
+                    <span class="font-bold text-pink-600" id="eod-hearts">+0♥</span>
                 </div>
-                <div class="flex justify-between items-center bg-[#fff3cd] px-3 py-2 rounded-lg border-2 border-[#e0b84c]">
+                <div class="flex justify-between items-center bg-[#fff3cd] px-3 py-2 rounded border-2 border-[#e0b84c]">
                     <span>★ 餐廳目前星級評價</span>
                     <span class="font-bold text-amber-600 text-lg" id="eod-rating">★ 1.2</span>
                 </div>
             </div>
 
-            <div class="mt-4 p-2.5 bg-emerald-50 border-2 border-emerald-300 rounded-lg text-xs text-emerald-900" id="eod-comment">
+            <div class="mt-4 p-2.5 bg-emerald-50 border-2 border-emerald-300 rounded text-xs text-emerald-900" id="eod-comment">
                 💡 評語：溫馨的小店剛起步，添購更多寵物設施與鮮食能吸引大批毛孩家庭喔！
             </div>
 
@@ -315,7 +323,7 @@
     <!-- 經營數據與圖鑑彈窗 -->
     <div id="stats-modal" class="fixed inset-0 bg-black/70 z-50 hidden items-center justify-center p-4">
         <div class="kairo-box max-w-md w-full p-5 modal-animate">
-            <div class="flex justify-between items-center border-b-2 border-[#5c3a21] pb-2 mb-3">
+            <div class="flex justify-between items-center border-b-2 border-[#4a2c16] pb-2 mb-3">
                 <h3 class="text-lg font-bold">📊 餐廳累計經營數據</h3>
                 <button onclick="closeStatsModal()" class="kairo-btn px-2.5 py-0.5 text-sm">✕</button>
             </div>
@@ -335,9 +343,10 @@
  * 1. 遊戲核心狀態與靜態資料庫 (Game Data & State)
  * ============================================================================
  */
-const SAVE_KEY = 'starlight_pet_cafe_save_v1';
+const SAVE_KEY = 'starlight_pet_cafe_iso_v2';
 
-// 設施定義：會實際繪製在 Canvas 餐廳場景中
+// 2.5D 網格座標系統 (Grid: 12 x 12 格, gx: 0~11, gy: 0~11)
+// 設施定義：gx, gy 為等距菱形網格座標，會以 2.5D 立體像素渲染在場景中
 const FACILITIES_DB = [
     {
         id: 'table_1',
@@ -348,7 +357,7 @@ const FACILITIES_DB = [
         upgradeCost: 250,
         maxLevel: 5,
         appeal: 10,
-        x: 340, y: 175
+        gx: 4.5, gy: 3.5
     },
     {
         id: 'table_2',
@@ -359,7 +368,7 @@ const FACILITIES_DB = [
         upgradeCost: 300,
         maxLevel: 5,
         appeal: 12,
-        x: 500, y: 175
+        gx: 7.5, gy: 3.5
     },
     {
         id: 'table_3',
@@ -370,7 +379,7 @@ const FACILITIES_DB = [
         upgradeCost: 400,
         maxLevel: 5,
         appeal: 18,
-        x: 340, y: 285
+        gx: 4.5, gy: 6.5
     },
     {
         id: 'table_4',
@@ -381,29 +390,29 @@ const FACILITIES_DB = [
         upgradeCost: 650,
         maxLevel: 5,
         appeal: 25,
-        x: 500, y: 285
+        gx: 7.5, gy: 6.5
     },
     {
         id: 'grass_zone',
         name: '室內草皮遊戲區',
         category: 'pet_toy',
-        desc: '鋪設柔軟人工草皮與玩具球，讓毛孩盡情奔跑產生愛心！',
+        desc: '鋪設柔軟人工草皮與白色柵欄，毛孩玩耍會額外產生 ♥！',
         baseCost: 350,
         upgradeCost: 350,
         maxLevel: 5,
         appeal: 22,
-        x: 645, y: 215
+        gx: 9.8, gy: 4.8
     },
     {
         id: 'cat_tower',
         name: '三層豪華貓跳台',
         category: 'pet_toy',
-        desc: '貓咪最愛的瞭望台，吸引更多愛貓人士造訪。',
+        desc: '貓咪最愛的瞭望台與抓柱，大幅提升人氣吸引愛貓飼主。',
         baseCost: 500,
         upgradeCost: 420,
         maxLevel: 5,
         appeal: 24,
-        x: 650, y: 95
+        gx: 10.2, gy: 1.8
     },
     {
         id: 'espresso_machine',
@@ -414,18 +423,18 @@ const FACILITIES_DB = [
         upgradeCost: 450,
         maxLevel: 5,
         appeal: 15,
-        x: 155, y: 105
+        gx: 2.3, gy: 1.5
     },
     {
         id: 'pet_fountain',
-        name: '活氧循環寵物飲水機',
+        name: '活氧寵物飲水機',
         category: 'pet_toy',
-        desc: '貼心的毛孩補水站，提升全店小費金額與愛心產量。',
+        desc: '流動水波紋補水站，提升全店小費金額與愛心產量。',
         baseCost: 600,
         upgradeCost: 500,
         maxLevel: 5,
         appeal: 20,
-        x: 245, y: 315
+        gx: 2.5, gy: 6.2
     }
 ];
 
@@ -434,7 +443,7 @@ const MENU_DB = [
     {
         id: 'latte',
         type: 'human',
-        name: '肉球拉花手沖拿鐵',
+        name: '手沖精品咖啡',
         icon: '☕',
         desc: '印有可愛貓掌拉花的香醇拿鐵，看板飲品。',
         unlockGold: 0,
@@ -447,7 +456,7 @@ const MENU_DB = [
     {
         id: 'souffle',
         type: 'human',
-        name: '雲朵舒芙蕾鬆餅',
+        name: '焦糖舒芙蕾鬆餅',
         icon: '🥞',
         desc: '入口即化的蓬鬆厚鬆餅，搭配北海道鮮奶油。',
         unlockGold: 280,
@@ -460,7 +469,7 @@ const MENU_DB = [
     {
         id: 'brunch',
         type: 'human',
-        name: '星光田園早午餐盤',
+        name: '經典早午餐盤',
         icon: '🍳',
         desc: '太陽蛋、手作麵包與新鮮沙拉的豐盛組合。',
         unlockGold: 650,
@@ -473,7 +482,7 @@ const MENU_DB = [
     {
         id: 'chicken_jelly',
         type: 'pet',
-        name: '無鹽舒肥雞肉凍',
+        name: '無鹽鮮雞肉凍',
         icon: '🍗',
         desc: '低脂高蛋白純雞胸肉凍，狗狗貓咪都瘋狂！',
         unlockGold: 0,
@@ -486,9 +495,9 @@ const MENU_DB = [
     {
         id: 'pumpkin_puree',
         type: 'pet',
-        name: '黃金南瓜鮮蔬泥',
+        name: '南瓜鮮蔬肉泥',
         icon: '🎃',
-        desc: '蒸熟栗子南瓜搭配花椰菜，營養滿分又顧腸胃。',
+        desc: '蒸熟栗子南瓜搭配鮮嫩肉末，營養滿分顧腸胃。',
         unlockGold: 240,
         unlockHearts: 15,
         basePrice: 125,
@@ -499,7 +508,7 @@ const MENU_DB = [
     {
         id: 'honey_bone',
         type: 'pet',
-        name: '手作燕麥潔牙餅乾',
+        name: '蜂巢潔牙骨拼盤',
         icon: '🦴',
         desc: '酥脆香甜的手工烘焙寵物點心，吃完心情大好。',
         unlockGold: 550,
@@ -519,7 +528,7 @@ const STAFF_PETS_DB = [
         role: '主廚',
         name: '阿哲主廚',
         avatar: '👨‍🍳',
-        desc: '精通人類料理與寵物營養學，升級可加快出餐速度。',
+        desc: '戴著高高廚師帽的料理達人，升級可大幅加快出餐速度。',
         unlockGold: 0,
         upgGold: 300,
         maxLevel: 8
@@ -530,7 +539,7 @@ const STAFF_PETS_DB = [
         role: '店員',
         name: '小美店員',
         avatar: '👩‍💼',
-        desc: '笑容滿面的外場夥伴，升級可大幅提升移動與收桌速度。',
+        desc: '笑容滿面的外場夥伴，升級可提升移動與收桌速度。',
         unlockGold: 0,
         upgGold: 260,
         maxLevel: 8
@@ -550,10 +559,10 @@ const STAFF_PETS_DB = [
         id: 'pet_niuniu',
         kind: 'mascot',
         role: '駐店店長',
-        name: '溫柔老狗「妞妞」',
+        name: '貼心老狗「妞妞」',
         avatar: '🐕',
         species: 'golden',
-        desc: '沉穩親切的黃金獵犬店長，在店內巡邏會散發治癒愛心。',
+        desc: '沉穩親切的黃金獵犬店長，在店內巡邏會散發治癒 ♥。',
         unlockGold: 0,
         upgGold: 280,
         maxLevel: 8
@@ -562,10 +571,10 @@ const STAFF_PETS_DB = [
         id: 'pet_doudou',
         kind: 'mascot',
         role: '活力公關',
-        name: '活潑柴犬「豆豆」',
+        name: '活力柴犬「豆豆」',
         avatar: '🐕‍🦺',
         species: 'shiba',
-        desc: '招牌微笑柴犬！每級提升全店小費加成與愛心產生頻率。',
+        desc: '招牌微笑柴犬！每級提升全店小費加成與 ♥ 產生頻率。',
         unlockGold: 480,
         upgGold: 380,
         maxLevel: 8
@@ -573,22 +582,21 @@ const STAFF_PETS_DB = [
     {
         id: 'pet_juzi',
         kind: 'mascot',
-        role: '招財貓咪',
-        name: '胖胖橘貓「橘子」',
+        role: '招財三花',
+        name: '呼嚕三花貓「橘子」',
         avatar: '🐈',
-        species: 'orange_cat',
-        desc: '喜歡在草皮與餐桌間蹭客人褲管，大幅提升餐廳魅力值！',
+        species: 'calico',
+        desc: '喜歡在草皮與餐桌間蹭客人褲管，大幅提升餐廳人氣！',
         unlockGold: 880,
         upgGold: 520,
         maxLevel: 8
     }
 ];
 
-// 預設存檔結構
 function createDefaultState() {
     return {
         day: 1,
-        timeMinutes: 9 * 60, // 09:00 = 540 分鐘，營業至 21:00 = 1260 分鐘
+        timeMinutes: 9 * 60,
         gold: 1200,
         hearts: 35,
         rating: 1.2,
@@ -631,13 +639,13 @@ function createDefaultState() {
 }
 
 let gameState = loadGame();
-let gameSpeed = 1; // 0 = 暫停, 1 = 正常, 2 = 2倍速
+let gameSpeed = 1;
 let currentTab = 'facilities';
 let isEndOfDayModalOpen = false;
 
 /**
  * ============================================================================
- * 2. Web Audio API 8-Bit 溫馨背景音樂與音效合成器
+ * 2. Web Audio API 8-Bit 開羅風溫馨背景音樂與音效合成器
  * ============================================================================
  */
 class RetroAudio {
@@ -646,7 +654,6 @@ class RetroAudio {
         this.muted = false;
         this.bgmTimer = null;
         this.noteIndex = 0;
-        // 輕快治癒的 C 大調開羅風旋律 (頻率 Hz)
         this.melody = [
             523.25, 659.25, 783.99, 659.25, 587.33, 698.46, 880.00, 698.46,
             523.25, 659.25, 783.99, 1046.50, 987.77, 783.99, 659.25, 587.33
@@ -656,9 +663,7 @@ class RetroAudio {
     init() {
         if (!this.ctx) {
             const AudioCtx = window.AudioContext || window.webkitAudioContext;
-            if (AudioCtx) {
-                this.ctx = new AudioCtx();
-            }
+            if (AudioCtx) this.ctx = new AudioCtx();
         }
         if (this.ctx && this.ctx.state === 'suspended') {
             this.ctx.resume();
@@ -674,7 +679,7 @@ class RetroAudio {
 
             const freq = this.melody[this.noteIndex % this.melody.length];
             this.noteIndex++;
-            this.playTone(freq, 'triangle', 0.14, 0.035);
+            this.playTone(freq, 'triangle', 0.14, 0.032);
         }, 420);
     }
 
@@ -703,8 +708,8 @@ class RetroAudio {
     }
 
     playCoin() {
-        this.playTone(987.77, 'square', 0.08, 0.06);
-        setTimeout(() => this.playTone(1318.51, 'square', 0.18, 0.06), 70);
+        this.playTone(987.77, 'square', 0.08, 0.055);
+        setTimeout(() => this.playTone(1318.51, 'square', 0.18, 0.055), 70);
     }
 
     playHeart() {
@@ -714,12 +719,11 @@ class RetroAudio {
     playUpgrade() {
         const notes = [523.25, 659.25, 783.99, 1046.50];
         notes.forEach((n, idx) => {
-            setTimeout(() => this.playTone(n, 'triangle', 0.12, 0.08), idx * 65);
+            setTimeout(() => this.playTone(n, 'triangle', 0.12, 0.075), idx * 65);
         });
     }
 
     playPetSound() {
-        // 可愛的汪/喵高音滑音
         this.playTone(520, 'triangle', 0.12, 0.07, 780);
     }
 }
@@ -739,7 +743,7 @@ function toggleSound() {
 
 /**
  * ============================================================================
- * 3. 存檔管理與工具函式
+ * 3. 存檔管理與數值計算工具
  * ============================================================================
  */
 function loadGame() {
@@ -757,9 +761,7 @@ function loadGame() {
                 staffPets: { ...def.staffPets, ...(parsed.staffPets || {}) }
             };
         }
-    } catch (e) {
-        console.warn('讀取存檔失敗，使用預設進度', e);
-    }
+    } catch (e) {}
     return createDefaultState();
 }
 
@@ -771,7 +773,6 @@ function saveGame(showMsg = false) {
 }
 
 function resetGameProgress() {
-    // 使用自訂確認狀態避免 window.confirm
     const btn = document.getElementById('btn-reset-confirm');
     if (btn && btn.dataset.armed !== 'true') {
         btn.dataset.armed = 'true';
@@ -794,10 +795,10 @@ function resetGameProgress() {
     showToast('🔄 已重置為第 1 天全新開始！', 'bg-amber-600');
 }
 
-function showToast(msg, colorClass = 'bg-[#5c3a21]') {
+function showToast(msg, colorClass = 'bg-[#4a2c16]') {
     const container = document.getElementById('toast-container');
     const el = document.createElement('div');
-    el.className = `${colorClass} text-white px-3 py-1.5 rounded-lg border-2 border-[#fff3d1] shadow-lg text-xs sm:text-sm font-bold modal-animate`;
+    el.className = `${colorClass} text-white px-3 py-1.5 rounded border-2 border-[#fff3d1] shadow-lg text-xs sm:text-sm font-bold modal-animate`;
     el.textContent = msg;
     container.appendChild(el);
     setTimeout(() => {
@@ -812,7 +813,6 @@ function setNews(text) {
     if (el) el.textContent = text;
 }
 
-// 計算餐廳目前總魅力值
 function getTotalAppeal() {
     let appeal = 15;
     FACILITIES_DB.forEach(f => {
@@ -821,19 +821,15 @@ function getTotalAppeal() {
     });
     STAFF_PETS_DB.forEach(sp => {
         const lv = gameState.staffPets[sp.id] || 0;
-        if (lv > 0 && sp.kind === 'mascot') {
-            appeal += lv * 8;
-        }
+        if (lv > 0 && sp.kind === 'mascot') appeal += lv * 8;
     });
     return appeal;
 }
 
-// 計算已解鎖座位清單
 function getActiveTables() {
     return FACILITIES_DB.filter(f => f.category === 'seat' && (gameState.facilities[f.id] || 0) > 0);
 }
 
-// 計算菜單單品目前售價
 function getDishPrice(dish) {
     const lv = gameState.menu[dish.id] || 0;
     if (lv <= 0) return dish.basePrice;
@@ -844,39 +840,234 @@ function getDishPrice(dish) {
 
 /**
  * ============================================================================
- * 4. 餐廳模擬實體與 AI 邏輯 (Canvas 邏輯座標 800 x 500)
+ * 4. 開羅風離線像素精靈圖產生器 (Procedural Crisp Pixel Sprite Baker)
+ *    - 經典 2:1 大頭 Q 版比例、1px 深色輪廓 (#2c1e16)、紅暈臉頰、雙幀走路動畫
  * ============================================================================
  */
-const WORLD_W = 800;
-const WORLD_H = 500;
+const SPRITE_CACHE = {};
 
-// 關鍵座標節點
-const POS = {
-    door: { x: 110, y: 445 },
-    waitSpot: { x: 185, y: 395 },
-    kitchenStove: { x: 115, y: 125 },
-    counterPickup: { x: 225, y: 155 },
-    staffIdle: { x: 245, y: 215 },
-    grassCenter: { x: 645, y: 225 }
+function bakePixelSprite(key, width, height, drawFn) {
+    if (SPRITE_CACHE[key]) return SPRITE_CACHE[key];
+    const c = document.createElement('canvas');
+    c.width = width;
+    c.height = height;
+    const g = c.getContext('2d');
+    g.imageSmoothingEnabled = false;
+    drawFn(g);
+    SPRITE_CACHE[key] = c;
+    return c;
+}
+
+// 取得開羅風二頭身 Q 版小人精靈 (16x24 像素，渲染時放大 2 倍為 32x48)
+function getChibiHumanSprite(variant, dir, frame) {
+    // dir: 'front' (面朝前景左/右) or 'back' (背對鏡頭朝廚房/後方)
+    // frame: 0 or 1 (走路擺動幀)
+    const key = `human_${variant}_${dir}_${frame}`;
+    return bakePixelSprite(key, 16, 24, (g) => {
+        const OL = '#2c1e16'; // 經典開羅深咖啡黑輪廓
+        const SKIN = '#ffd9b3';
+        const SKIN_SHADE = '#e8b48a';
+        const BLUSH = '#ff8599';
+
+        // 角色服裝與髮型配色
+        const styles = {
+            chef: { hair: '#4a2c16', shirt: '#ffffff', apron: '#f0f4f8', pants: '#3b4d61', hat: 'chef' },
+            waiter_f: { hair: '#8c4227', shirt: '#e86f2c', apron: '#fff9eb', pants: '#4a2c16', hat: 'ribbon' },
+            waiter_m: { hair: '#2c1e16', shirt: '#4b9e4f', apron: '#fff9eb', pants: '#2f3e46', hat: 'cap' },
+            office: { hair: '#2c1e16', shirt: '#5c85b8', apron: null, pants: '#2b3a4a', hat: null },
+            student: { hair: '#59331d', shirt: '#ff9b54', apron: null, pants: '#3b5998', hat: 'beret' },
+            couple_f: { hair: '#b8531e', shirt: '#f06595', apron: null, pants: '#744253', hat: null },
+            grandma: { hair: '#d8dee9', shirt: '#8fbc8f', apron: null, pants: '#5c4b51', hat: 'bun' },
+            passerby: { hair: '#6b4423', shirt: '#e5c07b', apron: null, pants: '#4f5d75', hat: null }
+        };
+        const st = styles[variant] || styles.office;
+
+        const px = (x, y, w, h, col) => {
+            g.fillStyle = col;
+            g.fillRect(x, y, w, h);
+        };
+
+        // 1. 雙腳與褲子 (2幀交替踏步)
+        const leftFootY = frame === 0 ? 20 : 21;
+        const rightFootY = frame === 0 ? 21 : 20;
+        px(4, 17, 3, 3, st.pants);
+        px(9, 17, 3, 3, st.pants);
+        px(4, leftFootY, 3, 2, OL);
+        px(9, rightFootY, 3, 2, OL);
+
+        // 2. 身體軀幹 (小巧可愛的 1:2 比例)
+        px(4, 13, 8, 5, OL);
+        px(5, 14, 6, 4, st.shirt);
+        if (st.apron && dir === 'front') {
+            px(5, 15, 6, 3, st.apron);
+        }
+        // 手臂擺動
+        const armOffset = frame === 0 ? 0 : 1;
+        px(3, 14 + armOffset, 2, 3, OL);
+        px(3, 14 + armOffset, 1, 2, SKIN);
+        px(11, 15 - armOffset, 2, 3, OL);
+        px(12, 15 - armOffset, 1, 2, SKIN);
+
+        // 3. 大頭輪廓 (寬 12px, 高 11px)
+        px(3, 3, 10, 11, OL);
+        px(2, 4, 12, 9, OL);
+        px(3, 4, 10, 9, SKIN);
+        px(3, 12, 10, 1, SKIN_SHADE);
+
+        if (dir === 'front') {
+            // 瀏海
+            px(3, 3, 10, 3, st.hair);
+            px(3, 6, 2, 2, st.hair);
+            px(11, 6, 2, 2, st.hair);
+
+            // 豆豆眼 + 可愛臉頰紅暈
+            px(5, 8, 2, 2, OL);
+            px(9, 8, 2, 2, OL);
+            px(4, 10, 2, 1, BLUSH);
+            px(10, 10, 2, 1, BLUSH);
+        } else {
+            // 背面全頭髮覆蓋
+            px(3, 3, 10, 9, st.hair);
+            px(4, 11, 8, 2, st.hair);
+        }
+
+        // 4. 帽子與頭飾 (開羅靈魂細節)
+        if (st.hat === 'chef') {
+            px(3, 0, 10, 4, OL);
+            px(4, 1, 8, 3, '#ffffff');
+            px(5, 0, 6, 1, '#ffffff');
+        } else if (st.hat === 'ribbon') {
+            px(10, 2, 3, 2, '#ff4d6d');
+        } else if (st.hat === 'cap') {
+            px(4, 2, 8, 2, '#2b580c');
+            if (dir === 'front') px(6, 3, 6, 1, '#2b580c');
+        } else if (st.hat === 'beret') {
+            px(4, 2, 8, 2, '#c92a2a');
+        } else if (st.hat === 'bun') {
+            px(6, 1, 4, 2, '#e5e9f0');
+        }
+    });
+}
+
+// 取得開羅風 Q 版寵物精靈 (16x16 像素，渲染時放大 2 倍為 32x32)
+function getChibiPetSprite(species, frame) {
+    const key = `pet_${species}_${frame}`;
+    return bakePixelSprite(key, 16, 16, (g) => {
+        const OL = '#2c1e16';
+        const palettes = {
+            golden: { main: '#f2c166', sub: '#fff3d6', ear: '#d99b38', isCat: false },
+            shiba: { main: '#e67e35', sub: '#ffffff', ear: '#c95f1e', isCat: false },
+            corgi: { main: '#df823c', sub: '#ffffff', ear: '#b85a1c', isCat: false },
+            poodle: { main: '#8c5332', sub: '#b0714c', ear: '#6b3b1e', isCat: false },
+            husky: { main: '#6c7a89', sub: '#ffffff', ear: '#34495e', isCat: false },
+            calico: { main: '#ffffff', sub: '#f2994a', ear: '#2c1e16', isCat: true }
+        };
+        const p = palettes[species] || palettes.shiba;
+
+        const px = (x, y, w, h, col) => {
+            g.fillStyle = col;
+            g.fillRect(x, y, w, h);
+        };
+
+        // 搖尾巴 (左右交替)
+        const tailY = frame === 0 ? 7 : 6;
+        px(1, tailY, 3, 3, OL);
+        px(2, tailY + 1, 2, 2, p.main);
+
+        // 圓滾滾身體
+        px(3, 7, 9, 6, OL);
+        px(4, 8, 7, 4, p.main);
+        px(5, 10, 5, 2, p.sub);
+
+        // 四隻小短腿交替踏步
+        const legShift = frame === 0 ? 0 : 1;
+        px(4 + legShift, 13, 2, 2, OL);
+        px(9 - legShift, 13, 2, 2, OL);
+
+        // 大頭 (佔據一半視覺比例)
+        px(7, 3, 8, 8, OL);
+        px(8, 4, 6, 6, p.main);
+        // 臉頰白毛 / 三花斑紋
+        px(9, 7, 5, 3, p.sub);
+        if (species === 'calico') {
+            px(8, 4, 3, 3, p.sub);
+        }
+
+        // 耳朵
+        if (p.isCat) {
+            px(8, 1, 2, 3, OL);
+            px(12, 1, 2, 3, OL);
+            px(8, 2, 1, 2, p.ear);
+            px(12, 2, 1, 2, p.ear);
+        } else {
+            px(7, 2, 2, 3, p.ear);
+            px(13, 2, 2, 3, p.ear);
+        }
+
+        // 豆豆眼與黑鼻子
+        px(9, 6, 1, 2, OL);
+        px(12, 6, 1, 2, OL);
+        px(13, 8, 2, 1, OL);
+    });
+}
+
+/**
+ * ============================================================================
+ * 5. 2.5D 等距菱形投影數學核心 (Isometric Projection Engine)
+ * ============================================================================
+ */
+const WORLD_W = 860;
+const WORLD_H = 540;
+const ISO_ORIGIN_X = 430;
+const ISO_ORIGIN_Y = 128;
+const TILE_W = 64; // 菱形單格寬度
+const TILE_H = 32; // 菱形單格高度 (標準 2:1 開羅像素斜視角)
+const GRID_SIZE = 12;
+
+// 網格座標 (gx, gy) -> 螢幕 2.5D 像素座標 (sx, sy)
+function gridToIso(gx, gy) {
+    return {
+        x: ISO_ORIGIN_X + (gx - gy) * (TILE_W / 2),
+        y: ISO_ORIGIN_Y + (gx + gy) * (TILE_H / 2)
+    };
+}
+
+// 螢幕 2.5D 座標 -> 網格座標 (用於滑鼠/觸控點擊判定)
+function isoToGrid(sx, sy) {
+    const dx = sx - ISO_ORIGIN_X;
+    const dy = sy - ISO_ORIGIN_Y;
+    const gx = (dx / (TILE_W / 2) + dy / (TILE_H / 2)) / 2;
+    const gy = (dy / (TILE_H / 2) - dx / (TILE_W / 2)) / 2;
+    return { gx, gy };
+}
+
+// 關鍵場地節點 (網格座標)
+const GRID_POS = {
+    door: { gx: 5.5, gy: 11.2 },
+    waitSpot: { gx: 5.5, gy: 9.2 },
+    kitchenStove: { gx: 1.2, gy: 1.8 },
+    counterPickup: { gx: 3.3, gy: 3.1 },
+    staffIdle: { gx: 3.8, gy: 4.5 },
+    grassCenter: { gx: 9.8, gy: 4.8 }
 };
 
-let tablesState = [];      // 每張桌子的佔用狀態
-let kitchenOrders = [];    // 待烹飪訂單
-let readyDishes = [];      // 櫃檯上已做好待送餐的料理
-let customers = [];        // 顧客群 (含隨行毛孩)
-let staffEntities = [];    // 員工實體
-let mascotEntities = [];   // 駐店毛孩實體
-let floatingTexts = [];    // 飄浮文字 (+$150, +💖)
-let particles = [];        // 油煙、愛心、閃光粒子
-
-let spawnTimer = 2.0;
+let tablesState = [];
+let kitchenOrders = [];
+let readyDishes = [];
+let customers = [];
+let passersby = []; // 店外街道散步的行人與毛孩，營造開羅城鎮熱鬧感
+let staffEntities = [];
+let mascotEntities = [];
+let floatingTexts = [];
+let particles = [];
+let spawnTimer = 1.8;
+let passerbyTimer = 1.0;
 
 function initEntities() {
-    // 1. 初始化餐桌狀態
     tablesState = FACILITIES_DB.filter(f => f.category === 'seat').map(f => ({
         id: f.id,
-        x: f.x,
-        y: f.y,
+        gx: f.gx,
+        gy: f.gy,
         occupiedBy: null,
         dirty: false,
         cleanProgress: 0
@@ -885,23 +1076,24 @@ function initEntities() {
     kitchenOrders = [];
     readyDishes = [];
     customers = [];
+    passersby = [];
     floatingTexts = [];
     particles = [];
 
-    // 2. 初始化員工
-    staffEntities = [];
     // 主廚
-    staffEntities.push({
+    staffEntities = [{
         id: 'chef_leo',
         role: 'chef',
-        x: POS.kitchenStove.x,
-        y: POS.kitchenStove.y,
-        targetX: POS.kitchenStove.x,
-        targetY: POS.kitchenStove.y,
+        variant: 'chef',
+        gx: GRID_POS.kitchenStove.gx,
+        gy: GRID_POS.kitchenStove.gy,
+        targetGx: GRID_POS.kitchenStove.gx,
+        targetGy: GRID_POS.kitchenStove.gy,
+        facing: 'front',
         cookingOrder: null,
         cookTimer: 0,
         animPhase: 0
-    });
+    }];
 
     // 外場店員
     ['waiter_mia', 'waiter_ken'].forEach((wid, idx) => {
@@ -909,11 +1101,13 @@ function initEntities() {
             staffEntities.push({
                 id: wid,
                 role: 'waiter',
-                x: POS.staffIdle.x + idx * 32,
-                y: POS.staffIdle.y,
-                targetX: POS.staffIdle.x + idx * 32,
-                targetY: POS.staffIdle.y,
-                state: 'idle', // idle, to_counter, to_table_deliver, to_table_clean
+                variant: wid === 'waiter_mia' ? 'waiter_f' : 'waiter_m',
+                gx: GRID_POS.staffIdle.gx + idx * 0.9,
+                gy: GRID_POS.staffIdle.gy,
+                targetGx: GRID_POS.staffIdle.gx + idx * 0.9,
+                targetGy: GRID_POS.staffIdle.gy,
+                facing: 'front',
+                state: 'idle',
                 carryingDish: null,
                 targetTableId: null,
                 animPhase: idx * 1.5
@@ -921,7 +1115,7 @@ function initEntities() {
         }
     });
 
-    // 3. 初始化駐店毛孩
+    // 駐店毛孩
     mascotEntities = [];
     STAFF_PETS_DB.filter(p => p.kind === 'mascot').forEach((pet, idx) => {
         if ((gameState.staffPets[pet.id] || 0) > 0) {
@@ -929,10 +1123,11 @@ function initEntities() {
                 id: pet.id,
                 name: pet.name,
                 species: pet.species,
-                x: 420 + idx * 75,
-                y: 230 + (idx % 2) * 50,
-                targetX: 620,
-                targetY: 220,
+                gx: 6.2 + idx * 1.1,
+                gy: 5.2 + (idx % 2) * 1.2,
+                targetGx: 9.2,
+                targetGy: 5.2,
+                flipX: false,
                 waitTimer: 1 + idx,
                 heartTimer: 5 + idx * 2,
                 animPhase: idx
@@ -941,34 +1136,34 @@ function initEntities() {
     });
 }
 
-// 確保新解鎖的員工或毛孩即時加入場景
 function syncDynamicEntities() {
-    // 檢查二號店員
     if ((gameState.staffPets.waiter_ken || 0) > 0 && !staffEntities.some(s => s.id === 'waiter_ken')) {
         staffEntities.push({
             id: 'waiter_ken',
             role: 'waiter',
-            x: POS.door.x,
-            y: POS.door.y,
-            targetX: POS.staffIdle.x + 32,
-            targetY: POS.staffIdle.y,
+            variant: 'waiter_m',
+            gx: GRID_POS.door.gx,
+            gy: GRID_POS.door.gy,
+            targetGx: GRID_POS.staffIdle.gx + 0.9,
+            targetGy: GRID_POS.staffIdle.gy,
+            facing: 'back',
             state: 'idle',
             carryingDish: null,
             targetTableId: null,
             animPhase: 0
         });
     }
-    // 檢查駐店毛孩
     STAFF_PETS_DB.filter(p => p.kind === 'mascot').forEach((pet, idx) => {
         if ((gameState.staffPets[pet.id] || 0) > 0 && !mascotEntities.some(m => m.id === pet.id)) {
             mascotEntities.push({
                 id: pet.id,
                 name: pet.name,
                 species: pet.species,
-                x: POS.door.x + 20,
-                y: POS.door.y - 20,
-                targetX: POS.grassCenter.x,
-                targetY: POS.grassCenter.y,
+                gx: GRID_POS.door.gx,
+                gy: GRID_POS.door.gy - 1,
+                targetGx: GRID_POS.grassCenter.gx,
+                targetGy: GRID_POS.grassCenter.gy,
+                flipX: false,
                 waitTimer: 0.5,
                 heartTimer: 3,
                 animPhase: idx
@@ -977,41 +1172,53 @@ function syncDynamicEntities() {
     });
 }
 
-function addFloatingText(x, y, text, color = '#ffd447') {
-    floatingTexts.push({
-        x, y, text, color,
-        life: 1.4,
-        maxLife: 1.4
-    });
+function addFloatingText(sx, sy, text, color = '#ffd447') {
+    floatingTexts.push({ x: sx, y: sy, text, color, life: 1.4, maxLife: 1.4 });
 }
 
-function spawnHeartParticle(x, y) {
+function spawnHeartParticle(sx, sy) {
     particles.push({
         type: 'heart',
-        x: x + (Math.random() - 0.5) * 16,
-        y: y - 10,
-        vx: (Math.random() - 0.5) * 12,
-        vy: -22 - Math.random() * 12,
+        x: sx + (Math.random() - 0.5) * 14,
+        y: sy - 16,
+        vx: (Math.random() - 0.5) * 10,
+        vy: -24 - Math.random() * 10,
         life: 1.1,
         maxLife: 1.1
     });
 }
 
-function spawnSmokeParticle(x, y) {
+function spawnSmokeParticle(sx, sy) {
     particles.push({
         type: 'smoke',
-        x: x + (Math.random() - 0.5) * 12,
-        y: y - 8,
+        x: sx + (Math.random() - 0.5) * 10,
+        y: sy - 20,
         vx: (Math.random() - 0.5) * 8,
-        vy: -18 - Math.random() * 10,
-        life: 0.8,
-        maxLife: 0.8
+        vy: -20 - Math.random() * 8,
+        life: 0.85,
+        maxLife: 0.85
     });
 }
 
-// 生成新顧客 (可能是單人或帶毛孩的飼主)
+// 生成店外人行道過路人 (開羅城鎮街景氛圍)
+function spawnPasserby() {
+    if (passersby.length >= 3) return;
+    const fromLeft = Math.random() < 0.5;
+    const variants = ['office', 'student', 'couple_f', 'grandma', 'passerby'];
+    passersby.push({
+        gx: fromLeft ? -1.5 : 13.5,
+        gy: 12.6 + (Math.random() - 0.5) * 0.4,
+        targetGx: fromLeft ? 13.5 : -1.5,
+        variant: variants[Math.floor(Math.random() * variants.length)],
+        hasPet: Math.random() < 0.5,
+        petType: ['corgi', 'shiba', 'poodle'][Math.floor(Math.random() * 3)],
+        flipX: !fromLeft,
+        animPhase: Math.random() * 4
+    });
+}
+
+// 生成進店顧客
 function spawnCustomer() {
-    // 晚上 20:15 後停止進新客，準備打烊
     if (gameState.timeMinutes >= 20 * 60 + 15) return;
 
     const activeTables = getActiveTables();
@@ -1019,27 +1226,27 @@ function spawnCustomer() {
         activeTables.some(at => at.id === t.id) && !t.occupiedBy && !t.dirty
     );
 
-    // 場上排隊過多則暫緩
     const waitingCount = customers.filter(c => c.state === 'entering' || c.state === 'waiting').length;
     if (!freeTable && waitingCount >= 2) return;
 
-    const hasPet = Math.random() < 0.72; // 72% 機率是帶毛孩的飼主！
-    const petTypes = ['corgi', 'poodle', 'calico', 'husky'];
-    const humanColors = ['#e06c75', '#61afef', '#98c379', '#c678dd', '#e5c07b', '#56b6c2'];
+    const hasPet = Math.random() < 0.74;
+    const petTypes = ['corgi', 'poodle', 'calico', 'husky', 'shiba'];
+    const variants = ['office', 'student', 'couple_f', 'grandma'];
 
-    const id = 'cust_' + Date.now() + '_' + Math.floor(Math.random() * 999);
-    const cust = {
-        id,
-        x: POS.door.x,
-        y: POS.door.y,
-        targetX: POS.waitSpot.x + waitingCount * 28,
-        targetY: POS.waitSpot.y,
-        color: humanColors[Math.floor(Math.random() * humanColors.length)],
+    customers.push({
+        id: 'cust_' + Date.now() + '_' + Math.floor(Math.random() * 999),
+        gx: GRID_POS.door.gx,
+        gy: GRID_POS.door.gy + 1.2,
+        targetGx: GRID_POS.waitSpot.gx + waitingCount * 0.8,
+        targetGy: GRID_POS.waitSpot.gy,
+        variant: variants[Math.floor(Math.random() * variants.length)],
+        facing: 'back',
+        flipX: false,
         hasPet,
         petType: petTypes[Math.floor(Math.random() * petTypes.length)],
-        petX: POS.door.x - 16,
-        petY: POS.door.y + 8,
-        state: 'entering', // entering, waiting, to_seat, ordering, waiting_food, eating, leaving
+        petGx: GRID_POS.door.gx - 0.6,
+        petGy: GRID_POS.door.gy + 1.5,
+        state: 'entering',
         tableId: null,
         thinkTimer: 0,
         eatTimer: 0,
@@ -1047,30 +1254,37 @@ function spawnCustomer() {
         petDish: null,
         totalBill: 0,
         animPhase: Math.random() * 5
-    };
-
-    customers.push(cust);
+    });
 }
 
-// 輔助移動函式
-function moveTowards(entity, tx, ty, speed, dt) {
-    const dx = tx - entity.x;
-    const dy = ty - entity.y;
+// 網格平滑移動與朝向更新
+function moveGridTowards(entity, tGx, tGy, speed, dt) {
+    const dx = tGx - entity.gx;
+    const dy = tGy - entity.gy;
     const dist = Math.hypot(dx, dy);
-    if (dist <= speed * dt || dist < 1.5) {
-        entity.x = tx;
-        entity.y = ty;
+
+    if (dist > 0.02) {
+        // 根據等距螢幕投影方向判斷朝前(front)或朝後(back)與左右翻轉
+        const screenDx = dx - dy;
+        const screenDy = dx + dy;
+        entity.facing = screenDy >= 0 ? 'front' : 'back';
+        entity.flipX = screenDx < 0;
+    }
+
+    if (dist <= speed * dt || dist < 0.04) {
+        entity.gx = tGx;
+        entity.gy = tGy;
         return true;
     }
-    entity.x += (dx / dist) * speed * dt;
-    entity.y += (dy / dist) * speed * dt;
-    entity.animPhase += dt * 10;
+    entity.gx += (dx / dist) * speed * dt;
+    entity.gy += (dy / dist) * speed * dt;
+    entity.animPhase += dt * 9;
     return false;
 }
 
 /**
  * ============================================================================
- * 5. 主遊戲模擬更新迴圈 (Simulation Update)
+ * 6. 主遊戲模擬更新迴圈 (Simulation Update)
  * ============================================================================
  */
 function updateSimulation(dt) {
@@ -1078,7 +1292,7 @@ function updateSimulation(dt) {
 
     const scaledDt = dt * gameSpeed;
 
-    // 1. 推進遊戲時鐘 (1 現實秒 = 8 遊戲分鐘 -> 12 小時營業約 90 秒)
+    // 1. 推進遊戲時鐘
     gameState.timeMinutes += scaledDt * 8;
     if (gameState.timeMinutes >= 21 * 60) {
         gameState.timeMinutes = 21 * 60;
@@ -1086,9 +1300,24 @@ function updateSimulation(dt) {
         return;
     }
 
-    // 2. 根據魅力值與餐桌數量自動生成客人
+    // 2. 生成店外街景行人與進店顧客
+    passerbyTimer -= scaledDt;
+    if (passerbyTimer <= 0) {
+        spawnPasserby();
+        passerbyTimer = 3.5 + Math.random() * 3;
+    }
+    for (let i = passersby.length - 1; i >= 0; i--) {
+        const p = passersby[i];
+        const dir = p.targetGx > p.gx ? 1 : -1;
+        p.gx += dir * 1.4 * scaledDt;
+        p.animPhase += scaledDt * 8;
+        if ((dir > 0 && p.gx >= p.targetGx) || (dir < 0 && p.gx <= p.targetGx)) {
+            passersby.splice(i, 1);
+        }
+    }
+
     const appeal = getTotalAppeal();
-    const spawnInterval = Math.max(2.6, 7.5 - appeal * 0.035);
+    const spawnInterval = Math.max(2.6, 7.2 - appeal * 0.035);
     spawnTimer -= scaledDt;
     if (spawnTimer <= 0) {
         spawnCustomer();
@@ -1100,7 +1329,7 @@ function updateSimulation(dt) {
     if (chef) {
         const chefLv = gameState.staffPets.chef_leo || 1;
         const machineLv = gameState.facilities.espresso_machine || 0;
-        const cookDuration = Math.max(0.9, 2.6 - chefLv * 0.16 - machineLv * 0.12);
+        const cookDuration = Math.max(0.9, 2.5 - chefLv * 0.16 - machineLv * 0.12);
 
         if (!chef.cookingOrder && kitchenOrders.length > 0) {
             chef.cookingOrder = kitchenOrders.shift();
@@ -1110,8 +1339,9 @@ function updateSimulation(dt) {
         if (chef.cookingOrder) {
             chef.animPhase += scaledDt * 12;
             chef.cookTimer -= scaledDt;
-            if (Math.random() < scaledDt * 4) {
-                spawnSmokeParticle(chef.x, chef.y - 16);
+            const isoChef = gridToIso(chef.gx, chef.gy);
+            if (Math.random() < scaledDt * 4.5) {
+                spawnSmokeParticle(isoChef.x, isoChef.y);
             }
             if (chef.cookTimer <= 0) {
                 readyDishes.push(chef.cookingOrder);
@@ -1120,34 +1350,31 @@ function updateSimulation(dt) {
         }
     }
 
-    // 4. 更新外場店員 AI (送餐 > 收桌 > 待機)
+    // 4. 更新外場店員 AI
     staffEntities.filter(s => s.role === 'waiter').forEach((waiter, idx) => {
         const lv = gameState.staffPets[waiter.id] || 1;
-        const moveSpeed = 95 + lv * 14;
+        const moveSpeed = 2.6 + lv * 0.32;
 
         if (waiter.state === 'idle') {
-            // 優先檢查櫃檯是否有做好的餐點
             if (readyDishes.length > 0) {
                 waiter.state = 'to_counter';
-                waiter.targetX = POS.counterPickup.x;
-                waiter.targetY = POS.counterPickup.y;
+                waiter.targetGx = GRID_POS.counterPickup.gx;
+                waiter.targetGy = GRID_POS.counterPickup.gy;
                 return;
             }
-            // 其次檢查是否有髒桌子需要清理
             const dirtyTable = tablesState.find(t =>
                 t.dirty && !staffEntities.some(other => other !== waiter && other.targetTableId === t.id)
             );
             if (dirtyTable) {
                 waiter.state = 'to_table_clean';
                 waiter.targetTableId = dirtyTable.id;
-                waiter.targetX = dirtyTable.x;
-                waiter.targetY = dirtyTable.y - 24;
+                waiter.targetGx = dirtyTable.gx - 0.6;
+                waiter.targetGy = dirtyTable.gy - 0.6;
                 return;
             }
-            // 回到待機點
-            moveTowards(waiter, POS.staffIdle.x + idx * 34, POS.staffIdle.y, moveSpeed * 0.7, scaledDt);
+            moveGridTowards(waiter, GRID_POS.staffIdle.gx + idx * 0.9, GRID_POS.staffIdle.gy, moveSpeed * 0.7, scaledDt);
         } else if (waiter.state === 'to_counter') {
-            if (moveTowards(waiter, waiter.targetX, waiter.targetY, moveSpeed, scaledDt)) {
+            if (moveGridTowards(waiter, waiter.targetGx, waiter.targetGy, moveSpeed, scaledDt)) {
                 if (readyDishes.length > 0) {
                     const dishOrder = readyDishes.shift();
                     const table = tablesState.find(t => t.id === dishOrder.tableId);
@@ -1155,8 +1382,8 @@ function updateSimulation(dt) {
                         waiter.carryingDish = dishOrder;
                         waiter.targetTableId = table.id;
                         waiter.state = 'to_table_deliver';
-                        waiter.targetX = table.x;
-                        waiter.targetY = table.y - 24;
+                        waiter.targetGx = table.gx - 0.6;
+                        waiter.targetGy = table.gy - 0.6;
                     } else {
                         waiter.state = 'idle';
                     }
@@ -1165,23 +1392,24 @@ function updateSimulation(dt) {
                 }
             }
         } else if (waiter.state === 'to_table_deliver') {
-            if (moveTowards(waiter, waiter.targetX, waiter.targetY, moveSpeed, scaledDt)) {
+            if (moveGridTowards(waiter, waiter.targetGx, waiter.targetGy, moveSpeed, scaledDt)) {
                 const cust = customers.find(c => c.tableId === waiter.targetTableId && c.state === 'waiting_food');
                 if (cust) {
                     cust.state = 'eating';
                     cust.eatTimer = 4.2;
-                    spawnHeartParticle(cust.x, cust.y - 16);
+                    const isoC = gridToIso(cust.gx, cust.gy);
+                    spawnHeartParticle(isoC.x, isoC.y - 14);
                 }
                 waiter.carryingDish = null;
                 waiter.targetTableId = null;
                 waiter.state = 'idle';
             }
         } else if (waiter.state === 'to_table_clean') {
-            if (moveTowards(waiter, waiter.targetX, waiter.targetY, moveSpeed, scaledDt)) {
+            if (moveGridTowards(waiter, waiter.targetGx, waiter.targetGy, moveSpeed, scaledDt)) {
                 const table = tablesState.find(t => t.id === waiter.targetTableId);
                 if (table && table.dirty) {
                     table.cleanProgress += scaledDt * (1.2 + lv * 0.25);
-                    waiter.animPhase += scaledDt * 15;
+                    waiter.animPhase += scaledDt * 14;
                     if (table.cleanProgress >= 1.0) {
                         table.dirty = false;
                         table.cleanProgress = 0;
@@ -1200,11 +1428,10 @@ function updateSimulation(dt) {
     const activeTables = getActiveTables();
     for (let i = customers.length - 1; i >= 0; i--) {
         const c = customers[i];
-        const custSpeed = 82;
+        const custSpeed = 2.2;
 
         if (c.state === 'entering' || c.state === 'waiting') {
-            moveTowards(c, c.targetX, c.targetY, custSpeed, scaledDt);
-            // 尋找空桌
+            moveGridTowards(c, c.targetGx, c.targetGy, custSpeed, scaledDt);
             const freeTable = tablesState.find(t =>
                 activeTables.some(at => at.id === t.id) && !t.occupiedBy && !t.dirty
             );
@@ -1212,20 +1439,21 @@ function updateSimulation(dt) {
                 freeTable.occupiedBy = c.id;
                 c.tableId = freeTable.id;
                 c.state = 'to_seat';
-                c.targetX = freeTable.x - 22;
-                c.targetY = freeTable.y;
+                c.targetGx = freeTable.gx - 0.55;
+                c.targetGy = freeTable.gy + 0.1;
             } else {
                 c.state = 'waiting';
             }
         } else if (c.state === 'to_seat') {
-            if (moveTowards(c, c.targetX, c.targetY, custSpeed, scaledDt)) {
+            if (moveGridTowards(c, c.targetGx, c.targetGy, custSpeed, scaledDt)) {
                 c.state = 'ordering';
+                c.facing = 'front';
+                c.flipX = false;
                 c.thinkTimer = 1.4;
             }
         } else if (c.state === 'ordering') {
             c.thinkTimer -= scaledDt;
             if (c.thinkTimer <= 0) {
-                // 挑選已解鎖的人類餐點與寵物鮮食
                 const unlockedHuman = MENU_DB.filter(m => m.type === 'human' && (gameState.menu[m.id] || 0) > 0);
                 const unlockedPet = MENU_DB.filter(m => m.type === 'pet' && (gameState.menu[m.id] || 0) > 0);
 
@@ -1237,7 +1465,6 @@ function updateSimulation(dt) {
                     bill += getDishPrice(c.petDish);
                 }
 
-                // 設施與毛孩小費加成
                 let tipMultiplier = 1.0;
                 if (c.tableId === 'table_3') tipMultiplier += 0.10;
                 if (c.tableId === 'table_4') tipMultiplier += 0.20;
@@ -1255,11 +1482,11 @@ function updateSimulation(dt) {
             }
         } else if (c.state === 'eating') {
             c.eatTimer -= scaledDt;
-            if (Math.random() < scaledDt * 1.5) {
-                spawnHeartParticle(c.x + 12, c.y - 12);
+            const isoC = gridToIso(c.gx, c.gy);
+            if (Math.random() < scaledDt * 1.6) {
+                spawnHeartParticle(isoC.x + 8, isoC.y - 14);
             }
             if (c.eatTimer <= 0) {
-                // 結帳離開！
                 gameState.gold += c.totalBill;
                 gameState.totalRevenue += c.totalBill;
                 gameState.dailyStats.revenue += c.totalBill;
@@ -1276,11 +1503,10 @@ function updateSimulation(dt) {
                     gameState.dailyStats.pets += 1;
                 }
 
-                // 評價微幅上升
                 gameState.rating = Math.min(5.0, +(gameState.rating + 0.025).toFixed(2));
 
-                addFloatingText(c.x, c.y - 26, `+$${c.totalBill}`, '#ffd447');
-                addFloatingText(c.x + 18, c.y - 42, `+${heartGain}💖`, '#ff85b3');
+                addFloatingText(isoC.x, isoC.y - 34, `+${c.totalBill}G`, '#ffd447');
+                addFloatingText(isoC.x + 16, isoC.y - 50, `+${heartGain}♥`, '#ff85b3');
                 audio.playCoin();
 
                 const table = tablesState.find(t => t.id === c.tableId);
@@ -1290,58 +1516,56 @@ function updateSimulation(dt) {
                     table.cleanProgress = 0;
                 }
                 c.state = 'leaving';
-                c.targetX = POS.door.x;
-                c.targetY = POS.door.y;
+                c.targetGx = GRID_POS.door.gx;
+                c.targetGy = GRID_POS.door.gy + 1.2;
             }
         } else if (c.state === 'leaving') {
-            if (moveTowards(c, c.targetX, c.targetY, custSpeed * 1.1, scaledDt)) {
+            if (moveGridTowards(c, c.targetGx, c.targetGy, custSpeed * 1.15, scaledDt)) {
                 customers.splice(i, 1);
                 continue;
             }
         }
 
-        // 更新隨行毛孩跟隨位置
+        // 隨行毛孩跟隨座標
         if (c.hasPet) {
-            let ptx = c.x - 18;
-            let pty = c.y + 10;
+            let ptx = c.gx - 0.55;
+            let pty = c.gy + 0.45;
             if (c.state === 'ordering' || c.state === 'waiting_food' || c.state === 'eating') {
-                // 坐下時毛孩乖乖待在餐桌右側地面
-                ptx = c.x + 42;
-                pty = c.y + 6;
+                ptx = c.gx + 1.15;
+                pty = c.gy + 0.35;
             }
-            c.petX += (ptx - c.petX) * Math.min(1, scaledDt * 6);
-            c.petY += (pty - c.petY) * Math.min(1, scaledDt * 6);
+            c.petGx += (ptx - c.petGx) * Math.min(1, scaledDt * 6);
+            c.petGy += (pty - c.petGy) * Math.min(1, scaledDt * 6);
         }
     }
 
-    // 6. 更新駐店毛孩巡邏與治癒愛心光環
+    // 6. 更新駐店毛孩巡邏與產生愛心 ♥
     mascotEntities.forEach(m => {
         const lv = gameState.staffPets[m.id] || 1;
         m.waitTimer -= scaledDt;
         if (m.waitTimer <= 0) {
-            if (moveTowards(m, m.targetX, m.targetY, 42 + lv * 4, scaledDt)) {
-                // 抵達後休息一下並重新挑選草皮區或餐桌走道目標
-                m.waitTimer = 1.5 + Math.random() * 2;
+            if (moveGridTowards(m, m.targetGx, m.targetGy, 1.35 + lv * 0.12, scaledDt)) {
+                m.waitTimer = 1.4 + Math.random() * 2;
                 const goGrass = (gameState.facilities.grass_zone || 0) > 0 && Math.random() < 0.65;
                 if (goGrass) {
-                    m.targetX = 595 + Math.random() * 110;
-                    m.targetY = 175 + Math.random() * 115;
+                    m.targetGx = 8.9 + Math.random() * 1.8;
+                    m.targetGy = 3.8 + Math.random() * 2.1;
                 } else {
-                    m.targetX = 280 + Math.random() * 280;
-                    m.targetY = 155 + Math.random() * 190;
+                    m.targetGx = 4.2 + Math.random() * 4.5;
+                    m.targetGy = 4.5 + Math.random() * 4.0;
                 }
             }
         }
 
-        // 定期產生愛心研究點
         m.heartTimer -= scaledDt;
         if (m.heartTimer <= 0) {
-            m.heartTimer = Math.max(3.5, 8.5 - lv * 0.6);
+            m.heartTimer = Math.max(3.5, 8.2 - lv * 0.55);
             const bonusHearts = 1 + Math.floor(lv / 3);
             gameState.hearts += bonusHearts;
             gameState.dailyStats.hearts += bonusHearts;
-            spawnHeartParticle(m.x, m.y - 12);
-            addFloatingText(m.x, m.y - 20, `+${bonusHearts}💖`, '#ff9ec4');
+            const isoM = gridToIso(m.gx, m.gy);
+            spawnHeartParticle(isoM.x, isoM.y - 12);
+            addFloatingText(isoM.x, isoM.y - 26, `+${bonusHearts}♥`, '#ff9ec4');
         }
     });
 
@@ -1364,7 +1588,7 @@ function updateSimulation(dt) {
 
 /**
  * ============================================================================
- * 6. 開羅風高精緻像素繪圖引擎 (HTML5 Canvas Renderer)
+ * 7. 開羅風 2.5D 等距斜視角像素繪圖引擎 (2.5D Isometric Pixel Renderer)
  * ============================================================================
  */
 const canvas = document.getElementById('gameCanvas');
@@ -1380,478 +1604,591 @@ function resizeCanvas() {
 }
 window.addEventListener('resize', resizeCanvas);
 
-// 繪製圓角氣泡框
-function drawSpeechBubble(x, y, iconText, bgColor = '#ffffff', borderColor = '#5c3a21') {
+// 繪製單格 2.5D 等距菱形地板磚
+function drawIsoDiamond(gx, gy, wTiles, hTiles, fillColor, strokeColor = null) {
+    const p0 = gridToIso(gx, gy);
+    const p1 = gridToIso(gx + wTiles, gy);
+    const p2 = gridToIso(gx + wTiles, gy + hTiles);
+    const p3 = gridToIso(gx, gy + hTiles);
+
+    ctx.beginPath();
+    ctx.moveTo(p0.x, p0.y);
+    ctx.lineTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.lineTo(p3.x, p3.y);
+    ctx.closePath();
+
+    ctx.fillStyle = fillColor;
+    ctx.fill();
+    if (strokeColor) {
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+    }
+}
+
+// 繪製 2.5D 等距立體方塊 (有頂面、左側陰影面、右側高光面與 1px 深色輪廓)
+function drawIsoBox(gx, gy, wTiles, dTiles, heightPx, colors) {
+    const { top, left, right, outline = '#2c1e16' } = colors;
+    const p0 = gridToIso(gx, gy);
+    const p1 = gridToIso(gx + wTiles, gy);
+    const p2 = gridToIso(gx + wTiles, gy + dTiles);
+    const p3 = gridToIso(gx, gy + dTiles);
+
     ctx.save();
+    ctx.lineWidth = 1.5;
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = outline;
+
+    // 左側面 (朝左下)
+    ctx.beginPath();
+    ctx.moveTo(p3.x, p3.y - heightPx);
+    ctx.lineTo(p2.x, p2.y - heightPx);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.lineTo(p3.x, p3.y);
+    ctx.closePath();
+    ctx.fillStyle = left;
+    ctx.fill();
+    ctx.stroke();
+
+    // 右側面 (朝右下)
+    ctx.beginPath();
+    ctx.moveTo(p2.x, p2.y - heightPx);
+    ctx.lineTo(p1.x, p1.y - heightPx);
+    ctx.lineTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.closePath();
+    ctx.fillStyle = right;
+    ctx.fill();
+    ctx.stroke();
+
+    // 頂面
+    ctx.beginPath();
+    ctx.moveTo(p0.x, p0.y - heightPx);
+    ctx.lineTo(p1.x, p1.y - heightPx);
+    ctx.lineTo(p2.x, p2.y - heightPx);
+    ctx.lineTo(p3.x, p3.y - heightPx);
+    ctx.closePath();
+    ctx.fillStyle = top;
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.restore();
+}
+
+// 繪製 2.5D 餐廳後牆 (左後牆 & 右後牆，附窗戶、寵物畫框、菜單黑板)
+function drawIsoBackWalls() {
+    const wallH = 68;
+    const cTop = gridToIso(0, 0);
+    const cLeft = gridToIso(0, GRID_SIZE);
+    const cRight = gridToIso(GRID_SIZE, 0);
+
+    ctx.save();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#2c1e16';
+
+    // 1. 左後牆 (沿 gx = 0, gy: 0 -> 12)
+    ctx.beginPath();
+    ctx.moveTo(cTop.x, cTop.y);
+    ctx.lineTo(cLeft.x, cLeft.y);
+    ctx.lineTo(cLeft.x, cLeft.y - wallH);
+    ctx.lineTo(cTop.x, cTop.y - wallH);
+    ctx.closePath();
+    ctx.fillStyle = '#e8cfa6';
+    ctx.fill();
+    ctx.stroke();
+
+    // 左後牆木質腰板
+    ctx.beginPath();
+    ctx.moveTo(cTop.x, cTop.y);
+    ctx.lineTo(cLeft.x, cLeft.y);
+    ctx.lineTo(cLeft.x, cLeft.y - 24);
+    ctx.lineTo(cTop.x, cTop.y - 24);
+    ctx.closePath();
+    ctx.fillStyle = '#b57642';
+    ctx.fill();
+    ctx.stroke();
+
+    // 2. 右後牆 (沿 gy = 0, gx: 0 -> 12)
+    ctx.beginPath();
+    ctx.moveTo(cTop.x, cTop.y);
+    ctx.lineTo(cRight.x, cRight.y);
+    ctx.lineTo(cRight.x, cRight.y - wallH);
+    ctx.lineTo(cTop.x, cTop.y - wallH);
+    ctx.closePath();
+    ctx.fillStyle = '#f5dfc0';
+    ctx.fill();
+    ctx.stroke();
+
+    // 右後牆木質腰板
+    ctx.beginPath();
+    ctx.moveTo(cTop.x, cTop.y);
+    ctx.lineTo(cRight.x, cRight.y);
+    ctx.lineTo(cRight.x, cRight.y - 24);
+    ctx.lineTo(cTop.x, cTop.y - 24);
+    ctx.closePath();
+    ctx.fillStyle = '#c9874e';
+    ctx.fill();
+    ctx.stroke();
+
+    // 3. 右後牆裝飾：兩扇採光玻璃窗 + 寵物相框 + 菜單黑板
+    const isEvening = gameState.timeMinutes >= 17.5 * 60;
+    const skyColor = isEvening ? '#4b5d9e' : '#a8e6ff';
+
+    [4.2, 6.8].forEach(wx => {
+        const w0 = gridToIso(wx, 0);
+        const w1 = gridToIso(wx + 1.4, 0);
+        ctx.beginPath();
+        ctx.moveTo(w0.x, w0.y - 28);
+        ctx.lineTo(w1.x, w1.y - 28);
+        ctx.lineTo(w1.x, w1.y - 54);
+        ctx.lineTo(w0.x, w0.y - 54);
+        ctx.closePath();
+        ctx.fillStyle = skyColor;
+        ctx.fill();
+        ctx.stroke();
+    });
+
+    // 菜單小黑板 (gx: 9.0 ~ 10.4)
+    const b0 = gridToIso(9.0, 0);
+    const b1 = gridToIso(10.4, 0);
+    ctx.beginPath();
+    ctx.moveTo(b0.x, b0.y - 28);
+    ctx.lineTo(b1.x, b1.y - 28);
+    ctx.lineTo(b1.x, b1.y - 52);
+    ctx.lineTo(b0.x, b0.y - 52);
+    ctx.closePath();
+    ctx.fillStyle = '#2d4739';
+    ctx.fill();
+    ctx.stroke();
+
+    // 左後牆寵物肖像畫框 (gy: 5.5 ~ 7.0)
+    const p0 = gridToIso(0, 5.5);
+    const p1 = gridToIso(0, 7.0);
+    ctx.beginPath();
+    ctx.moveTo(p0.x, p0.y - 30);
+    ctx.lineTo(p1.x, p1.y - 30);
+    ctx.lineTo(p1.x, p1.y - 52);
+    ctx.lineTo(p0.x, p0.y - 52);
+    ctx.closePath();
+    ctx.fillStyle = '#ffdf73';
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.restore();
+}
+
+// 繪製圓角開羅像素氣泡框
+function drawSpeechBubble(sx, sy, iconText, bgColor = '#ffffff') {
+    ctx.save();
+    const w = 32;
+    const h = 22;
+    const bx = Math.round(sx - w / 2);
+    const by = Math.round(sy - h - 38);
+
     ctx.fillStyle = bgColor;
-    ctx.strokeStyle = borderColor;
-    ctx.lineWidth = 2.5;
-
-    const w = 34;
-    const h = 24;
-    const bx = x - w / 2;
-    const by = y - h - 18;
+    ctx.strokeStyle = '#2c1e16';
+    ctx.lineWidth = 2;
 
     ctx.beginPath();
-    ctx.roundRect(bx, by, w, h, 6);
+    ctx.roundRect(bx, by, w, h, 4);
     ctx.fill();
     ctx.stroke();
 
-    // 氣泡小尾巴
+    // 氣泡尖角
     ctx.beginPath();
-    ctx.moveTo(x - 4, by + h);
-    ctx.lineTo(x, by + h + 5);
-    ctx.lineTo(x + 4, by + h);
+    ctx.moveTo(sx - 3, by + h);
+    ctx.lineTo(sx, by + h + 4);
+    ctx.lineTo(sx + 3, by + h);
     ctx.fill();
     ctx.stroke();
 
-    ctx.font = '14px sans-serif';
+    ctx.font = '13px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(iconText, x, by + h / 2 + 1);
+    ctx.fillText(iconText, sx, by + h / 2 + 1);
     ctx.restore();
 }
 
-// 繪製可愛像素小人 (主廚、店員、客人)
-function drawPixelPerson(x, y, options = {}) {
-    const {
-        shirtColor = '#4a90e2',
-        hairColor = '#3e2716',
-        isChef = false,
-        isWaiter = false,
-        animPhase = 0,
-        carrying = false
-    } = options;
-
-    const bob = Math.abs(Math.sin(animPhase)) * 2.5;
-    ctx.save();
-    ctx.translate(Math.round(x), Math.round(y));
-
-    // 腳底陰影
-    ctx.fillStyle = 'rgba(0,0,0,0.22)';
-    ctx.beginPath();
-    ctx.ellipse(0, 12, 10, 4.5, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // 身體
-    ctx.fillStyle = isChef ? '#ffffff' : (isWaiter ? '#e87a3e' : shirtColor);
-    ctx.fillRect(-7, -4 - bob, 14, 14);
-    ctx.strokeStyle = '#2b190d';
-    ctx.lineWidth = 1.5;
-    ctx.strokeRect(-7, -4 - bob, 14, 14);
-
-    // 圍裙細節
-    if (isWaiter) {
-        ctx.fillStyle = '#fff9eb';
-        ctx.fillRect(-5, 1 - bob, 10, 8);
-    }
-
-    // 頭部
-    ctx.fillStyle = '#ffdfc4';
-    ctx.fillRect(-7, -18 - bob, 14, 14);
-    ctx.strokeRect(-7, -18 - bob, 14, 14);
-
-    // 頭髮或廚師帽
-    if (isChef) {
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(-8, -27 - bob, 16, 10);
-        ctx.strokeRect(-8, -27 - bob, 16, 10);
-    } else {
-        ctx.fillStyle = hairColor;
-        ctx.fillRect(-7, -19 - bob, 14, 5);
-    }
-
-    // 開羅風豆豆眼
-    ctx.fillStyle = '#2b190d';
-    ctx.fillRect(-4, -12 - bob, 2, 3);
-    ctx.fillRect(2, -12 - bob, 2, 3);
-
-    // 端盤子
-    if (carrying) {
-        ctx.fillStyle = '#d9a05b';
-        ctx.fillRect(-10, -4 - bob, 20, 3);
-        ctx.fillStyle = '#ff6b6b';
-        ctx.beginPath();
-        ctx.arc(0, -7 - bob, 4, 0, Math.PI * 2);
-        ctx.fill();
-    }
-
-    ctx.restore();
-}
-
-// 繪製可愛像素狗狗 / 貓咪
-function drawPixelPet(x, y, species = 'shiba', animPhase = 0, nameTag = null) {
-    const bob = Math.abs(Math.sin(animPhase * 1.2)) * 2;
-    ctx.save();
-    ctx.translate(Math.round(x), Math.round(y));
-
-    // 陰影
-    ctx.fillStyle = 'rgba(0,0,0,0.2)';
-    ctx.beginPath();
-    ctx.ellipse(0, 7, 9, 4, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    let bodyColor = '#e69d45';
-    let bellyColor = '#fff6e5';
-    let isCat = false;
-
-    if (species === 'golden') { bodyColor = '#f2c166'; bellyColor = '#fff3d6'; }
-    else if (species === 'shiba') { bodyColor = '#e07a35'; bellyColor = '#ffffff'; }
-    else if (species === 'corgi') { bodyColor = '#d97b38'; bellyColor = '#ffffff'; }
-    else if (species === 'poodle') { bodyColor = '#8c5332'; bellyColor = '#a66844'; }
-    else if (species === 'husky') { bodyColor = '#6c7a89'; bellyColor = '#ffffff'; }
-    else if (species === 'orange_cat') { bodyColor = '#f59b42'; bellyColor = '#fff0d4'; isCat = true; }
-    else if (species === 'calico') { bodyColor = '#ffffff'; bellyColor = '#f08a3c'; isCat = true; }
-
-    ctx.strokeStyle = '#2b190d';
-    ctx.lineWidth = 1.5;
-
-    // 尾巴
-    const tailWag = Math.sin(animPhase * 3) * 3;
-    ctx.fillStyle = bodyColor;
-    ctx.fillRect(-11, -3 - bob + tailWag * 0.4, 4, 5);
-
-    // 身體
-    ctx.fillRect(-8, -4 - bob, 15, 10);
-    ctx.strokeRect(-8, -4 - bob, 15, 10);
-
-    // 頭部
-    ctx.fillRect(1, -11 - bob, 11, 10);
-    ctx.strokeRect(1, -11 - bob, 11, 10);
-
-    // 臉頰/吻部
-    ctx.fillStyle = bellyColor;
-    ctx.fillRect(5, -6 - bob, 6, 4);
-
-    // 耳朵
-    ctx.fillStyle = isCat ? '#d96b27' : '#5c3a21';
-    if (isCat) {
-        // 尖貓耳
-        ctx.beginPath();
-        ctx.moveTo(2, -11 - bob); ctx.lineTo(4, -16 - bob); ctx.lineTo(6, -11 - bob);
-        ctx.moveTo(7, -11 - bob); ctx.lineTo(9, -16 - bob); ctx.lineTo(11, -11 - bob);
-        ctx.fill();
-    } else {
-        ctx.fillRect(2, -14 - bob, 3, 4);
-        ctx.fillRect(8, -14 - bob, 3, 4);
-    }
-
-    // 眼睛與鼻子
-    ctx.fillStyle = '#1f1209';
-    ctx.fillRect(4, -8 - bob, 2, 2);
-    ctx.fillRect(9, -8 - bob, 2, 2);
-    ctx.fillRect(10, -5 - bob, 2, 2);
-
-    // 駐店毛孩名牌
-    if (nameTag) {
-        ctx.font = 'bold 10px "Noto Sans TC", sans-serif';
+// 繪製 2.5D 等距餐桌與兩張木椅
+function drawIsoDiningTable(t, isUnlocked) {
+    const pos = gridToIso(t.gx, t.gy);
+    if (!isUnlocked) {
+        // 未擴建的虛線菱形地標
+        ctx.save();
+        drawIsoDiamond(t.gx - 0.5, t.gy - 0.5, 1.4, 1.4, 'rgba(92, 58, 33, 0.08)', 'rgba(92, 58, 33, 0.35)');
+        ctx.fillStyle = 'rgba(74, 44, 22, 0.65)';
+        ctx.font = 'bold 11px "DotGothic16", "Noto Sans TC", sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillStyle = 'rgba(62, 39, 22, 0.85)';
-        ctx.fillRect(-22, -28 - bob, 48, 13);
-        ctx.fillStyle = '#ffdf73';
-        ctx.fillText(nameTag, 2, -18 - bob);
+        ctx.fillText('可擴建座位', pos.x, pos.y + 8);
+        ctx.restore();
+        return;
     }
 
-    ctx.restore();
+    // 左側椅子
+    drawIsoBox(t.gx - 0.65, t.gy + 0.05, 0.45, 0.45, 9, {
+        top: '#d99152', left: '#a86432', right: '#bd753c'
+    });
+    // 右側椅子
+    drawIsoBox(t.gx + 0.85, t.gy + 0.05, 0.45, 0.45, 9, {
+        top: '#d99152', left: '#a86432', right: '#bd753c'
+    });
+
+    // 餐桌本體
+    const isVip = t.id === 'table_4';
+    drawIsoBox(t.gx - 0.15, t.gy - 0.25, 0.95, 0.95, 15, {
+        top: isVip ? '#ffe28a' : '#fff9eb',
+        left: isVip ? '#d99b26' : '#a86432',
+        right: isVip ? '#f2b84b' : '#c97e42'
+    });
+
+    // 桌上的食物或待清理餐盤
+    const cust = customers.find(c => c.tableId === t.id);
+    if (cust && cust.state === 'eating') {
+        ctx.font = '14px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(cust.humanDish ? cust.humanDish.icon : '🍽️', pos.x + 8, pos.y - 6);
+        if (cust.petDish) {
+            // 桌旁地面寵物鮮食碗
+            const bowlPos = gridToIso(t.gx + 0.95, t.gy + 0.85);
+            ctx.fillStyle = '#ff6b9d';
+            ctx.strokeStyle = '#2c1e16';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.ellipse(bowlPos.x, bowlPos.y, 7, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+        }
+    } else if (t.dirty) {
+        ctx.font = '13px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('🧹', pos.x + 8, pos.y - 6);
+    }
 }
 
-// 繪製整個餐廳場景
+// 繪製整個 2.5D 開羅風餐廳場景
 function renderScene() {
     if (!ctx) return;
     const scaleX = canvas.width / WORLD_W;
     const scaleY = canvas.height / WORLD_H;
 
     ctx.save();
+    ctx.imageSmoothingEnabled = false;
     ctx.scale(scaleX, scaleY);
 
-    // 1. 外部草地與木頭地板底色
-    ctx.fillStyle = '#73a857';
+    // 1. 戶外青草與天空背景
+    const isEvening = gameState.timeMinutes >= 17.5 * 60;
+    ctx.fillStyle = isEvening ? '#4e7a43' : '#74b856';
     ctx.fillRect(0, 0, WORLD_W, WORLD_H);
 
-    // 餐廳室內主木地板 (x: 40~760, y: 40~455)
-    ctx.fillStyle = '#e6c391';
-    ctx.fillRect(40, 40, 720, 415);
+    // 繪製戶外小花與灌木點綴
+    const bushes = [
+        { x: 95, y: 185 }, { x: 145, y: 155 }, { x: 735, y: 175 },
+        { x: 775, y: 215 }, { x: 80, y: 390 }, { x: 785, y: 380 }
+    ];
+    bushes.forEach(b => {
+        ctx.fillStyle = '#478532';
+        ctx.beginPath(); ctx.arc(b.x, b.y, 14, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#8ce063';
+        ctx.beginPath(); ctx.arc(b.x - 3, b.y - 4, 9, 0, Math.PI * 2); ctx.fill();
+    });
 
-    // 繪製木地板拼花紋路
-    ctx.strokeStyle = '#cfa772';
-    ctx.lineWidth = 1;
-    for (let y = 40; y < 455; y += 22) {
-        ctx.beginPath();
-        ctx.moveTo(40, y);
-        ctx.lineTo(760, y);
-        ctx.stroke();
-        const offset = (y / 22) % 2 === 0 ? 0 : 30;
-        for (let x = 40 + offset; x < 760; x += 60) {
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x, y + 22);
-            ctx.stroke();
+    // 2. 店外紅磚人行道街道 (gy: 12 ~ 13.8)
+    for (let gx = -2; gx <= 14; gx++) {
+        drawIsoDiamond(gx, 12.1, 1, 1.5, gx % 2 === 0 ? '#d98a6c' : '#c9795b', '#9e563c');
+    }
+
+    // 3. 繪製 12x12 餐廳室內 2.5D 地板磚
+    for (let gx = 0; gx < GRID_SIZE; gx++) {
+        for (let gy = 0; gy < GRID_SIZE; gy++) {
+            // 左上角廚房區域 (gx < 3.6 && gy < 3.6) 使用黑白復古咖啡廳方格磚
+            if (gx < 3.6 && gy < 3.6) {
+                const isEven = (gx + gy) % 2 === 0;
+                drawIsoDiamond(gx, gy, 1, 1, isEven ? '#f7f3eb' : '#cfc7b8', '#b5ac9c');
+            } else {
+                // 其餘區域使用溫馨原木拼花地板
+                const isAlt = (gx + gy) % 2 === 0;
+                drawIsoDiamond(gx, gy, 1, 1, isAlt ? '#e8c490' : '#deb67e', '#c99e63');
+            }
         }
     }
 
-    // 廚房黑白棋盤格地板 (x: 45~255, y: 45~245)
-    const tileSize = 18;
-    for (let gx = 45; gx < 252; gx += tileSize) {
-        for (let gy = 45; gy < 243; gy += tileSize) {
-            const isEven = (Math.floor(gx / tileSize) + Math.floor(gy / tileSize)) % 2 === 0;
-            ctx.fillStyle = isEven ? '#f7f3eb' : '#d6cfc2';
-            ctx.fillRect(gx, gy, tileSize, tileSize);
-        }
-    }
+    // 餐廳大門迎賓紅地毯 (gx: 5~6.5, gy: 10.8~12)
+    drawIsoDiamond(5.0, 10.8, 1.6, 1.3, '#d94848', '#ffd447');
 
-    // 2. 餐廳外牆與大門入口
-    ctx.strokeStyle = '#5c3a21';
-    ctx.lineWidth = 8;
-    ctx.strokeRect(40, 40, 720, 415);
+    // 4. 繪製 2.5D 立體後牆與壁掛裝飾
+    drawIsoBackWalls();
 
-    // 上方玻璃窗裝飾
-    [320, 440, 560].forEach(wx => {
-        ctx.fillStyle = '#a8e4ff';
-        ctx.fillRect(wx, 34, 70, 12);
-        ctx.strokeStyle = '#5c3a21';
-        ctx.lineWidth = 3;
-        ctx.strokeRect(wx, 34, 70, 12);
-    });
-
-    // 入口迎賓地毯 (左下角)
-    ctx.fillStyle = '#d9534f';
-    ctx.fillRect(75, 435, 70, 24);
-    ctx.strokeStyle = '#ffd447';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(78, 438, 64, 18);
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 10px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('WELCOME', 110, 450);
-
-    // 3. 廚房流理台、爐灶與出餐吧台
-    // 爐灶區
-    ctx.fillStyle = '#7f8c8d';
-    ctx.fillRect(55, 65, 130, 42);
-    ctx.strokeStyle = '#2c3e50';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(55, 65, 130, 42);
-    // 兩個爐火口
-    ctx.fillStyle = '#2c3e50';
-    ctx.beginPath(); ctx.arc(88, 86, 11, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(130, 86, 11, 0, Math.PI * 2); ctx.fill();
-
-    // 義式咖啡機 (若已解鎖)
-    if ((gameState.facilities.espresso_machine || 0) > 0) {
-        ctx.fillStyle = '#c0392b';
-        ctx.fillRect(150, 68, 28, 32);
-        ctx.strokeStyle = '#2b190d';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(150, 68, 28, 32);
-        ctx.fillStyle = '#ecf0f1';
-        ctx.fillRect(155, 74, 18, 10);
-    }
-
-    // L型出餐吧台
-    ctx.fillStyle = '#8c5327';
-    ctx.fillRect(240, 45, 22, 180);
-    ctx.fillRect(45, 225, 217, 22);
-    ctx.strokeStyle = '#4a2810';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(240, 45, 22, 180);
-    ctx.strokeRect(45, 225, 217, 22);
-
-    // 吧台上的待送餐點盤子
-    readyDishes.slice(0, 4).forEach((d, idx) => {
-        const py = 120 + idx * 24;
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.arc(251, py, 8, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = '#e87a3e';
-        ctx.beginPath();
-        ctx.arc(251, py, 4, 0, Math.PI * 2);
-        ctx.fill();
-    });
-
-    // 4. 繪製已解鎖的寵物設施 (草皮區、貓跳台、寵物飲水機)
+    // 5. 繪製室內草皮遊戲區 (若已解鎖，鋪設在地板上並加白色小柵欄)
     if ((gameState.facilities.grass_zone || 0) > 0) {
-        ctx.fillStyle = '#68b849';
-        ctx.beginPath();
-        ctx.roundRect(575, 155, 150, 155, 14);
-        ctx.fill();
-        ctx.strokeStyle = '#3f7d29';
-        ctx.lineWidth = 3;
-        ctx.stroke();
+        drawIsoDiamond(8.6, 3.6, 2.7, 2.7, '#68c149', '#3d8226');
+        // 草皮上的玩具球
+        const ballPos = gridToIso(9.5, 5.4);
+        ctx.fillStyle = '#ff5964';
+        ctx.strokeStyle = '#2c1e16';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(ballPos.x, ballPos.y, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
 
-        // 草皮上的玩具球與小骨頭
-        ctx.fillStyle = '#ff6b6b';
-        ctx.beginPath(); ctx.arc(620, 260, 7, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#ffd447';
-        ctx.beginPath(); ctx.arc(690, 195, 6, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = 'rgba(255,255,255,0.75)';
-        ctx.font = 'bold 11px "Noto Sans TC", sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('🌿 毛孩遊戲區', 650, 173);
+        // 白色可愛矮柵欄
+        [8.7, 9.7, 10.7].forEach(fgx => {
+            drawIsoBox(fgx, 3.6, 0.25, 0.25, 11, { top: '#ffffff', left: '#dce3eb', right: '#eef2f7' });
+        });
     }
 
-    if ((gameState.facilities.cat_tower || 0) > 0) {
-        const tx = 650, ty = 95;
-        ctx.fillStyle = '#d4a373';
-        ctx.strokeStyle = '#5c3a21';
-        ctx.lineWidth = 2.5;
-        // 底座與柱子
-        ctx.fillRect(tx - 24, ty + 14, 48, 12);
-        ctx.strokeRect(tx - 24, ty + 14, 48, 12);
-        ctx.fillRect(tx - 6, ty - 28, 12, 42);
-        ctx.strokeRect(tx - 6, ty - 28, 12, 42);
-        // 貓窩平台
-        ctx.fillStyle = '#faedcd';
-        ctx.fillRect(tx - 20, ty - 34, 40, 10);
-        ctx.strokeRect(tx - 20, ty - 34, 40, 10);
-    }
+    // 6. 收集所有 2.5D 立體物件與動態角色，依照深度 (gx + gy) 排序繪製！
+    const depthObjects = [];
 
-    if ((gameState.facilities.pet_fountain || 0) > 0) {
-        const fx = 245, fy = 315;
-        ctx.fillStyle = '#4ea8de';
-        ctx.strokeStyle = '#1d4e89';
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.arc(fx, fy, 15, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = '#caf0f8';
-        ctx.beginPath();
-        ctx.arc(fx, fy, 7, 0, Math.PI * 2);
-        ctx.fill();
-    }
-
-    // 5. 繪製餐桌與椅子
-    const activeTables = getActiveTables();
-    tablesState.forEach(t => {
-        const isUnlocked = activeTables.some(at => at.id === t.id);
-        if (!isUnlocked) {
-            // 未解鎖空地虛線框
-            ctx.save();
-            ctx.strokeStyle = 'rgba(92, 58, 33, 0.35)';
-            ctx.setLineDash([5, 5]);
-            ctx.lineWidth = 2;
-            ctx.strokeRect(t.x - 26, t.y - 20, 52, 40);
-            ctx.fillStyle = 'rgba(92, 58, 33, 0.45)';
-            ctx.font = '11px "Noto Sans TC", sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('可擴建座位', t.x, t.y + 4);
-            ctx.restore();
-            return;
+    // 廚房爐灶與料理台 (gx: 0.3~2.8, gy: 0.3~1.1)
+    depthObjects.push({
+        depth: 1.2,
+        draw: () => {
+            drawIsoBox(0.3, 0.3, 2.6, 0.9, 20, {
+                top: '#dce3eb', left: '#8d99ae', right: '#adb5bd'
+            });
+            // 義式咖啡機
+            if ((gameState.facilities.espresso_machine || 0) > 0) {
+                drawIsoBox(2.0, 0.4, 0.7, 0.7, 32, {
+                    top: '#ff6b6b', left: '#c92a2a', right: '#e03131'
+                });
+            }
         }
+    });
 
-        // 左右兩張椅子
-        ctx.fillStyle = '#a86432';
-        ctx.strokeStyle = '#4a2810';
-        ctx.lineWidth = 2;
-        ctx.fillRect(t.x - 32, t.y - 10, 12, 20);
-        ctx.strokeRect(t.x - 32, t.y - 10, 12, 20);
-        ctx.fillRect(t.x + 20, t.y - 10, 12, 20);
-        ctx.strokeRect(t.x + 20, t.y - 10, 12, 20);
-
-        // 桌面
-        ctx.fillStyle = t.id === 'table_4' ? '#f7d08a' : '#c97e42';
-        ctx.beginPath();
-        ctx.roundRect(t.x - 20, t.y - 18, 40, 36, 6);
-        ctx.fill();
-        ctx.stroke();
-
-        // 桌布紋飾
-        ctx.fillStyle = '#fff9eb';
-        ctx.fillRect(t.x - 14, t.y - 12, 28, 24);
-
-        // 桌上的食物或待清理餐盤
-        const cust = customers.find(c => c.tableId === t.id);
-        if (cust && cust.state === 'eating') {
-            ctx.font = '14px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(cust.humanDish ? cust.humanDish.icon : '🍽️', t.x - 4, t.y + 4);
-            if (cust.petDish) {
-                // 寵物鮮食碗放在桌旁地面
-                ctx.fillStyle = '#ff85b3';
+    // L 型出餐吧台與甜點展示櫃
+    depthObjects.push({
+        depth: 3.6,
+        draw: () => {
+            // 直向吧台
+            drawIsoBox(3.1, 0.4, 0.65, 2.9, 18, {
+                top: '#f7d08a', left: '#8c5327', right: '#b06d38'
+            });
+            // 橫向吧台
+            drawIsoBox(0.3, 3.1, 3.45, 0.65, 18, {
+                top: '#f7d08a', left: '#8c5327', right: '#b06d38'
+            });
+            // 吧台上的待送餐點盤子
+            readyDishes.slice(0, 4).forEach((d, idx) => {
+                const p = gridToIso(3.4, 1.2 + idx * 0.48);
+                ctx.fillStyle = '#ffffff';
+                ctx.strokeStyle = '#2c1e16';
+                ctx.lineWidth = 1.5;
                 ctx.beginPath();
-                ctx.arc(t.x + 32, t.y + 14, 6, 0, Math.PI * 2);
+                ctx.ellipse(p.x, p.y - 18, 7, 4, 0, 0, Math.PI * 2);
                 ctx.fill();
-            }
-        } else if (t.dirty) {
-            ctx.font = '13px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('🧹', t.x, t.y + 4);
-        }
-    });
-
-    // 6. 依 Y 軸深度排序並繪製所有動態角色 (員工、駐店毛孩、顧客與顧客毛孩)
-    const renderList = [];
-
-    staffEntities.forEach(s => {
-        renderList.push({
-            y: s.y,
-            draw: () => {
-                drawPixelPerson(s.x, s.y, {
-                    isChef: s.role === 'chef',
-                    isWaiter: s.role === 'waiter',
-                    animPhase: s.animPhase,
-                    carrying: !!s.carryingDish
-                });
-                if (s.role === 'chef' && s.cookingOrder) {
-                    drawSpeechBubble(s.x, s.y - 12, '🍳', '#fff3cd');
-                }
-            }
-        });
-    });
-
-    mascotEntities.forEach(m => {
-        const shortName = m.name.split('「')[1]?.replace('」', '') || m.name;
-        renderList.push({
-            y: m.y,
-            draw: () => drawPixelPet(m.x, m.y, m.species, m.animPhase, shortName)
-        });
-    });
-
-    customers.forEach(c => {
-        renderList.push({
-            y: c.y,
-            draw: () => {
-                drawPixelPerson(c.x, c.y, {
-                    shirtColor: c.color,
-                    animPhase: c.animPhase
-                });
-                // 頭頂氣泡提示狀態
-                if (c.state === 'waiting') {
-                    drawSpeechBubble(c.x, c.y - 6, '⏳', '#ffe8e8');
-                } else if (c.state === 'ordering') {
-                    drawSpeechBubble(c.x, c.y - 6, '💭', '#ffffff');
-                } else if (c.state === 'waiting_food' && c.humanDish) {
-                    drawSpeechBubble(c.x, c.y - 6, c.humanDish.icon, '#fff9eb');
-                } else if (c.state === 'eating') {
-                    drawSpeechBubble(c.x, c.y - 6, '😋', '#e8ffe8');
-                }
-            }
-        });
-        if (c.hasPet) {
-            renderList.push({
-                y: c.petY,
-                draw: () => drawPixelPet(c.petX, c.petY, c.petType, c.animPhase)
+                ctx.stroke();
             });
         }
     });
 
-    renderList.sort((a, b) => a.y - b.y);
-    renderList.forEach(item => item.draw());
+    // 三層豪華貓跳台 (gx: 10.2, gy: 1.8)
+    if ((gameState.facilities.cat_tower || 0) > 0) {
+        depthObjects.push({
+            depth: 10.2 + 1.8,
+            draw: () => {
+                drawIsoBox(9.9, 1.5, 0.9, 0.9, 8, { top: '#faedcd', left: '#b08968', right: '#d4a373' });
+                drawIsoBox(10.15, 1.75, 0.35, 0.35, 36, { top: '#d4a373', left: '#7f5539', right: '#9c6644' });
+                drawIsoBox(9.95, 1.55, 0.75, 0.75, 42, { top: '#fff3b0', left: '#b08968', right: '#ddb892' });
+            }
+        });
+    }
 
-    // 7. 繪製粒子與飄浮文字
+    // 活氧寵物飲水機 (gx: 2.5, gy: 6.2)
+    if ((gameState.facilities.pet_fountain || 0) > 0) {
+        depthObjects.push({
+            depth: 2.5 + 6.2,
+            draw: () => {
+                drawIsoBox(2.2, 5.9, 0.8, 0.8, 12, { top: '#90e0ef', left: '#0077b6', right: '#0096c7' });
+            }
+        });
+    }
+
+    // 盆栽植物裝飾 (門口兩側與角落)
+    [{ gx: 0.6, gy: 10.6 }, { gx: 10.8, gy: 10.6 }, { gx: 8.2, gy: 0.6 }].forEach(pl => {
+        depthObjects.push({
+            depth: pl.gx + pl.gy,
+            draw: () => {
+                drawIsoBox(pl.gx, pl.gy, 0.55, 0.55, 10, { top: '#5c3a21', left: '#a85d32', right: '#c97442' });
+                const p = gridToIso(pl.gx + 0.25, pl.gy + 0.25);
+                ctx.fillStyle = '#40916c';
+                ctx.strokeStyle = '#2c1e16';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath(); ctx.arc(p.x, p.y - 16, 10, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            }
+        });
+    });
+
+    // 餐桌群
+    const activeTables = getActiveTables();
+    tablesState.forEach(t => {
+        const isUnlocked = activeTables.some(at => at.id === t.id);
+        depthObjects.push({
+            depth: t.gx + t.gy,
+            draw: () => drawIsoDiningTable(t, isUnlocked)
+        });
+    });
+
+    // 員工精靈
+    staffEntities.forEach(s => {
+        depthObjects.push({
+            depth: s.gx + s.gy,
+            draw: () => {
+                const pos = gridToIso(s.gx, s.gy);
+                const frame = Math.floor(s.animPhase) % 2;
+                const hop = Math.abs(Math.sin(s.animPhase)) * 2;
+                const sprite = getChibiHumanSprite(s.variant, s.facing, frame);
+
+                // 腳底陰影
+                ctx.fillStyle = 'rgba(0,0,0,0.22)';
+                ctx.beginPath();
+                ctx.ellipse(pos.x, pos.y, 10, 5, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.save();
+                ctx.translate(Math.round(pos.x), Math.round(pos.y - hop));
+                if (s.flipX) ctx.scale(-1, 1);
+                ctx.drawImage(sprite, -16, -42, 32, 48);
+                ctx.restore();
+
+                // 端盤子圖示
+                if (s.carryingDish) {
+                    ctx.font = '14px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('🍽️', pos.x, pos.y - 26 - hop);
+                }
+                if (s.role === 'chef' && s.cookingOrder) {
+                    drawSpeechBubble(pos.x, pos.y - 4, '🍳', '#fff3cd');
+                }
+            }
+        });
+    });
+
+    // 駐店毛孩精靈
+    mascotEntities.forEach(m => {
+        depthObjects.push({
+            depth: m.gx + m.gy,
+            draw: () => {
+                const pos = gridToIso(m.gx, m.gy);
+                const frame = Math.floor(m.animPhase) % 2;
+                const hop = Math.abs(Math.sin(m.animPhase * 1.2)) * 2;
+                const sprite = getChibiPetSprite(m.species, frame);
+
+                ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                ctx.beginPath();
+                ctx.ellipse(pos.x, pos.y, 9, 4.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.save();
+                ctx.translate(Math.round(pos.x), Math.round(pos.y - hop));
+                if (m.flipX) ctx.scale(-1, 1);
+                ctx.drawImage(sprite, -16, -28, 32, 32);
+                ctx.restore();
+
+                // 開羅風小名牌
+                const shortName = m.name.split('「')[1]?.replace('」', '') || m.name;
+                ctx.font = 'bold 10px "DotGothic16", "Noto Sans TC", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = 'rgba(54, 32, 17, 0.85)';
+                ctx.fillRect(pos.x - 18, pos.y - 42 - hop, 36, 13);
+                ctx.fillStyle = '#ffdf73';
+                ctx.fillText(shortName, pos.x, pos.y - 32 - hop);
+            }
+        });
+    });
+
+    // 進店顧客與隨行毛孩
+    customers.forEach(c => {
+        depthObjects.push({
+            depth: c.gx + c.gy,
+            draw: () => {
+                const pos = gridToIso(c.gx, c.gy);
+                const frame = Math.floor(c.animPhase) % 2;
+                const hop = (c.state === 'eating' || c.state === 'waiting_food' || c.state === 'ordering')
+                    ? 0 : Math.abs(Math.sin(c.animPhase)) * 2;
+                const sprite = getChibiHumanSprite(c.variant, c.facing, frame);
+
+                ctx.fillStyle = 'rgba(0,0,0,0.22)';
+                ctx.beginPath();
+                ctx.ellipse(pos.x, pos.y, 10, 5, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.save();
+                ctx.translate(Math.round(pos.x), Math.round(pos.y - hop));
+                if (c.flipX) ctx.scale(-1, 1);
+                ctx.drawImage(sprite, -16, -42, 32, 48);
+                ctx.restore();
+
+                if (c.state === 'waiting') drawSpeechBubble(pos.x, pos.y - 4, '⏳', '#ffe8e8');
+                else if (c.state === 'ordering') drawSpeechBubble(pos.x, pos.y - 4, '♪', '#ffffff');
+                else if (c.state === 'waiting_food' && c.humanDish) drawSpeechBubble(pos.x, pos.y - 4, c.humanDish.icon, '#fff9eb');
+                else if (c.state === 'eating') drawSpeechBubble(pos.x, pos.y - 4, '♥', '#ffe3ec');
+            }
+        });
+
+        if (c.hasPet) {
+            depthObjects.push({
+                depth: c.petGx + c.petGy,
+                draw: () => {
+                    const pPos = gridToIso(c.petGx, c.petGy);
+                    const frame = Math.floor(c.animPhase) % 2;
+                    const sprite = getChibiPetSprite(c.petType, frame);
+
+                    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                    ctx.beginPath();
+                    ctx.ellipse(pPos.x, pPos.y, 8, 4, 0, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.save();
+                    ctx.translate(Math.round(pPos.x), Math.round(pPos.y));
+                    if (c.flipX) ctx.scale(-1, 1);
+                    ctx.drawImage(sprite, -15, -26, 30, 30);
+                    ctx.restore();
+                }
+            });
+        }
+    });
+
+    // 店外人行道過路人
+    passersby.forEach(p => {
+        depthObjects.push({
+            depth: p.gx + p.gy,
+            draw: () => {
+                const pos = gridToIso(p.gx, p.gy);
+                const frame = Math.floor(p.animPhase) % 2;
+                const hop = Math.abs(Math.sin(p.animPhase)) * 2;
+                const sprite = getChibiHumanSprite(p.variant, 'front', frame);
+
+                ctx.save();
+                ctx.translate(Math.round(pos.x), Math.round(pos.y - hop));
+                if (p.flipX) ctx.scale(-1, 1);
+                ctx.drawImage(sprite, -15, -40, 30, 45);
+                ctx.restore();
+
+                if (p.hasPet) {
+                    const petSprite = getChibiPetSprite(p.petType, frame);
+                    ctx.save();
+                    ctx.translate(Math.round(pos.x + (p.flipX ? 18 : -18)), Math.round(pos.y + 4));
+                    if (p.flipX) ctx.scale(-1, 1);
+                    ctx.drawImage(petSprite, -13, -24, 26, 26);
+                    ctx.restore();
+                }
+            }
+        });
+    });
+
+    // 依等距深度 (gx + gy) 由後往前繪製，確保遮擋關係 100% 精準
+    depthObjects.sort((a, b) => a.depth - b.depth);
+    depthObjects.forEach(obj => obj.draw());
+
+    // 7. 繪製愛心粒子與飄浮金幣文字
     particles.forEach(p => {
         ctx.save();
         ctx.globalAlpha = Math.max(0, p.life / p.maxLife);
         if (p.type === 'heart') {
             ctx.font = '14px sans-serif';
-            ctx.fillText('💖', p.x, p.y);
+            ctx.fillText('♥', p.x, p.y);
         } else {
             ctx.fillStyle = '#ffffff';
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.fillRect(Math.round(p.x - 3), Math.round(p.y - 3), 6, 6);
         }
         ctx.restore();
     });
@@ -1861,7 +2198,7 @@ function renderScene() {
         ctx.globalAlpha = Math.max(0, ft.life / ft.maxLife);
         ctx.font = 'bold 14px "DotGothic16", "Noto Sans TC", sans-serif';
         ctx.textAlign = 'center';
-        ctx.strokeStyle = '#2b190d';
+        ctx.strokeStyle = '#2c1e16';
         ctx.lineWidth = 3;
         ctx.strokeText(ft.text, ft.x, ft.y);
         ctx.fillStyle = ft.color;
@@ -1872,7 +2209,7 @@ function renderScene() {
     ctx.restore();
 }
 
-// 點擊畫布互動：撫摸毛孩或給客人打氣獲得愛心
+// 點擊畫布互動：撫摸店內駐店毛孩或顧客毛孩獲得 ♥
 canvas.addEventListener('click', (e) => {
     audio.init();
     audio.startBGM();
@@ -1880,36 +2217,38 @@ canvas.addEventListener('click', (e) => {
     const clickX = ((e.clientX - rect.left) / rect.width) * WORLD_W;
     const clickY = ((e.clientY - rect.top) / rect.height) * WORLD_H;
 
-    // 檢查是否點到駐店毛孩
     for (const m of mascotEntities) {
-        if (Math.hypot(clickX - m.x, clickY - m.y) < 32) {
+        const pos = gridToIso(m.gx, m.gy);
+        if (Math.hypot(clickX - pos.x, clickY - (pos.y - 12)) < 32) {
             gameState.hearts += 1;
             gameState.dailyStats.hearts += 1;
-            spawnHeartParticle(m.x, m.y - 12);
-            addFloatingText(m.x, m.y - 24, '+1💖 撫摸打氣!', '#ff85b3');
+            spawnHeartParticle(pos.x, pos.y - 14);
+            addFloatingText(pos.x, pos.y - 28, '+1♥ 撫摸打氣!', '#ff85b3');
             audio.playPetSound();
             updateTopHUD();
             return;
         }
     }
 
-    // 檢查是否點到顧客的毛孩
     for (const c of customers) {
-        if (c.hasPet && Math.hypot(clickX - c.petX, clickY - c.petY) < 28) {
-            gameState.hearts += 1;
-            gameState.dailyStats.hearts += 1;
-            spawnHeartParticle(c.petX, c.petY - 10);
-            addFloatingText(c.petX, c.petY - 22, '+1💖 好乖!', '#ff85b3');
-            audio.playPetSound();
-            updateTopHUD();
-            return;
+        if (c.hasPet) {
+            const pPos = gridToIso(c.petGx, c.petGy);
+            if (Math.hypot(clickX - pPos.x, clickY - (pPos.y - 10)) < 28) {
+                gameState.hearts += 1;
+                gameState.dailyStats.hearts += 1;
+                spawnHeartParticle(pPos.x, pPos.y - 12);
+                addFloatingText(pPos.x, pPos.y - 24, '+1♥ 好乖!', '#ff85b3');
+                audio.playPetSound();
+                updateTopHUD();
+                return;
+            }
         }
     }
 });
 
 /**
  * ============================================================================
- * 7. UI 介面更新與分頁渲染 (開羅風經營面板)
+ * 8. UI 介面更新與分頁渲染 (開羅風經營面板)
  * ============================================================================
  */
 function updateTopHUD() {
@@ -1944,11 +2283,7 @@ function setGameSpeed(speed) {
     [0, 1, 2].forEach(s => {
         const btn = document.getElementById(`btn-speed-${s}`);
         if (!btn) return;
-        if (s === speed) {
-            btn.classList.add('kairo-btn-green');
-        } else {
-            btn.classList.remove('kairo-btn-green');
-        }
+        btn.classList.toggle('kairo-btn-green', s === speed);
     });
 }
 
@@ -1974,7 +2309,7 @@ function renderPanel() {
             const canAfford = gameState.gold >= cost;
 
             const card = document.createElement('div');
-            card.className = 'bg-[#fffdf7] border-2 border-[#8c5a32] rounded-lg p-2.5 flex flex-col justify-between shadow-sm';
+            card.className = 'bg-[#fffdf7] border-2 border-[#8c5a32] rounded p-2.5 flex flex-col justify-between shadow-sm';
             card.innerHTML = `
                 <div>
                     <div class="flex justify-between items-center mb-1">
@@ -1986,10 +2321,10 @@ function renderPanel() {
                     <p class="text-xs text-[#6e4b32] leading-relaxed mb-2">${item.desc}</p>
                 </div>
                 <div class="flex items-center justify-between pt-1.5 border-t border-[#e6d5b8]">
-                    <span class="text-xs font-bold text-pink-600">✨ 魅力 +${item.appeal + (lv > 0 ? (lv - 1) * 6 : 0)}</span>
+                    <span class="text-xs font-bold text-pink-600">✨ 人氣 +${item.appeal + (lv > 0 ? (lv - 1) * 6 : 0)}</span>
                     <button onclick="buyOrUpgradeFacility('${item.id}')" ${isMax || !canAfford ? 'disabled' : ''}
                         class="kairo-btn ${lv === 0 ? 'kairo-btn-green' : 'kairo-btn-orange'} px-3 py-1 text-xs">
-                        ${isMax ? '已達最高級' : `${lv === 0 ? '設置' : '升級'} 💰${cost}`}
+                        ${isMax ? '已達最高級' : `${lv === 0 ? '設置' : '升級'} ${cost}G`}
                     </button>
                 </div>
             `;
@@ -2009,7 +2344,7 @@ function renderPanel() {
                 : '<span class="bg-sky-100 text-sky-800 border border-sky-300 px-1.5 rounded text-[11px]">👤 人類餐點</span>';
 
             const card = document.createElement('div');
-            card.className = 'bg-[#fffdf7] border-2 border-[#8c5a32] rounded-lg p-2.5 flex flex-col justify-between shadow-sm';
+            card.className = 'bg-[#fffdf7] border-2 border-[#8c5a32] rounded p-2.5 flex flex-col justify-between shadow-sm';
             card.innerHTML = `
                 <div>
                     <div class="flex justify-between items-center mb-1">
@@ -2023,12 +2358,12 @@ function renderPanel() {
                 </div>
                 <div class="flex items-center justify-between pt-1.5 border-t border-[#e6d5b8]">
                     <div class="text-xs font-bold">
-                        <span class="text-amber-700">售價 $${currentPrice}</span>
+                        <span class="text-amber-700">售價 ${currentPrice}G</span>
                         <span class="text-gray-500 ml-1">${lv > 0 ? `(Lv.${lv})` : '(未研發)'}</span>
                     </div>
                     <button onclick="researchMenu('${dish.id}')" ${isMax || !canAfford ? 'disabled' : ''}
                         class="kairo-btn ${lv === 0 ? 'kairo-btn-blue' : 'kairo-btn-orange'} px-2.5 py-1 text-xs">
-                        ${isMax ? '大師級' : `${lv === 0 ? '研發' : '改良'} 💰${goldCost} 💖${heartCost}`}
+                        ${isMax ? '大師級' : `${lv === 0 ? '研發' : '改良'} ${goldCost}G ${heartCost}♥`}
                     </button>
                 </div>
             `;
@@ -2046,7 +2381,7 @@ function renderPanel() {
                 : 'bg-emerald-100 text-emerald-900 border-emerald-300';
 
             const card = document.createElement('div');
-            card.className = 'bg-[#fffdf7] border-2 border-[#8c5a32] rounded-lg p-2.5 flex flex-col justify-between shadow-sm';
+            card.className = 'bg-[#fffdf7] border-2 border-[#8c5a32] rounded p-2.5 flex flex-col justify-between shadow-sm';
             card.innerHTML = `
                 <div>
                     <div class="flex justify-between items-center mb-1">
@@ -2059,10 +2394,10 @@ function renderPanel() {
                     <p class="text-xs text-[#6e4b32] mb-2">${sp.desc}</p>
                 </div>
                 <div class="flex items-center justify-between pt-1.5 border-t border-[#e6d5b8]">
-                    <span class="text-xs font-bold text-[#5c3a21]">${lv > 0 ? `等級 Lv.${lv}/${sp.maxLevel}` : '尚未加入'}</span>
+                    <span class="text-xs font-bold text-[#4a2c16]">${lv > 0 ? `等級 Lv.${lv}/${sp.maxLevel}` : '尚未加入'}</span>
                     <button onclick="hireOrTrainStaffPet('${sp.id}')" ${isMax || !canAfford ? 'disabled' : ''}
                         class="kairo-btn ${lv === 0 ? 'kairo-btn-green' : 'kairo-btn-orange'} px-3 py-1 text-xs">
-                        ${isMax ? '已滿級' : `${lv === 0 ? (sp.kind === 'mascot' ? '領養駐店' : '招募') : '特訓升級'} 💰${cost}`}
+                        ${isMax ? '已滿級' : `${lv === 0 ? (sp.kind === 'mascot' ? '領養駐店' : '招募') : '特訓升級'} ${cost}G`}
                     </button>
                 </div>
             `;
@@ -2071,15 +2406,15 @@ function renderPanel() {
     } else if (currentTab === 'system') {
         container.className = 'grid grid-cols-1 md:grid-cols-2 gap-3';
         container.innerHTML = `
-            <div class="bg-[#fffdf7] border-2 border-[#8c5a32] rounded-lg p-3 space-y-2">
+            <div class="bg-[#fffdf7] border-2 border-[#8c5a32] rounded p-3 space-y-2">
                 <h4 class="font-bold text-sm text-[#3e2716] border-b border-[#e6d5b8] pb-1">📖 開羅經營小秘訣</h4>
-                <ul class="text-xs text-[#5c3a21] space-y-1.5 list-disc pl-4">
+                <ul class="text-xs text-[#4a2c16] space-y-1.5 list-disc pl-4">
                     <li><b>雙軌菜單</b>：帶毛孩的飼主會同時點「人類餐點」與「寵物鮮食」，雙倍營收！</li>
-                    <li><b>駐店毛孩</b>：領養「豆豆」與「橘子」在店內巡邏，會自動產生 💖 愛心研究點並增加小費。</li>
+                    <li><b>駐店毛孩</b>：領養「豆豆」與「橘子」在店內巡邏，會自動產生 ♥ 愛心研究點並增加小費。</li>
                     <li><b>互動打氣</b>：直接點擊餐廳畫面中的狗狗或貓咪，可以撫摸牠們獲得額外愛心喔！</li>
                 </ul>
             </div>
-            <div class="bg-[#fffdf7] border-2 border-[#8c5a32] rounded-lg p-3 flex flex-col justify-between space-y-3">
+            <div class="bg-[#fffdf7] border-2 border-[#8c5a32] rounded p-3 flex flex-col justify-between space-y-3">
                 <div>
                     <h4 class="font-bold text-sm text-[#3e2716] border-b border-[#e6d5b8] pb-1 mb-2">💾 遊戲存檔管理</h4>
                     <p class="text-xs text-[#6e4b32]">系統會在每天營業結束時自動存檔，你也可以隨時手動儲存。</p>
@@ -2102,7 +2437,7 @@ function renderPanel() {
 
 /**
  * ============================================================================
- * 8. 購買、研發與每日結算操作邏輯
+ * 9. 購買、研發與每日結算操作邏輯
  * ============================================================================
  */
 function buyOrUpgradeFacility(id) {
@@ -2120,7 +2455,7 @@ function buyOrUpgradeFacility(id) {
 
     audio.playUpgrade();
     showToast(`✨ ${item.name} 升至 Lv.${lv + 1}！`);
-    setNews(`店內新裝修！「${item.name}」等級提升，餐廳魅力大幅上升！`);
+    setNews(`店內新裝修！「${item.name}」等級提升，餐廳人氣大幅上升！`);
     saveGame(false);
     updateTopHUD();
     renderPanel();
@@ -2144,7 +2479,7 @@ function researchMenu(id) {
 
     audio.playUpgrade();
     showToast(`🍽️ 「${dish.name}」研發成功 (Lv.${lv + 1})！`);
-    setNews(`新菜單好評如潮！「${dish.name}」現在售價 $${getDishPrice(dish)}！`);
+    setNews(`新菜單好評如潮！「${dish.name}」現在售價 ${getDishPrice(dish)}G！`);
     saveGame(false);
     updateTopHUD();
     renderPanel();
@@ -2180,8 +2515,8 @@ function triggerEndOfDay() {
     document.getElementById('eod-title').textContent = `🌙 第 ${gameState.day} 天 營業結算報告`;
     document.getElementById('eod-customers').textContent = `${gameState.dailyStats.customers} 組`;
     document.getElementById('eod-pets').textContent = `${gameState.dailyStats.pets} 隻`;
-    document.getElementById('eod-revenue').textContent = `+$${gameState.dailyStats.revenue.toLocaleString()}`;
-    document.getElementById('eod-hearts').textContent = `+${gameState.dailyStats.hearts} 💖`;
+    document.getElementById('eod-revenue').textContent = `+${gameState.dailyStats.revenue.toLocaleString()}G`;
+    document.getElementById('eod-hearts').textContent = `+${gameState.dailyStats.hearts}♥`;
     document.getElementById('eod-rating').textContent = `★ ${gameState.rating.toFixed(1)}`;
 
     const commentEl = document.getElementById('eod-comment');
@@ -2203,7 +2538,6 @@ function startNextDay() {
     gameState.timeMinutes = 9 * 60;
     gameState.dailyStats = { revenue: 0, customers: 0, pets: 0, hearts: 0 };
 
-    // 清空殘留客人與重置桌子狀態
     customers = [];
     kitchenOrders = [];
     readyDishes = [];
@@ -2232,7 +2566,7 @@ function openStatsModal() {
 
     body.innerHTML = `
         <div class="flex justify-between py-1 border-b border-[#e6d5b8]"><span>📅 累計營業天數</span><b>${gameState.day} 天</b></div>
-        <div class="flex justify-between py-1 border-b border-[#e6d5b8]"><span>💰 累計總營業額</span><b class="text-amber-700">$${gameState.totalRevenue.toLocaleString()}</b></div>
+        <div class="flex justify-between py-1 border-b border-[#e6d5b8]"><span>💰 累計總營業額</span><b class="text-amber-700">${gameState.totalRevenue.toLocaleString()}G</b></div>
         <div class="flex justify-between py-1 border-b border-[#e6d5b8]"><span>👥 累計接待顧客</span><b>${gameState.totalCustomers} 組</b></div>
         <div class="flex justify-between py-1 border-b border-[#e6d5b8]"><span>🐶 累計服務毛孩</span><b class="text-orange-700">${gameState.totalPetsServed} 隻</b></div>
         <div class="flex justify-between py-1 border-b border-[#e6d5b8]"><span>🍽️ 已研發菜單數</span><b>${unlockedMenuCount} / ${MENU_DB.length} 道</b></div>
@@ -2251,7 +2585,7 @@ function closeStatsModal() {
 
 /**
  * ============================================================================
- * 9. 遊戲主動畫迴圈與啟動入口
+ * 10. 遊戲主動畫迴圈與啟動入口
  * ============================================================================
  */
 let lastFrameTime = performance.now();
