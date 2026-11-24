@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>毛孩星光餐廳 - 100% 純像素正統開羅重製版</title>
+<title>毛孩星光餐廳 - 100% 純像素正統開羅重製版（多桌自由擺設）</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
   :root {
@@ -41,15 +41,6 @@
   }
   #app.fullscreen-mode { max-width: 100vw; border: none; }
 
-  /* 正統開羅雙線框風格 */
-  .kairo-box {
-    background: var(--kairo-cream);
-    border: 2px solid var(--kairo-dark);
-    box-shadow: inset 0 0 0 2px #d8be92, 0 2px 0 var(--kairo-dark);
-    border-radius: 4px;
-  }
-
-  /* 頂部狀態列 */
   .top-hud {
     background: linear-gradient(180deg, #5d3b24 0%, #3d2415 100%);
     color: #fff;
@@ -133,7 +124,6 @@
     cursor: pointer;
   }
 
-  /* 三層目標追蹤條 */
   .goal-tracker {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -149,7 +139,6 @@
   .goal-bar-bg { height: 4px; background: #1a110b; border-radius: 2px; overflow: hidden; }
   .goal-bar-fill { height: 100%; background: linear-gradient(90deg, #4ade80, #facc15); transition: width 0.25s; }
 
-  /* VIP / FEVER 橫幅 */
   .event-banner {
     display: none;
     background: linear-gradient(90deg, #e11d48, #c026d3);
@@ -168,7 +157,6 @@
   .vip-bar-wrap { flex: 1; height: 8px; background: rgba(0,0,0,0.4); border-radius: 3px; overflow: hidden; border: 1px solid #fff; }
   .vip-bar-fill { height: 100%; background: #fde047; width: 0%; transition: width 0.2s; }
 
-  /* 2.5D 純像素主畫布 */
   .canvas-wrapper {
     position: relative;
     width: 100%;
@@ -210,22 +198,22 @@
   .map-btn.merchant { background: linear-gradient(180deg, #9333ea, #6b21a8); border-color: #fde047; animation: bounceSlight 1s infinite alternate; }
   @keyframes bounceSlight { from { transform: translateY(0); } to { transform: translateY(-2px); } }
 
-  .edit-hint {
+  .edit-bar {
     position: absolute;
     top: 7px;
     left: 7px;
-    background: rgba(232, 111, 44, 0.96);
+    background: rgba(44, 30, 22, 0.95);
     color: #fff;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 11px;
+    padding: 5px 8px;
+    border-radius: 5px;
+    font-size: 10.5px;
     font-weight: 800;
-    border: 2px solid #2c1e16;
+    border: 2px solid #f5a623;
     display: none;
-    z-index: 6;
-    max-width: 68%;
+    z-index: 7;
+    max-width: 72%;
   }
-  .edit-hint.show { display: block; }
+  .edit-bar.show { display: flex; flex-direction: column; gap: 4px; }
 
   .ticker-bar {
     position: absolute;
@@ -246,7 +234,7 @@
 
   .combo-toast {
     position: absolute;
-    top: 38px;
+    top: 42px;
     left: 50%;
     transform: translateX(-50%) scale(0.92);
     background: linear-gradient(180deg, #fffbeb, #fef08a);
@@ -265,7 +253,6 @@
   .combo-toast h4 { font-size: 13px; color: #b45309; font-weight: 900; }
   .combo-toast p { font-size: 11px; color: var(--kairo-dark); font-weight: 700; margin-top: 2px; }
 
-  /* 下方管理面板 */
   .panel-area {
     flex: 1;
     overflow-y: auto;
@@ -308,7 +295,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 7px;
+    gap: 6px;
   }
   .card-info { flex: 1; }
   .card-title { font-size: 12.5px; font-weight: 900; color: var(--kairo-dark); display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
@@ -320,12 +307,13 @@
   .badge-season { background: #dcfce7; color: #15803d; border: 1px solid #16a34a; }
   .badge-job { background: #e0e7ff; color: #3730a3; border: 1px solid #6366f1; }
   .card-desc { font-size: 10.5px; color: #5d4037; margin-top: 2px; line-height: 1.35; }
+  .card-actions { display: flex; flex-direction: column; gap: 4px; }
 
   .btn {
     border: 2px solid var(--kairo-dark);
     border-radius: 4px;
-    padding: 5px 8px;
-    font-size: 11px;
+    padding: 4px 7px;
+    font-size: 10.5px;
     font-weight: 900;
     cursor: pointer;
     box-shadow: 0 2px 0 var(--kairo-dark);
@@ -340,6 +328,7 @@
   .btn-green { background: var(--kairo-green); color: #fff; }
   .btn-blue { background: var(--kairo-blue); color: #fff; }
   .btn-purple { background: var(--kairo-purple); color: #fff; }
+  .btn-red { background: #ef4444; color: #fff; }
 
   .lab-box {
     background: #fffdf8;
@@ -367,7 +356,6 @@
   }
   .ing-btn.selected { background: #fef08a; border-color: #d97706; color: #92400e; font-weight: 900; }
 
-  /* 底部導覽列 */
   .bottom-nav {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -392,7 +380,6 @@
   }
   .nav-btn.active { background: var(--kairo-gold); color: var(--kairo-dark); transform: translateY(-2px); }
 
-  /* 彈窗系統 */
   .modal-overlay {
     position: absolute;
     inset: 0;
@@ -453,7 +440,6 @@
 </head>
 <body>
 <div id="app">
-  <!-- 頂部狀態列 -->
   <div class="top-hud">
     <div class="hud-row">
       <div class="shop-badge">
@@ -479,7 +465,6 @@
         <button class="hud-icon-btn" onclick="toggleFullscreen()">⛶</button>
       </div>
     </div>
-    <!-- 三層目標追蹤條 -->
     <div class="goal-tracker">
       <div class="goal-item">
         <div class="goal-label" id="goal-short">短期: 常客好感</div>
@@ -496,17 +481,21 @@
     </div>
   </div>
 
-  <!-- VIP / FEVER 突發挑戰橫幅 -->
   <div class="event-banner" id="event-banner">
     <span id="event-title">📸 VIP 寵物雜誌主編來訪！</span>
     <div class="vip-bar-wrap" id="vip-bar-wrap"><div class="vip-bar-fill" id="vip-bar-fill"></div></div>
     <span id="event-timer">28s</span>
   </div>
 
-  <!-- 2.5D 純像素主畫布 -->
   <div class="canvas-wrapper" id="canvas-wrap">
     <canvas id="gameCanvas"></canvas>
-    <div class="edit-hint" id="edit-hint">✥ 佈置模式：點選設施再點綠色空地移動（廚房與廁所隔間不可擺放）</div>
+    <div class="edit-bar" id="edit-bar">
+      <div id="edit-status-text">✥ 佈置模式：點選設施移動，或點綠色空地放置</div>
+      <div id="selected-item-ops" style="display:none;gap:4px;flex-wrap:wrap;">
+        <button class="btn btn-gold" style="font-size:10px;padding:2px 6px;" onclick="upgradeSelectedPlaced()">⬆️升級此件</button>
+        <button class="btn btn-red" style="font-size:10px;padding:2px 6px;" onclick="removeSelectedPlaced()">📦拆除收納</button>
+      </div>
+    </div>
     <div class="canvas-controls">
       <button class="map-btn" id="btn-edit-mode" onclick="toggleEditMode()">✥ 佈置模式</button>
       <button class="map-btn merchant" id="btn-merchant" style="display:none;" onclick="openMerchantModal()">🎃 南瓜商會!</button>
@@ -515,13 +504,11 @@
       <h4 id="combo-toast-title">✨ 發現設施相性！</h4>
       <p id="combo-toast-desc">午茶療癒角：飲品售價 +25%！</p>
     </div>
-    <div class="ticker-bar" id="ticker">🐾 開羅純像素重製版啟動！獨立廚房、獨立廁所與桌上餐點已就緒！</div>
+    <div class="ticker-bar" id="ticker">🐾 支援多張桌椅無限增建！點選「設施佈置」→「＋買新擺放」擺滿整間餐廳！</div>
   </div>
 
-  <!-- 下方經營管理區 -->
   <div class="panel-area" id="panel-area"></div>
 
-  <!-- 底部導覽列 -->
   <div class="bottom-nav">
     <button class="nav-btn active" data-tab="facility" onclick="switchTab('facility')"><span>🏠</span>設施佈置</button>
     <button class="nav-btn" data-tab="menu" onclick="switchTab('menu')"><span>🍽️</span>菜單研發</button>
@@ -530,7 +517,6 @@
     <button class="nav-btn" data-tab="event" onclick="switchTab('event')"><span>🏆</span>競賽擴店</button>
   </div>
 
-  <!-- 每日 / 月底結算彈窗 -->
   <div class="modal-overlay" id="report-modal">
     <div class="modal-box">
       <div class="modal-title" id="report-title">🌙 第 1 天營業結算</div>
@@ -539,7 +525,6 @@
     </div>
   </div>
 
-  <!-- 競賽評審打分彈窗 -->
   <div class="modal-overlay" id="contest-modal">
     <div class="modal-box">
       <div class="modal-title" id="contest-modal-title">🏆 評審團現場試吃評分</div>
@@ -554,7 +539,6 @@
     </div>
   </div>
 
-  <!-- 神秘南瓜寵物商會彈窗 -->
   <div class="modal-overlay" id="merchant-modal">
     <div class="modal-box">
       <div class="modal-title" style="color:#7e22ce;">🎃 神秘南瓜寵物商會（限時快閃）</div>
@@ -564,7 +548,6 @@
     </div>
   </div>
 
-  <!-- 三年總決賽 & 二周目繼承彈窗 -->
   <div class="modal-overlay" id="ngplus-modal">
     <div class="modal-box">
       <div class="modal-title" style="color:#b45309;font-size:16px;">👑 三年經營榮譽總結算！</div>
@@ -575,7 +558,6 @@
     </div>
   </div>
 
-  <!-- 排行榜與存檔碼彈窗 -->
   <div class="modal-overlay" id="cloud-modal">
     <div class="modal-box">
       <div class="modal-title">🏆 星光餐廳評比榜 & 存檔管理</div>
@@ -676,13 +658,13 @@ const JOB_TREE = {
 };
 
 const FACILITY_DEFS = [
-  { id: 'table_1', name: '原木雙人桌', type: 'table', icon: '🪑', desc: '經典原木餐桌，出餐後擺放像素料理', baseCost: 250, appeal: 6, maxLv: 5, defaultGx: 5, defaultGy: 3 },
-  { id: 'table_2', name: '靠窗沙發雅座', type: 'table', icon: '🛋️', desc: '絨布卡座，小費 +20%', baseCost: 520, appeal: 12, maxLv: 5, defaultGx: 7, defaultGy: 3 },
+  { id: 'table_1', name: '原木雙人桌', type: 'table', icon: '🪑', desc: '可擺多張！增加同時用餐客組', baseCost: 250, appeal: 6, maxLv: 5, defaultGx: 5, defaultGy: 3 },
+  { id: 'table_2', name: '靠窗沙發雅座', type: 'table', icon: '🛋️', desc: '可擺多張！舒適卡座，小費 +20%', baseCost: 520, appeal: 12, maxLv: 5, defaultGx: 7, defaultGy: 3 },
   { id: 'turf_zone', name: '室內草皮遊樂區', type: 'decor', icon: '🌿', desc: '毛孩最愛草皮，愛心 +35%', baseCost: 650, appeal: 16, maxLv: 5, defaultGx: 5, defaultGy: 6 },
   { id: 'cat_tower', name: '三層原木貓跳台', type: 'decor', icon: '🐈', desc: '吸引貓奴與愛心產出', baseCost: 850, appeal: 20, maxLv: 5, defaultGx: 8, defaultGy: 2 },
   { id: 'coffee_bar', name: '義式精品咖啡機', type: 'machine', icon: '☕', desc: '提升全店飲品售價 +15%', baseCost: 1100, appeal: 22, maxLv: 5, defaultGx: 4, defaultGy: 1 },
   { id: 'water_fountain', name: '循環活水飲水機', type: 'decor', icon: '⛲', desc: '提升寵物健康與飽足感', baseCost: 950, appeal: 18, maxLv: 5, defaultGx: 8, defaultGy: 6 },
-  { id: 'table_3', name: '露天花園圓桌', type: 'table', icon: '☂️', desc: '擴充第3組客席，客流大增', baseCost: 1650, appeal: 25, maxLv: 5, defaultGx: 7, defaultGy: 7 },
+  { id: 'table_3', name: '露天花園圓桌', type: 'table', icon: '☂️', desc: '可擺多張！高人氣花園客席', baseCost: 1650, appeal: 25, maxLv: 5, defaultGx: 7, defaultGy: 7 },
   { id: 'bakery_case', name: '手工點心展示櫃', type: 'machine', icon: '🧁', desc: '全料理魅力與單價大幅提升', baseCost: 2200, appeal: 30, maxLv: 5, defaultGx: 6, defaultGy: 1 }
 ];
 
@@ -785,7 +767,7 @@ const MERCHANT_ITEMS = [
   { id: 'm_border', name: '邊境牧羊犬領養券', costHeart: 120, desc: '直接招募傳說幫手「小黑」加入店內！' }
 ];
 
-// ==================== 3. 遊戲狀態管理 ====================
+// ==================== 3. 遊戲狀態管理（支援多件獨立擺設 placedItems） ====================
 const DEFAULT_STATE = {
   gold: 2000,
   heart: 45,
@@ -797,18 +779,11 @@ const DEFAULT_STATE = {
   maxGridSize: 10,
   activeBranch: 'b_nangang',
   unlockedBranches: ['b_nangang'],
-  branchRooms: {},
-  facilities: { table_1: 1, table_2: 0, turf_zone: 1, cat_tower: 0, coffee_bar: 0, water_fountain: 0, table_3: 0, bakery_case: 0 },
-  facilityPos: {
-    table_1: { gx: 5, gy: 3 },
-    table_2: { gx: 7, gy: 3 },
-    turf_zone: { gx: 5, gy: 6 },
-    cat_tower: { gx: 8, gy: 2 },
-    coffee_bar: { gx: 4, gy: 1 },
-    water_fountain: { gx: 8, gy: 6 },
-    table_3: { gx: 7, gy: 7 },
-    bakery_case: { gx: 6, gy: 1 }
-  },
+  branchItems: {},
+  placedItems: [
+    { uid: 'init_t1', defId: 'table_1', lv: 1, gx: 5, gy: 3 },
+    { uid: 'init_turf', defId: 'turf_zone', lv: 1, gx: 5, gy: 6 }
+  ],
   discoveredCombos: [],
   menus: { latte: 1, chicken_jelly: 1, brunch: 0, dental_chew: 0, pancake: 0, lutein_bowl: 0 },
   customMenus: [],
@@ -840,12 +815,11 @@ const DEFAULT_STATE = {
 
 let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
 try {
-  const saved = localStorage.getItem('kairo_pet_cafe_pixel_v1');
+  const saved = localStorage.getItem('kairo_pet_cafe_pixel_v2');
   if (saved) {
     const p = JSON.parse(saved);
     state = Object.assign({}, JSON.parse(JSON.stringify(DEFAULT_STATE)), p);
-    state.facilities = Object.assign({}, DEFAULT_STATE.facilities, p.facilities);
-    state.facilityPos = Object.assign({}, DEFAULT_STATE.facilityPos, p.facilityPos);
+    if (!Array.isArray(state.placedItems)) state.placedItems = JSON.parse(JSON.stringify(DEFAULT_STATE.placedItems));
     state.menus = Object.assign({}, DEFAULT_STATE.menus, p.menus);
     state.staff = Object.assign({}, DEFAULT_STATE.staff, p.staff);
     state.pets = Object.assign({}, DEFAULT_STATE.pets, p.pets);
@@ -854,14 +828,14 @@ try {
 } catch (e) {}
 
 function saveGame() {
-  try { localStorage.setItem('kairo_pet_cafe_pixel_v1', JSON.stringify(state)); } catch (e) {}
+  try { localStorage.setItem('kairo_pet_cafe_pixel_v2', JSON.stringify(state)); } catch (e) {}
 }
 
 let activeTab = 'facility';
 let activeSubTab = 'main';
 let isPaused = false;
 let editMode = false;
-let selectedFacilityToMove = null;
+let selectedUid = null;
 let branchFlashAlpha = 0;
 
 let labState = { cat: 'human', base: 'hb1', top: 'ht1', sauce: 'hs1' };
@@ -879,6 +853,23 @@ function isRestrictedFurnitureCell(gx, gy) {
   if (gx >= state.maxGridSize - 2 && gy >= state.maxGridSize - 2) return true;
   return false;
 }
+function isCellOccupiedByItem(gx, gy, ignoreUid = null) {
+  return state.placedItems.some(it => it.uid !== ignoreUid && it.gx === gx && it.gy === gy);
+}
+function findFreeTile(prefGx, prefGy) {
+  const G = state.maxGridSize;
+  const candidates = [];
+  for (let gx = 1; gx < G - 1; gx++) {
+    for (let gy = 1; gy < G - 1; gy++) {
+      if (!isRestrictedFurnitureCell(gx, gy) && !isCellOccupiedByItem(gx, gy)) {
+        const d = Math.hypot(gx - prefGx, gy - prefGy);
+        candidates.push({ gx, gy, d });
+      }
+    }
+  }
+  candidates.sort((a, b) => a.d - b.d);
+  return candidates[0] || null;
+}
 
 // ==================== 5. 數值計算 ====================
 function getCurrentSeason() {
@@ -891,19 +882,31 @@ function isSeasonalDish(name) {
 function getBranchInfo() {
   return BRANCH_DEFS.find(b => b.id === state.activeBranch) || BRANCH_DEFS[0];
 }
+function hasFacility(defId) {
+  return state.placedItems.some(it => it.defId === defId);
+}
+function countFacility(defId) {
+  return state.placedItems.filter(it => it.defId === defId).length;
+}
 function getActiveCombos() {
   const active = [];
   COMBO_DEFS.forEach(c => {
     const [a, b] = c.req;
-    if ((state.facilities[a] || 0) > 0 && (state.facilities[b] || 0) > 0) {
-      const pa = state.facilityPos[a], pb = state.facilityPos[b];
-      if (pa && pb && Math.hypot(pa.gx - pb.gx, pa.gy - pb.gy) <= 2.4) {
-        active.push(c);
-        if (!state.discoveredCombos.includes(c.id)) {
-          state.discoveredCombos.push(c.id);
-          showComboToast(`✨ 發現設施相性：【${c.name}】`, c.bonusText);
-          sfx.combo();
-        }
+    const listA = state.placedItems.filter(it => it.defId === a);
+    const listB = state.placedItems.filter(it => it.defId === b);
+    let matched = false;
+    for (const pa of listA) {
+      for (const pb of listB) {
+        if (Math.hypot(pa.gx - pb.gx, pa.gy - pb.gy) <= 2.4) { matched = true; break; }
+      }
+      if (matched) break;
+    }
+    if (matched) {
+      active.push(c);
+      if (!state.discoveredCombos.includes(c.id)) {
+        state.discoveredCombos.push(c.id);
+        showComboToast(`✨ 發現設施相性：【${c.name}】`, c.bonusText);
+        sfx.combo();
       }
     }
   });
@@ -911,7 +914,10 @@ function getActiveCombos() {
 }
 function getTotalAppeal() {
   let total = 15 + (state.ngPlusCount - 1) * 20;
-  FACILITY_DEFS.forEach(f => { total += (state.facilities[f.id] || 0) * f.appeal; });
+  state.placedItems.forEach(it => {
+    const def = FACILITY_DEFS.find(f => f.id === it.defId);
+    if (def) total += def.appeal * it.lv;
+  });
   PET_DEFS.forEach(p => {
     const lv = state.pets[p.id]?.lv || 0;
     if (lv > 0) total += 10 + lv * 6;
@@ -927,8 +933,8 @@ function getTotalAppeal() {
 function getMenuPrice(m) {
   const lv = state.menus[m.id] || 1;
   let mul = 1 + (lv - 1) * 0.25;
-  if (m.cat === 'human' && (state.facilities.coffee_bar || 0) > 0) mul += 0.15;
-  if ((state.facilities.bakery_case || 0) > 0) mul += 0.18;
+  if (m.cat === 'human' && hasFacility('coffee_bar')) mul += 0.15;
+  if (hasFacility('bakery_case')) mul += 0.18;
   getActiveCombos().forEach(c => {
     if (c.type === 'human_price' && m.cat === 'human') mul += c.val;
     if (c.type === 'pet_price' && m.cat === 'pet') mul += c.val;
@@ -941,14 +947,14 @@ function getMenuPrice(m) {
 }
 function getCustomDishPrice(cm) {
   let mul = 1 + (cm.lv - 1) * 0.25;
-  if ((state.facilities.bakery_case || 0) > 0) mul += 0.18;
+  if (hasFacility('bakery_case')) mul += 0.18;
   if (isSeasonalDish(cm.name)) mul *= 1.5;
   if ((state.pets.pet_niuniu?.lv || 0) > 0) mul *= 1.15;
   mul *= getBranchInfo().mult * state.legacyBonus;
   return Math.round(cm.basePrice * mul);
 }
 function getHeartMultiplier() {
-  let mul = 1 + (state.facilities.turf_zone || 0) * 0.25;
+  let mul = 1 + countFacility('turf_zone') * 0.25;
   if ((state.pets.pet_mikan?.lv || 0) > 0) mul *= 1.5;
   getActiveCombos().forEach(c => { if (c.type === 'heart') mul += c.val; });
   Object.values(state.staff).forEach(s => {
@@ -965,7 +971,7 @@ function getWaiterSpeedMultiplier(id) {
   return (1 + (s.lv - 1) * 0.2) * (JOB_TREE[s.job]?.speedMul || 1);
 }
 
-// ==================== 6. 100% 純像素點陣精靈圖工廠（零畫布 Emoji） ====================
+// ==================== 6. 100% 純像素點陣精靈圖工廠 ====================
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 let CW = 480, CH = 300;
@@ -1155,7 +1161,7 @@ function getFacilityPixelSprite(fid) {
       px(5, 3, 8, 2, '#f59e0b');
       px(8, 5, 2, 5, '#b45309');
       px(3, 10, 12, 4, '#d97706');
-      px(13, 1, 3, 3, '#ef4444'); // 紅色毛線球
+      px(13, 1, 3, 3, '#ef4444');
     } else if (fid === 'coffee_bar') {
       px(3, 2, 12, 12, ol);
       px(4, 3, 10, 6, '#e2e8f0');
@@ -1175,25 +1181,24 @@ function getFacilityPixelSprite(fid) {
   });
 }
 
-// 桌上實體像素料理與空盤精靈圖
 function getFoodPixelSprite(isEmptyPlate, isPetFood) {
   return bakePixelSprite(`food_${isEmptyPlate}_${isPetFood}`, 10, 8, (px) => {
     const ol = '#2c1e16';
     px(1, 3, 8, 4, ol);
-    px(2, 4, 6, 2, '#f8fafc'); // 瓷盤
+    px(2, 4, 6, 2, '#f8fafc');
     if (!isEmptyPlate) {
       if (isPetFood) {
-        px(3, 2, 4, 2, '#f59e0b'); // 南瓜/肉凍
-        px(4, 1, 2, 1, '#4ade80'); // 蔬菜點綴
+        px(3, 2, 4, 2, '#f59e0b');
+        px(4, 1, 2, 1, '#4ade80');
       } else {
-        px(3, 1, 4, 3, '#92400e'); // 咖啡杯/吐司
-        px(4, 1, 2, 1, '#fde047'); // 奶油/拉花
+        px(3, 1, 4, 3, '#92400e');
+        px(4, 1, 2, 1, '#fde047');
       }
     }
   });
 }
 
-// ==================== 7. 模擬實體與日夜光影系統 ====================
+// ==================== 7. 模擬實體與多桌同時接待 ====================
 let entities = {
   chef: { gx: 1.0, gy: 1.5, state: 'idle', timer: 0, order: null, patrolDir: 1 },
   waiters: {
@@ -1205,7 +1210,7 @@ let entities = {
   particles: [],
   orders: [],
   readyDishes: [],
-  dirtyTables: [], // { tableId, gx, gy } 等待服務生收盤擦桌
+  dirtyTables: [],
   toiletOccupiedBy: null
 };
 
@@ -1254,21 +1259,20 @@ function getUnlockedMenuList() {
   return list;
 }
 
+// 掃描所有已擺放的桌椅實體，找出空桌
 function getAvailableTable() {
-  const tables = ['table_1', 'table_2', 'table_3'].filter(id => (state.facilities[id] || 0) > 0);
-  for (const tid of tables) {
-    const pos = state.facilityPos[tid];
-    if (!pos) continue;
-    const occupied = entities.customers.some(c => c.tableId === tid && c.state !== 'leaving');
-    const dirty = entities.dirtyTables.some(d => d.tableId === tid);
-    if (!occupied && !dirty) return { tid, gx: pos.gx, gy: pos.gy };
+  const tables = state.placedItems.filter(it => it.defId.startsWith('table'));
+  for (const tbl of tables) {
+    const occupied = entities.customers.some(c => c.tableUid === tbl.uid && c.state !== 'leaving');
+    const dirty = entities.dirtyTables.some(d => d.tableUid === tbl.uid);
+    if (!occupied && !dirty) return tbl;
   }
   return null;
 }
 
 function spawnCustomer(forceVip = false) {
-  const slot = getAvailableTable();
-  if (!slot) return;
+  const tbl = getAvailableTable();
+  if (!tbl) return;
   const unlockedRegs = REGULARS_DEF.filter(r => (state.regulars[r.id]?.lv || 0) > 0);
   const reg = unlockedRegs[Math.floor(Math.random() * unlockedRegs.length)] || REGULARS_DEF[0];
   const hasPet = forceVip ? true : (reg.petType !== null || Math.random() < 0.45);
@@ -1286,11 +1290,12 @@ function spawnCustomer(forceVip = false) {
     isCat: reg.petType === 'cat',
     gx: G - 1.2,
     gy: G - 1.2,
-    tableId: slot.tid,
-    tableGx: slot.gx,
-    tableGy: slot.gy,
-    seatGx: slot.gx + 0.55,
-    seatGy: slot.gy + 0.35,
+    tableUid: tbl.uid,
+    tableDefId: tbl.defId,
+    tableGx: tbl.gx,
+    tableGy: tbl.gy,
+    seatGx: tbl.gx + 0.55,
+    seatGy: tbl.gy + 0.35,
     petGx: G - 0.8,
     petGy: G - 0.8,
     state: 'entering',
@@ -1323,10 +1328,7 @@ function updateSimulation(dt) {
   animFrameCounter++;
 
   state.minuteOfDay += dt * 7.2;
-  if (state.minuteOfDay >= 1380) {
-    endOfDay();
-    return;
-  }
+  if (state.minuteOfDay >= 1380) { endOfDay(); return; }
 
   if (feverTimer > 0) feverTimer = Math.max(0, feverTimer - dt);
   if (merchantTimer > 0) {
@@ -1337,9 +1339,7 @@ function updateSimulation(dt) {
   if (vipEvent) {
     vipEvent.timer -= dt;
     if (vipEvent.score >= vipEvent.target) {
-      vipEvent = null;
-      feverTimer = 28;
-      state.heart += 30;
+      vipEvent = null; feverTimer = 28; state.heart += 30;
       showComboToast('🔥 登上寵物雜誌封面！', '開啟 28 秒 FEVER 狂熱時間：客流與小費翻倍！');
       sfx.combo();
     } else if (vipEvent.timer <= 0) {
@@ -1348,7 +1348,6 @@ function updateSimulation(dt) {
     }
   }
 
-  // 室外行人
   passerTimer += dt;
   if (passerTimer > 2.3 && entities.passers.length < 4) {
     passerTimer = 0;
@@ -1356,26 +1355,23 @@ function updateSimulation(dt) {
     entities.passers.push({
       gx: state.maxGridSize + 2.4,
       gy: 1.5 + Math.random() * 5.5,
-      hair: reg.hair,
-      shirt: reg.shirt,
+      hair: reg.hair, shirt: reg.shirt,
       speed: 0.95 + Math.random() * 0.4
     });
   }
   entities.passers.forEach(p => { p.gy += p.speed * dt; });
   entities.passers = entities.passers.filter(p => p.gy < state.maxGridSize + 1.5);
 
-  // 客人生成
   const light = getTimeLighting();
   const petAppealBonus = (state.pets.pet_doudou?.lv || 0) > 0 ? 0.65 : 1.0;
   const nightMul = light.isNight ? 0.82 : 1.0;
-  const spawnInterval = Math.max(1.2, (5.2 - getTotalAppeal() * 0.025) * petAppealBonus * nightMul / (feverTimer > 0 ? 2.2 : 1));
+  const spawnInterval = Math.max(1.0, (4.8 - getTotalAppeal() * 0.022) * petAppealBonus * nightMul / (feverTimer > 0 ? 2.2 : 1));
   spawnTimer += dt;
   if (spawnTimer >= spawnInterval) {
     spawnTimer = 0;
     spawnCustomer(false);
   }
 
-  // 駐店毛孩定期產生愛心
   petHeartTimer += dt;
   if (petHeartTimer >= 4.2) {
     petHeartTimer = 0;
@@ -1386,7 +1382,7 @@ function updateSimulation(dt) {
       state.heart += gain;
       state.dailyStats.hearts += gain;
       state.pets[rp.id].bond = (state.pets[rp.id].bond || 0) + 1;
-      const turf = state.facilityPos.turf_zone || { gx: 5, gy: 6 };
+      const turf = state.placedItems.find(it => it.defId === 'turf_zone') || { gx: 5, gy: 6 };
       addParticle(turf.gx + (Math.random() - 0.5), turf.gy + (Math.random() - 0.5), `♪ +${gain}愛心`, '#ff85a2');
       if (vipEvent) vipEvent.score += 18;
     }
@@ -1405,7 +1401,7 @@ function updateSimulation(dt) {
   } else if (chef.state === 'walking_stove') {
     if (moveTowards(chef, 0.55, 0.65, 2.4 * chefSpeed, dt)) {
       chef.state = 'cooking';
-      chef.timer = 1.8 / chefSpeed;
+      chef.timer = 1.7 / chefSpeed;
       chef.maxTimer = chef.timer;
     }
   } else if (chef.state === 'cooking') {
@@ -1414,37 +1410,32 @@ function updateSimulation(dt) {
   } else if (chef.state === 'serving_pass') {
     if (moveTowards(chef, 1.65, 1.95, 2.5 * chefSpeed, dt)) {
       entities.readyDishes.push(chef.order);
-      chef.order = null;
-      chef.state = 'idle';
+      chef.order = null; chef.state = 'idle';
       addParticle(2.0, 2.0, '出餐!', '#fde047');
       gainStaffExp('chef_1', 1);
     }
   }
 
   // 邊境牧羊犬「小黑」自動送餐
-  if ((state.pets.pet_border?.lv || 0) > 0 && entities.readyDishes.length > 0 && Math.random() < 0.08) {
+  if ((state.pets.pet_border?.lv || 0) > 0 && entities.readyDishes.length > 0 && Math.random() < 0.09) {
     const dish = entities.readyDishes.shift();
     const cust = entities.customers.find(c => c.id === dish.customerId);
     if (cust && cust.state === 'waiting_food') {
-      cust.state = 'eating';
-      cust.timer = 2.6;
-      cust.bubble = '小黑送達!';
+      cust.state = 'eating'; cust.timer = 2.5; cust.bubble = '小黑送達!';
       addParticle(cust.gx, cust.gy, '小黑送餐!', '#38bdf8');
     }
   }
 
-  // 外場服務生 AI（送餐 + 收盤擦桌）
+  // 外場服務生 AI
   ['waiter_1', 'waiter_2'].forEach(wid => {
     if ((state.staff[wid]?.lv || 0) <= 0) return;
     const w = entities.waiters[wid];
-    const spd = 2.4 * getWaiterSpeedMultiplier(wid);
+    const spd = 2.5 * getWaiterSpeedMultiplier(wid);
     if (w.state === 'idle') {
       if (entities.readyDishes.length > 0) {
-        w.dish = entities.readyDishes.shift();
-        w.state = 'to_counter';
+        w.dish = entities.readyDishes.shift(); w.state = 'to_counter';
       } else if (entities.dirtyTables.length > 0) {
-        w.cleanTable = entities.dirtyTables.shift();
-        w.state = 'cleaning';
+        w.cleanTable = entities.dirtyTables.shift(); w.state = 'cleaning';
       } else {
         moveTowards(w, wid === 'waiter_1' ? 3.4 : 4.6, wid === 'waiter_1' ? 2.4 : 4.2, spd * 0.7, dt);
       }
@@ -1455,9 +1446,7 @@ function updateSimulation(dt) {
       if (!cust || cust.state === 'leaving') {
         w.dish = null; w.state = 'idle';
       } else if (moveTowards(w, cust.gx - 0.3, cust.gy + 0.3, spd, dt)) {
-        cust.state = 'eating';
-        cust.timer = 2.6;
-        cust.bubble = '♪ 好吃!';
+        cust.state = 'eating'; cust.timer = 2.5; cust.bubble = '♪ 好吃!';
         w.dish = null; w.state = 'idle';
         gainStaffExp(wid, 1);
       }
@@ -1465,20 +1454,17 @@ function updateSimulation(dt) {
       if (!w.cleanTable) { w.state = 'idle'; return; }
       if (moveTowards(w, w.cleanTable.gx + 0.4, w.cleanTable.gy + 0.4, spd, dt)) {
         addParticle(w.cleanTable.gx, w.cleanTable.gy, '擦桌完成!', '#86efac');
-        w.cleanTable = null;
-        w.state = 'idle';
+        w.cleanTable = null; w.state = 'idle';
       }
     }
   });
 
-  // 顧客 AI（含桌上餐點/空盤狀態與獨立廁所如廁）
+  // 顧客 AI
   const G = state.maxGridSize;
   entities.customers.forEach(c => {
     if (c.state === 'entering') {
       if (moveTowards(c, c.seatGx, c.seatGy, 2.1, dt)) {
-        c.state = 'ordering';
-        c.timer = 0.8;
-        c.bubble = '點餐中';
+        c.state = 'ordering'; c.timer = 0.75; c.bubble = '點餐中';
       }
     } else if (c.state === 'ordering') {
       c.timer -= dt;
@@ -1487,9 +1473,7 @@ function updateSimulation(dt) {
         const pref = c.hasPet ? menuList.filter(m => m.cat === 'pet') : menuList.filter(m => m.cat === 'human');
         const pool = pref.length > 0 ? pref : menuList;
         const chosen = pool[Math.floor(Math.random() * pool.length)];
-        c.orderedMenu = chosen;
-        c.state = 'waiting_food';
-        c.bubble = `等${chosen.name.slice(0, 4)}`;
+        c.orderedMenu = chosen; c.state = 'waiting_food'; c.bubble = `等${chosen.name.slice(0, 4)}`;
         entities.orders.push({ customerId: c.id, menu: chosen });
       }
     } else if (c.state === 'eating') {
@@ -1499,7 +1483,7 @@ function updateSimulation(dt) {
         if (c.hasPet) price = Math.round(price * 1.15);
         if (feverTimer > 0) price *= 2;
         if (light.isNight) price = Math.round(price * 1.2);
-        if ((state.facilities.table_2 || 0) > 0 && c.tableId === 'table_2') price = Math.round(price * 1.2);
+        if (c.tableDefId === 'table_2') price = Math.round(price * 1.2);
         getActiveCombos().forEach(cb => { if (cb.type === 'tip') price = Math.round(price * (1 + cb.val)); });
 
         state.gold += price;
@@ -1508,13 +1492,8 @@ function updateSimulation(dt) {
         addParticle(c.gx, c.gy, `+$${price}`, '#fde047');
         sfx.coin();
 
-        // 餐桌留下空盤等待服務生收盤
-        entities.dirtyTables.push({ tableId: c.tableId, gx: c.tableGx, gy: c.tableGy });
-
-        // 開羅式「靈感爆發」機率
-        if (Math.random() < 0.14) {
-          triggerKairoInspiration(c.gx, c.gy);
-        }
+        entities.dirtyTables.push({ tableUid: c.tableUid, gx: c.tableGx, gy: c.tableGy });
+        if (Math.random() < 0.14) triggerKairoInspiration(c.gx, c.gy);
 
         if (!c.isVip && state.regulars[c.regId]) {
           const rObj = state.regulars[c.regId];
@@ -1527,31 +1506,22 @@ function updateSimulation(dt) {
         if (c.isVip && vipEvent) vipEvent.score += 65;
 
         if (c.willUseToilet && !entities.toiletOccupiedBy) {
-          entities.toiletOccupiedBy = c.id;
-          c.state = 'to_toilet';
-          c.bubble = '去洗手間';
+          entities.toiletOccupiedBy = c.id; c.state = 'to_toilet'; c.bubble = '去洗手間';
         } else {
-          c.state = 'leaving';
-          c.bubble = '太讚啦!';
+          c.state = 'leaving'; c.bubble = '太讚啦!';
         }
       }
     } else if (c.state === 'to_toilet') {
-      if (moveTowards(c, 0.9, 7.3, 2.1, dt)) {
-        c.state = 'using_toilet';
-        c.timer = 1.6;
-        c.bubble = '洗手間中';
-      }
+      if (moveTowards(c, 0.9, 7.3, 2.1, dt)) { c.state = 'using_toilet'; c.timer = 1.5; c.bubble = '洗手間中'; }
     } else if (c.state === 'using_toilet') {
       c.timer -= dt;
       if (c.timer <= 0) {
         entities.toiletOccupiedBy = null;
         const hBonus = Math.max(1, Math.round(2 * getHeartMultiplier()));
-        state.heart += hBonus;
-        state.dailyStats.hearts += hBonus;
+        state.heart += hBonus; state.dailyStats.hearts += hBonus;
         state.dailyStats.toiletUses = (state.dailyStats.toiletUses || 0) + 1;
         addParticle(1.0, 7.2, `清潔 +${hBonus}愛心`, '#80e5ff');
-        c.state = 'leaving';
-        c.bubble = '清爽!';
+        c.state = 'leaving'; c.bubble = '清爽!';
       }
     } else if (c.state === 'leaving') {
       if (moveTowards(c, G - 0.5, G - 0.5, 2.2, dt)) c.done = true;
@@ -1595,7 +1565,7 @@ function applyRegularLevelReward(regId, newLv) {
   sfx.upgrade();
 }
 
-// ==================== 8. 2.5D 純像素畫面渲染（切面娃娃屋 + 完整街道 + 桌上餐點） ====================
+// ==================== 8. 2.5D 純像素畫面渲染 ====================
 function renderScene() {
   ctx.clearRect(0, 0, CW, CH);
   const G = state.maxGridSize;
@@ -1603,7 +1573,6 @@ function renderScene() {
   const light = getTimeLighting();
   const frame = Math.floor(animFrameCounter / 10);
 
-  // 1. 動態日夜天空
   const skyGrad = ctx.createLinearGradient(0, 0, 0, CH);
   skyGrad.addColorStop(0, light.sky[0]);
   skyGrad.addColorStop(1, light.sky[1]);
@@ -1619,7 +1588,6 @@ function renderScene() {
     [[35, 22], [95, 38], [165, 18], [260, 28], [340, 20]].forEach(([sx, sy]) => ctx.fillRect(sx, sy, 2, 2));
   }
 
-  // 2. 室外街道（人行道 + 柏油馬路 + 斑馬線 + 河濱河道）
   for (let gx = -1; gx <= G + 3; gx++) {
     for (let gy = -1; gy <= G + 1; gy++) {
       if (gx >= 0 && gx < G && gy >= 0 && gy < G) continue;
@@ -1627,7 +1595,6 @@ function renderScene() {
         const wave = Math.sin(animFrameCounter * 0.08 + gy) > 0 ? '#0284c7' : '#0369a1';
         drawIsoTile(gx, gy, wave, '#075985', '#0c4a6e', 2, null);
       } else if (gx >= G + 1) {
-        // 像素柏油馬路與白色斑馬線
         const stripe = Math.floor(gy) % 2 === 0 ? '#f8fafc' : '#334155';
         drawIsoTile(gx, gy, stripe, '#1e293b', '#0f172a', 2, 'rgba(0,0,0,0.2)');
       } else {
@@ -1637,7 +1604,6 @@ function renderScene() {
     }
   }
 
-  // 3. 切面娃娃屋主建築後牆
   const wallH = 38;
   const topCorner = gridToIso(0, 0);
   const leftCorner = gridToIso(0, G);
@@ -1663,7 +1629,6 @@ function renderScene() {
   ctx.fill();
   ctx.stroke();
 
-  // 景觀窗戶
   [2, 5, 7].forEach(wy => {
     if (wy >= G - 1) return;
     const wp = gridToIso(0, wy);
@@ -1673,7 +1638,6 @@ function renderScene() {
     ctx.strokeRect(wp.x - 10, wp.y - 24, 10, 13);
   });
 
-  // 獎盃陳列架
   if (state.wonContests.length > 0) {
     const tp = gridToIso(4.5, 0);
     ctx.fillStyle = '#5d3b24';
@@ -1687,7 +1651,6 @@ function renderScene() {
     });
   }
 
-  // 4. 地板格子
   for (let gx = 0; gx < G; gx++) {
     for (let gy = 0; gy < G; gy++) {
       let col = '#deb887';
@@ -1704,7 +1667,7 @@ function renderScene() {
     }
   }
 
-  // 5. 獨立廚房隔間牆 & 灶台火光
+  // 獨立廚房隔間
   drawIsoWallSegment(2, 0, 26, '#8d5524', '#6d3f19', false);
   drawIsoWallSegment(2, 1, 26, '#8d5524', '#6d3f19', false);
   drawIsoTile(2, 2, '#f59e0b', '#b45309', '#78350f', 13, '#2c1e16');
@@ -1712,7 +1675,6 @@ function renderScene() {
 
   drawIsoTile(0, 0, '#94a3b8', '#475569', '#334155', 14, '#1e293b');
   drawIsoTile(0, 1, '#cbd5e1', '#64748b', '#475569', 13, '#1e293b');
-  // 烹飪中灶台跳動像素火光
   if (entities.chef.state === 'cooking') {
     const sp0 = gridToIso(0.2, 0.2);
     ctx.fillStyle = frame % 2 === 0 ? '#ef4444' : '#facc15';
@@ -1722,7 +1684,7 @@ function renderScene() {
   ctx.fillStyle = '#2c1e16'; ctx.font = 'bold 9px sans-serif';
   ctx.fillText('廚房', kLabel.x - 8, kLabel.y - 16);
 
-  // 6. 獨立廁所隔間牆
+  // 獨立廁所隔間
   drawIsoWallSegment(0, 6, 25, '#38bdf8', '#0284c7', false);
   drawIsoWallSegment(1, 6, 25, '#38bdf8', '#0284c7', false);
   drawIsoWallSegment(2, 6, 25, '#0ea5e9', '#0369a1', true);
@@ -1736,27 +1698,25 @@ function renderScene() {
   ctx.font = 'bold 9px sans-serif';
   ctx.fillText(entities.toiletOccupiedBy ? '使用中' : '洗手間', tLabel.x - 10, tLabel.y - 24);
 
-  // 7. 深度排序繪製（純像素精靈圖 + 桌上料理/空盤）
   const drawables = [];
 
-  FACILITY_DEFS.forEach(f => {
-    const lv = state.facilities[f.id] || 0;
-    if (lv <= 0) return;
-    const pos = state.facilityPos[f.id] || { gx: f.defaultGx, gy: f.defaultGy };
+  // 所有已擺放的獨立設施實體
+  state.placedItems.forEach(it => {
+    const def = FACILITY_DEFS.find(f => f.id === it.defId);
+    if (!def) return;
     drawables.push({
-      depth: pos.gx + pos.gy,
+      depth: it.gx + it.gy,
       render: () => {
-        const p = gridToIso(pos.gx, pos.gy);
-        if (f.id === 'turf_zone') {
-          drawIsoTile(pos.gx, pos.gy, '#4ade80', '#16a34a', '#15803d', 3);
+        const p = gridToIso(it.gx, it.gy);
+        if (it.defId === 'turf_zone') {
+          drawIsoTile(it.gx, it.gy, '#4ade80', '#16a34a', '#15803d', 3);
         }
-        const fsp = getFacilityPixelSprite(f.id);
+        const fsp = getFacilityPixelSprite(it.defId);
         ctx.drawImage(fsp, p.x - 13, p.y - 11, 26, 23);
 
-        // 檢查該桌是否有正在用餐的客人（擺放像素料理）或待收空盤
-        if (f.id.startsWith('table')) {
-          const eatingCust = entities.customers.find(c => c.tableId === f.id && c.state === 'eating');
-          const dirtyTbl = entities.dirtyTables.find(d => d.tableId === f.id);
+        if (it.defId.startsWith('table')) {
+          const eatingCust = entities.customers.find(c => c.tableUid === it.uid && c.state === 'eating');
+          const dirtyTbl = entities.dirtyTables.find(d => d.tableUid === it.uid);
           if (eatingCust && eatingCust.orderedMenu) {
             const foodSp = getFoodPixelSprite(false, eatingCust.orderedMenu.cat === 'pet');
             ctx.drawImage(foodSp, p.x - 7, p.y - 12, 14, 11);
@@ -1766,7 +1726,7 @@ function renderScene() {
           }
         }
 
-        if (editMode && selectedFacilityToMove === f.id) {
+        if (editMode && selectedUid === it.uid) {
           ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2;
           ctx.strokeRect(p.x - 13, p.y - 12, 26, 22);
         }
@@ -1774,7 +1734,6 @@ function renderScene() {
     });
   });
 
-  // 廚師
   drawables.push({
     depth: entities.chef.gx + entities.chef.gy,
     render: () => {
@@ -1791,7 +1750,6 @@ function renderScene() {
     }
   });
 
-  // 服務生
   ['waiter_1', 'waiter_2'].forEach(wid => {
     if ((state.staff[wid]?.lv || 0) <= 0) return;
     const def = STAFF_DEFS.find(s => s.id === wid);
@@ -1811,13 +1769,12 @@ function renderScene() {
     });
   });
 
-  // 駐店毛孩
-  const turfPos = state.facilityPos.turf_zone || { gx: 5, gy: 6 };
+  const turfItem = state.placedItems.find(it => it.defId === 'turf_zone') || { gx: 5, gy: 6 };
   PET_DEFS.forEach((pet, idx) => {
     if ((state.pets[pet.id]?.lv || 0) <= 0) return;
     const angle = animFrameCounter * 0.025 + idx * 1.8;
-    const px = turfPos.gx + Math.cos(angle) * 0.65;
-    const py = turfPos.gy + Math.sin(angle) * 0.65;
+    const px = turfItem.gx + Math.cos(angle) * 0.65;
+    const py = turfItem.gy + Math.sin(angle) * 0.65;
     drawables.push({
       depth: px + py,
       render: () => {
@@ -1828,7 +1785,6 @@ function renderScene() {
     });
   });
 
-  // 顧客與隨行毛孩
   entities.customers.forEach(c => {
     drawables.push({
       depth: c.gx + c.gy,
@@ -1858,7 +1814,6 @@ function renderScene() {
     }
   });
 
-  // 室外行人
   entities.passers.forEach(ps => {
     drawables.push({
       depth: ps.gx + ps.gy,
@@ -1891,12 +1846,52 @@ function renderScene() {
   }
 }
 
-// ==================== 9. 佈置模式點擊互動 ====================
+// ==================== 9. 佈置模式點擊互動（支援多件選取、移動、個別升級與拆除） ====================
+function updateEditBarUI() {
+  const bar = document.getElementById('edit-bar');
+  const ops = document.getElementById('selected-item-ops');
+  bar.classList.toggle('show', editMode);
+  if (!editMode) { ops.style.display = 'none'; return; }
+
+  const it = state.placedItems.find(x => x.uid === selectedUid);
+  if (it) {
+    const def = FACILITY_DEFS.find(f => f.id === it.defId);
+    document.getElementById('edit-status-text').textContent = `已選：${def?.name || ''} (Lv.${it.lv}) → 點空地移動`;
+    ops.style.display = 'flex';
+  } else {
+    document.getElementById('edit-status-text').textContent = `✥ 佈置模式：點選場上設施移動/升級/拆除`;
+    ops.style.display = 'none';
+  }
+}
+
 function toggleEditMode() {
   editMode = !editMode;
-  selectedFacilityToMove = null;
+  selectedUid = null;
   document.getElementById('btn-edit-mode').classList.toggle('active', editMode);
-  document.getElementById('edit-hint').classList.toggle('show', editMode);
+  updateEditBarUI();
+}
+
+function upgradeSelectedPlaced() {
+  const it = state.placedItems.find(x => x.uid === selectedUid);
+  const def = it && FACILITY_DEFS.find(f => f.id === it.defId);
+  if (!it || !def || it.lv >= def.maxLv) return;
+  const cost = Math.round(def.baseCost * 0.65 * Math.pow(1.4, it.lv));
+  if (state.gold < cost) return alert(`資金不足，升級此件需要 $${cost}`);
+  state.gold -= cost;
+  it.lv += 1;
+  sfx.upgrade(); saveGame(); updateEditBarUI(); renderPanel();
+}
+
+function removeSelectedPlaced() {
+  const idx = state.placedItems.findIndex(x => x.uid === selectedUid);
+  if (idx === -1) return;
+  const removed = state.placedItems.splice(idx, 1)[0];
+  const def = FACILITY_DEFS.find(f => f.id === removed.defId);
+  const refund = Math.round((def?.baseCost || 200) * 0.5);
+  state.gold += refund;
+  selectedUid = null;
+  addParticle(removed.gx, removed.gy, `拆除退+$${refund}`, '#fde047');
+  sfx.coin(); saveGame(); updateEditBarUI(); renderPanel();
 }
 
 canvas.addEventListener('pointerdown', (e) => {
@@ -1916,27 +1911,29 @@ canvas.addEventListener('pointerdown', (e) => {
   }
 
   if (gx < 0 || gx >= state.maxGridSize || gy < 0 || gy >= state.maxGridSize) return;
-  if (isRestrictedFurnitureCell(gx, gy)) {
-    document.getElementById('ticker').textContent = '⚠️ 獨立廚房、廁所隔間與大門走道不可放置客用設施！';
+
+  const clickedItem = state.placedItems.find(it => it.gx === gx && it.gy === gy);
+  if (clickedItem) {
+    selectedUid = clickedItem.uid;
+    updateEditBarUI();
     return;
   }
 
-  const clickedFac = FACILITY_DEFS.find(f => {
-    if ((state.facilities[f.id] || 0) <= 0) return false;
-    const p = state.facilityPos[f.id];
-    return p && p.gx === gx && p.gy === gy;
-  });
-
-  if (clickedFac) {
-    selectedFacilityToMove = clickedFac.id;
-    document.getElementById('ticker').textContent = `✥ 已選取【${clickedFac.name}】，請點擊綠色空地放置！`;
-  } else if (selectedFacilityToMove) {
-    state.facilityPos[selectedFacilityToMove] = { gx, gy };
-    selectedFacilityToMove = null;
-    getActiveCombos();
-    saveGame();
-    sfx.upgrade();
-    document.getElementById('ticker').textContent = '✅ 設施移動完成！相性連線已自動重新計算！';
+  if (selectedUid) {
+    if (isRestrictedFurnitureCell(gx, gy)) {
+      document.getElementById('ticker').textContent = '⚠️ 獨立廚房、廁所隔間與大門走道不可放置客用設施！';
+      return;
+    }
+    const targetItem = state.placedItems.find(x => x.uid === selectedUid);
+    if (targetItem) {
+      targetItem.gx = gx;
+      targetItem.gy = gy;
+      selectedUid = null;
+      updateEditBarUI();
+      getActiveCombos();
+      sfx.upgrade(); saveGame();
+      document.getElementById('ticker').textContent = '✅ 擺設位置已更新！';
+    }
   }
 });
 
@@ -1954,20 +1951,24 @@ function renderPanel() {
   const season = getCurrentSeason();
 
   if (activeTab === 'facility') {
-    let html = `<div class="section-title"><span>🏠 店內設施升級與擺設</span><span>可用格數 ${state.maxGridSize}×${state.maxGridSize}</span></div>`;
+    const totalTables = state.placedItems.filter(it => it.defId.startsWith('table')).length;
+    let html = `<div class="section-title"><span>🏠 設施增建與擺設（目前桌數：${totalTables} 張）</span><span>場地 ${state.maxGridSize}×${state.maxGridSize}</span></div>`;
     FACILITY_DEFS.forEach(f => {
-      const lv = state.facilities[f.id] || 0;
-      const cost = Math.round(f.baseCost * Math.pow(1.45, lv));
-      const isMax = lv >= f.maxLv;
+      const cnt = countFacility(f.id);
+      const itemsOfType = state.placedItems.filter(it => it.defId === f.id);
+      const avgLv = cnt > 0 ? Math.round(itemsOfType.reduce((a, b) => a + b.lv, 0) / cnt) : 1;
+      const buyCost = Math.round(f.baseCost * (1 + cnt * 0.25));
+      const upAllCost = Math.round(f.baseCost * 0.65 * Math.pow(1.4, avgLv));
       html += `
         <div class="card">
           <div class="card-info">
-            <div class="card-title">${f.icon} ${f.name} <span class="badge badge-lv">${lv === 0 ? '未建造' : 'Lv.' + lv}</span></div>
-            <div class="card-desc">${f.desc}（魅力 +${f.appeal}/級）</div>
+            <div class="card-title">${f.icon} ${f.name} <span class="badge badge-lv">場上 ${cnt} 件 (約Lv.${avgLv})</span></div>
+            <div class="card-desc">${f.desc}（魅力 +${f.appeal}/件級）</div>
           </div>
-          <button class="btn btn-gold" ${isMax || state.gold < cost ? 'disabled' : ''} onclick="buyFacility('${f.id}')">
-            ${isMax ? '已滿級' : (lv === 0 ? '建造' : '升級') + '<br>$' + cost}
-          </button>
+          <div class="card-actions">
+            <button class="btn btn-green" ${state.gold < buyCost ? 'disabled' : ''} onclick="buyNewPlacement('${f.id}')">＋買新擺放<br>$${buyCost}</button>
+            ${cnt > 0 ? `<button class="btn btn-gold" ${state.gold < upAllCost ? 'disabled' : ''} onclick="upgradeAllOfType('${f.id}')">⬆️全件升級<br>$${upAllCost}</button>` : ''}
+          </div>
         </div>`;
     });
     area.innerHTML = html;
@@ -2118,7 +2119,7 @@ function renderPanel() {
       <div class="card">
         <div class="card-info">
           <div class="card-title">📐 擴建營業樓地板面積 <span class="badge badge-lv">${state.maxGridSize}×${state.maxGridSize}</span></div>
-          <div class="card-desc">擴大餐廳大廳空間，容納更多桌椅與設施相性組合</div>
+          <div class="card-desc">擴大餐廳大廳空間，擺放更多桌椅與設施相性組合</div>
         </div>
         <button class="btn btn-green" ${expCost === 0 || state.gold < expCost ? 'disabled' : ''} onclick="expandFloor()">${expCost === 0 ? '最大規模' : '擴建場地<br>$' + expCost}</button>
       </div>`;
@@ -2141,19 +2142,47 @@ function renderPanel() {
   }
 }
 
-// ==================== 11. 玩家操作函式 ====================
-function buyFacility(id) {
+// ==================== 11. 多件購買擺設與玩家操作函式 ====================
+function buyNewPlacement(defId) {
   sfx.init();
-  const f = FACILITY_DEFS.find(x => x.id === id);
-  const lv = state.facilities[id] || 0;
-  const cost = Math.round(f.baseCost * Math.pow(1.45, lv));
-  if (state.gold < cost || lv >= f.maxLv) return;
+  const def = FACILITY_DEFS.find(x => x.id === defId);
+  if (!def) return;
+  const cnt = countFacility(defId);
+  const cost = Math.round(def.baseCost * (1 + cnt * 0.25));
+  if (state.gold < cost) return;
+
+  const free = findFreeTile(def.defaultGx + (cnt % 3), def.defaultGy + Math.floor(cnt / 3));
+  if (!free) {
+    return alert('店內目前沒有多餘空地了！請先到「競賽擴店」擴建場地或拆除部分舊擺設。');
+  }
+
   state.gold -= cost;
-  state.facilities[id] = lv + 1;
-  if (lv === 0) state.facilityPos[id] = { gx: f.defaultGx, gy: f.defaultGy };
+  const newUid = `item_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+  state.placedItems.push({ uid: newUid, defId, lv: 1, gx: free.gx, gy: free.gy });
+
+  editMode = true;
+  selectedUid = newUid;
+  document.getElementById('btn-edit-mode').classList.add('active');
+  updateEditBarUI();
+
   getActiveCombos();
   sfx.upgrade(); saveGame(); renderPanel();
+  document.getElementById('ticker').textContent = `✅ 已新增【${def.name}】！可直接點綠色空地調整位置！`;
 }
+
+function upgradeAllOfType(defId) {
+  sfx.init();
+  const def = FACILITY_DEFS.find(x => x.id === defId);
+  const items = state.placedItems.filter(it => it.defId === defId);
+  if (!def || items.length === 0) return;
+  const avgLv = Math.round(items.reduce((a, b) => a + b.lv, 0) / items.length);
+  const cost = Math.round(def.baseCost * 0.65 * Math.pow(1.4, avgLv));
+  if (state.gold < cost) return;
+  state.gold -= cost;
+  items.forEach(it => { if (it.lv < def.maxLv) it.lv += 1; });
+  sfx.upgrade(); saveGame(); renderPanel();
+}
+
 function unlockMenu(id) {
   sfx.init();
   const m = MENU_DEFS.find(x => x.id === id);
@@ -2252,9 +2281,9 @@ function switchOrUnlockBranch(bid) {
     if (state.gold < b.unlockCost) return;
     state.gold -= b.unlockCost; state.unlockedBranches.push(bid);
   }
-  state.branchRooms[state.activeBranch] = JSON.parse(JSON.stringify(state.facilityPos));
+  state.branchItems[state.activeBranch] = JSON.parse(JSON.stringify(state.placedItems));
   state.activeBranch = bid;
-  if (state.branchRooms[bid]) state.facilityPos = JSON.parse(JSON.stringify(state.branchRooms[bid]));
+  if (state.branchItems[bid]) state.placedItems = JSON.parse(JSON.stringify(state.branchItems[bid]));
   entities.customers = []; entities.orders = []; entities.readyDishes = []; entities.dirtyTables = []; entities.toiletOccupiedBy = null;
   branchFlashAlpha = 1.0;
   showComboToast(`🏪 進駐【${b.name}】！`, b.desc);
