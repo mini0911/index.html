@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>毛孩星光餐廳 - 正統開羅2:1等角立體像素版</title>
+<title>毛孩星光餐廳 - 正統開羅多店連鎖版</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
   :root {
@@ -444,7 +444,7 @@
     <div class="hud-row">
       <div class="shop-badge">
         <span id="hud-branch">🐾 南港溫馨店</span>
-        <span id="hud-ng" style="font-size:9px;background:#2c1e16;color:#fde047;padding:0 4px;border-radius:3px;">1周目</span>
+        <span id="hud-stars" style="font-size:9.5px;background:#2c1e16;color:#fde047;padding:0 4px;border-radius:3px;">★1.0</span>
       </div>
       <div id="hud-season" class="season-badge" style="background:#ec4899;">🌸春・草莓季</div>
       <div class="day-time" id="hud-time">Y1 D1 09:00</div>
@@ -504,7 +504,7 @@
       <h4 id="combo-toast-title">✨ 發現設施相性！</h4>
       <p id="combo-toast-desc">午茶療癒角：飲品售價 +25%！</p>
     </div>
-    <div class="ticker-bar" id="ticker">🐾 2:1 等角立體家具套組上線！桌椅附帶雙側座椅，櫃子與廁所全面立體化！</div>
+    <div class="ticker-bar" id="ticker">🐾 正統開羅連鎖分店系統啟動！各分店獨立記帳、分店星級與地區客群偏好已上線！</div>
   </div>
 
   <div class="panel-area" id="panel-area"></div>
@@ -514,7 +514,7 @@
     <button class="nav-btn" data-tab="menu" onclick="switchTab('menu')"><span>🍽️</span>菜單研發</button>
     <button class="nav-btn" data-tab="staff" onclick="switchTab('staff')"><span>🧑‍🍳</span>店員毛孩</button>
     <button class="nav-btn" data-tab="dex" onclick="switchTab('dex')"><span>📖</span>相性常客</button>
-    <button class="nav-btn" data-tab="event" onclick="switchTab('event')"><span>🏆</span>競賽擴店</button>
+    <button class="nav-btn" data-tab="event" onclick="switchTab('event')"><span>🏪</span>連鎖分店</button>
   </div>
 
   <div class="modal-overlay" id="report-modal">
@@ -641,7 +641,7 @@ function toggleFullscreen() {
   }
 }
 
-// ==================== 2. 遊戲靜態資料庫 ====================
+// ==================== 2. 遊戲靜態資料庫（含商圈客群偏好） ====================
 const SEASONS = [
   { id: 'spring', name: '🌸春・草莓季', color: '#ec4899', keywords: ['草莓', '鬆餅', '拿鐵', '吐司'], bonusDesc: '草莓/甜點/咖啡類 1.5x' },
   { id: 'summer', name: '🌻夏・冰涼季', color: '#0284c7', keywords: ['咖啡', '冰', '雞肉凍', '飲'], bonusDesc: '咖啡/冷飲/雞肉凍 1.5x' },
@@ -754,10 +754,47 @@ const CONTEST_DEFS = [
   { id: 'ct_4', name: '開羅星光殿堂總冠軍', costHeart: 300, reqScore: 455, prizeGold: 20000, prizeAppeal: 85, trophyName: '開羅皇冠盃', color: '#38bdf8' }
 ];
 
+// 商圈地段與客群偏好設定
 const BRANCH_DEFS = [
-  { id: 'b_nangang', name: '南港住宅溫馨店', unlockCost: 0, mult: 1.0, floorStyle: 'wood', wallTint: '#f3e5c8', outdoor: 'street', desc: '溫馨原木拼花，鄰里毛孩與學生最愛' },
-  { id: 'b_xinyi', name: '信義精品寵物沙龍', unlockCost: 5000, mult: 1.4, floorStyle: 'marble', wallTint: '#fce7f3', outdoor: 'boutique', desc: '奢華大理石地坪，貴婦名媛小費 1.4 倍' },
-  { id: 'b_riverside', name: '河濱公園景觀旗艦店', unlockCost: 15000, mult: 1.9, floorStyle: 'resort', wallTint: '#dcfce7', outdoor: 'river', desc: '度假木棧＋波光河景，全店營收 1.9 倍' }
+  {
+    id: 'b_nangang',
+    name: '南港住宅溫馨店',
+    signText: 'NANGANG PET CAFE',
+    unlockCost: 0,
+    mult: 1.0,
+    floorStyle: 'wood',
+    wallTint: '#f3e5c8',
+    outdoor: 'street',
+    favCat: 'pet',
+    favLabel: '🐾 偏愛：寵物鮮食 (+30%)',
+    desc: '鄰里家庭與老狗散步客聚集，寵物鮮食單價高'
+  },
+  {
+    id: 'b_xinyi',
+    name: '信義精品寵物沙龍',
+    signText: 'XINYI PET SALON',
+    unlockCost: 5000,
+    mult: 1.4,
+    floorStyle: 'marble',
+    wallTint: '#fce7f3',
+    outdoor: 'boutique',
+    favCat: 'human',
+    favLabel: '☕ 偏愛：人類餐點/咖啡 (+30%)',
+    desc: '時尚白領與貴婦名媛商圈，人類料理與小費極高'
+  },
+  {
+    id: 'b_riverside',
+    name: '河濱公園景觀旗艦店',
+    signText: 'RIVER PARK CAFE',
+    unlockCost: 15000,
+    mult: 1.85,
+    floorStyle: 'resort',
+    wallTint: '#dcfce7',
+    outdoor: 'river',
+    favCat: 'both',
+    favLabel: '🌿 偏愛：雙軌毛孩互動 (愛心+35%)',
+    desc: '河畔遛狗與假日人潮爆滿，營收與愛心雙豐收'
+  }
 ];
 
 const MERCHANT_ITEMS = [
@@ -767,7 +804,22 @@ const MERCHANT_ITEMS = [
   { id: 'm_border', name: '邊境牧羊犬領養券', costHeart: 120, desc: '直接招募傳說幫手「小黑」加入店內！' }
 ];
 
-// ==================== 3. 遊戲狀態管理 ====================
+// ==================== 3. 遊戲狀態管理（多店獨立營運資料） ====================
+function makeDefaultBranchRecord(bid, unlocked) {
+  return {
+    unlocked,
+    stars: 1.0,
+    supportLv: 0,
+    todayIncome: 0,
+    todayCustomers: 0,
+    todayDividend: 0,
+    placedItems: [
+      { uid: `${bid}_t1`, defId: 'table_1', lv: 1, gx: 5, gy: 3 },
+      { uid: `${bid}_turf`, defId: 'turf_zone', lv: 1, gx: 5, gy: 6 }
+    ]
+  };
+}
+
 const DEFAULT_STATE = {
   gold: 2000,
   heart: 45,
@@ -778,12 +830,11 @@ const DEFAULT_STATE = {
   legacyBonus: 1.0,
   maxGridSize: 10,
   activeBranch: 'b_nangang',
-  unlockedBranches: ['b_nangang'],
-  branchItems: {},
-  placedItems: [
-    { uid: 'init_t1', defId: 'table_1', lv: 1, gx: 5, gy: 3 },
-    { uid: 'init_turf', defId: 'turf_zone', lv: 1, gx: 5, gy: 6 }
-  ],
+  branches: {
+    b_nangang: makeDefaultBranchRecord('b_nangang', true),
+    b_xinyi: makeDefaultBranchRecord('b_xinyi', false),
+    b_riverside: makeDefaultBranchRecord('b_riverside', false)
+  },
   discoveredCombos: [],
   menus: { latte: 1, chicken_jelly: 1, brunch: 0, dental_chew: 0, pancake: 0, lutein_bowl: 0 },
   customMenus: [],
@@ -809,17 +860,23 @@ const DEFAULT_STATE = {
     r_kairo: { lv: 0, exp: 0 }
   },
   wonContests: [],
-  dailyStats: { income: 0, customers: 0, hearts: 0, toiletUses: 0 },
+  dailyStats: { income: 0, customers: 0, hearts: 0, toiletUses: 0, chainDividend: 0 },
   firebaseUrl: ''
 };
 
 let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
 try {
-  const saved = localStorage.getItem('kairo_pet_cafe_iso21_v1');
+  const saved = localStorage.getItem('kairo_pet_cafe_chain_v1');
   if (saved) {
     const p = JSON.parse(saved);
     state = Object.assign({}, JSON.parse(JSON.stringify(DEFAULT_STATE)), p);
-    if (!Array.isArray(state.placedItems)) state.placedItems = JSON.parse(JSON.stringify(DEFAULT_STATE.placedItems));
+    state.branches = Object.assign({}, JSON.parse(JSON.stringify(DEFAULT_STATE.branches)), p.branches);
+    BRANCH_DEFS.forEach(b => {
+      if (!state.branches[b.id]) state.branches[b.id] = makeDefaultBranchRecord(b.id, b.id === 'b_nangang');
+      if (!Array.isArray(state.branches[b.id].placedItems)) {
+        state.branches[b.id].placedItems = makeDefaultBranchRecord(b.id, true).placedItems;
+      }
+    });
     state.menus = Object.assign({}, DEFAULT_STATE.menus, p.menus);
     state.staff = Object.assign({}, DEFAULT_STATE.staff, p.staff);
     state.pets = Object.assign({}, DEFAULT_STATE.pets, p.pets);
@@ -828,7 +885,14 @@ try {
 } catch (e) {}
 
 function saveGame() {
-  try { localStorage.setItem('kairo_pet_cafe_iso21_v1', JSON.stringify(state)); } catch (e) {}
+  try { localStorage.setItem('kairo_pet_cafe_chain_v1', JSON.stringify(state)); } catch (e) {}
+}
+
+function getActiveBranchRec() {
+  return state.branches[state.activeBranch] || state.branches.b_nangang;
+}
+function getPlacedItems() {
+  return getActiveBranchRec().placedItems;
 }
 
 let activeTab = 'facility';
@@ -854,7 +918,7 @@ function isRestrictedFurnitureCell(gx, gy) {
   return false;
 }
 function isCellOccupiedByItem(gx, gy, ignoreUid = null) {
-  return state.placedItems.some(it => it.uid !== ignoreUid && it.gx === gx && it.gy === gy);
+  return getPlacedItems().some(it => it.uid !== ignoreUid && it.gx === gx && it.gy === gy);
 }
 function findFreeTile(prefGx, prefGy) {
   const G = state.maxGridSize;
@@ -870,7 +934,7 @@ function findFreeTile(prefGx, prefGy) {
   return candidates[0] || null;
 }
 
-// ==================== 5. 數值計算 ====================
+// ==================== 5. 數值計算與連鎖分店營收 ====================
 function getCurrentSeason() {
   const idx = Math.floor(((state.day - 1) % 36) / 9);
   return SEASONS[idx] || SEASONS[0];
@@ -881,18 +945,31 @@ function isSeasonalDish(name) {
 function getBranchInfo() {
   return BRANCH_DEFS.find(b => b.id === state.activeBranch) || BRANCH_DEFS[0];
 }
+function computeBranchStars(bid) {
+  const rec = state.branches[bid];
+  if (!rec || !rec.unlocked) return 1.0;
+  const itemScore = rec.placedItems.reduce((acc, it) => acc + it.lv, 0);
+  const raw = 1.0 + itemScore * 0.12 + (rec.supportLv || 0) * 0.45;
+  return Math.min(5.0, Number(raw.toFixed(1)));
+}
+function refreshAllBranchStars() {
+  BRANCH_DEFS.forEach(b => {
+    if (state.branches[b.id]) state.branches[b.id].stars = computeBranchStars(b.id);
+  });
+}
 function hasFacility(defId) {
-  return state.placedItems.some(it => it.defId === defId);
+  return getPlacedItems().some(it => it.defId === defId);
 }
 function countFacility(defId) {
-  return state.placedItems.filter(it => it.defId === defId).length;
+  return getPlacedItems().filter(it => it.defId === defId).length;
 }
 function getActiveCombos() {
   const active = [];
+  const items = getPlacedItems();
   COMBO_DEFS.forEach(c => {
     const [a, b] = c.req;
-    const listA = state.placedItems.filter(it => it.defId === a);
-    const listB = state.placedItems.filter(it => it.defId === b);
+    const listA = items.filter(it => it.defId === a);
+    const listB = items.filter(it => it.defId === b);
     let matched = false;
     for (const pa of listA) {
       for (const pb of listB) {
@@ -913,7 +990,7 @@ function getActiveCombos() {
 }
 function getTotalAppeal() {
   let total = 15 + (state.ngPlusCount - 1) * 20;
-  state.placedItems.forEach(it => {
+  getPlacedItems().forEach(it => {
     const def = FACILITY_DEFS.find(f => f.id === it.defId);
     if (def) total += def.appeal * it.lv;
   });
@@ -931,9 +1008,17 @@ function getTotalAppeal() {
 }
 function getMenuPrice(m) {
   const lv = state.menus[m.id] || 1;
+  const branchInfo = getBranchInfo();
+  const branchRec = getActiveBranchRec();
   let mul = 1 + (lv - 1) * 0.25;
   if (m.cat === 'human' && hasFacility('coffee_bar')) mul += 0.15;
   if (hasFacility('bakery_case')) mul += 0.18;
+  // 地區客群偏好加成
+  if (branchInfo.favCat === m.cat) mul += 0.30;
+  if (branchInfo.favCat === 'both') mul += 0.15;
+  // 分店星級加成
+  mul += ((branchRec?.stars || 1) - 1) * 0.12;
+
   getActiveCombos().forEach(c => {
     if (c.type === 'human_price' && m.cat === 'human') mul += c.val;
     if (c.type === 'pet_price' && m.cat === 'pet') mul += c.val;
@@ -941,19 +1026,24 @@ function getMenuPrice(m) {
   });
   if (isSeasonalDish(m.name)) mul *= 1.5;
   if ((state.pets.pet_niuniu?.lv || 0) > 0) mul *= 1.15;
-  mul *= getBranchInfo().mult * state.legacyBonus;
+  mul *= branchInfo.mult * state.legacyBonus;
   return Math.round(m.basePrice * mul);
 }
 function getCustomDishPrice(cm) {
+  const branchInfo = getBranchInfo();
+  const branchRec = getActiveBranchRec();
   let mul = 1 + (cm.lv - 1) * 0.25;
   if (hasFacility('bakery_case')) mul += 0.18;
+  if (branchInfo.favCat === cm.cat || branchInfo.favCat === 'both') mul += 0.20;
+  mul += ((branchRec?.stars || 1) - 1) * 0.12;
   if (isSeasonalDish(cm.name)) mul *= 1.5;
   if ((state.pets.pet_niuniu?.lv || 0) > 0) mul *= 1.15;
-  mul *= getBranchInfo().mult * state.legacyBonus;
+  mul *= branchInfo.mult * state.legacyBonus;
   return Math.round(cm.basePrice * mul);
 }
 function getHeartMultiplier() {
   let mul = 1 + countFacility('turf_zone') * 0.25;
+  if (getBranchInfo().favCat === 'both') mul += 0.35;
   if ((state.pets.pet_mikan?.lv || 0) > 0) mul *= 1.5;
   getActiveCombos().forEach(c => { if (c.type === 'heart') mul += c.val; });
   Object.values(state.staff).forEach(s => {
@@ -963,11 +1053,13 @@ function getHeartMultiplier() {
 }
 function getChefSpeedMultiplier() {
   const s = state.staff.chef_1;
-  return (1 + (s.lv - 1) * 0.2) * (JOB_TREE[s.job]?.speedMul || 1);
+  const sup = (getActiveBranchRec()?.supportLv || 0) * 0.15;
+  return (1 + (s.lv - 1) * 0.2 + sup) * (JOB_TREE[s.job]?.speedMul || 1);
 }
 function getWaiterSpeedMultiplier(id) {
   const s = state.staff[id];
-  return (1 + (s.lv - 1) * 0.2) * (JOB_TREE[s.job]?.speedMul || 1);
+  const sup = (getActiveBranchRec()?.supportLv || 0) * 0.15;
+  return (1 + (s.lv - 1) * 0.2 + sup) * (JOB_TREE[s.job]?.speedMul || 1);
 }
 
 // ==================== 6. 2:1 等角立體像素精靈圖與立體家具繪製 ====================
@@ -1007,9 +1099,7 @@ function isoToGrid(sx, sy) {
   return { gx, gy };
 }
 
-// 正統 2:1 等角立體方塊（頂面菱形 + 左亮面 + 右暗面 + 深棕描邊）
 function drawIsoBox(cx, baseY, rx, ry, h, topCol, leftCol, rightCol, outline = '#2c1e16') {
-  // 左側立面
   ctx.beginPath();
   ctx.moveTo(cx - rx, baseY - h);
   ctx.lineTo(cx, baseY + ry - h);
@@ -1020,7 +1110,6 @@ function drawIsoBox(cx, baseY, rx, ry, h, topCol, leftCol, rightCol, outline = '
   ctx.fill();
   ctx.strokeStyle = outline; ctx.lineWidth = 1; ctx.stroke();
 
-  // 右側立面
   ctx.beginPath();
   ctx.moveTo(cx, baseY + ry - h);
   ctx.lineTo(cx + rx, baseY - h);
@@ -1031,7 +1120,6 @@ function drawIsoBox(cx, baseY, rx, ry, h, topCol, leftCol, rightCol, outline = '
   ctx.fill();
   ctx.stroke();
 
-  // 頂面 2:1 菱形
   ctx.beginPath();
   ctx.moveTo(cx, baseY - ry - h);
   ctx.lineTo(cx + rx, baseY - h);
@@ -1043,68 +1131,49 @@ function drawIsoBox(cx, baseY, rx, ry, h, topCol, leftCol, rightCol, outline = '
   ctx.stroke();
 }
 
-// 正統 2:1 等角立體家具套組（桌椅套組 / 吧台 / 玻璃點心櫃 / 貓跳台 / 草皮圍欄）
 function drawIsoFurnitureSet(defId, gx, gy, frame) {
   const p = gridToIso(gx, gy);
   const cx = p.x;
   const baseY = p.y + TILE_H * 0.65;
 
   if (defId === 'table_1') {
-    // 左側木椅 & 右側木椅 + 中央原木雙人桌
     drawIsoBox(cx - 10, baseY - 2, 4, 2, 5, '#b45309', '#92400e', '#78350f');
     drawIsoBox(cx + 10, baseY + 2, 4, 2, 5, '#b45309', '#92400e', '#78350f');
     drawIsoBox(cx, baseY, 9, 4.5, 7, '#d97706', '#b45309', '#78350f');
   } else if (defId === 'table_2') {
-    // 靠窗絨布沙發卡座 + 桌布餐桌
     drawIsoBox(cx - 11, baseY - 2, 5, 2.5, 8, '#fb7185', '#e11d48', '#9f1239');
     drawIsoBox(cx + 11, baseY + 2, 5, 2.5, 8, '#fb7185', '#e11d48', '#9f1239');
     drawIsoBox(cx, baseY, 9, 4.5, 7, '#fffbeb', '#e2e8f0', '#cbd5e1');
   } else if (defId === 'table_3') {
-    // 露天花園圓桌＋雙圓凳＋陽傘柱
     drawIsoBox(cx - 9, baseY - 2, 3.5, 2, 5, '#7dd3fc', '#38bdf8', '#0284c7');
     drawIsoBox(cx + 9, baseY + 2, 3.5, 2, 5, '#7dd3fc', '#38bdf8', '#0284c7');
     drawIsoBox(cx, baseY, 8.5, 4.5, 7, '#fef08a', '#eab308', '#ca8a04');
-    // 傘頂菱形
     drawIsoBox(cx, baseY - 15, 11, 5.5, 3, '#f97316', '#ea580c', '#c2410c');
   } else if (defId === 'turf_zone') {
-    // 立體草皮地墊＋四邊木欄＋紅白毛孩球
     drawIsoBox(cx, baseY, 15, 7.5, 2, '#4ade80', '#22c55e', '#16a34a');
     drawIsoBox(cx, baseY - 2, 14, 7, 2, '#22c55e', '#16a34a', '#15803d');
-    // 球體像素點
-    ctx.fillStyle = '#ef4444';
-    ctx.fillRect(cx + 4, baseY - 6, 4, 4);
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(cx + 5, baseY - 5, 2, 2);
+    ctx.fillStyle = '#ef4444'; ctx.fillRect(cx + 4, baseY - 6, 4, 4);
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(cx + 5, baseY - 5, 2, 2);
   } else if (defId === 'cat_tower') {
-    // 底層底座 + 立柱 + 中層跳板 + 頂層貓窩 + 懸吊紅毛線球
     drawIsoBox(cx, baseY, 10, 5, 3, '#d97706', '#b45309', '#78350f');
     drawIsoBox(cx, baseY - 3, 2.5, 1.5, 9, '#fef3c7', '#e2e8f0', '#cbd5e1');
     drawIsoBox(cx - 4, baseY - 10, 6, 3, 2.5, '#f59e0b', '#d97706', '#b45309');
     drawIsoBox(cx + 3, baseY - 16, 7, 3.5, 5, '#fbbf24', '#f59e0b', '#d97706');
     const swing = Math.sin(animFrameCounter * 0.08) * 2;
-    ctx.fillStyle = '#ef4444';
-    ctx.fillRect(cx + 8 + swing, baseY - 11, 3, 3);
+    ctx.fillStyle = '#ef4444'; ctx.fillRect(cx + 8 + swing, baseY - 11, 3, 3);
   } else if (defId === 'coffee_bar') {
-    // 立體原木吧台櫃 + 銀色義式咖啡機
     drawIsoBox(cx, baseY, 13, 6.5, 8, '#b45309', '#92400e', '#78350f');
     drawIsoBox(cx - 2, baseY - 8, 7, 3.5, 7, '#f1f5f9', '#cbd5e1', '#94a3b8');
-    ctx.fillStyle = '#2c1e16';
-    ctx.fillRect(cx - 4, baseY - 11, 4, 3);
+    ctx.fillStyle = '#2c1e16'; ctx.fillRect(cx - 4, baseY - 11, 4, 3);
   } else if (defId === 'water_fountain') {
-    // 立體循環活水飲水台與藍色水波
     drawIsoBox(cx, baseY, 9, 4.5, 6, '#e0f2fe', '#7dd3fc', '#0284c7');
     drawIsoBox(cx, baseY - 6, 5, 2.5, 4, '#38bdf8', '#0ea5e9', '#0369a1');
-    if (frame % 2 === 0) {
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(cx - 1, baseY - 12, 2, 4);
-    }
+    if (frame % 2 === 0) { ctx.fillStyle = '#ffffff'; ctx.fillRect(cx - 1, baseY - 12, 2, 4); }
   } else if (defId === 'bakery_case') {
-    // 立體點心櫃 + 玻璃櫥窗反光斜線 + 彩色蛋糕
     drawIsoBox(cx, baseY, 13, 6.5, 9, '#fef3c7', '#d97706', '#92400e');
     ctx.fillStyle = '#f472b6'; ctx.fillRect(cx - 6, baseY - 11, 3, 3);
     ctx.fillStyle = '#fde047'; ctx.fillRect(cx, baseY - 11, 3, 3);
     ctx.fillStyle = '#4ade80'; ctx.fillRect(cx + 5, baseY - 11, 3, 3);
-    // 玻璃反光斜線
     ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.moveTo(cx - 8, baseY - 12); ctx.lineTo(cx - 4, baseY - 6); ctx.stroke();
   }
@@ -1130,8 +1199,7 @@ function drawIsoTile(gx, gy, topColor, leftColor, rightColor, height = 4, stroke
     ctx.lineTo(p.x, p.y + TILE_H + height);
     ctx.lineTo(p.x - hw, p.y + hh + height);
     ctx.closePath();
-    ctx.fillStyle = leftColor;
-    ctx.fill();
+    ctx.fillStyle = leftColor; ctx.fill();
 
     ctx.beginPath();
     ctx.moveTo(p.x + hw, p.y + hh);
@@ -1139,8 +1207,7 @@ function drawIsoTile(gx, gy, topColor, leftColor, rightColor, height = 4, stroke
     ctx.lineTo(p.x, p.y + TILE_H + height);
     ctx.lineTo(p.x + hw, p.y + hh + height);
     ctx.closePath();
-    ctx.fillStyle = rightColor;
-    ctx.fill();
+    ctx.fillStyle = rightColor; ctx.fill();
   }
 }
 
@@ -1154,8 +1221,7 @@ function drawIsoWallSegment(gx, gy, wallH, colorFront, colorSide, hasDoorway = f
   ctx.lineTo(p.x, p.y + TILE_H - h);
   ctx.lineTo(p.x - hw, p.y + hh - h);
   ctx.closePath();
-  ctx.fillStyle = colorFront;
-  ctx.fill();
+  ctx.fillStyle = colorFront; ctx.fill();
   ctx.strokeStyle = '#2c1e16'; ctx.lineWidth = 1; ctx.stroke();
 
   ctx.beginPath();
@@ -1164,9 +1230,7 @@ function drawIsoWallSegment(gx, gy, wallH, colorFront, colorSide, hasDoorway = f
   ctx.lineTo(p.x + hw, p.y + hh - h);
   ctx.lineTo(p.x, p.y + TILE_H - h);
   ctx.closePath();
-  ctx.fillStyle = colorSide;
-  ctx.fill();
-  ctx.stroke();
+  ctx.fillStyle = colorSide; ctx.fill(); ctx.stroke();
 }
 
 const pixelCache = {};
@@ -1187,42 +1251,26 @@ function getChibiSprite(key, hairColor, shirtColor, isChef, frame, isKairo = fal
     const bob = frame % 2 === 1 ? -1 : 0;
     const ol = '#2c1e16';
     if (isKairo) {
-      px(3, 0 + bob, 10, 10, ol);
-      px(4, 1 + bob, 8, 8, '#facc15');
-      px(5, 3 + bob, 6, 4, '#2c1e16');
-      px(6, 4 + bob, 1, 2, '#38bdf8');
-      px(9, 4 + bob, 1, 2, '#38bdf8');
-      px(3, 10 + bob, 10, 6, ol);
-      px(4, 10 + bob, 8, 5, '#facc15');
-      px(5, 11 + bob, 6, 3, '#ef4444');
+      px(3, 0 + bob, 10, 10, ol); px(4, 1 + bob, 8, 8, '#facc15');
+      px(5, 3 + bob, 6, 4, '#2c1e16'); px(6, 4 + bob, 1, 2, '#38bdf8'); px(9, 4 + bob, 1, 2, '#38bdf8');
+      px(3, 10 + bob, 10, 6, ol); px(4, 10 + bob, 8, 5, '#facc15'); px(5, 11 + bob, 6, 3, '#ef4444');
       px(4, 16, 3, 3, ol); px(9, 16, 3, 3, ol);
       px(5, 16, 1, 2, '#facc15'); px(10, 16, 1, 2, '#facc15');
       return;
     }
     if (isChef) {
-      px(4, 0 + bob, 8, 4, ol);
-      px(5, 1 + bob, 6, 2, '#ffffff');
-      px(4, 3 + bob, 8, 1, '#e2e8f0');
+      px(4, 0 + bob, 8, 4, ol); px(5, 1 + bob, 6, 2, '#ffffff'); px(4, 3 + bob, 8, 1, '#e2e8f0');
     } else {
-      px(3, 2 + bob, 10, 4, ol);
-      px(4, 2 + bob, 8, 3, hairColor);
+      px(3, 2 + bob, 10, 4, ol); px(4, 2 + bob, 8, 3, hairColor);
     }
-    px(4, 4 + bob, 8, 6, ol);
-    px(5, 5 + bob, 6, 4, '#ffdbac');
+    px(4, 4 + bob, 8, 6, ol); px(5, 5 + bob, 6, 4, '#ffdbac');
     px(5, 6 + bob, 1, 2, ol); px(10, 6 + bob, 1, 2, ol);
     px(4, 7 + bob, 1, 1, '#ff8a80'); px(11, 7 + bob, 1, 1, '#ff8a80');
-
-    px(3, 10 + bob, 10, 6, ol);
-    px(4, 10 + bob, 8, 5, shirtColor);
+    px(3, 10 + bob, 10, 6, ol); px(4, 10 + bob, 8, 5, shirtColor);
     if (isChef) px(6, 11 + bob, 4, 4, '#ffffff');
-    px(2, 11 + bob, 2, 4, '#ffdbac');
-    px(12, 11 + bob, 2, 4, '#ffdbac');
-
-    if (frame % 2 === 0) {
-      px(4, 16, 3, 3, '#2c1e16'); px(9, 16, 3, 3, '#2c1e16');
-    } else {
-      px(3, 15, 3, 3, '#2c1e16'); px(10, 16, 3, 3, '#2c1e16');
-    }
+    px(2, 11 + bob, 2, 4, '#ffdbac'); px(12, 11 + bob, 2, 4, '#ffdbac');
+    if (frame % 2 === 0) { px(4, 16, 3, 3, '#2c1e16'); px(9, 16, 3, 3, '#2c1e16'); }
+    else { px(3, 15, 3, 3, '#2c1e16'); px(10, 16, 3, 3, '#2c1e16'); }
   });
 }
 
@@ -1236,11 +1284,9 @@ function getPetSprite(coatColor, isCat, frame) {
     } else {
       px(1, 2 + bob, 2, 3, ol); px(7, 2 + bob, 2, 3, ol);
     }
-    px(2, 2 + bob, 6, 5, ol);
-    px(3, 3 + bob, 4, 3, coatColor);
+    px(2, 2 + bob, 6, 5, ol); px(3, 3 + bob, 4, 3, coatColor);
     px(3, 4 + bob, 1, 1, ol); px(6, 4 + bob, 1, 1, ol);
-    px(4, 5 + bob, 8, 4, ol);
-    px(5, 6 + bob, 6, 2, coatColor);
+    px(4, 5 + bob, 8, 4, ol); px(5, 6 + bob, 6, 2, coatColor);
     px(12, 4 + bob, 2, 2, coatColor);
     px(4, 9, 2, 2, ol); px(9, 9, 2, 2, ol);
   });
@@ -1249,21 +1295,15 @@ function getPetSprite(coatColor, isCat, frame) {
 function getFoodPixelSprite(isEmptyPlate, isPetFood) {
   return bakePixelSprite(`food_${isEmptyPlate}_${isPetFood}`, 10, 8, (px) => {
     const ol = '#2c1e16';
-    px(1, 3, 8, 4, ol);
-    px(2, 4, 6, 2, '#f8fafc');
+    px(1, 3, 8, 4, ol); px(2, 4, 6, 2, '#f8fafc');
     if (!isEmptyPlate) {
-      if (isPetFood) {
-        px(3, 2, 4, 2, '#f59e0b');
-        px(4, 1, 2, 1, '#4ade80');
-      } else {
-        px(3, 1, 4, 3, '#92400e');
-        px(4, 1, 2, 1, '#fde047');
-      }
+      if (isPetFood) { px(3, 2, 4, 2, '#f59e0b'); px(4, 1, 2, 1, '#4ade80'); }
+      else { px(3, 1, 4, 3, '#92400e'); px(4, 1, 2, 1, '#fde047'); }
     }
   });
 }
 
-// ==================== 7. 模擬實體與多桌同時接待 ====================
+// ==================== 7. 模擬實體與多店營收累計 ====================
 let entities = {
   chef: { gx: 1.0, gy: 1.5, state: 'idle', timer: 0, order: null, patrolDir: 1 },
   waiters: {
@@ -1282,6 +1322,7 @@ let entities = {
 let spawnTimer = 0;
 let passerTimer = 0;
 let petHeartTimer = 0;
+let chainTickTimer = 0;
 let tickAccumulator = 0;
 let animFrameCounter = 0;
 
@@ -1325,7 +1366,7 @@ function getUnlockedMenuList() {
 }
 
 function getAvailableTable() {
-  const tables = state.placedItems.filter(it => it.defId.startsWith('table'));
+  const tables = getPlacedItems().filter(it => it.defId.startsWith('table'));
   for (const tbl of tables) {
     const occupied = entities.customers.some(c => c.tableUid === tbl.uid && c.state !== 'leaving');
     const dirty = entities.dirtyTables.some(d => d.tableUid === tbl.uid);
@@ -1352,19 +1393,11 @@ function spawnCustomer(forceVip = false) {
     hasPet,
     petCoat: reg.petType === 'cat' ? '#ff9800' : (reg.petType === 'senior_dog' ? '#d7ccc8' : '#e69d45'),
     isCat: reg.petType === 'cat',
-    gx: G - 1.2,
-    gy: G - 1.2,
-    tableUid: tbl.uid,
-    tableDefId: tbl.defId,
-    tableGx: tbl.gx,
-    tableGy: tbl.gy,
-    seatGx: tbl.gx + 0.45,
-    seatGy: tbl.gy + 0.45,
-    petGx: G - 0.8,
-    petGy: G - 0.8,
-    state: 'entering',
-    timer: 0,
-    orderedMenu: null,
+    gx: G - 1.2, gy: G - 1.2,
+    tableUid: tbl.uid, tableDefId: tbl.defId, tableGx: tbl.gx, tableGy: tbl.gy,
+    seatGx: tbl.gx + 0.45, seatGy: tbl.gy + 0.45,
+    petGx: G - 0.8, petGy: G - 0.8,
+    state: 'entering', timer: 0, orderedMenu: null,
     bubble: forceVip ? 'VIP!' : (hasPet ? '♪ 期待' : '找位'),
     willUseToilet: Math.random() < 0.45
   });
@@ -1393,6 +1426,25 @@ function updateSimulation(dt) {
 
   state.minuteOfDay += dt * 7.2;
   if (state.minuteOfDay >= 1380) { endOfDay(); return; }
+
+  // 其他已解鎖分店同步獨立營運與產生連鎖分紅
+  chainTickTimer += dt;
+  if (chainTickTimer >= 4.0) {
+    chainTickTimer = 0;
+    BRANCH_DEFS.forEach(b => {
+      if (b.id === state.activeBranch) return;
+      const rec = state.branches[b.id];
+      if (rec && rec.unlocked) {
+        const earned = Math.round((45 + rec.stars * 38) * b.mult * state.legacyBonus);
+        rec.todayIncome += earned;
+        rec.todayCustomers += 1;
+        const div = Math.max(10, Math.round(earned * 0.25));
+        rec.todayDividend += div;
+        state.gold += div;
+        state.dailyStats.chainDividend = (state.dailyStats.chainDividend || 0) + div;
+      }
+    });
+  }
 
   if (feverTimer > 0) feverTimer = Math.max(0, feverTimer - dt);
   if (merchantTimer > 0) {
@@ -1446,7 +1498,7 @@ function updateSimulation(dt) {
       state.heart += gain;
       state.dailyStats.hearts += gain;
       state.pets[rp.id].bond = (state.pets[rp.id].bond || 0) + 1;
-      const turf = state.placedItems.find(it => it.defId === 'turf_zone') || { gx: 5, gy: 6 };
+      const turf = getPlacedItems().find(it => it.defId === 'turf_zone') || { gx: 5, gy: 6 };
       addParticle(turf.gx + (Math.random() - 0.5), turf.gy + (Math.random() - 0.5), `♪ +${gain}愛心`, '#ff85a2');
       if (vipEvent) vipEvent.score += 18;
     }
@@ -1457,25 +1509,16 @@ function updateSimulation(dt) {
   if (chef.state === 'idle') {
     const targetGy = chef.patrolDir > 0 ? 2.1 : 0.8;
     if (moveTowards(chef, 0.85, targetGy, 1.1 * chefSpeed, dt)) chef.patrolDir *= -1;
-    if (entities.orders.length > 0) {
-      chef.order = entities.orders.shift();
-      chef.state = 'walking_stove';
-    }
+    if (entities.orders.length > 0) { chef.order = entities.orders.shift(); chef.state = 'walking_stove'; }
   } else if (chef.state === 'walking_stove') {
-    if (moveTowards(chef, 0.55, 0.65, 2.4 * chefSpeed, dt)) {
-      chef.state = 'cooking';
-      chef.timer = 1.7 / chefSpeed;
-      chef.maxTimer = chef.timer;
-    }
+    if (moveTowards(chef, 0.55, 0.65, 2.4 * chefSpeed, dt)) { chef.state = 'cooking'; chef.timer = 1.7 / chefSpeed; chef.maxTimer = chef.timer; }
   } else if (chef.state === 'cooking') {
     chef.timer -= dt;
     if (chef.timer <= 0) chef.state = 'serving_pass';
   } else if (chef.state === 'serving_pass') {
     if (moveTowards(chef, 1.65, 1.95, 2.5 * chefSpeed, dt)) {
-      entities.readyDishes.push(chef.order);
-      chef.order = null; chef.state = 'idle';
-      addParticle(2.0, 2.0, '出餐!', '#fde047');
-      gainStaffExp('chef_1', 1);
+      entities.readyDishes.push(chef.order); chef.order = null; chef.state = 'idle';
+      addParticle(2.0, 2.0, '出餐!', '#fde047'); gainStaffExp('chef_1', 1);
     }
   }
 
@@ -1493,23 +1536,17 @@ function updateSimulation(dt) {
     const w = entities.waiters[wid];
     const spd = 2.5 * getWaiterSpeedMultiplier(wid);
     if (w.state === 'idle') {
-      if (entities.readyDishes.length > 0) {
-        w.dish = entities.readyDishes.shift(); w.state = 'to_counter';
-      } else if (entities.dirtyTables.length > 0) {
-        w.cleanTable = entities.dirtyTables.shift(); w.state = 'cleaning';
-      } else {
-        moveTowards(w, wid === 'waiter_1' ? 3.4 : 4.6, wid === 'waiter_1' ? 2.4 : 4.2, spd * 0.7, dt);
-      }
+      if (entities.readyDishes.length > 0) { w.dish = entities.readyDishes.shift(); w.state = 'to_counter'; }
+      else if (entities.dirtyTables.length > 0) { w.cleanTable = entities.dirtyTables.shift(); w.state = 'cleaning'; }
+      else { moveTowards(w, wid === 'waiter_1' ? 3.4 : 4.6, wid === 'waiter_1' ? 2.4 : 4.2, spd * 0.7, dt); }
     } else if (w.state === 'to_counter') {
       if (moveTowards(w, 2.55, 2.15, spd, dt)) w.state = 'delivering';
     } else if (w.state === 'delivering') {
       const cust = entities.customers.find(c => c.id === w.dish.customerId);
-      if (!cust || cust.state === 'leaving') {
-        w.dish = null; w.state = 'idle';
-      } else if (moveTowards(w, cust.gx - 0.3, cust.gy + 0.3, spd, dt)) {
+      if (!cust || cust.state === 'leaving') { w.dish = null; w.state = 'idle'; }
+      else if (moveTowards(w, cust.gx - 0.3, cust.gy + 0.3, spd, dt)) {
         cust.state = 'eating'; cust.timer = 2.5; cust.bubble = '♪ 好吃!';
-        w.dish = null; w.state = 'idle';
-        gainStaffExp(wid, 1);
+        w.dish = null; w.state = 'idle'; gainStaffExp(wid, 1);
       }
     } else if (w.state === 'cleaning') {
       if (!w.cleanTable) { w.state = 'idle'; return; }
@@ -1521,11 +1558,10 @@ function updateSimulation(dt) {
   });
 
   const G = state.maxGridSize;
+  const activeRec = getActiveBranchRec();
   entities.customers.forEach(c => {
     if (c.state === 'entering') {
-      if (moveTowards(c, c.seatGx, c.seatGy, 2.1, dt)) {
-        c.state = 'ordering'; c.timer = 0.75; c.bubble = '點餐中';
-      }
+      if (moveTowards(c, c.seatGx, c.seatGy, 2.1, dt)) { c.state = 'ordering'; c.timer = 0.75; c.bubble = '點餐中'; }
     } else if (c.state === 'ordering') {
       c.timer -= dt;
       if (c.timer <= 0) {
@@ -1549,6 +1585,7 @@ function updateSimulation(dt) {
         state.gold += price;
         state.dailyStats.income += price;
         state.dailyStats.customers += 1;
+        if (activeRec) { activeRec.todayIncome += price; activeRec.todayCustomers += 1; }
         addParticle(c.gx, c.gy, `+$${price}`, '#fde047');
         sfx.coin();
 
@@ -1558,18 +1595,13 @@ function updateSimulation(dt) {
         if (!c.isVip && state.regulars[c.regId]) {
           const rObj = state.regulars[c.regId];
           rObj.exp += 1;
-          if (rObj.exp >= rObj.lv * 3 && rObj.lv < 10) {
-            rObj.lv += 1; rObj.exp = 0;
-            applyRegularLevelReward(c.regId, rObj.lv);
-          }
+          if (rObj.exp >= rObj.lv * 3 && rObj.lv < 10) { rObj.lv += 1; rObj.exp = 0; applyRegularLevelReward(c.regId, rObj.lv); }
         }
         if (c.isVip && vipEvent) vipEvent.score += 65;
 
         if (c.willUseToilet && !entities.toiletOccupiedBy) {
           entities.toiletOccupiedBy = c.id; c.state = 'to_toilet'; c.bubble = '去洗手間';
-        } else {
-          c.state = 'leaving'; c.bubble = '太讚啦!';
-        }
+        } else { c.state = 'leaving'; c.bubble = '太讚啦!'; }
       }
     } else if (c.state === 'to_toilet') {
       if (moveTowards(c, 0.9, 7.3, 2.1, dt)) { c.state = 'using_toilet'; c.timer = 1.5; c.bubble = '洗手間中'; }
@@ -1605,10 +1637,7 @@ function gainStaffExp(wid, amt) {
   if (!s) return;
   s.exp = (s.exp || 0) + amt;
   const need = s.lv * 12;
-  if (s.exp >= need && s.lv < 10) {
-    s.lv += 1; s.exp = 0;
-    addParticle(2.0, 2.0, `店員Lv.${s.lv}`, '#4ade80');
-  }
+  if (s.exp >= need && s.lv < 10) { s.lv += 1; s.exp = 0; addParticle(2.0, 2.0, `店員Lv.${s.lv}`, '#4ade80'); }
 }
 
 function applyRegularLevelReward(regId, newLv) {
@@ -1640,10 +1669,8 @@ function renderScene() {
   ctx.fillRect(0, 0, CW, CH);
 
   if (light.isNight) {
-    ctx.fillStyle = '#fef08a';
-    ctx.fillRect(CW - 44, 24, 10, 10);
-    ctx.fillStyle = light.sky[0];
-    ctx.fillRect(CW - 40, 22, 8, 8);
+    ctx.fillStyle = '#fef08a'; ctx.fillRect(CW - 44, 24, 10, 10);
+    ctx.fillStyle = light.sky[0]; ctx.fillRect(CW - 40, 22, 8, 8);
     ctx.fillStyle = '#ffffff';
     [[35, 22], [95, 38], [165, 18], [260, 28], [340, 20]].forEach(([sx, sy]) => ctx.fillRect(sx, sy, 2, 2));
   }
@@ -1670,24 +1697,22 @@ function renderScene() {
   const rightCorner = gridToIso(G, 0);
 
   ctx.beginPath();
-  ctx.moveTo(topCorner.x, topCorner.y);
-  ctx.lineTo(leftCorner.x, leftCorner.y + TILE_H / 2);
-  ctx.lineTo(leftCorner.x, leftCorner.y + TILE_H / 2 - wallH);
-  ctx.lineTo(topCorner.x, topCorner.y - wallH);
+  ctx.moveTo(topCorner.x, topCorner.y); ctx.lineTo(leftCorner.x, leftCorner.y + TILE_H / 2);
+  ctx.lineTo(leftCorner.x, leftCorner.y + TILE_H / 2 - wallH); ctx.lineTo(topCorner.x, topCorner.y - wallH);
   ctx.closePath();
-  ctx.fillStyle = branch.wallTint;
-  ctx.fill();
-  ctx.strokeStyle = '#2c1e16'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = branch.wallTint; ctx.fill(); ctx.strokeStyle = '#2c1e16'; ctx.lineWidth = 2; ctx.stroke();
 
   ctx.beginPath();
-  ctx.moveTo(topCorner.x, topCorner.y);
-  ctx.lineTo(rightCorner.x, rightCorner.y + TILE_H / 2);
-  ctx.lineTo(rightCorner.x, rightCorner.y + TILE_H / 2 - wallH);
-  ctx.lineTo(topCorner.x, topCorner.y - wallH);
+  ctx.moveTo(topCorner.x, topCorner.y); ctx.lineTo(rightCorner.x, rightCorner.y + TILE_H / 2);
+  ctx.lineTo(rightCorner.x, rightCorner.y + TILE_H / 2 - wallH); ctx.lineTo(topCorner.x, topCorner.y - wallH);
   ctx.closePath();
-  ctx.fillStyle = '#e6d2b5';
-  ctx.fill();
-  ctx.stroke();
+  ctx.fillStyle = '#e6d2b5'; ctx.fill(); ctx.stroke();
+
+  // 右牆分店專屬店招牌
+  const signPos = gridToIso(G * 0.65, 0);
+  ctx.fillStyle = '#2c1e16'; ctx.fillRect(signPos.x - 36, signPos.y - 33, 72, 12);
+  ctx.fillStyle = '#fde047'; ctx.font = 'bold 7.5px sans-serif';
+  ctx.fillText(branch.signText, signPos.x - 32, signPos.y - 24);
 
   [2, 5, 7].forEach(wy => {
     if (wy >= G - 1) return;
@@ -1700,14 +1725,10 @@ function renderScene() {
 
   if (state.wonContests.length > 0) {
     const tp = gridToIso(4.5, 0);
-    ctx.fillStyle = '#5d3b24';
-    ctx.fillRect(tp.x - 18, tp.y - 20, 38, 4);
+    ctx.fillStyle = '#5d3b24'; ctx.fillRect(tp.x - 18, tp.y - 20, 38, 4);
     state.wonContests.forEach((cid, idx) => {
       const c = CONTEST_DEFS.find(x => x.id === cid);
-      if (c) {
-        ctx.fillStyle = c.color;
-        ctx.fillRect(tp.x - 14 + idx * 9, tp.y - 28, 6, 8);
-      }
+      if (c) { ctx.fillStyle = c.color; ctx.fillRect(tp.x - 14 + idx * 9, tp.y - 28, 6, 8); }
     });
   }
 
@@ -1720,14 +1741,11 @@ function renderScene() {
       else if (branch.floorStyle === 'resort') col = (gx + gy) % 2 === 0 ? '#d9f99d' : '#fef08a';
       else col = (gx + gy) % 2 === 0 ? '#e5c191' : '#d8b07c';
 
-      if (editMode) {
-        col = isRestrictedFurnitureCell(gx, gy) ? '#fca5a5' : ((gx + gy) % 2 === 0 ? '#bbf7d0' : '#86efac');
-      }
+      if (editMode) col = isRestrictedFurnitureCell(gx, gy) ? '#fca5a5' : ((gx + gy) % 2 === 0 ? '#bbf7d0' : '#86efac');
       drawIsoTile(gx, gy, col, '#8d6e63', '#6d4c41', 5);
     }
   }
 
-  // 獨立廚房隔間與立體灶台/備料台
   drawIsoWallSegment(2, 0, 26, '#8d5524', '#6d3f19', false);
   drawIsoWallSegment(2, 1, 26, '#8d5524', '#6d3f19', false);
   drawIsoTile(2, 2, '#f59e0b', '#b45309', '#78350f', 13, '#2c1e16');
@@ -1745,7 +1763,6 @@ function renderScene() {
   ctx.fillStyle = '#2c1e16'; ctx.font = 'bold 9px sans-serif';
   ctx.fillText('廚房', kLabel.x - 8, kLabel.y - 16);
 
-  // 獨立廁所隔間與立體馬桶/洗手台
   drawIsoWallSegment(0, 6, 25, '#38bdf8', '#0284c7', false);
   drawIsoWallSegment(1, 6, 25, '#38bdf8', '#0284c7', false);
   drawIsoWallSegment(2, 6, 25, '#0ea5e9', '#0369a1', true);
@@ -1755,19 +1772,17 @@ function renderScene() {
   const wcPos = gridToIso(0, 8);
   drawIsoBox(wcPos.x, wcPos.y + 11, 8, 4, 6, '#ffffff', '#e2e8f0', '#cbd5e1');
   drawIsoBox(wcPos.x - 3, wcPos.y + 6, 4, 2, 6, '#ffffff', '#cbd5e1', '#94a3b8');
-
   const snkPos = gridToIso(0, 7);
   drawIsoBox(snkPos.x, snkPos.y + 11, 8, 4, 7, '#e0f2fe', '#7dd3fc', '#38bdf8');
-
   const tLabel = gridToIso(1.2, 6.2);
   ctx.fillStyle = entities.toiletOccupiedBy ? '#dc2626' : '#0369a1';
   ctx.font = 'bold 9px sans-serif';
   ctx.fillText(entities.toiletOccupiedBy ? '使用中' : '洗手間', tLabel.x - 10, tLabel.y - 24);
 
   const drawables = [];
+  const items = getPlacedItems();
 
-  // 2:1 等角立體家具套組 + 桌上實體像素料理/空盤
-  state.placedItems.forEach(it => {
+  items.forEach(it => {
     const def = FACILITY_DEFS.find(f => f.id === it.defId);
     if (!def) return;
     drawables.push({
@@ -1788,7 +1803,6 @@ function renderScene() {
             ctx.drawImage(emptySp, p.x - 5, baseY - 14, 10, 8);
           }
         }
-
         if (editMode && selectedUid === it.uid) {
           ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2;
           ctx.strokeRect(p.x - 15, baseY - 18, 30, 24);
@@ -1800,10 +1814,8 @@ function renderScene() {
   drawables.push({
     depth: entities.chef.gx + entities.chef.gy,
     render: () => {
-      const c = entities.chef;
-      const p = gridToIso(c.gx, c.gy);
-      const isKairo = state.staff.chef_1.job === 'kairo_king';
-      const sp = getChibiSprite('chef', '#2c1e16', '#ffffff', true, frame, isKairo);
+      const c = entities.chef; const p = gridToIso(c.gx, c.gy);
+      const sp = getChibiSprite('chef', '#2c1e16', '#ffffff', true, frame, state.staff.chef_1.job === 'kairo_king');
       ctx.drawImage(sp, p.x - 11, p.y - 20, 22, 27);
       if (c.state === 'cooking') {
         const pct = Math.max(0, Math.min(1, 1 - c.timer / (c.maxTimer || 1.5)));
@@ -1815,14 +1827,12 @@ function renderScene() {
 
   ['waiter_1', 'waiter_2'].forEach(wid => {
     if ((state.staff[wid]?.lv || 0) <= 0) return;
-    const def = STAFF_DEFS.find(s => s.id === wid);
-    const w = entities.waiters[wid];
+    const def = STAFF_DEFS.find(s => s.id === wid); const w = entities.waiters[wid];
     drawables.push({
       depth: w.gx + w.gy,
       render: () => {
         const p = gridToIso(w.gx, w.gy);
-        const isKairo = state.staff[wid].job === 'kairo_king';
-        const sp = getChibiSprite(wid, def.hair, def.shirt, false, frame, isKairo);
+        const sp = getChibiSprite(wid, def.hair, def.shirt, false, frame, state.staff[wid].job === 'kairo_king');
         ctx.drawImage(sp, p.x - 11, p.y - 20, 22, 27);
         if (w.dish) {
           const dSp = getFoodPixelSprite(false, w.dish.menu.cat === 'pet');
@@ -1832,7 +1842,7 @@ function renderScene() {
     });
   });
 
-  const turfItem = state.placedItems.find(it => it.defId === 'turf_zone') || { gx: 5, gy: 6 };
+  const turfItem = items.find(it => it.defId === 'turf_zone') || { gx: 5, gy: 6 };
   PET_DEFS.forEach((pet, idx) => {
     if ((state.pets[pet.id]?.lv || 0) <= 0) return;
     const angle = animFrameCounter * 0.025 + idx * 1.8;
@@ -1856,12 +1866,9 @@ function renderScene() {
         const sp = getChibiSprite(c.regId, c.hair, c.shirt, false, frame, c.regId === 'r_kairo');
         ctx.drawImage(sp, p.x - 11, p.y - 20, 22, 27);
         if (c.bubble) {
-          ctx.fillStyle = '#fffdf8';
-          ctx.fillRect(p.x - 18, p.y - 33, 36, 11);
-          ctx.strokeStyle = '#2c1e16'; ctx.lineWidth = 1;
-          ctx.strokeRect(p.x - 18, p.y - 33, 36, 11);
-          ctx.fillStyle = '#2c1e16'; ctx.font = 'bold 8px sans-serif';
-          ctx.fillText(c.bubble, p.x - 16, p.y - 25);
+          ctx.fillStyle = '#fffdf8'; ctx.fillRect(p.x - 18, p.y - 33, 36, 11);
+          ctx.strokeStyle = '#2c1e16'; ctx.lineWidth = 1; ctx.strokeRect(p.x - 18, p.y - 33, 36, 11);
+          ctx.fillStyle = '#2c1e16'; ctx.font = 'bold 8px sans-serif'; ctx.fillText(c.bubble, p.x - 16, p.y - 25);
         }
       }
     });
@@ -1890,16 +1897,11 @@ function renderScene() {
 
   drawables.sort((a, b) => a.depth - b.depth).forEach(d => d.render());
 
-  if (light.ambient !== 'rgba(255,255,255,0)') {
-    ctx.fillStyle = light.ambient;
-    ctx.fillRect(0, 0, CW, CH);
-  }
+  if (light.ambient !== 'rgba(255,255,255,0)') { ctx.fillStyle = light.ambient; ctx.fillRect(0, 0, CW, CH); }
   entities.particles.forEach(pt => {
     ctx.font = 'bold 11px sans-serif';
-    ctx.fillStyle = '#2c1e16';
-    ctx.fillText(pt.text, pt.x - 13, pt.y + 1);
-    ctx.fillStyle = pt.color;
-    ctx.fillText(pt.text, pt.x - 14, pt.y);
+    ctx.fillStyle = '#2c1e16'; ctx.fillText(pt.text, pt.x - 13, pt.y + 1);
+    ctx.fillStyle = pt.color; ctx.fillText(pt.text, pt.x - 14, pt.y);
   });
 
   if (branchFlashAlpha > 0) {
@@ -1916,7 +1918,7 @@ function updateEditBarUI() {
   bar.classList.toggle('show', editMode);
   if (!editMode) { ops.style.display = 'none'; return; }
 
-  const it = state.placedItems.find(x => x.uid === selectedUid);
+  const it = getPlacedItems().find(x => x.uid === selectedUid);
   if (it) {
     const def = FACILITY_DEFS.find(f => f.id === it.defId);
     document.getElementById('edit-status-text').textContent = `已選：${def?.name || ''} (Lv.${it.lv}) → 點空地移動`;
@@ -1928,29 +1930,29 @@ function updateEditBarUI() {
 }
 
 function toggleEditMode() {
-  editMode = !editMode;
-  selectedUid = null;
+  editMode = !editMode; selectedUid = null;
   document.getElementById('btn-edit-mode').classList.toggle('active', editMode);
   updateEditBarUI();
 }
 
 function upgradeSelectedPlaced() {
-  const it = state.placedItems.find(x => x.uid === selectedUid);
+  const it = getPlacedItems().find(x => x.uid === selectedUid);
   const def = it && FACILITY_DEFS.find(f => f.id === it.defId);
   if (!it || !def || it.lv >= def.maxLv) return;
   const cost = Math.round(def.baseCost * 0.65 * Math.pow(1.4, it.lv));
   if (state.gold < cost) return alert(`資金不足，升級此件需要 $${cost}`);
-  state.gold -= cost; it.lv += 1;
+  state.gold -= cost; it.lv += 1; refreshAllBranchStars();
   sfx.upgrade(); saveGame(); updateEditBarUI(); renderPanel();
 }
 
 function removeSelectedPlaced() {
-  const idx = state.placedItems.findIndex(x => x.uid === selectedUid);
+  const items = getPlacedItems();
+  const idx = items.findIndex(x => x.uid === selectedUid);
   if (idx === -1) return;
-  const removed = state.placedItems.splice(idx, 1)[0];
+  const removed = items.splice(idx, 1)[0];
   const def = FACILITY_DEFS.find(f => f.id === removed.defId);
   const refund = Math.round((def?.baseCost || 200) * 0.5);
-  state.gold += refund; selectedUid = null;
+  state.gold += refund; selectedUid = null; refreshAllBranchStars();
   addParticle(removed.gx, removed.gy, `拆除退+$${refund}`, '#fde047');
   sfx.coin(); saveGame(); updateEditBarUI(); renderPanel();
 }
@@ -1972,20 +1974,16 @@ canvas.addEventListener('pointerdown', (e) => {
   }
 
   if (gx < 0 || gx >= state.maxGridSize || gy < 0 || gy >= state.maxGridSize) return;
-
-  const clickedItem = state.placedItems.find(it => it.gx === gx && it.gy === gy);
-  if (clickedItem) {
-    selectedUid = clickedItem.uid;
-    updateEditBarUI();
-    return;
-  }
+  const items = getPlacedItems();
+  const clickedItem = items.find(it => it.gx === gx && it.gy === gy);
+  if (clickedItem) { selectedUid = clickedItem.uid; updateEditBarUI(); return; }
 
   if (selectedUid) {
     if (isRestrictedFurnitureCell(gx, gy)) {
       document.getElementById('ticker').textContent = '⚠️ 獨立廚房、廁所隔間與大門走道不可放置客用設施！';
       return;
     }
-    const targetItem = state.placedItems.find(x => x.uid === selectedUid);
+    const targetItem = items.find(x => x.uid === selectedUid);
     if (targetItem) {
       targetItem.gx = gx; targetItem.gy = gy;
       selectedUid = null; updateEditBarUI();
@@ -2008,11 +2006,11 @@ function renderPanel() {
   const season = getCurrentSeason();
 
   if (activeTab === 'facility') {
-    const totalTables = state.placedItems.filter(it => it.defId.startsWith('table')).length;
+    const totalTables = getPlacedItems().filter(it => it.defId.startsWith('table')).length;
     let html = `<div class="section-title"><span>🏠 設施增建與擺設（目前桌數：${totalTables} 張）</span><span>場地 ${state.maxGridSize}×${state.maxGridSize}</span></div>`;
     FACILITY_DEFS.forEach(f => {
       const cnt = countFacility(f.id);
-      const itemsOfType = state.placedItems.filter(it => it.defId === f.id);
+      const itemsOfType = getPlacedItems().filter(it => it.defId === f.id);
       const avgLv = cnt > 0 ? Math.round(itemsOfType.reduce((a, b) => a + b.lv, 0) / cnt) : 1;
       const buyCost = Math.round(f.baseCost * (1 + cnt * 0.25));
       const upAllCost = Math.round(f.baseCost * 0.65 * Math.pow(1.4, avgLv));
@@ -2036,7 +2034,7 @@ function renderPanel() {
         <button class="sub-pill ${activeSubTab === 'lab' ? 'active' : ''}" onclick="switchSubTab('lab')">🧪 食材自由搭配研發</button>
       </div>`;
     if (activeSubTab === 'main') {
-      html += `<div style="font-size:10.5px;color:#15803d;font-weight:800;padding:0 3px;">🔥 當季流行（${season.bonusDesc}）售價自動 1.5 倍！</div>`;
+      html += `<div style="font-size:10.5px;color:#15803d;font-weight:800;padding:0 3px;">🔥 當季（${season.bonusDesc}）1.5x ｜ ${getBranchInfo().favLabel}</div>`;
       MENU_DEFS.forEach(m => {
         const lv = state.menus[m.id] || 0;
         const seasonal = isSeasonalDish(m.name);
@@ -2157,7 +2155,41 @@ function renderPanel() {
     }
     area.innerHTML = html;
   } else if (activeTab === 'event') {
-    let html = `<div class="section-title"><span>🏆 毛孩與廚藝大賽</span><span>已奪冠 ${state.wonContests.length}/${CONTEST_DEFS.length}</span></div>`;
+    refreshAllBranchStars();
+    let html = `<div class="section-title"><span>🏪 開羅多店連鎖巡迴總覽</span><span>今日連鎖分紅 +$${(state.dailyStats.chainDividend || 0).toLocaleString()}</span></div>`;
+
+    BRANCH_DEFS.forEach(b => {
+      const rec = state.branches[b.id];
+      const isCur = state.activeBranch === b.id;
+      const supCost = 1200 * ((rec.supportLv || 0) + 1);
+      html += `
+        <div class="card" style="${isCur ? 'border-color:#e86f2c;background:#fffaf0;' : ''}">
+          <div class="card-info">
+            <div class="card-title">🏪 ${b.name} <span class="badge badge-combo">★${rec.stars.toFixed(1)}</span> <span class="badge badge-season">${b.mult}x</span></div>
+            <div class="card-desc">${b.favLabel}<br>本日獨立營收：<b>$${rec.todayIncome.toLocaleString()}</b>（${rec.todayCustomers}組）｜分紅貢獻：$${rec.todayDividend.toLocaleString()}</div>
+            ${rec.unlocked ? `<div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap;">
+              <button class="btn btn-purple" style="font-size:10px;padding:2px 6px;" ${state.gold < supCost ? 'disabled' : ''} onclick="dispatchBranchSupport('${b.id}')">🚀 派遣王牌支援 Lv.${(rec.supportLv || 0) + 1} ($${supCost})</button>
+            </div>` : `<div class="card-desc">${b.desc}</div>`}
+          </div>
+          <div class="card-actions">
+            <button class="btn ${isCur ? 'btn-gold' : 'btn-blue'}" ${isCur || (!rec.unlocked && state.gold < b.unlockCost) ? 'disabled' : ''} onclick="switchOrUnlockBranch('${b.id}')">
+              ${isCur ? '視察中' : (rec.unlocked ? '巡迴切換' : '開設分店<br>$' + b.unlockCost)}
+            </button>
+          </div>
+        </div>`;
+    });
+
+    const expCost = state.maxGridSize === 10 ? 3200 : (state.maxGridSize === 12 ? 7800 : 0);
+    html += `
+      <div class="section-title" style="margin-top:4px;"><span>📐 樓地板擴建 & 🏆 廚藝大賽</span></div>
+      <div class="card">
+        <div class="card-info">
+          <div class="card-title">📐 擴建營業樓地板面積 <span class="badge badge-lv">${state.maxGridSize}×${state.maxGridSize}</span></div>
+          <div class="card-desc">擴大餐廳大廳空間，擺放更多桌椅與設施相性組合</div>
+        </div>
+        <button class="btn btn-green" ${expCost === 0 || state.gold < expCost ? 'disabled' : ''} onclick="expandFloor()">${expCost === 0 ? '最大規模' : '擴建場地<br>$' + expCost}</button>
+      </div>`;
+
     CONTEST_DEFS.forEach(c => {
       const won = state.wonContests.includes(c.id);
       html += `
@@ -2169,37 +2201,11 @@ function renderPanel() {
           <button class="btn btn-purple" ${won || state.heart < c.costHeart ? 'disabled' : ''} onclick="enterContest('${c.id}')">${won ? '榮耀達成' : '報名參賽<br>❤️' + c.costHeart}</button>
         </div>`;
     });
-
-    const expCost = state.maxGridSize === 10 ? 3200 : (state.maxGridSize === 12 ? 7800 : 0);
-    html += `
-      <div class="section-title" style="margin-top:4px;"><span>🏗️ 店面擴建與跨區連鎖分店</span></div>
-      <div class="card">
-        <div class="card-info">
-          <div class="card-title">📐 擴建營業樓地板面積 <span class="badge badge-lv">${state.maxGridSize}×${state.maxGridSize}</span></div>
-          <div class="card-desc">擴大餐廳大廳空間，擺放更多桌椅與設施相性組合</div>
-        </div>
-        <button class="btn btn-green" ${expCost === 0 || state.gold < expCost ? 'disabled' : ''} onclick="expandFloor()">${expCost === 0 ? '最大規模' : '擴建場地<br>$' + expCost}</button>
-      </div>`;
-
-    BRANCH_DEFS.forEach(b => {
-      const unlocked = state.unlockedBranches.includes(b.id);
-      const isCur = state.activeBranch === b.id;
-      html += `
-        <div class="card" style="${isCur ? 'border-color:#e86f2c;' : ''}">
-          <div class="card-info">
-            <div class="card-title">🏪 ${b.name} <span class="badge badge-combo">營收 ${b.mult}x</span></div>
-            <div class="card-desc">${b.desc}</div>
-          </div>
-          <button class="btn ${isCur ? 'btn-gold' : 'btn-blue'}" ${isCur || (!unlocked && state.gold < b.unlockCost) ? 'disabled' : ''} onclick="switchOrUnlockBranch('${b.id}')">
-            ${isCur ? '營業中' : (unlocked ? '切換分店' : '開設分店<br>$' + b.unlockCost)}
-          </button>
-        </div>`;
-    });
     area.innerHTML = html;
   }
 }
 
-// ==================== 11. 多件購買擺設與玩家操作函式 ====================
+// ==================== 11. 多件購買擺設、連鎖派遣與玩家操作 ====================
 function buyNewPlacement(defId) {
   sfx.init();
   const def = FACILITY_DEFS.find(x => x.id === defId);
@@ -2209,31 +2215,46 @@ function buyNewPlacement(defId) {
   if (state.gold < cost) return;
 
   const free = findFreeTile(def.defaultGx + (cnt % 3), def.defaultGy + Math.floor(cnt / 3));
-  if (!free) return alert('店內目前沒有多餘空地了！請先到「競賽擴店」擴建場地或拆除部分舊擺設。');
+  if (!free) return alert('店內目前沒有多餘空地了！請先到「連鎖分店」擴建場地或拆除部分舊擺設。');
 
   state.gold -= cost;
-  const newUid = `item_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-  state.placedItems.push({ uid: newUid, defId, lv: 1, gx: free.gx, gy: free.gy });
+  const newUid = `${state.activeBranch}_item_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+  getPlacedItems().push({ uid: newUid, defId, lv: 1, gx: free.gx, gy: free.gy });
+  refreshAllBranchStars();
 
   editMode = true; selectedUid = newUid;
   document.getElementById('btn-edit-mode').classList.add('active');
   updateEditBarUI();
 
   getActiveCombos(); sfx.upgrade(); saveGame(); renderPanel();
-  document.getElementById('ticker').textContent = `✅ 已新增【${def.name}】！可直接點綠色空地調整位置！`;
+  document.getElementById('ticker').textContent = `✅ 已在【${getBranchInfo().name}】新增【${def.name}】！`;
 }
 
 function upgradeAllOfType(defId) {
   sfx.init();
   const def = FACILITY_DEFS.find(x => x.id === defId);
-  const items = state.placedItems.filter(it => it.defId === defId);
+  const items = getPlacedItems().filter(it => it.defId === defId);
   if (!def || items.length === 0) return;
   const avgLv = Math.round(items.reduce((a, b) => a + b.lv, 0) / items.length);
   const cost = Math.round(def.baseCost * 0.65 * Math.pow(1.4, avgLv));
   if (state.gold < cost) return;
   state.gold -= cost;
   items.forEach(it => { if (it.lv < def.maxLv) it.lv += 1; });
+  refreshAllBranchStars();
   sfx.upgrade(); saveGame(); renderPanel();
+}
+
+function dispatchBranchSupport(bid) {
+  sfx.init();
+  const rec = state.branches[bid];
+  if (!rec || !rec.unlocked) return;
+  const cost = 1200 * ((rec.supportLv || 0) + 1);
+  if (state.gold < cost) return;
+  state.gold -= cost;
+  rec.supportLv = (rec.supportLv || 0) + 1;
+  refreshAllBranchStars();
+  showComboToast(`🚀 派遣王牌支援成功！`, `${BRANCH_DEFS.find(x => x.id === bid)?.name} 升至 ★${rec.stars.toFixed(1)}！`);
+  sfx.combo(); saveGame(); renderPanel();
 }
 
 function unlockMenu(id) {
@@ -2305,9 +2326,7 @@ function promoteStaff(id, newJob) {
     st.job = 'kairo_king';
     showComboToast('🤖 傳說覺醒：開羅吉祥物店長！', '全能力與小費產出大幅暴增！');
     sfx.combo();
-  } else {
-    sfx.upgrade();
-  }
+  } else { sfx.upgrade(); }
   saveGame(); renderPanel();
 }
 function upgradePet(id) {
@@ -2330,16 +2349,19 @@ function expandFloor() {
 function switchOrUnlockBranch(bid) {
   sfx.init();
   const b = BRANCH_DEFS.find(x => x.id === bid);
-  if (!state.unlockedBranches.includes(bid)) {
+  const rec = state.branches[bid];
+  if (!rec) return;
+  if (!rec.unlocked) {
     if (state.gold < b.unlockCost) return;
-    state.gold -= b.unlockCost; state.unlockedBranches.push(bid);
+    state.gold -= b.unlockCost;
+    rec.unlocked = true;
   }
-  state.branchItems[state.activeBranch] = JSON.parse(JSON.stringify(state.placedItems));
   state.activeBranch = bid;
-  if (state.branchItems[bid]) state.placedItems = JSON.parse(JSON.stringify(state.branchItems[bid]));
+  refreshAllBranchStars();
+  selectedUid = null; updateEditBarUI();
   entities.customers = []; entities.orders = []; entities.readyDishes = []; entities.dirtyTables = []; entities.toiletOccupiedBy = null;
   branchFlashAlpha = 1.0;
-  showComboToast(`🏪 進駐【${b.name}】！`, b.desc);
+  showComboToast(`🏪 巡迴進駐【${b.name}】★${rec.stars.toFixed(1)}`, b.favLabel);
   sfx.combo(); saveGame(); renderPanel();
 }
 
@@ -2421,11 +2443,12 @@ function endOfDay() {
       monthBonusHtml = `<div class="report-row" style="color:#dc2626;font-weight:900;"><span>📋 月底評鑑未達標（魅力 ${getTotalAppeal()}/${reqAppeal}）</span><span>繼續加油</span></div>`;
     }
   }
-  document.getElementById('report-title').textContent = `🌙 第 ${state.day} 天營業結算`;
+  document.getElementById('report-title').textContent = `🌙 第 ${state.day} 天連鎖結算`;
   document.getElementById('report-body').innerHTML = `
     <div class="report-row"><span>今日接待客組</span><b>${state.dailyStats.customers} 組</b></div>
     <div class="report-row"><span>獨立廁所使用次數</span><b>${state.dailyStats.toiletUses || 0} 次</b></div>
-    <div class="report-row"><span>今日營業收入</span><b style="color:#d97706;">$${state.dailyStats.income.toLocaleString()}</b></div>
+    <div class="report-row"><span>分店連鎖分紅收入</span><b style="color:#16a34a;">+$${(state.dailyStats.chainDividend || 0).toLocaleString()}</b></div>
+    <div class="report-row"><span>今日總營業收入</span><b style="color:#d97706;">$${state.dailyStats.income.toLocaleString()}</b></div>
     <div class="report-row"><span>今日獲得愛心</span><b style="color:#e11d48;">❤️ ${state.dailyStats.hearts}</b></div>
     ${monthBonusHtml}
   `;
@@ -2436,7 +2459,14 @@ function endOfDay() {
 function closeReport() {
   document.getElementById('report-modal').classList.remove('show');
   state.day += 1; state.minuteOfDay = 540;
-  state.dailyStats = { income: 0, customers: 0, hearts: 0, toiletUses: 0 };
+  state.dailyStats = { income: 0, customers: 0, hearts: 0, toiletUses: 0, chainDividend: 0 };
+  BRANCH_DEFS.forEach(b => {
+    if (state.branches[b.id]) {
+      state.branches[b.id].todayIncome = 0;
+      state.branches[b.id].todayCustomers = 0;
+      state.branches[b.id].todayDividend = 0;
+    }
+  });
   entities.customers = []; entities.orders = []; entities.readyDishes = []; entities.dirtyTables = []; entities.toiletOccupiedBy = null;
   isPaused = false;
   if (state.day % 4 === 0) setTimeout(() => spawnCustomer(true), 2500);
@@ -2476,8 +2506,7 @@ function startNewGamePlus() {
   const nextNg = state.ngPlusCount + 1;
 
   state = JSON.parse(JSON.stringify(DEFAULT_STATE));
-  state.ngPlusCount = nextNg;
-  state.legacyBonus = 1 + (nextNg - 1) * 0.25;
+  state.ngPlusCount = nextNg; state.legacyBonus = 1 + (nextNg - 1) * 0.25;
   state.gold = 3500; state.heart = 80;
   state.discoveredCombos = keepCombos; state.regulars = keepRegulars; state.wonContests = keepContests;
   if (ngPlusSelection === 'menu') { state.menus = keepMenus; state.customMenus = keepCustom; }
@@ -2501,7 +2530,7 @@ function openCloudModal() {
   const rivals = [
     { name: '👑 開羅星光總店', score: 28500 },
     { name: '🐕 柴犬珈琲館', score: 16200 },
-    { name: `🐾 你的餐廳 (${getBranchInfo().name})`, score: myScore, isMe: true },
+    { name: `🐾 你的連鎖 (${getBranchInfo().name})`, score: myScore, isMe: true },
     { name: '🐈 貓咪肉球小舖', score: 6800 }
   ].sort((a, b) => b.score - a.score);
 
@@ -2526,9 +2555,7 @@ function importSaveCode() {
     state = Object.assign({}, DEFAULT_STATE, parsed);
     saveGame(); renderPanel();
     alert('🎉 存檔碼匯入成功！');
-  } catch (e) {
-    alert('❌ 存檔碼格式不正確，請確認是否完整複製。');
-  }
+  } catch (e) { alert('❌ 存檔碼格式不正確，請確認是否完整複製。'); }
 }
 async function syncFirebaseLeaderboard() {
   const url = document.getElementById('firebase-url-input').value.trim().replace(/\/$/, '');
@@ -2542,24 +2569,23 @@ async function syncFirebaseLeaderboard() {
       body: JSON.stringify({ branch: getBranchInfo().name, score: myScore, day: state.day, ts: Date.now() })
     });
     alert('✅ 已成功同步分數至你的 Firebase 排行榜！');
-  } catch (e) {
-    alert('⚠️ 連線失敗，請檢查 Firebase 網址或讀寫權限。');
-  }
+  } catch (e) { alert('⚠️ 連線失敗，請檢查 Firebase 網址或讀寫權限。'); }
 }
 
 // ==================== 14. HUD 更新與主迴圈 ====================
 function updateHUD() {
+  refreshAllBranchStars();
   const yr = Math.floor((state.day - 1) / 36) + 1;
   const dInYr = ((state.day - 1) % 36) + 1;
   const hh = String(Math.floor(state.minuteOfDay / 60)).padStart(2, '0');
   const mm = String(Math.floor(state.minuteOfDay % 60)).padStart(2, '0');
   const season = getCurrentSeason();
+  const activeRec = getActiveBranchRec();
 
   document.getElementById('hud-branch').textContent = `🐾 ${getBranchInfo().name}`;
-  document.getElementById('hud-ng').textContent = `${state.ngPlusCount}周目`;
+  document.getElementById('hud-stars').textContent = `★${(activeRec?.stars || 1).toFixed(1)}`;
   const sb = document.getElementById('hud-season');
-  sb.textContent = season.name;
-  sb.style.background = season.color;
+  sb.textContent = season.name; sb.style.background = season.color;
   document.getElementById('hud-time').textContent = `Y${yr} D${dInYr} ${hh}:${mm}`;
   document.getElementById('hud-gold').textContent = state.gold.toLocaleString();
   document.getElementById('hud-heart').textContent = state.heart.toLocaleString();
