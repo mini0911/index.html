@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>毛孩星光餐廳 - 100% 純像素正統開羅重製版（多桌自由擺設）</title>
+<title>毛孩星光餐廳 - 正統開羅2:1等角立體像素版</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
   :root {
@@ -504,7 +504,7 @@
       <h4 id="combo-toast-title">✨ 發現設施相性！</h4>
       <p id="combo-toast-desc">午茶療癒角：飲品售價 +25%！</p>
     </div>
-    <div class="ticker-bar" id="ticker">🐾 支援多張桌椅無限增建！點選「設施佈置」→「＋買新擺放」擺滿整間餐廳！</div>
+    <div class="ticker-bar" id="ticker">🐾 2:1 等角立體家具套組上線！桌椅附帶雙側座椅，櫃子與廁所全面立體化！</div>
   </div>
 
   <div class="panel-area" id="panel-area"></div>
@@ -658,14 +658,14 @@ const JOB_TREE = {
 };
 
 const FACILITY_DEFS = [
-  { id: 'table_1', name: '原木雙人桌', type: 'table', icon: '🪑', desc: '可擺多張！增加同時用餐客組', baseCost: 250, appeal: 6, maxLv: 5, defaultGx: 5, defaultGy: 3 },
-  { id: 'table_2', name: '靠窗沙發雅座', type: 'table', icon: '🛋️', desc: '可擺多張！舒適卡座，小費 +20%', baseCost: 520, appeal: 12, maxLv: 5, defaultGx: 7, defaultGy: 3 },
-  { id: 'turf_zone', name: '室內草皮遊樂區', type: 'decor', icon: '🌿', desc: '毛孩最愛草皮，愛心 +35%', baseCost: 650, appeal: 16, maxLv: 5, defaultGx: 5, defaultGy: 6 },
-  { id: 'cat_tower', name: '三層原木貓跳台', type: 'decor', icon: '🐈', desc: '吸引貓奴與愛心產出', baseCost: 850, appeal: 20, maxLv: 5, defaultGx: 8, defaultGy: 2 },
-  { id: 'coffee_bar', name: '義式精品咖啡機', type: 'machine', icon: '☕', desc: '提升全店飲品售價 +15%', baseCost: 1100, appeal: 22, maxLv: 5, defaultGx: 4, defaultGy: 1 },
-  { id: 'water_fountain', name: '循環活水飲水機', type: 'decor', icon: '⛲', desc: '提升寵物健康與飽足感', baseCost: 950, appeal: 18, maxLv: 5, defaultGx: 8, defaultGy: 6 },
-  { id: 'table_3', name: '露天花園圓桌', type: 'table', icon: '☂️', desc: '可擺多張！高人氣花園客席', baseCost: 1650, appeal: 25, maxLv: 5, defaultGx: 7, defaultGy: 7 },
-  { id: 'bakery_case', name: '手工點心展示櫃', type: 'machine', icon: '🧁', desc: '全料理魅力與單價大幅提升', baseCost: 2200, appeal: 30, maxLv: 5, defaultGx: 6, defaultGy: 1 }
+  { id: 'table_1', name: '原木雙人桌椅組', type: 'table', icon: '🪑', desc: '含雙側木椅＋立體原木餐桌', baseCost: 250, appeal: 6, maxLv: 5, defaultGx: 5, defaultGy: 3 },
+  { id: 'table_2', name: '靠窗沙發雅座組', type: 'table', icon: '🛋️', desc: '含雙側絨布沙發＋桌布，小費 +20%', baseCost: 520, appeal: 12, maxLv: 5, defaultGx: 7, defaultGy: 3 },
+  { id: 'turf_zone', name: '室內草皮圍欄區', type: 'decor', icon: '🌿', desc: '木欄草皮與玩具球，愛心 +35%', baseCost: 650, appeal: 16, maxLv: 5, defaultGx: 5, defaultGy: 6 },
+  { id: 'cat_tower', name: '三層原木貓跳台', type: 'decor', icon: '🐈', desc: '立體跳板、貓窩與紅毛線球', baseCost: 850, appeal: 20, maxLv: 5, defaultGx: 8, defaultGy: 2 },
+  { id: 'coffee_bar', name: '義式咖啡吧台櫃', type: 'machine', icon: '☕', desc: '立體木櫃＋雙頭義式機，飲品 +15%', baseCost: 1100, appeal: 22, maxLv: 5, defaultGx: 4, defaultGy: 1 },
+  { id: 'water_fountain', name: '循環活水飲水機', type: 'decor', icon: '⛲', desc: '立體水柱飲水台，寵物健康加成', baseCost: 950, appeal: 18, maxLv: 5, defaultGx: 8, defaultGy: 6 },
+  { id: 'table_3', name: '露天花園圓桌椅組', type: 'table', icon: '☂️', desc: '含雙側圓凳＋遮陽傘圓桌', baseCost: 1650, appeal: 25, maxLv: 5, defaultGx: 7, defaultGy: 7 },
+  { id: 'bakery_case', name: '手工點心玻璃櫃', type: 'machine', icon: '🧁', desc: '斜角玻璃櫃與彩色蛋糕，單價加成', baseCost: 2200, appeal: 30, maxLv: 5, defaultGx: 6, defaultGy: 1 }
 ];
 
 const COMBO_DEFS = [
@@ -767,7 +767,7 @@ const MERCHANT_ITEMS = [
   { id: 'm_border', name: '邊境牧羊犬領養券', costHeart: 120, desc: '直接招募傳說幫手「小黑」加入店內！' }
 ];
 
-// ==================== 3. 遊戲狀態管理（支援多件獨立擺設 placedItems） ====================
+// ==================== 3. 遊戲狀態管理 ====================
 const DEFAULT_STATE = {
   gold: 2000,
   heart: 45,
@@ -815,7 +815,7 @@ const DEFAULT_STATE = {
 
 let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
 try {
-  const saved = localStorage.getItem('kairo_pet_cafe_pixel_v2');
+  const saved = localStorage.getItem('kairo_pet_cafe_iso21_v1');
   if (saved) {
     const p = JSON.parse(saved);
     state = Object.assign({}, JSON.parse(JSON.stringify(DEFAULT_STATE)), p);
@@ -828,7 +828,7 @@ try {
 } catch (e) {}
 
 function saveGame() {
-  try { localStorage.setItem('kairo_pet_cafe_pixel_v2', JSON.stringify(state)); } catch (e) {}
+  try { localStorage.setItem('kairo_pet_cafe_iso21_v1', JSON.stringify(state)); } catch (e) {}
 }
 
 let activeTab = 'facility';
@@ -862,8 +862,7 @@ function findFreeTile(prefGx, prefGy) {
   for (let gx = 1; gx < G - 1; gx++) {
     for (let gy = 1; gy < G - 1; gy++) {
       if (!isRestrictedFurnitureCell(gx, gy) && !isCellOccupiedByItem(gx, gy)) {
-        const d = Math.hypot(gx - prefGx, gy - prefGy);
-        candidates.push({ gx, gy, d });
+        candidates.push({ gx, gy, d: Math.hypot(gx - prefGx, gy - prefGy) });
       }
     }
   }
@@ -971,7 +970,7 @@ function getWaiterSpeedMultiplier(id) {
   return (1 + (s.lv - 1) * 0.2) * (JOB_TREE[s.job]?.speedMul || 1);
 }
 
-// ==================== 6. 100% 純像素點陣精靈圖工廠 ====================
+// ==================== 6. 2:1 等角立體像素精靈圖與立體家具繪製 ====================
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 let CW = 480, CH = 300;
@@ -1006,6 +1005,109 @@ function isoToGrid(sx, sy) {
   const gx = Math.floor((dx / (TILE_W / 2) + dy / (TILE_H / 2)) / 2);
   const gy = Math.floor((dy / (TILE_H / 2) - dx / (TILE_W / 2)) / 2);
   return { gx, gy };
+}
+
+// 正統 2:1 等角立體方塊（頂面菱形 + 左亮面 + 右暗面 + 深棕描邊）
+function drawIsoBox(cx, baseY, rx, ry, h, topCol, leftCol, rightCol, outline = '#2c1e16') {
+  // 左側立面
+  ctx.beginPath();
+  ctx.moveTo(cx - rx, baseY - h);
+  ctx.lineTo(cx, baseY + ry - h);
+  ctx.lineTo(cx, baseY + ry);
+  ctx.lineTo(cx - rx, baseY);
+  ctx.closePath();
+  ctx.fillStyle = leftCol;
+  ctx.fill();
+  ctx.strokeStyle = outline; ctx.lineWidth = 1; ctx.stroke();
+
+  // 右側立面
+  ctx.beginPath();
+  ctx.moveTo(cx, baseY + ry - h);
+  ctx.lineTo(cx + rx, baseY - h);
+  ctx.lineTo(cx + rx, baseY);
+  ctx.lineTo(cx, baseY + ry);
+  ctx.closePath();
+  ctx.fillStyle = rightCol;
+  ctx.fill();
+  ctx.stroke();
+
+  // 頂面 2:1 菱形
+  ctx.beginPath();
+  ctx.moveTo(cx, baseY - ry - h);
+  ctx.lineTo(cx + rx, baseY - h);
+  ctx.lineTo(cx, baseY + ry - h);
+  ctx.lineTo(cx - rx, baseY - h);
+  ctx.closePath();
+  ctx.fillStyle = topCol;
+  ctx.fill();
+  ctx.stroke();
+}
+
+// 正統 2:1 等角立體家具套組（桌椅套組 / 吧台 / 玻璃點心櫃 / 貓跳台 / 草皮圍欄）
+function drawIsoFurnitureSet(defId, gx, gy, frame) {
+  const p = gridToIso(gx, gy);
+  const cx = p.x;
+  const baseY = p.y + TILE_H * 0.65;
+
+  if (defId === 'table_1') {
+    // 左側木椅 & 右側木椅 + 中央原木雙人桌
+    drawIsoBox(cx - 10, baseY - 2, 4, 2, 5, '#b45309', '#92400e', '#78350f');
+    drawIsoBox(cx + 10, baseY + 2, 4, 2, 5, '#b45309', '#92400e', '#78350f');
+    drawIsoBox(cx, baseY, 9, 4.5, 7, '#d97706', '#b45309', '#78350f');
+  } else if (defId === 'table_2') {
+    // 靠窗絨布沙發卡座 + 桌布餐桌
+    drawIsoBox(cx - 11, baseY - 2, 5, 2.5, 8, '#fb7185', '#e11d48', '#9f1239');
+    drawIsoBox(cx + 11, baseY + 2, 5, 2.5, 8, '#fb7185', '#e11d48', '#9f1239');
+    drawIsoBox(cx, baseY, 9, 4.5, 7, '#fffbeb', '#e2e8f0', '#cbd5e1');
+  } else if (defId === 'table_3') {
+    // 露天花園圓桌＋雙圓凳＋陽傘柱
+    drawIsoBox(cx - 9, baseY - 2, 3.5, 2, 5, '#7dd3fc', '#38bdf8', '#0284c7');
+    drawIsoBox(cx + 9, baseY + 2, 3.5, 2, 5, '#7dd3fc', '#38bdf8', '#0284c7');
+    drawIsoBox(cx, baseY, 8.5, 4.5, 7, '#fef08a', '#eab308', '#ca8a04');
+    // 傘頂菱形
+    drawIsoBox(cx, baseY - 15, 11, 5.5, 3, '#f97316', '#ea580c', '#c2410c');
+  } else if (defId === 'turf_zone') {
+    // 立體草皮地墊＋四邊木欄＋紅白毛孩球
+    drawIsoBox(cx, baseY, 15, 7.5, 2, '#4ade80', '#22c55e', '#16a34a');
+    drawIsoBox(cx, baseY - 2, 14, 7, 2, '#22c55e', '#16a34a', '#15803d');
+    // 球體像素點
+    ctx.fillStyle = '#ef4444';
+    ctx.fillRect(cx + 4, baseY - 6, 4, 4);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(cx + 5, baseY - 5, 2, 2);
+  } else if (defId === 'cat_tower') {
+    // 底層底座 + 立柱 + 中層跳板 + 頂層貓窩 + 懸吊紅毛線球
+    drawIsoBox(cx, baseY, 10, 5, 3, '#d97706', '#b45309', '#78350f');
+    drawIsoBox(cx, baseY - 3, 2.5, 1.5, 9, '#fef3c7', '#e2e8f0', '#cbd5e1');
+    drawIsoBox(cx - 4, baseY - 10, 6, 3, 2.5, '#f59e0b', '#d97706', '#b45309');
+    drawIsoBox(cx + 3, baseY - 16, 7, 3.5, 5, '#fbbf24', '#f59e0b', '#d97706');
+    const swing = Math.sin(animFrameCounter * 0.08) * 2;
+    ctx.fillStyle = '#ef4444';
+    ctx.fillRect(cx + 8 + swing, baseY - 11, 3, 3);
+  } else if (defId === 'coffee_bar') {
+    // 立體原木吧台櫃 + 銀色義式咖啡機
+    drawIsoBox(cx, baseY, 13, 6.5, 8, '#b45309', '#92400e', '#78350f');
+    drawIsoBox(cx - 2, baseY - 8, 7, 3.5, 7, '#f1f5f9', '#cbd5e1', '#94a3b8');
+    ctx.fillStyle = '#2c1e16';
+    ctx.fillRect(cx - 4, baseY - 11, 4, 3);
+  } else if (defId === 'water_fountain') {
+    // 立體循環活水飲水台與藍色水波
+    drawIsoBox(cx, baseY, 9, 4.5, 6, '#e0f2fe', '#7dd3fc', '#0284c7');
+    drawIsoBox(cx, baseY - 6, 5, 2.5, 4, '#38bdf8', '#0ea5e9', '#0369a1');
+    if (frame % 2 === 0) {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(cx - 1, baseY - 12, 2, 4);
+    }
+  } else if (defId === 'bakery_case') {
+    // 立體點心櫃 + 玻璃櫥窗反光斜線 + 彩色蛋糕
+    drawIsoBox(cx, baseY, 13, 6.5, 9, '#fef3c7', '#d97706', '#92400e');
+    ctx.fillStyle = '#f472b6'; ctx.fillRect(cx - 6, baseY - 11, 3, 3);
+    ctx.fillStyle = '#fde047'; ctx.fillRect(cx, baseY - 11, 3, 3);
+    ctx.fillStyle = '#4ade80'; ctx.fillRect(cx + 5, baseY - 11, 3, 3);
+    // 玻璃反光斜線
+    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(cx - 8, baseY - 12); ctx.lineTo(cx - 4, baseY - 6); ctx.stroke();
+  }
 }
 
 function drawIsoTile(gx, gy, topColor, leftColor, rightColor, height = 4, stroke = 'rgba(44,30,22,0.25)') {
@@ -1144,43 +1246,6 @@ function getPetSprite(coatColor, isCat, frame) {
   });
 }
 
-function getFacilityPixelSprite(fid) {
-  return bakePixelSprite(`fac_${fid}`, 18, 16, (px) => {
-    const ol = '#2c1e16';
-    if (fid.startsWith('table')) {
-      const top = fid === 'table_2' ? '#f43f5e' : (fid === 'table_3' ? '#38bdf8' : '#d97706');
-      px(2, 5, 14, 6, ol);
-      px(3, 6, 12, 4, top);
-      px(4, 11, 2, 4, '#78350f'); px(12, 11, 2, 4, '#78350f');
-    } else if (fid === 'turf_zone') {
-      px(1, 5, 16, 9, ol);
-      px(2, 6, 14, 7, '#4ade80');
-      px(4, 8, 2, 2, '#16a34a'); px(10, 7, 2, 2, '#16a34a'); px(12, 10, 2, 2, '#fde047');
-    } else if (fid === 'cat_tower') {
-      px(4, 2, 10, 13, ol);
-      px(5, 3, 8, 2, '#f59e0b');
-      px(8, 5, 2, 5, '#b45309');
-      px(3, 10, 12, 4, '#d97706');
-      px(13, 1, 3, 3, '#ef4444');
-    } else if (fid === 'coffee_bar') {
-      px(3, 2, 12, 12, ol);
-      px(4, 3, 10, 6, '#e2e8f0');
-      px(6, 5, 6, 2, '#334155');
-      px(4, 9, 10, 4, '#78350f');
-    } else if (fid === 'water_fountain') {
-      px(4, 4, 10, 10, ol);
-      px(5, 5, 8, 5, '#38bdf8');
-      px(7, 2, 4, 3, '#bae6fd');
-      px(5, 10, 8, 3, '#94a3b8');
-    } else {
-      px(2, 3, 14, 11, ol);
-      px(3, 4, 12, 6, '#fef3c7');
-      px(5, 6, 3, 2, '#f472b6'); px(10, 6, 3, 2, '#fbbf24');
-      px(3, 10, 12, 3, '#92400e');
-    }
-  });
-}
-
 function getFoodPixelSprite(isEmptyPlate, isPetFood) {
   return bakePixelSprite(`food_${isEmptyPlate}_${isPetFood}`, 10, 8, (px) => {
     const ol = '#2c1e16';
@@ -1259,7 +1324,6 @@ function getUnlockedMenuList() {
   return list;
 }
 
-// 掃描所有已擺放的桌椅實體，找出空桌
 function getAvailableTable() {
   const tables = state.placedItems.filter(it => it.defId.startsWith('table'));
   for (const tbl of tables) {
@@ -1294,8 +1358,8 @@ function spawnCustomer(forceVip = false) {
     tableDefId: tbl.defId,
     tableGx: tbl.gx,
     tableGy: tbl.gy,
-    seatGx: tbl.gx + 0.55,
-    seatGy: tbl.gy + 0.35,
+    seatGx: tbl.gx + 0.45,
+    seatGy: tbl.gy + 0.45,
     petGx: G - 0.8,
     petGy: G - 0.8,
     state: 'entering',
@@ -1388,7 +1452,6 @@ function updateSimulation(dt) {
     }
   }
 
-  // 獨立廚房廚師 AI
   const chef = entities.chef;
   const chefSpeed = getChefSpeedMultiplier();
   if (chef.state === 'idle') {
@@ -1416,7 +1479,6 @@ function updateSimulation(dt) {
     }
   }
 
-  // 邊境牧羊犬「小黑」自動送餐
   if ((state.pets.pet_border?.lv || 0) > 0 && entities.readyDishes.length > 0 && Math.random() < 0.09) {
     const dish = entities.readyDishes.shift();
     const cust = entities.customers.find(c => c.id === dish.customerId);
@@ -1426,7 +1488,6 @@ function updateSimulation(dt) {
     }
   }
 
-  // 外場服務生 AI
   ['waiter_1', 'waiter_2'].forEach(wid => {
     if ((state.staff[wid]?.lv || 0) <= 0) return;
     const w = entities.waiters[wid];
@@ -1459,7 +1520,6 @@ function updateSimulation(dt) {
     }
   });
 
-  // 顧客 AI
   const G = state.maxGridSize;
   entities.customers.forEach(c => {
     if (c.state === 'entering') {
@@ -1565,7 +1625,7 @@ function applyRegularLevelReward(regId, newLv) {
   sfx.upgrade();
 }
 
-// ==================== 8. 2.5D 純像素畫面渲染 ====================
+// ==================== 8. 2.5D 等角畫面渲染 ====================
 function renderScene() {
   ctx.clearRect(0, 0, CW, CH);
   const G = state.maxGridSize;
@@ -1667,32 +1727,38 @@ function renderScene() {
     }
   }
 
-  // 獨立廚房隔間
+  // 獨立廚房隔間與立體灶台/備料台
   drawIsoWallSegment(2, 0, 26, '#8d5524', '#6d3f19', false);
   drawIsoWallSegment(2, 1, 26, '#8d5524', '#6d3f19', false);
   drawIsoTile(2, 2, '#f59e0b', '#b45309', '#78350f', 13, '#2c1e16');
   drawIsoWallSegment(2, 3, 26, '#a16207', '#713f12', true);
 
-  drawIsoTile(0, 0, '#94a3b8', '#475569', '#334155', 14, '#1e293b');
-  drawIsoTile(0, 1, '#cbd5e1', '#64748b', '#475569', 13, '#1e293b');
+  const st0 = gridToIso(0, 0);
+  drawIsoBox(st0.x, st0.y + 11, 13, 6.5, 9, '#cbd5e1', '#94a3b8', '#64748b');
   if (entities.chef.state === 'cooking') {
-    const sp0 = gridToIso(0.2, 0.2);
     ctx.fillStyle = frame % 2 === 0 ? '#ef4444' : '#facc15';
-    ctx.fillRect(sp0.x - 4, sp0.y - 16, 6, 6);
+    ctx.fillRect(st0.x - 4, st0.y - 4, 5, 5);
   }
+  const st1 = gridToIso(0, 1);
+  drawIsoBox(st1.x, st1.y + 11, 13, 6.5, 8, '#f8fafc', '#cbd5e1', '#94a3b8');
   const kLabel = gridToIso(0.5, 0.2);
   ctx.fillStyle = '#2c1e16'; ctx.font = 'bold 9px sans-serif';
   ctx.fillText('廚房', kLabel.x - 8, kLabel.y - 16);
 
-  // 獨立廁所隔間
+  // 獨立廁所隔間與立體馬桶/洗手台
   drawIsoWallSegment(0, 6, 25, '#38bdf8', '#0284c7', false);
   drawIsoWallSegment(1, 6, 25, '#38bdf8', '#0284c7', false);
   drawIsoWallSegment(2, 6, 25, '#0ea5e9', '#0369a1', true);
   drawIsoWallSegment(2, 7, 25, '#38bdf8', '#0284c7', false);
   drawIsoWallSegment(2, 8, 25, '#38bdf8', '#0284c7', false);
 
-  drawIsoTile(0, 8, '#ffffff', '#cbd5e1', '#94a3b8', 11, '#2c1e16');
-  drawIsoTile(0, 7, '#e0f2fe', '#7dd3fc', '#38bdf8', 12, '#2c1e16');
+  const wcPos = gridToIso(0, 8);
+  drawIsoBox(wcPos.x, wcPos.y + 11, 8, 4, 6, '#ffffff', '#e2e8f0', '#cbd5e1');
+  drawIsoBox(wcPos.x - 3, wcPos.y + 6, 4, 2, 6, '#ffffff', '#cbd5e1', '#94a3b8');
+
+  const snkPos = gridToIso(0, 7);
+  drawIsoBox(snkPos.x, snkPos.y + 11, 8, 4, 7, '#e0f2fe', '#7dd3fc', '#38bdf8');
+
   const tLabel = gridToIso(1.2, 6.2);
   ctx.fillStyle = entities.toiletOccupiedBy ? '#dc2626' : '#0369a1';
   ctx.font = 'bold 9px sans-serif';
@@ -1700,35 +1766,32 @@ function renderScene() {
 
   const drawables = [];
 
-  // 所有已擺放的獨立設施實體
+  // 2:1 等角立體家具套組 + 桌上實體像素料理/空盤
   state.placedItems.forEach(it => {
     const def = FACILITY_DEFS.find(f => f.id === it.defId);
     if (!def) return;
     drawables.push({
       depth: it.gx + it.gy,
       render: () => {
+        drawIsoFurnitureSet(it.defId, it.gx, it.gy, frame);
         const p = gridToIso(it.gx, it.gy);
-        if (it.defId === 'turf_zone') {
-          drawIsoTile(it.gx, it.gy, '#4ade80', '#16a34a', '#15803d', 3);
-        }
-        const fsp = getFacilityPixelSprite(it.defId);
-        ctx.drawImage(fsp, p.x - 13, p.y - 11, 26, 23);
+        const baseY = p.y + TILE_H * 0.65;
 
         if (it.defId.startsWith('table')) {
           const eatingCust = entities.customers.find(c => c.tableUid === it.uid && c.state === 'eating');
           const dirtyTbl = entities.dirtyTables.find(d => d.tableUid === it.uid);
           if (eatingCust && eatingCust.orderedMenu) {
             const foodSp = getFoodPixelSprite(false, eatingCust.orderedMenu.cat === 'pet');
-            ctx.drawImage(foodSp, p.x - 7, p.y - 12, 14, 11);
+            ctx.drawImage(foodSp, p.x - 5, baseY - 14, 10, 8);
           } else if (dirtyTbl) {
             const emptySp = getFoodPixelSprite(true, false);
-            ctx.drawImage(emptySp, p.x - 7, p.y - 12, 14, 11);
+            ctx.drawImage(emptySp, p.x - 5, baseY - 14, 10, 8);
           }
         }
 
         if (editMode && selectedUid === it.uid) {
           ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2;
-          ctx.strokeRect(p.x - 13, p.y - 12, 26, 22);
+          ctx.strokeRect(p.x - 15, baseY - 18, 30, 24);
         }
       }
     });
@@ -1763,7 +1826,7 @@ function renderScene() {
         ctx.drawImage(sp, p.x - 11, p.y - 20, 22, 27);
         if (w.dish) {
           const dSp = getFoodPixelSprite(false, w.dish.menu.cat === 'pet');
-          ctx.drawImage(dSp, p.x - 7, p.y - 25, 14, 11);
+          ctx.drawImage(dSp, p.x - 6, p.y - 25, 12, 9);
         }
       }
     });
@@ -1846,7 +1909,7 @@ function renderScene() {
   }
 }
 
-// ==================== 9. 佈置模式點擊互動（支援多件選取、移動、個別升級與拆除） ====================
+// ==================== 9. 佈置模式點擊互動 ====================
 function updateEditBarUI() {
   const bar = document.getElementById('edit-bar');
   const ops = document.getElementById('selected-item-ops');
@@ -1877,8 +1940,7 @@ function upgradeSelectedPlaced() {
   if (!it || !def || it.lv >= def.maxLv) return;
   const cost = Math.round(def.baseCost * 0.65 * Math.pow(1.4, it.lv));
   if (state.gold < cost) return alert(`資金不足，升級此件需要 $${cost}`);
-  state.gold -= cost;
-  it.lv += 1;
+  state.gold -= cost; it.lv += 1;
   sfx.upgrade(); saveGame(); updateEditBarUI(); renderPanel();
 }
 
@@ -1888,8 +1950,7 @@ function removeSelectedPlaced() {
   const removed = state.placedItems.splice(idx, 1)[0];
   const def = FACILITY_DEFS.find(f => f.id === removed.defId);
   const refund = Math.round((def?.baseCost || 200) * 0.5);
-  state.gold += refund;
-  selectedUid = null;
+  state.gold += refund; selectedUid = null;
   addParticle(removed.gx, removed.gy, `拆除退+$${refund}`, '#fde047');
   sfx.coin(); saveGame(); updateEditBarUI(); renderPanel();
 }
@@ -1926,12 +1987,9 @@ canvas.addEventListener('pointerdown', (e) => {
     }
     const targetItem = state.placedItems.find(x => x.uid === selectedUid);
     if (targetItem) {
-      targetItem.gx = gx;
-      targetItem.gy = gy;
-      selectedUid = null;
-      updateEditBarUI();
-      getActiveCombos();
-      sfx.upgrade(); saveGame();
+      targetItem.gx = gx; targetItem.gy = gy;
+      selectedUid = null; updateEditBarUI();
+      getActiveCombos(); sfx.upgrade(); saveGame();
       document.getElementById('ticker').textContent = '✅ 擺設位置已更新！';
     }
   }
@@ -1939,8 +1997,7 @@ canvas.addEventListener('pointerdown', (e) => {
 
 // ==================== 10. 下方管理面板 ====================
 function switchTab(tab) {
-  activeTab = tab;
-  activeSubTab = 'main';
+  activeTab = tab; activeSubTab = 'main';
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   renderPanel();
 }
@@ -2152,21 +2209,17 @@ function buyNewPlacement(defId) {
   if (state.gold < cost) return;
 
   const free = findFreeTile(def.defaultGx + (cnt % 3), def.defaultGy + Math.floor(cnt / 3));
-  if (!free) {
-    return alert('店內目前沒有多餘空地了！請先到「競賽擴店」擴建場地或拆除部分舊擺設。');
-  }
+  if (!free) return alert('店內目前沒有多餘空地了！請先到「競賽擴店」擴建場地或拆除部分舊擺設。');
 
   state.gold -= cost;
   const newUid = `item_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
   state.placedItems.push({ uid: newUid, defId, lv: 1, gx: free.gx, gy: free.gy });
 
-  editMode = true;
-  selectedUid = newUid;
+  editMode = true; selectedUid = newUid;
   document.getElementById('btn-edit-mode').classList.add('active');
   updateEditBarUI();
 
-  getActiveCombos();
-  sfx.upgrade(); saveGame(); renderPanel();
+  getActiveCombos(); sfx.upgrade(); saveGame(); renderPanel();
   document.getElementById('ticker').textContent = `✅ 已新增【${def.name}】！可直接點綠色空地調整位置！`;
 }
 
